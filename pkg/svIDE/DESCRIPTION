@@ -1,0 +1,12 @@
+Package: svIDE
+Title: SciViews GUI API - IDE and code editor functions
+Imports: utils
+Depends: R (>= 2.7.0), tcltk, svMisc
+Description: Function for the GUI API to interact with external IDE/code editors
+Version: 0.9-40
+Date: 2008-06-01
+Author: Philippe Grosjean
+Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
+License: GPL 2 or above
+URL: http://www.sciviews.org/SciViews-R
+SystemRequirements: Tinn-R (http://www.sciviews.org/Tinn-R)
