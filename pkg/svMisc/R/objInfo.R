@@ -32,6 +32,16 @@ function(id = "default", envir = .GlobalEnv, object = "", path = NULL) {
 		# The info is simply a str() representation of the object
 		# We need to capture output
 		Info <- capture.output(str(obj))
+		# Add estimation of size for this object, if it is not a function
+		if (!inherits(obj, "function")) {
+			size <- object.size(obj)
+			if (size > 1024*1024) {
+				size <- paste("Estimated size:", format(size/1024/1024, digits = 3), "Mb")
+			} else if (size > 1024) {
+				size <- paste("Estimated size:", format(size/1024, digits = 3), "kb")
+			} else size <- paste("Estimated size:", format(size, digits = 3), "bytes")
+			Info[length(Info) + 1] <- size
+		}
 	}
 	
 	if (!is.null(path)) {
