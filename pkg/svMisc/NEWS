@@ -1,6 +1,10 @@
 svMisc News:
 ============
 
+Version 0.9-41:
+---------------
+- objInfo() returns also estimated size of objects that are not functions.
+
 Version 0.9-40:
 ---------------
 This is the first version distributed on R-forge. It is completely refactored
