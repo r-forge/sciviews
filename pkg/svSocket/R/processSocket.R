@@ -88,7 +88,7 @@ function (msg, socket, serverport, ...) {
     expr <- Parse(msg)
     # Is it a wrong code?
     if (inherits(expr, "try-error")) {
-        res <- paste(ngettext(1, "Error: ", domain = "R"),
+        res <- paste(ngettext(1, "Error: ", "", domain = "R"),
         sub("^[^:]+: ([^\n]+)\n[0-9]+:(.*)$", "\\1\\2", expr), sep = "")
         if (Echo) cat(res)
         return(paste(res, pars$last, Prompt, sep = ""))

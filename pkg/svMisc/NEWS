@@ -5,6 +5,9 @@ Version 0.9-41:
 ---------------
 - objInfo() returns also estimated size of objects that are not functions.
 
+- objSearch() is reworked to return a single string using 'sep' as separator
+  when sep is not NULL.
+
 Version 0.9-40:
 ---------------
 This is the first version distributed on R-forge. It is completely refactored
