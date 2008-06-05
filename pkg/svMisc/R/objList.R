@@ -1,6 +1,7 @@
 "objList" <-
 function(id = "default", envir = .GlobalEnv, object = "", all.names = FALSE,
-pattern = "", group = "", sep = "\t", path = NULL, compare = TRUE) {
+pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL,
+compare = TRUE) {
 
     # Make sure that id is character
     id <- as.character(id)[1]
@@ -19,13 +20,18 @@ pattern = "", group = "", sep = "\t", path = NULL, compare = TRUE) {
 		if (object == "") {
 		# Get the list of objects in this environment
 			Items <- ls(pos = pos, all.names = all.names, pattern = pattern)
-			if (length(Items) == 0)
+			if (length(Items) == 0) if (all.info) {
 				return(data.frame(Name = character(), Dims = character(),
 					Group = character(), Class = character(),
 					Recusive = logical(), stringsAsFactors = FALSE))
+			} else {
+				return(data.frame(Envir = character(), Name = character(),
+					Dims = character(), Group = character(), Class = character(),
+					Recusive = logical(), stringsAsFactors = FALSE))				
+			}
 			
 			# Get characteristics of all objects
-			"describe" <- function(name, pos = 1) {
+			"describe" <- function(name, pos = ".GlobalEnv", all.info = FALSE) {
 				# get a vector with five items:
 				# Name, Dims, Group, Class and Recursive
 				obj <- get(name, pos = pos)
@@ -36,10 +42,11 @@ pattern = "", group = "", sep = "\t", path = NULL, compare = TRUE) {
 					Group = typeof(obj),
 					Class = class(obj)[1],
 					Recursive = !inherits(obj, "function") && is.recursive(obj))
+				if (all.info) res <- c(Envir = pos, res)	
 				return(res)
 			}
-			res <- data.frame(t(sapply(Items, describe)),
-				stringsAsFactors = FALSE)
+			res <- data.frame(t(sapply(Items, describe, pos = envir,
+				all.info = all.info)), stringsAsFactors = FALSE)
 		
 			# Recalculate groups into meaningful ones for the object explorer
 			# 1) Correspondance of typeof() and group depicted in the browser
