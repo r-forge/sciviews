@@ -4,7 +4,7 @@ function(sep = "\t", path = NULL, compare = TRUE) {
 	if (compare) {
 		oldSearch <- getTemp(".guiObjSearchCache", default = "")
 		# Compare both versions
-		if (length(Search) != length(oldSearch) || !all.equal(Search, oldSearch)) {
+		if (length(Search) != length(oldSearch) || !all(Search == oldSearch)) {
 			# Keep a copy of the last version in TempEnv
 			assignTemp(".guiObjSearchCache", Search) 
 			Changed <- TRUE

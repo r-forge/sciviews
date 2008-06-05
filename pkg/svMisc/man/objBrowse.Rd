@@ -7,7 +7,7 @@
 \alias{objMenu}
 \alias{objSearch}
 
-\title{ Function to implement an object browser }
+\title{ Functions to implement an object browser }
 \description{
   These functions provide features required to implement a complete object
   browser in a GUI client.
@@ -20,7 +20,8 @@ objClear(id = "default")
 objDir()
 objInfo(id = "default", envir = .GlobalEnv, object = "", path = NULL)
 objList(id = "default", envir = .GlobalEnv, object = "", all.names = FALSE,
-    pattern = "", group = "", sep = "\t", path = NULL, compare = TRUE)
+    pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL,
+	compare = TRUE)
 objMenu(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 	path = NULL)
 objSearch(sep = "\t", path = NULL, compare = TRUE)
@@ -42,19 +43,21 @@ objSearch(sep = "\t", path = NULL, compare = TRUE)
   \item{regenerate}{ Do we force to regenerate the information? }
   \item{object}{ The currently selected object in the object browser }
   \item{objects}{ A list with selected items in the object browser }
+  \item{all.info}{ Do we return all the information (envir as first column or
+    not (by default) }
   \item{compare}{ If \code{compare == TRUE}, result is compared with last cached
     value and the client is updated only if something changed }
 }
 \details{
-  \code{objBrowse} do the horsework. \code{objDir} gets the temporary directory
+  \code{objBrowse()} does the horsework. \code{objDir()} gets the temporary directory
     where exchange files are stored, in case you exchange data through files.
     You can use a better way to communicate with your GUI (you have to provide
     your code) and disable writing to files by using \code{path = NULL}.
-  \code{objList} lists objects in a given environment.
-  \code{objSearch} lists the search path.
-  \code{objClear} clears any reference to a given object browser.
-  \code{objInfo} computes a tooltip info for a given object.
-  \code{objMenu} computes a context menu for selected object(s) in the object
+  \code{objList()} lists objects in a given environment.
+  \code{objSearch()} lists the search path.
+  \code{objClear()} clears any reference to a given object browser.
+  \code{objInfo()} computes a tooltip info for a given object.
+  \code{objMenu()} computes a context menu for selected object(s) in the object
     explorer managed by the GUI client.
 }
 \value{
