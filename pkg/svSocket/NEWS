@@ -1,6 +1,12 @@
 svSocket News:
 ==============
 
+Version 0.9-41:
+---------------
+- Correction of a bug preventing processSocket() to display error messages.
+  Instead, I got: Error in ngettext(1, "Error: ", domain = "R") : 
+      argument "msg2" is missing, with no default
+
 Version 0.9-40:
 ---------------
 This is the first version distributed on R-forge. It is completely refactored

@@ -1,22 +1,26 @@
 "objSearch" <-
 function(sep = "\t", path = NULL, compare = TRUE) {
-    Search <- as.matrix(data.frame(Workspace = search()))
+    Search <- search()
 	if (compare) {
 		oldSearch <- getTemp(".guiObjSearchCache", default = "")
 		# Compare both versions
-		if (!(all.equal(Search, oldSearch)[1] == TRUE)) {
+		if (length(Search) != length(oldSearch) || !all.equal(Search, oldSearch)) {
 			# Keep a copy of the last version in TempEnv
 			assignTemp(".guiObjSearchCache", Search) 
 			Changed <- TRUE
 		} else Changed <- FALSE
 	} else Changed <- TRUE
-    if (is.null(path)) { # Simply return result
-		if (Changed) return(Search) else return("")
+    if (is.null(path)) { # Return result, as a single character string with sep
+		if (Changed) {
+			if (!is.null(sep)) Search <- paste(Search, collapse = sep)	
+			return(Search)
+		} else return("")
 	} else { # Write to a file called 'Search.txt' in this path
 		file <- file.path(path, "Search.txt")	
-		if (Changed)
-			write.table(Search, file = file, row.names = FALSE, quote = FALSE,
-				sep = sep)
+		if (Changed) {
+			if (is.null(sep)) sep <- "\n"
+			cat(Search, sep = sep, file = file)
+		}
 		return(Changed)
 	}
 }

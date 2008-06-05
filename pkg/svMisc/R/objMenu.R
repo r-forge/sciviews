@@ -1,6 +1,7 @@
 "objMenu" <-
 function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
-	path = NULL) {	
+	path = NULL) {
+	### TODO: look also in .required in .GlobalEnv to determine if one can detach a package
 	### TODO: copy name to clipboard, send name to editor in menu
 
 	# Get a context menu  for given object(s) or environment
