@@ -5,7 +5,7 @@
 
 "trObjSearch" <-
 function (path = NULL) {
-	return(objSearch(path, compare = FALSE))
+	return(invisible(objSearch(path = path, compare = FALSE)))
 }
 
 "trObjList" <-
@@ -15,6 +15,6 @@ pattern = "", group = "", path = NULL) {
 	options(width = 100)
 	on.exit(options(width = oWidth))
 
-	return(objList(id = id, envir = envir, all.names = all.names,
-		pattern = pattern, group = group, path = path, compare = FALSE))
+	return(invisible(objList(id = id, envir = envir, all.names = all.names,
+		pattern = pattern, group = group, path = path, compare = FALSE)))
 }

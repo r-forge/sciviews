@@ -21,7 +21,7 @@ function(sep = "\t", path = NULL, compare = TRUE) {
 			if (is.null(sep)) sep <- "\n"
 			cat(Search, sep = sep, file = file)
 		}
-		return(Changed)
+		return(invisible(Changed))
 	}
 }
 

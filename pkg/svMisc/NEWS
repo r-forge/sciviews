@@ -1,12 +1,20 @@
 svMisc News:
 ============
 
+Version 0.9-42:
+---------------
+- objList() did not place each item in a line when result is written in a file
+
+- objXXX() functions did not always returned results invisibly. Solved.
+
+
 Version 0.9-41:
 ---------------
 - objInfo() returns also estimated size of objects that are not functions.
 
 - objSearch() is reworked to return a single string using 'sep' as separator
   when sep is not NULL.
+  
 
 Version 0.9-40:
 ---------------
