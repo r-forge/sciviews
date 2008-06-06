@@ -17,6 +17,6 @@ function(id = "default") {
 	if (file.exists(ListFile)) unlink(ListFile)
 	MenuFile = file.path(Root, paste("Menu_", id, ".txt", sep=""))
 	if (file.exists(MenuFile)) unlink(MenuFile)
-	return(TRUE)
+	return(invisible(TRUE))
 }
 

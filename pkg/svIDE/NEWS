@@ -1,6 +1,13 @@
 svIDE News:
 ===========
 
+Version 0.9-41:
+---------------
+- One bug corrected in trObjSearch().
+
+- trObjSearch() and trObjList() now return TRUE/FALSE invisibly.
+
+
 Version 0.9-40:
 ---------------
 This is the first version distributed on R-forge. It is completely refactored

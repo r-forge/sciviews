@@ -33,7 +33,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 	envir <- as.character(envir)[1]
 	# Get the current position in the search path for envir
 	pos <- match(envir, search(), nomatch = -1)
-	if (pos < 1) return(popup)		# NOT FOUND!
+	if (pos < 1) return(invisible(popup))		# NOT FOUND!
 		
 	# Do we replace envir or not?
 	if (envir == ".GlobalEnv") Envir <- "<<<envir>>>" else Envir <- envir
@@ -96,7 +96,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 			}
 			
 		} else {	# This is a menu for an object
-			if (!exists(objects, where = envir)) return(popup)
+			if (!exists(objects, where = envir)) return(invisible(popup))
 			objType <- "object"
 			obj <- get(objects, pos = envir)
 			objPar <- class(obj)

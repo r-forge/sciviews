@@ -27,7 +27,7 @@ function(id = "default", envir = .GlobalEnv, object = "", path = NULL) {
 			} else ""
 		)
 	} else {	# An object...
-		if (!exists(object, where = envir)) return("")
+		if (!exists(object, where = envir)) return(invisible(""))
 		obj <- get(object, pos = envir)
 		# The info is simply a str() representation of the object
 		# We need to capture output

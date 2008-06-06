@@ -35,8 +35,9 @@ trObjList(id = "default", envir = .GlobalEnv, all.names = FALSE,
   \code{library(svIDE); library(svSocket); library(svIO); guiDDEInstall()}
 }
 \value{
-  Depending on the function, a list, a string, or a reference to an external,
-  temporary file where data is written.
+  Depending on the function, a list, a string, a reference to an external,
+  temporary file where data is written, or \code{TRUE} or \code{FALSE} invisibly
+  depending if the function succeeds or not.
 }
 
 \author{Jose Claudio Faria (\email{joseclaudio.faria@terra.com.br}) &

@@ -61,8 +61,9 @@ objSearch(sep = "\t", path = NULL, compare = TRUE)
     explorer managed by the GUI client.
 }
 \value{
-  Depending on the function, a list, a string, or a reference to an external,
-  temporary file is returned invisibly.
+  Depending on the function, a list, a string, a reference to an external,
+  temporary file or \code{TRUE} in case of success or \code{FALSE} otherwise
+  is returned invisibly.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}

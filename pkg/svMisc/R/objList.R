@@ -21,9 +21,9 @@ compare = TRUE) {
 		# Get the list of objects in this environment
 			Items <- ls(pos = pos, all.names = all.names, pattern = pattern)
 			if (length(Items) == 0) if (all.info) {
-				return(data.frame(Name = character(), Dims = character(),
+				return(invisible(data.frame(Name = character(), Dims = character(),
 					Group = character(), Class = character(),
-					Recusive = logical(), stringsAsFactors = FALSE))
+					Recusive = logical(), stringsAsFactors = FALSE)))
 			} else {
 				return(data.frame(Envir = character(), Name = character(),
 					Dims = character(), Group = character(), Class = character(),
@@ -109,17 +109,18 @@ compare = TRUE) {
 	}
 		
 	if (is.null(path)) { # Return results or "" if not changed
-		if (Changed) return(res) else return("")
+		if (Changed) return(invisible(res)) else return(invisible(""))
 	} else if (Changed) { # Write to files in this path
 		# Create file names
 		ListF <- file.path(path, paste("List_", id, ".txt", sep = ""))
 		ParsF <- file.path(path, paste("Pars_", id, ".txt", sep = ""))
-		cat(res, file = ListF, collapse = "\n")
+		cat(res, file = ListF, sep = "\n")
 		# Write also in the Pars_<id>.txt file in the same directory
 		cat("pos=", pos, "\n", sep = "", file = ParsF)
 		cat("envir=", search()[pos], "\n", sep = "", file = ParsF, append = TRUE)
 		cat("all.names=", all.names, "\n", sep = "", file = ParsF, append = TRUE)
 		cat("pattern=", pattern, "\n", sep = "", file = ParsF, append = TRUE)
 		cat("group=", group, "\n", sep = "", file = ParsF, append = TRUE)
-	} else return(FALSE)	# Not changed
+		return(invisible(ListF))
+	} else return(invisible(FALSE))	# Not changed
 }
