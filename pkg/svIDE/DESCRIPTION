@@ -7,6 +7,6 @@ Version: 0.9-41
 Date: 2008-06-06
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
-License: GPL 2 or above
+License: GPL (>= 2)
 URL: http://www.sciviews.org/SciViews-R
 SystemRequirements: Tinn-R (http://www.sciviews.org/Tinn-R)

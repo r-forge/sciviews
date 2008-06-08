@@ -6,6 +6,6 @@ Version: 0.9-40
 Date: 2008-06-01
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
-License: GPL 2 or above
+License: GPL (>= 2)
 URL: http://www.sciviews.org/SciViews-R
 SystemRequirements: Komodo Edit (http://www.openkomodo.com), SciViews-K (http://www.sciviews.org/SciViews-K)
