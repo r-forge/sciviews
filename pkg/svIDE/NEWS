@@ -1,15 +1,13 @@
-svIDE News:
-===========
+= svIDE News
 
-Version 0.9-41:
----------------
-- One bug corrected in trObjSearch().
+== Changes in svIDE 0.9-41
+* One bug corrected in trObjSearch(): incorrect output of the results in a
+  character vector.
 
-- trObjSearch() and trObjList() now return TRUE/FALSE invisibly.
+* trObjSearch() and trObjList() now return TRUE/FALSE invisibly.
 
 
-Version 0.9-40:
----------------
+== Changes in svIDE 0.9-40
 This is the first version distributed on R-forge. It is completely refactored
 from older versions (on CRAN since 2003) to make it run with SciViews-K and
 Komodo Edit (Tinn-R is also supported, but not SciViews-R Console any more).

@@ -1,17 +1,17 @@
-svMisc TODO:
-============
-- Write the code in objList() to list content inside objects
+= svMisc To Do list
 
-- Rework mechanism to call .guiCmd() from objXXX() functions
+* Write the code in objList() to list content inside objects
 
-- Make indeterminate progress()ion
+* Rework mechanism to call .guiCmd() from objXXX() functions
 
-- Use this in call tips to get the call for S3 method for given objects
+* Make indeterminate progress()ion
+
+* Use this in call tips to get the call for S3 method for given objects
   args(getS3method("predict", class(myobj), optional = TRUE)). + selectMethod
   for S4 object does the same thing!
 
-- objMenu(): add copy name to clipboard, send name to editor in menu
+* objMenu(): add copy name to clipboard, send name to editor in menu
 
-- Use RShowDoc() to access further R documentation.
+* Use RShowDoc() to access further R documentation.
 
-- Translate completely this package
+* Translate completely this package
