@@ -1,5 +1,17 @@
 = svIDE News
 
+== Changes in svIDE 0.9-42
+* getKeywords() is simplified by using lsf.str().
+
+* guiDDEInstall now uses .Tcl.args() instead of .Tcl.callback to install
+  callback functions in Tcl (preventing for moving the function in another
+  memory location)
+
+* A change in argument names for guiCalltip() and guiComplete() prevented the
+  DDE server to work properly for those two commands (Tinn-R). This bug is
+  fixed (Tcl does not support names with dots, like max.width). Hence, the
+  argument is changed to maxWidth. Same for only.args that becomes onlyArgs.
+
 == Changes in svIDE 0.9-41
 * One bug corrected in trObjSearch(): incorrect output of the results in a
   character vector.

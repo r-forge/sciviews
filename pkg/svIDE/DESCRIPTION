@@ -3,8 +3,8 @@ Title: SciViews GUI API - IDE and code editor functions
 Imports: utils
 Depends: R (>= 2.7.0), tcltk, svMisc
 Description: Function for the GUI API to interact with external IDE/code editors
-Version: 0.9-41
-Date: 2008-06-06
+Version: 0.9-42
+Date: 2008-06-09
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL (>= 2)

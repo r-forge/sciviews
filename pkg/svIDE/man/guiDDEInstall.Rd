@@ -10,7 +10,7 @@
 }
 \usage{
 guiDDEInstall()
-guiCallTip(code, file = NULL, only.args = FALSE, max.width = 60, location = FALSE)
+guiCallTip(code, file = NULL, onlyArgs = FALSE, maxWidth = 60, location = FALSE)
 guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
 }
 
@@ -18,8 +18,8 @@ guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
   \item{code}{ A piece of R code (in a character string) to analyze }
   \item{file}{ A file where to return the result ("", or NULL for none). You
     can use "clipboard" to send the result to the clipboard under Windows only }
-  \item{only.args}{ Do we return the whole calltip or only the function arguments? }
-  \item{max.width}{ Reformat the calltip to max.with (use 0 for not reformatting it) }
+  \item{onlyArgs}{ Do we return the whole calltip or only the function arguments? }
+  \item{maxWidth}{ Reformat the calltip to max.with (use 0 for not reformatting it) }
   \item{location} { If \code{TRUE} then the location (in which package the
     function resides) is appended to the calltip between square brackets }
   \item{givetype}{ Return also the type of each object in the completion list (possibly
@@ -54,7 +54,7 @@ guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
         options(use.DDE = TRUE)
         library(svIDE) # This should automatically start the
         # DDE server named 'TclEval SciViewsR', according to the option set
-        
+
         # Get some data in the user workspace
         data(trees)
         a <- 1
@@ -68,7 +68,7 @@ guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
         .Tcl("dde services TclEval {}")
         # You should get 'TclEval SciViewsR' in the list
         # if the server in the first instance is running
-        
+
         # Now, request a calltip for the function 'ls'
         # This is done in two steps:
         # 1) Execute the command 'guiCallTip' with this code chunk as argument
@@ -98,5 +98,3 @@ guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
     }
 }
 \keyword{ utilities }
-
-

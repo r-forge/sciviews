@@ -1,21 +1,21 @@
 "guiCallTip" <-
-function(code, file = NULL, only.args = FALSE, max.width = 60, location = FALSE) {
+function(code, file = NULL, onlyArgs = FALSE, maxWidth = 60, location = FALSE) {
     # This is an interface to CallTip for external programs
     # Clear ::SciViewsR_CallTip
     .Tcl("set ::SciViewsR_CallTip {}")
 
     # Using a callback, all args are strings => convert
     if (length(file) == 0 || file == "" || file == "NULL") file <- NULL
-    only.args <- as.logical(only.args[1])
-    max.width <- as.integer(max.width[1])
-    
+    onlyArgs <- as.logical(onlyArgs[1])
+    maxWidth <- as.integer(maxWidth[1])
+
     # Get the call tip
-	ctip <- CallTip(code, only.args = only.args, location = location)
+	ctip <- CallTip(code, only.args = onlyArgs, location = location)
 
     # Possibly break long lines at reasonables widths
-    if (only.args) Exdent <- 0 else Exdent <- 4
-    if (!is.null(max.width) && !max.width < 1)
-	   ctip <- paste(strwrap(ctip, width = max.width, exdent = Exdent), collapse = "\n")
+    if (onlyArgs) Exdent <- 0 else Exdent <- 4
+    if (!is.null(maxWidth) && !maxWidth < 1)
+	   ctip <- paste(strwrap(ctip, width = maxWidth, exdent = Exdent), collapse = "\n")
 
 	# Copy the result to a Tcl variable
     .Tcl(paste("set ::SciViewsR_CallTip {", ctip, "}", sep = ""))
@@ -40,7 +40,7 @@ function(code, file = NULL, givetype = FALSE, sep = "|") {
     # This is an interfacte to Complete for external programs
     # Clear ::SciViewsR_Complete
     .Tcl("set ::SciViewsR_Complete {}")
-    
+
     # Using a callback, all args are strings => convert
     if (length(file) == 0 || file == "" || file == "NULL") file <- NULL
     givetype <- as.logical(givetype[1])
@@ -102,16 +102,15 @@ function() {
 
     # Install callbacks for guiXXXX functions, for DDE clients to access them
     # guiCallTip()... Take care: must be adapted if you change guiCallTip()!
-    res <- .Tcl.callback(guiCallTip)
-    .Tcl(paste("proc guiCallTip {code {file \"\"} {onlyargs FALSE}",
-		" {maxwidth 60} {location FALSE} } {", gsub("%", "$", res), "}",
-		sep = ""))
-    
+    res <- .Tcl.args(guiCallTip)
+    .Tcl(paste("proc guiCallTip {code {file \"\"} {onlyArgs FALSE}",
+		" {maxWidth 60} {location FALSE} }", gsub("%", "$", res), sep = ""))
+
     # guiComplete()... Take care: must be adapted if you change guiComplete()!
-    res <- .Tcl.callback(guiComplete)
+    res <- .Tcl.args(guiComplete)
     .Tcl(paste("proc guiComplete {code {file \"\"} {givetype FALSE}",
-		" {fieldsep |} } {", gsub("%", "$", res), "}", sep = ""))
-    
+		" {sep |} }", gsub("%", "$", res), sep = ""))
+
     # Done
     return(invisible("")) # OK!
 }

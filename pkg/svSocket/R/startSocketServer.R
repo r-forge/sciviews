@@ -112,7 +112,7 @@ function (port = 8888, server.name = "Rserver", procfun = processSocket) {
 			return(TRUE) # The command is processed
 		}
 		# This is a copy of tclFun from tcltk2, to avoid a Depends: tcltk2
-		"tclFun_" <- function (f, name = deparse(substitute(f)), envir = TempEnv()) {
+		"tclFun_" <- function (f, name = deparse(substitute(f))) {
 			# Register a simple R function (no arguments) as a callback in Tcl,
 			# and give it the same name)
 			# Indeed, .Tcl.callback(f) in tcltk package does the job...
@@ -129,11 +129,11 @@ function (port = 8888, server.name = "Rserver", procfun = processSocket) {
 				stop("'name' must be a character string!") else
 				name <- make.names(name[1])
 
-			res <- .Tcl.callback(f, envir)
+			res <- .Tcl.args(f)
 			# Make sure this is correct (R_call XXXXXXXX)
 			if (length(grep("R_call ", res) > 0)) {
 				# Create a proc with the same name in Tcl
-				.Tcl(paste("proc ", name, " {} {", res, "}", sep = ""))
+				.Tcl(paste("proc ", name, " {}", res, sep = ""))
 			}
 			# Return the R_call XXXXXXXX string, as .Tcl.callback() does
 			return(res)
