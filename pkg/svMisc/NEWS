@@ -6,6 +6,9 @@
 
 * objXXX() functions did not always returned results invisibly. Solved.
 
+* Args() is more robust against bad 'name' parameter because it now calls
+  argsAnywhere() within a try().
+
 
 == Changes in svMisc 0.9-41
 
