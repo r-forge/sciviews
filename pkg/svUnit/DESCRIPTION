@@ -1,0 +1,11 @@
+Package: svUnit
+Title: SciViews GUI API - Unit testing
+Depends: R (>= 1.9.0), RUnit
+Suggests: svGUI
+Description: Functions to implement the GUI part of a unit test system based on RUnit
+Version: 0.4-0
+Date: 2008-06-11
+Author: Philippe Grosjean
+Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
+License: GPL 2 or above
+URL: http://www.sciviews.org/SciViews-R

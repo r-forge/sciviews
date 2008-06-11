@@ -1,0 +1,30 @@
+import(RUnit)
+
+export(svTest,
+       as.svTest,
+	   is.svTest,
+       is.test,
+	   test,
+       "test<-",
+	   makeUnit,
+	   runTest,
+       svUnit,
+	   as.svUnit,
+	   is.svUnit,
+	   svUnitList,
+	   runUnit,
+	   unitClear,
+	   unitError)
+
+S3method(makeUnit, default)
+S3method(makeUnit, svTest)
+S3method(makeUnit, svUnit)
+
+S3method(runTest, default)
+S3method(runTest, svTest)
+S3method(runTest, svUnit)
+
+S3method(print, svUnit)
+
+S3method(print, svUnitData)
+S3method(summary, svUnitData)

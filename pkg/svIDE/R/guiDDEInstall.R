@@ -1,21 +1,21 @@
 "guiCallTip" <-
-function(code, file = NULL, onlyArgs = FALSE, maxWidth = 60, location = FALSE) {
+function(code, file = NULL, onlyargs = FALSE, width = 60, location = FALSE) {
     # This is an interface to CallTip for external programs
     # Clear ::SciViewsR_CallTip
     .Tcl("set ::SciViewsR_CallTip {}")
 
     # Using a callback, all args are strings => convert
     if (length(file) == 0 || file == "" || file == "NULL") file <- NULL
-    onlyArgs <- as.logical(onlyArgs[1])
-    maxWidth <- as.integer(maxWidth[1])
+    onlyargs <- as.logical(onlyargs[1])
+    width <- as.integer(width[1])
 
     # Get the call tip
-	ctip <- CallTip(code, only.args = onlyArgs, location = location)
+	ctip <- CallTip(code, only.args = onlyargs, location = location)
 
     # Possibly break long lines at reasonables widths
-    if (onlyArgs) Exdent <- 0 else Exdent <- 4
-    if (!is.null(maxWidth) && !maxWidth < 1)
-	   ctip <- paste(strwrap(ctip, width = maxWidth, exdent = Exdent), collapse = "\n")
+    if (onlyargs) Exdent <- 0 else Exdent <- 4
+    if (!is.null(width) && !width < 1)
+	   ctip <- paste(strwrap(ctip, width = width, exdent = Exdent), collapse = "\n")
 
 	# Copy the result to a Tcl variable
     .Tcl(paste("set ::SciViewsR_CallTip {", ctip, "}", sep = ""))
@@ -103,8 +103,8 @@ function() {
     # Install callbacks for guiXXXX functions, for DDE clients to access them
     # guiCallTip()... Take care: must be adapted if you change guiCallTip()!
     res <- .Tcl.args(guiCallTip)
-    .Tcl(paste("proc guiCallTip {code {file \"\"} {onlyArgs FALSE}",
-		" {maxWidth 60} {location FALSE} }", gsub("%", "$", res), sep = ""))
+    .Tcl(paste("proc guiCallTip {code {file \"\"} {onlyargs FALSE}",
+		" {width 60} {location FALSE} }", gsub("%", "$", res), sep = ""))
 
     # guiComplete()... Take care: must be adapted if you change guiComplete()!
     res <- .Tcl.args(guiComplete)

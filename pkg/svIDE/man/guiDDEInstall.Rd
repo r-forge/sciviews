@@ -10,7 +10,7 @@
 }
 \usage{
 guiDDEInstall()
-guiCallTip(code, file = NULL, onlyArgs = FALSE, maxWidth = 60, location = FALSE)
+guiCallTip(code, file = NULL, onlyargs = FALSE, width = 60, location = FALSE)
 guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
 }
 
@@ -18,8 +18,8 @@ guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
   \item{code}{ A piece of R code (in a character string) to analyze }
   \item{file}{ A file where to return the result ("", or NULL for none). You
     can use "clipboard" to send the result to the clipboard under Windows only }
-  \item{onlyArgs}{ Do we return the whole calltip or only the function arguments? }
-  \item{maxWidth}{ Reformat the calltip to max.with (use 0 for not reformatting it) }
+  \item{onlyargs}{ Do we return the whole calltip or only the function arguments? }
+  \item{width}{ Reformat the calltip to with (use 0 for not reformatting it) }
   \item{location} { If \code{TRUE} then the location (in which package the
     function resides) is appended to the calltip between square brackets }
   \item{givetype}{ Return also the type of each object in the completion list (possibly

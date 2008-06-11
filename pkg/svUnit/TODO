@@ -1,0 +1,40 @@
+= svUnit To Do list
+
+* Install SciViews-K Unit Komodo extension
+
+* Mean to save and load vUnit objects; also automatically load concerned packages
+
+* Output results in wiki format
+
+* butler: benchmark and profiling => check it
+
+* Split example test into smaller test functions
+
+* Make a vignette (and perhaps a demo) for this package
+
+* Translate this package
+
+* In RUnit/share/R, there are checkCode.r and compareRUnitTestData.r. The former
+  provides functions for test R code in R files, the latter does a comparison of
+  timings in two test set runs, using a tolerance value. Worth checking and
+  integrating later on!
+
+* In RUnit: checkException() -> get silent argument value from
+  getOption("RUnit.silent")
+
+* In RUnit, make a CheckWarning() function
+
+* In RUnit: one bug is reported on RUnit SourceForge area for RUnit 0.4.17.
+  Follow this to make sure it is corrected (or work on a patch!)
+
+	myfun <- function(a, b = 98, c = 99){
+		cat("a = ", a, ", b = ", b, ", c = ", c, "\n")
+	}
+	myfun(1, c = 2)
+	# So far so good. Now let's inspect myfun:
+
+	library(RUnit)
+	track <- tracker()
+	track$init()
+	inspect(myfun(1, c = 2), track = track)
+	# Here, we see that myfun is calld with argument not matched by names!
