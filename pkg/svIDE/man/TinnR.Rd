@@ -8,7 +8,7 @@
 }
 \usage{
 trObjSearch(path = NULL)
-trObjList(id = "default", envir = .GlobalEnv, all.names = FALSE,
+trObjList(id = "default", envir = .GlobalEnv, all.names = TRUE,
   pattern = "", group = "", path = NULL)
 }
 
@@ -35,9 +35,8 @@ trObjList(id = "default", envir = .GlobalEnv, all.names = FALSE,
   \code{library(svIDE); library(svSocket); library(svIO); guiDDEInstall()}
 }
 \value{
-  Depending on the function, a list, a string, a reference to an external,
-  temporary file where data is written, or \code{TRUE} or \code{FALSE} invisibly
-  depending if the function succeeds or not.
+  Either nothing if \code{path} is not null (data are written in a file given
+  by \code{path}), or a data frame with the results.
 }
 
 \author{Jose Claudio Faria (\email{joseclaudio.faria@terra.com.br}) &
