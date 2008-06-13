@@ -26,13 +26,13 @@ pattern = "", group = "", path = NULL) {
 		res <- data.frame(t(data.frame(strsplit(res, "\t"))),
 			stringsAsFactors = FALSE)[ , -5]
 	}
-	colnames(res) <- c("Name", "Dims", "Group", "Class")
+	colnames(res) <- c("Name", "Dim", "Group", "Class")
 	rownames(res) <- NULL
 
 	# Group conversion
 	GrpTable <- c(
 		"vector",      "vector",    "vector",     "vector",
-		"vector",      "vector",    "vector",     "table",
+		"vector",      "vector",    "vector",     "data.frame",
 		"list",        "function",  "other",      "other",
 		"other",       "other")
 	names(GrpTable) <- c(
@@ -44,6 +44,7 @@ pattern = "", group = "", path = NULL) {
 	NewGroup[NewGroup == "vector" & (regexpr("x", res$Dims) > -1)] <- "array"
 	NewGroup[NewGroup == "array" &
 		(regexpr("^[0-9]+x[0-9]+$", res$Dims) > -1)] <- "matrix"
+	NewGroup[res$Class == "table"] <- "table"
 	res$Group <- NewGroup
 
 	# Filter according to group
