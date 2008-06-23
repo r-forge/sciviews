@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+ License: GPL 2.0
+
+ The contents of this file are subject to the GNU General Public License
+ Version 2.0 (the "License")
+
+ Software distributed under the License is distributed on an "AS IS"
+ basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ License for the specific language governing rights and limitations
+ under the License.
+
+ SciViews-K is inspired from kNose by Brandon Corfman, distributed under a
+ triple MPL 1.1/GPL 2.0/LGPL 2.1 license, thus compatible with the License.
+
+ The Initial Developer of SciViews-K Unit is Philippe Grosjean
+ (phgrosjean@sciviews.org).
+ Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
+ ActiveState Software Inc. All Rights Reserved.
+
+ Contributor(s):
+   Philippe Grosjean
+   Brandon Corfman
+   ActiveState Software Inc
+
+ ***** END LICENSE BLOCK ***** -->
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+  <!ENTITY % sciviewskunitDTD SYSTEM "chrome://sciviewskunit/locale/sciviewskunit.dtd">
+  %sciviewskunitDTD;
+]>
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewskunit/skin/sciviewskunit.css" type="text/css"?>
+
+<overlay id="sciviewskunitOverlay"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="application/x-javascript" src="chrome://komodo/content/project/projectManager.js"/>
+    <script type="application/x-javascript" src="chrome://komodo/content/views.js"/>
+    <script type="application/x-javascript" src="chrome://komodo/content/library/open.js"/>
+    <script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
+    <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
+    <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/e4x2dom.js"/>
+    <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
+    <script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
+    <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
+    <script type="application/x-javascript" src="chrome://sciviewskunit/content/js/sciviewskunit.js"/>
+
+  <commandset id="allcommands">
+    <command id="Tasks:svUnitAbout"
+             oncommand="alert('SciViews-K Unit Tests for R, see http://www.sciviews.org/SciViews-K');"/>
+  </commandset>
+
+  <menupopup id="popup_tools">
+    <menuitem id="menu_sciviewsk"
+              label="SciViews-K Unit"
+              observes="Tasks:svUnitAbout"
+              class="menu-iconic-wide"/>
+  </menupopup>
+
+  <menupopup id="tabPicker_popup">
+    <menuitem id="show_svunit_tab"
+              insertafter="show_codebrowser_tab"
+              oncommand="uilayout_ensureTabShown('sciviews_svunit_tab', true)"
+              label="&sciviews.runit.tab;"/>
+  </menupopup>
+
+  <menupopup id="menu_view_tabs_popup">
+    <menuitem id="show_svunit_tab2"
+              insertafter="show_codebrowser_tab2"
+              class="menuitem-iconic-wide"
+              oncommand="uilayout_ensureTabShown('sciviews_svunit_tab', true)"
+              label="&sciviews.runit.tab;"/>
+  </menupopup>
+
+  <tabs id="right_toolbox_tabs">
+    <tab id="sciviews_svunit_tab"
+         label="&sciviews.runit.tab;"
+         insertafter="toolbox_tab"
+         tooltiptext="&sciviews.runit.tip;"/>
+  </tabs>
+
+  <tabpanels id="right_toolbox_tabpanels">
+    <tabpanel id="svunittreeviewbox"
+              flex="1"
+              insertafter="codebrowserviewbox">
+      <vbox id="svunittree-vbox"
+            flex="1">
+        <vbox flex="1">
+          <hbox id="svunittree-tabpanel-hbox"
+                align="center">
+            <toolbarbutton
+              id="svunit_refresh_button"
+              class="refresh-icon button-toolbar-a"
+              buttonstyle="pictures"
+              label="&sciviews.runit.refresh;"
+              tooltiptext="&sciviews.runit.refresh.tip;"
+              oncommand="sv.r.unit.getRUnitList();"/>
+            <toolbarbutton
+              id="svunit_unitlist_button"
+              class="searchPath-icon button-toolbar-a"
+              buttonstyle="pictures"
+              label="&sciviews.runit.showHide;"
+              tooltiptext="&sciviews.runit.showHide.tip;"
+              oncommand="sv.r.unit.showRUnitList();"/>
+            <checkbox
+              id="svunit-auto-tests-button"
+              label="&sciviews.runit.autoTest;"
+              tooltiptext="&sciviews.runit.autoTest.tip;"
+              checked="true"
+              oncommand="sv.r.unit.autoTest();"/>
+            <progressmeter
+              id="svunit-progress-bar"
+              mode="determined"
+              value="0%"/>
+          </hbox>
+          <vbox>
+            <listbox id="svunit_unitlist_listbox"
+                     flex="1"/>
+          </vbox>
+          <splitter
+            id="svunit_splitter"
+            collapse="before"
+            resizeafter="farthest"
+            resizebefore="closest"
+            state="open">
+            <grippy tooltiptext="&sciviews.runit.showHide.tip;"/>
+          </splitter>
+          <hbox id="svunittree-tabpanel-hbox2"
+                align="center">
+            <toolbarbutton
+              id="svunit-run-tests-button"
+              image="chrome://famfamfamsilk/skin/icons/control_play_blue.png"
+              label="&sciviews.runit.run;"
+              tooltiptext="&sciviews.runit.run.tip;"
+              orient="horizontal"
+              disabled="false"
+              oncommand="sv.r.unit.runTest();"/>
+            <label
+              id="svunit-pass-label"
+              value="Pass: -"/>
+            <label
+              id="svunit-fail-label"
+              value="Fail: -"/>
+            <label
+              id="svunit-error-label"
+              value="Errors: -"/>
+            <image
+              id="svunit-deactivated-image"
+              tooltiptext=""
+              width="16"
+              src=""/>
+          </hbox>
+          <popupset id="svunitTooltipSet">
+            <popup
+              id="svunit-tooltip"
+              type="tooltip"
+              noautohide="true"
+              multiline="true">
+              <vbox id="svunit-tooltip-container"
+                    align="left">
+                <description id="svunit-tooltip-desc"/>
+              </vbox>
+            </popup>
+          </popupset>
+          <tree id="svunit_tree"
+                flex="1"
+                seltype="single">
+            <treecols>
+              <treecol
+                id="tree_col_test_name"
+                label="&sciviews.runit.Name;"
+                primary="true"
+                flex="1"/>
+            </treecols>
+            <treechildren
+              tooltip="svunit-tooltip"
+              ondblclick="sv.r.unit.jumpToObject(event);"/>
+          </tree>
+        </vbox>
+      </vbox>
+    </tabpanel>
+  </tabpanels>
+
+  <statusbar
+    id="statusbarviewbox"
+    fullscreentoolbar="true"
+    orient="horizontal">
+    <statusbarpanel
+      id="statusbar-svunit"
+      class="statusbarpanel-iconic"
+      insertbefore="statusbar-check"
+      src="chrome://famfamfamsilk/skin/icons/help.png"
+      tooltiptext="R Unit Status: not run yet"
+      hidden="false"
+      onclick="sv.r.unit.showRUnitPane();"/>
+  </statusbar>
+</overlay>

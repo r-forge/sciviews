@@ -1,0 +1,11 @@
+<!ENTITY sciviews.runit.tab "R Unit">
+<!ENTITY sciviews.runit.tip "R unit tests">
+<!ENTITY sciviews.runit.refresh "Refresh">
+<!ENTITY sciviews.runit.refresh.tip "Refresh the unit list">
+<!ENTITY sciviews.runit.showHide "R Unit List">
+<!ENTITY sciviews.runit.showHide.tip "Show/hide the unit list">
+<!ENTITY sciviews.runit.autoTest "Auto">
+<!ENTITY sciviews.runit.autoTest.tip "Source code and run tests whenever a R file is saved">
+<!ENTITY sciviews.runit.run "Run">
+<!ENTITY sciviews.runit.run.tip "Run unit tests manually">
+<!ENTITY sciviews.runit.Name "Name">

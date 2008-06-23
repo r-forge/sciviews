@@ -10,14 +10,14 @@ port = getOption("ko.port")) {
 		return("")
     }
     # Do we need to paste data in the command?
-	if (!is.null(data)) {	
+	if (!is.null(data)) {
 		"rework" <- function(data) {
 			data <- as.character(data)
 			data <- gsub("\n", "\\\\\\\\n", data)
 			data <- paste(data, collapse = "\\\\n")
 			return(data)
 		}
-		
+
 		n <- names(data)
 		if (is.null(n)) {
 			# We assume that we replace '<<<data>>>'
@@ -29,7 +29,16 @@ port = getOption("ko.port")) {
 					rework(data[[n[i]]]), cmd)
 		}
 	}
-	con <- socketConnection(host = host, port = port, blocking = TRUE)
+	owarn <- getOption("warn")
+	options(warn = -1)	# Eliminate warnings (in case the Komodo server is not available)
+	ret <- try(con <- socketConnection(host = host, port = port, blocking = TRUE),
+		silent = TRUE)
+	options(warn = owarn)	# Restore warnings
+	if (inherits(ret, "try-error")) {
+		data <- "Komodo socket server is not available!"
+		class(data) <- "try-error"
+		return(data)
+	}
     writeLines(cmd, con)
     res <- readLines(con)
     close(con)

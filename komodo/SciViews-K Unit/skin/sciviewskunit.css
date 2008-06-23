@@ -1,0 +1,10 @@
+#svunit-progress-bar
+{
+    -moz-appearance: none !important;
+    background-color: #E6E6E6;
+}
+
+toolbarbutton
+{
+    margin: 0px 2px;
+}

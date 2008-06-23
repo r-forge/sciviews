@@ -41,10 +41,9 @@ pattern = "", group = "", path = NULL) {
 		"list",        "function",  "NULL",       "language",
 		"S3",          "S4")
 	NewGroup <- GrpTable[res$Group]
-	NewGroup[NewGroup == "vector" & (regexpr("x", res$Dims) > -1)] <- "array"
-	NewGroup[NewGroup == "array" &
-		(regexpr("^[0-9]+x[0-9]+$", res$Dims) > -1)] <- "matrix"
-	NewGroup[res$Class == "table"] <- "table"
+	NewGroup[res$Class == "matrix"] <- "matrix"
+	NewGroup[res$Class == "array"]  <- "array"
+	NewGroup[res$Class == "table"]  <- "table"
 	res$Group <- NewGroup
 
 	# Filter according to group

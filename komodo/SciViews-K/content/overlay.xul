@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+
+ The contents of this file are subject to the Mozilla Public License
+ Version 1.1 (the "License"); you may not use this file except in
+ compliance with the License. You may obtain a copy of the License at
+ http://www.mozilla.org/MPL/
+
+ Software distributed under the License is distributed on an "AS IS"
+ basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ License for the specific language governing rights and limitations
+ under the License.
+
+ The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
+
+ Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
+ ActiveState Software Inc. All Rights Reserved.
+
+ Contributor(s):
+   Philippe Grosjean
+   Romain Francois
+   ActiveState Software Inc
+
+ Alternatively, the contents of this file may be used under the terms of
+ either the GNU General Public License Version 2 or later (the "GPL"), or
+ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ in which case the provisions of the GPL or the LGPL are applicable instead
+ of those above. If you wish to allow use of your version of this file only
+ under the terms of either the GPL or the LGPL, and not to allow others to
+ use your version of this file under the terms of the MPL, indicate your
+ decision by deleting the provisions above and replace them with the notice
+ and other provisions required by the GPL or the LGPL. If you do not delete
+ the provisions above, a recipient may use your version of this file under
+ the terms of any one of the MPL, the GPL or the LGPL.
+
+ ***** END LICENSE BLOCK ***** -->
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+  <!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
+  %sciviewskDTD;
+]>
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.p.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
+
+<overlay id="sciviewskOverlay"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/e4x2dom.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
+
+  <commandset id="allcommands">
+    <command id="Tasks:svAbout" oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
+  </commandset>
+
+  <menupopup id="popup_tools">
+    <menuitem id="menu_sciviews"
+              label="SciViews-K"
+              observes="Tasks:svAbout"
+              class="menu-iconic-wide"/>
+  </menupopup>
+
+  <menupopup id="tabPicker_popup">
+    <menuitem id="show_robjects_tab"
+      insertafter="show_codebrowser_tab"
+      oncommand="uilayout_ensureTabShown('sciviews_robjects_tab', true)"
+      label="&sciviews.robjects.tab;"
+    />
+  </menupopup>
+
+  <menupopup id="menu_view_tabs_popup">
+    <menuitem id="show_robjects_tab2"
+      insertafter="show_codebrowser_tab2"
+      class="menuitem-iconic-wide"
+      oncommand="uilayout_ensureTabShown('sciviews_robjects_tab', true)"
+      label="&sciviews.robjects.tab;"
+    />
+  </menupopup>
+
+  <tabbox id="leftTabBox">
+    <tabs id="project_toolbox_tabs">
+      <tab id="sciviews_robjects_tab"
+           label="&sciviews.robjects.tab;"
+           insertafter="codebrowser_tab"
+           tooltiptext="&sciviews.robjects.tip;"
+           onclick="sv.r.objects.getPackageList()" />
+    </tabs>
+    <tabpanels id="project_toolbox_tabpanels">
+      <tabpanel flex="1" id="sciviews_robjects_tabpanel"
+                insertafter="codebrowserviewbox">
+      <vbox flex="1" id="sciviews_robjects_vbox">
+        <hbox align="center"
+              id="sciviews_robjects_hbox"
+              style="margin: 0px 2px;">
+		  <toolbarbutton
+		    id="sciviews_robjects_refresh_button"
+		    tooltiptext="&sciviews.robjects.refresh.tip;"
+		    buttonstyle="pictures"
+		    label="&sciviews.robjects.refresh;"
+		    class="refresh-icon button-toolbar-a"
+		    oncommand="sv.r.objects.getPackageList();"
+		  />
+		  <toolbarbutton
+		    id="sciviews_robjects_searchpath_button"
+		    tooltiptext="&sciviews.robjects.showHide.tip;"
+		    buttonstyle="pictures"
+		    label="&sciviews.robjects.showHide;"
+		    class="searchPath-icon button-toolbar-a"
+		    oncommand="sv.r.objects.searchpath();"
+		  />
+          <toolbarseparator style="min-width:10px;" flex="1"/>
+          <image id="sciviews_robjects_filter_icon"
+            tooltiptext="&sciviews.robjects.filter.tip;"
+            class="codeintel-search"/>
+          <textbox
+            id="sciviews_robjects_filterbox"
+            style="min-width:40px; max-width:200px; margin-right:0px;"
+            flex="1"
+            type="timed"
+            timeout="500"
+            tooltiptext="&sciviews.robjects.filter.tip;"
+            oninput="sv.r.objects.displayObjectList(false);"
+          />
+		</hbox>
+        <vbox>
+          <listbox flex="1" id="sciviews_robjects_searchpath_listbox"/>
+        </vbox>
+        <splitter
+          id="sciviews_robjects_splitter"
+          collapse="before"
+          resizeafter="closest"
+          resizebefore="closest"
+          state="collapsed">
+          <grippy tooltiptext="&sciviews.robjects.showHide.tip;"/>
+        </splitter>
+        <vbox flex="5">
+          <tree flex="1" id="sciviews_robjects_objects_tree" >
+            <treecols>
+              <treecol label="&sciviews.robjects.Name;" primary="true" flex="4"/>
+              <treecol label="&sciviews.robjects.Dims;"  flex="1"/>
+              <treecol label="&sciviews.robjects.Group;" flex="1" hidden="true" />
+              <treecol label="&sciviews.robjects.Class;" flex="1" hidden="true" />
+            </treecols>
+            <!--<treechildren id="sciviews_robjects_objects_tree_main" ondraggesture="nsDragAndDrop.startDrag(event,RObjectObserver);" />-->
+            <treechildren id="sciviews_robjects_objects_tree_main">
+              <treeitem>
+                <treerow>
+                  <treecell label="" />
+                  <treecell label="" />
+                  <treecell label="" />
+                  <treecell label="" />
+                </treerow>
+              </treeitem>
+            </treechildren>
+          </tree>
+        </vbox>
+        </vbox>
+      </tabpanel>
+    </tabpanels>
+  </tabbox>
+
+</overlay>

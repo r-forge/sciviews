@@ -1,5 +1,14 @@
 = svGUI News
 
+== Changes in svGUI 0.9-42
+* koCmd() is now more robust and do not issue a warning or an error if the
+Komodo server is not available (but the error message is returned by the
+function with a 'try-error' class, so that it can be processed by the caller)
+
+== Changes in svGUI 0.9-41
+* Correction of a bug in the first example of koCmd()
+* guiInstall() now creates a hook to koCmd(): .koCmd() in TempEnv environment
+
 == Changes in svGUI 0.9-40
 This is the first version distributed on R-forge. It is completely refactored
 from older versions (on CRAN since 2003) to make it run with SciViews-K and

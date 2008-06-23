@@ -5,6 +5,7 @@
 \alias{test}
 \alias{test<-}
 \alias{is.test}
+\alias{print.svTest}
 \alias{makeUnit}
 \alias{makeUnit.default}
 \alias{makeUnit.svTest}
@@ -15,9 +16,10 @@
 \title{ Create, attach to and manipulate test functions in R objects }
 \description{
   Test functions are functions without arguments with class 'svTest' containing
-  one or more assertions using \code{checkXXX()} functions from RUnit (see
-  examples). They can be attached to any object as a 'test' attribute, written
-  to unit files or run.
+  one or more assertions using \code{checkxxx()} functions. They can
+  be attached to any object as a 'test' attribute. They can also be transferred
+  into a more formal test unit file on disk by applying the \code{makeUnit()}
+  method.
 }
 
 \usage{
@@ -29,26 +31,48 @@ test(x)
 test(x) <- value
 is.test(x)
 
+\method{print}{svTest}(x, \dots)
+
 makeUnit(x, \dots)
 \method{makeUnit}{default}(x, name = make.names(deparse(substitute(x))),
-	dir = tempdir(), \dots)
+	dir = tempdir(), objfile = "", codeSetUp = NULL, codeTearDown = NULL, \dots)
 \method{makeUnit}{svTest}(x, name = make.names(deparse(substitute(x))),
-	dir = tempdir(), \dots)
+	dir = tempdir(), objfile = "", codeSetUp = NULL, codeTearDown = NULL, \dots)
 
 runTest(x, \dots)
-\method{runTest}{default}(x, name = make.names(deparse(substitute(x))), \dots)
-\method{runTest}{svTest}(x, name = make.names(deparse(substitute(x))), \dots)
+\method{runTest}{default}(x, name = deparse(substitute(x)), objfile = "",
+	tag = "", msg = "", \dots)
+\method{runTest}{svTest}(x, name = deparse(substitute(x)), objfile = "",
+	tag = "", msg = "", \dots)
 }
 
 \arguments{
-  \item{testFun}{ A function without arguments defining assertions for tests to
-    be transformed into a 'svTest' object }
+  \item{testFun}{ A function without arguments defining assertions (using
+    checkxxx() functions) for tests to be transformed into a 'svTest' object }
   \item{x}{ Any kind of object }
-  \item{value}{ The tests to place in the object (as 'test' attribute).
-    Could be a 'svTest' object, or a function without arguments with assertions
-	(\code{checkXXX()} functions) }
-  \item{name}{ The name of a test unit }
-  \item{dir}{ The directory where to create a test unit }
+  \item{value}{ The tests to place in the object (as 'test' attribute);
+    could be a 'svTest' object, or a function without arguments with assertions
+	(\code{checkxxx()} functions) }
+  \item{name}{ The name of a test }
+  \item{dir}{ The directory where to create the test unit file }
+    \item{objfile}{ The path to the file containing the original source code of
+    the object being tested. This argument is used to bring a context for a
+	test and allow a GUI to automatically open the source file for edition when
+	the user clicks on a test that failed or raised an error }
+  \item{codeSetUp}{ An expression with some code you want to add to the
+    \code{.setUp() } function in your unit file (this function is executed
+	before each test }
+  \item{codeTearDown}{ An expression with some code you want to add to the
+    \code{.tearDown() } function in your unit file (this function is executed
+	after each test }
+  \item{tag}{ A tag is a character string identifying a location in source code
+    files (either a test unit file, or the original source code of the tested
+	objects defined in \code{objfile}. This character string will be searched
+	by the text editor for easy location of the cursor near the corresponding`
+	test command, or near the location in the original object that is concerned
+	by this test. Use any string you want to uniquely identify your tag, both
+	in your files, and in this argument }
+  \item{msg}{ A message you want to associate with this test run }
   \item{\dots}{ Further arguments to the method (not used yet) }
 }
 
@@ -60,28 +84,30 @@ runTest(x, \dots)
   if it finds something there.
 
   \code{makeUnit()} takes an object, extract its test function and write it in
-  a sourceable test unit on the disk. RUnit functions need such files.
+  a sourceable test unit on the disk (it should be compatible with 'RUnit' test
+  unit files too).
 
-  \code{runTest()} returns a 'svUnitData' object identical (for the moment) to
-  the 'RUnitTestData' objects returned by \code{runTestSuite()} in package
-  RUnit.
+  \code{runTest()} returns invisibly a 'svTestData' object with all results
+  after running specified tests.
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{svUnit}}, \code{\link{runUnit}},
-  \code{\link[RUnit]{checkTrue}}, \code{\link[RUnit]{runTestSuite}} }
+\seealso{ \code{\link{svSuite}}, \code{\link{is.svTestData}},
+  \code{\link{check}}, \code{\link{Log}} }
 
 \examples{
+clearLog()	# Clear the log file
+
 foo <- function(x, y = 2) return(x * y)
 is.test(foo)	# No
 # Create test cases for this function
 test(foo) <- function () {
-	checkEqualsNumeric(foo(2), 4)
-	checkEqualsNumeric(foo(2, 3), 6)
+	checkEqualsNumeric(4, foo(2))
+	checkEqualsNumeric(6, foo(2, 3))
 	checkTrue(is.test(foo))
 	checkTrue(is.test(test(foo)))
-	checkIdentical(test(foo), attr(foo, "test"))
+	checkIdentical(attr(foo, "test"), test(foo))
 	checkException(foo(2, "aa"))
 	checkException(foo("bb"))
 }
@@ -99,11 +125,18 @@ file.show(unit, delete.file = TRUE)
 bar <- test(foo)
 (runTest(bar))
 
+# How fast can we run 100 times such kind of tests (700 test in total)?
+# (just an indication because in real situation with test unit files, we
+# have also the time required to source the units!)
+system.time(for (i in 1:100) runTest(foo))[3]
+
 is.svTest(test(foo))	# Yes, of course!
 # When an object without associated test is passed to runTest(), a simple
 # test containing only a DEACTIVATED entry is build
 x <- 1:10
 summary(runTest(x))
+
+summary(Log())
 
 rm(foo, bar, x)
 }

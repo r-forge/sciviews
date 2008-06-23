@@ -33,7 +33,7 @@ koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
 \value{
   Returns the results of the evaluation of the javascript code in Komodo Edit if
   \code{async = FALSE}. Note that \code{async = TRUE} is not supported yet.
-  
+
   If there is an error, or \code{cmd} is an invalid javascript code, an error
   is returned with the class \'try-error\' (see last example).
 }
@@ -48,7 +48,7 @@ koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
   (see http://www.sciviews.org/SciViews-R) in a platform independent solution
   using Komodo with a specific extension named SciViews-K and the SciViews-R
   bundle.
-  
+
   \code{koCmd()} can only talk to Komdo if the SciViews-K socket server is
   installed. This server is contained in the SciViews-K extension that you can
   download from http://www.sciviews.org/SciViews-K. See Komodo documentation to
@@ -63,7 +63,7 @@ koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
   Because of serious security issues, the SciViews-K server only allows
   connections from local clients (running on the same computer). This limitation
   would be relatively easy to eliminate, but at your own risks!
-  
+
   Data are returned to R by using the javascript function
   \code{sv.socket.serverWrite()}, see the examples bellow.
 }
@@ -79,8 +79,8 @@ koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
 # on the same machine you run R, and the socket server started and then...
 
 # Alert box in Komodo, and then reply to R
-koCmd(c('alert("Hello from R!")',
-    'sv.socket.serverWrite("Hello from OpenKomodo (" + ko.interpolate.currentFilePath() + ")")'))
+koCmd(c('alert("Hello from R!");',
+    'sv.socket.serverWrite("Hello from OpenKomodo (" + ko.interpolate.currentFilePath() + ")");'))
 
 # Open a web page wih Komodo configuration
 koCmd("ko.open.URI('about:config','browser');")

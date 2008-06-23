@@ -1,0 +1,11 @@
+<!ENTITY sciviews.robjects.tab "R Objects">
+<!ENTITY sciviews.robjects.tip "R objects explorer">
+<!ENTITY sciviews.robjects.refresh "Refresh">
+<!ENTITY sciviews.robjects.refresh.tip "Refresh R objects">
+<!ENTITY sciviews.robjects.showHide "Search path">
+<!ENTITY sciviews.robjects.showHide.tip "Show/hide search path">
+<!ENTITY sciviews.robjects.filter.tip "Filter the names of the objects">
+<!ENTITY sciviews.robjects.Name "Name">
+<!ENTITY sciviews.robjects.Dims "Dims">
+<!ENTITY sciviews.robjects.Group "Group">
+<!ENTITY sciviews.robjects.Class "Class">
