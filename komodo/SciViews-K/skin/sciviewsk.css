@@ -1,0 +1,24 @@
+.searchPath-icon{
+  list-style-image: url("chrome://komodo/skin/images/bulletlist.png");
+}
+.searchPath-icon:hover{
+  list-style-image : url("chrome://komodo/skin/images/bulletlist_hover.png");
+}
+
+.refresh-icon{
+  list-style-image: url("chrome://komodo/skin/global/images/refresh.png");
+}
+treechildren::-moz-tree-cell-text(package) { font-weight: bold; }
+treechildren::-moz-tree-image(package){ list-style-image: url("chrome://sciviewsk/skin/images/package.png"); }
+treechildren::-moz-tree-image(matrix){ list-style-image: url("chrome://sciviewsk/skin/images/matrix.png"); }
+treechildren::-moz-tree-image(array){ list-style-image: url("chrome://sciviewsk/skin/images/array.png"); }
+treechildren::-moz-tree-image(character){ list-style-image: url("chrome://sciviewsk/skin/images/character.png"); }
+treechildren::-moz-tree-image(data-frame){ list-style-image: url("chrome://sciviewsk/skin/images/data.frame.png"); }
+treechildren::-moz-tree-image(numeric){ list-style-image: url("chrome://sciviewsk/skin/images/numeric.png"); }
+treechildren::-moz-tree-image(integer){ list-style-image: url("chrome://sciviewsk/skin/images/integer.png"); }
+treechildren::-moz-tree-image(dist){ list-style-image: url("chrome://sciviewsk/skin/images/dist.png"); }
+treechildren::-moz-tree-image(ts){ list-style-image: url("chrome://sciviewsk/skin/images/ts.png"); }
+treechildren::-moz-tree-image(function){ list-style-image: url("chrome://sciviewsk/skin/images/function.png"); }
+treechildren::-moz-tree-image(list){ list-style-image: url("chrome://sciviewsk/skin/images/list.png"); }
+treechildren::-moz-tree-image(factor){ list-style-image: url("chrome://sciviewsk/skin/images/factor.png"); }
+treechildren::-moz-tree-image(logical){ list-style-image: url("chrome://sciviewsk/skin/images/logical.png"); }

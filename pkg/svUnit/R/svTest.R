@@ -1,14 +1,22 @@
 svTest <-
 function (testFun) {
 	# Create a 'svTest' object, using testFun: a function without arguments
+	# that contains one or more checkXX() assertions
 	if (!is.function(testFun))
 		stop("'testFun' must be a function or a 'svTest' object")
 	# Check that there are no arguments
 	if (length(formals(testFun)) > 0)
 		stop("'testFun' must be a function without any arguments")
-	# This is a S3 object of class 'svTest'
-	class(testFun) <- "svTest"
+	# This is a S3 object of class 'svTest', subclassing 'function'
+	class(testFun) <- c("svTest", "function")
 	return(testFun)
+}
+
+print.svTest <-
+function (x, ...) {
+	cat("svUnit test function:\n")
+	print(body(x))
+	return(invisible(x))
 }
 
 as.svTest <-
@@ -25,8 +33,8 @@ function (x) {
 
 is.test <-
 function (x) {
-	# Is this a test object (indeed a 'svTest' one)
-	# or do this object contain a non NULL 'test' attribute
+	# Is this a 'svTest'object
+	# or do this object contain a non NULL 'test' attribute?
 	return(is.svTest(x) || !is.null(attr(x, "test")))
 }
 
@@ -37,93 +45,75 @@ function (x) {
 	if (is.svTest(x)) {
 		return(x)
 	} else {
-		return(attr(x, "test"))
+		res <- attr(x, "test")
+		if (is.null(res)) {
+			# Create a dummy test with only a DEACTIVATED entry
+			res <- svTest(function() DEACTIVATED("Object has no tests!"))
+		}
+		return(res)
 	}
 }
 
 `test<-` <-
 function (x, value) {
-	# Add 'value' as a 'test' attribute to 'x' after coercing to 'svTest'
+	# Add 'value' as a 'test' attribute to 'x' after coercing it to 'svTest'
 	attr(x, "test") <- as.svTest(value)
     return(x)
 }
 
 makeUnit <-
-function(x, ...)
+function (x, ...)
 	UseMethod("makeUnit")
 
 makeUnit.default <-
-function(x, name = make.names(deparse(substitute(x))), dir = tempdir(), ...) {
+function (x, name = make.names(deparse(substitute(x))), dir = tempdir(),
+objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...) {
 	# Take an object and make a unit from the tests it contains
-	# It is saved in a file runit.<name>.R in 'dir'
-	name <- as.character(name[1])
-	dir <- as.character(dir[1])
-	# Check that dir exists (do not create it!)
-	if (!file.exists(dir) || !file.info(dir)$isdir)
-		stop("'dir' must be an existing directory")
-
-	Unit <- file.path(dir, paste("runit", name, "R", sep = "."))
-	cat("# Test unit '", name, "'\n", sep = "", file = Unit)
-
+	# It is saved in a file runit<name>.R in 'dir'
+	name <- as.character(name)[1]
+	name <- sub("^test\\.(.+)\\.$", "\\1", name)
+	Unit <- .prepareUnit(name, dir)
 	# Just get the test from the object
 	Test <- test(x)
-	# Make sure the name start with "test."
-	if (regexpr("^test\\.", name) > -1) testname <- name else
-		testname <- paste("test", name, sep = ".")
-	testname <- make.names(testname)
-	cat('\n"', testname, '" <-\n', sep = "", file = Unit, append = TRUE)
-	if (is.null(Test)) {
-		# Create a dummy test with DEACTIVATED entry
-		body <- c(
-			'function() {',
-			paste('\tDEACTIVATED("Object', deparse(substitute(x)), 'has no tests!")'),
-			'}\n')
-	} else {
-		capture.body <-
-		function(Data) {
-			rval <- NULL
-			File <- textConnection("rval", "w", local = TRUE)
-			sink(File)
-			on.exit({ sink(); close(File) })
-			dput(Data, file = File, control = "useSource")
-			on.exit()
-			sink()
-			close(File)
-			return(rval)
-		}
-		body <- capture.body(Test)
-	}
-	cat(body, sep = "\n", file = Unit, append = TRUE)
-
+	# Make required initialisation to allow locating objects
+	.writeSetUp(unit = Unit, file = objfile, code = codeSetUp)
+	.writeTearDown(unit = Unit, code = codeTearDown)
+	# Write the test function in the file
+	.writeTest(unit = Unit, objname = name, obj = x)
+	# Return the name of the test function
 	return(Unit)
 }
 
 makeUnit.svTest <-
-function(x, name = make.names(deparse(substitute(x))), dir = tempdir(), ...)
-	return(makeUnit.default(x, name = name, dir = dir, ...))
+function (x, name = make.names(deparse(substitute(x))), dir = tempdir(),
+objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...) {
+	# I know: this is not needed, but it is there in case additional work
+	# would be needed in the future, and also to show that makeUnit is
+	# designed to work on 'svTest' objects
+	return(makeUnit.default(x, name = name, dir = dir, objfile = objfile,
+		codeSetUp = codeSetUp, codeTearDown = codeTearDown, ...))
+}
 
 runTest <-
-function(x, ...)
+function (x, ...)
 	UseMethod("runTest")
 
 runTest.default <-
-function(x, name = make.names(deparse(substitute(x))), ...) {
+function (x, name = deparse(substitute(x)), objfile = "", tag = "", msg = "",
+...) {
 	# Run the test for the 'test' attribute of this object
-	Test <- test(x)
-	if (is.null(Test) || !inherits(Test, "svTest"))
-		Test <- svTest(function () DEACTIVATED("Object has no tests!"))
-	return(runTest(Test, name = name, ...))
+	name <- paste("test(", name, ")", sep = "")
+	return(runTest(test(x), name = name, objfile = objfile, tag = tag, msg = msg, ...))
 }
 
 runTest.svTest <-
-function(x, name = make.names(deparse(substitute(x))), ...) {
-	# Make a test unit with the test data
-	Unit <- makeUnit(x, name = name, ...)
-	if (is.null(Unit)) return(NULL)	# No tests to run!
-	# Make sure that the temporary test unit file is destroyed when done
-	on.exit(unlink(Unit))
-
-	# Run the tests now
-	res <- runUnit(name = name, dirs = dirname(Unit), ...)
-	return(res)
+function (x, name = deparse(substitute(x)), objfile = "", tag = "", msg = "",
+...) {
+	if (!is.svTest(x))
+		stop("'x' must be a 'svTest' object")
+		# Names of object and test
+	test <- as.character(name)[1]
+	test <- .runTest(x, test = test, objfile = objfile, tag = tag, msg = msg)
+	.Log <- Log()
+	return(invisible(.Log[[test]]))
 }

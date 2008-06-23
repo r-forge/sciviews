@@ -1,0 +1,11 @@
+<!ENTITY sciviews.runit.tab "R Unit">
+<!ENTITY sciviews.runit.tip "Tests unitŽ de R">
+<!ENTITY sciviews.runit.refresh "RŽactualiser">
+<!ENTITY sciviews.runit.refresh.tip "RŽactualiser le liste d'unitŽs">
+<!ENTITY sciviews.runit.showHide "Liste d'unitŽs R">
+<!ENTITY sciviews.runit.showHide.tip "Montrer/cacher la liste d'unitŽs">
+<!ENTITY sciviews.runit.autoTest "Auto">
+<!ENTITY sciviews.runit.autoTest.tip "Sourcer le code et lancer les tests ˆ chaque sauvegarde de fichier R">
+<!ENTITY sciviews.runit.run "Lancer">
+<!ENTITY sciviews.runit.run.tip "Lancer les tests manuellement">
+<!ENTITY sciviews.runit.Name "Nom">

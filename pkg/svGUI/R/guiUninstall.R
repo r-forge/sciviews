@@ -5,6 +5,8 @@ function() {
 	rmTemp(".guiObjBrowse")
 	rmTemp(".guiObjInfo")
 	rmTemp(".guiObjMenu")
+
+	rmTemp(".koCmd")
 	
 	# Unregister the TaskCallback
 	# Use getTaskCallbackNames() to know if some tasks are registered

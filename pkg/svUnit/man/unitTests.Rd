@@ -13,21 +13,21 @@
 
 \examples{
 # Make sure to clear log of errors and failures first
-unitClear()
+clearLog()
 
 # Run all test units defined in the 'svUnit' package
-(runTest(svUnit("package:svUnit"), "svUnit"))
+(runTest(svSuite("package:svUnit"), "svUnit"))
 
 \donttest{
 # Tests to run with example() but not with R CMD check
 # Run all test units defined in the /unitTests/VirtualClass subdir of 'svUnit'
-(runTest(svUnit("package:svUnit (VirtualClass)"), "VirtualClass"))
+(runTest(svSuite("package:svUnit (VirtualClass)"), "VirtualClass"))
 }
 
 \dontrun{
 # Tests to present in ?unitTests.svUnit but to never run automatically
 # Run all currently loaded test cases and test suites of all loaded packages
-(runTest(svUnitList(), "AllTests"))
+(runTest(svSuiteList(), "AllTests"))
 }
 
 \dontshow{
@@ -35,8 +35,8 @@ unitClear()
 # or run with example(unitTests.svUnit)
 }
 
-# Check errors at the end of the process (needed for R CMD check)
-unitError()
+# Check errors at the end of the process (needed to interrupt R CMD check)
+errorLog()
 }
 
 \keyword{utilities}

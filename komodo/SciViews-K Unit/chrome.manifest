@@ -1,0 +1,7 @@
+content sciviewskunit jar:sciviewskunit.jar!/content/ xpcnativewrappers=yes
+overlay chrome://komodo/content/komodo.xul chrome://sciviewskunit/content/overlay.xul
+
+locale  sciviewskunit       en-GB     jar:sciviewskunit.jar!/locale/en-GB/
+locale  sciviewskunit       fr-FR     jar:sciviewskunit.jar!/locale/fr-FR/
+
+skin    sciviewskunit     classic/1.0 jar:sciviewskunit.jar!/skin/
