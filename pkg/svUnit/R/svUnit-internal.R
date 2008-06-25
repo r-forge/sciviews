@@ -211,13 +211,13 @@ printTest = getOption("svUnit.printTest")) {
 .prepareUnit <-
 function (name, dir) {
 	# Prepare for writing a test unit file
-	dir <- as.character(dir)[1]
+	dir <- gsub("\\\\", "/", as.character(dir)[1])
 	# Check that dir exists (do not create it!)
 	if (!file.exists(dir) || !file.info(dir)$isdir)
 		stop("'dir' must be an existing directory")
 	# If dir is tempdir(), then, make sure there are no other runit*.R files
 	# left (should not!) - One can store only one unit at a time in tempdir()!
-	if (dir == tempdir()) {
+	if (dir == gsub("\\\\", "/", tempdir())) {
 		runitfiles <- list.files(dir, pattern = "^runit.*\\.[r|R]$",
 			full.names = TRUE)
 		unlink(runitfiles)

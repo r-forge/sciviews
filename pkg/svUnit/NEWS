@@ -1,5 +1,13 @@
 = svUnit News
 
+== svUnit 0.6-1
+* Correction of a bug in Windows relative to path separators \\ versus /,
+especially usinf tempdir().
+
+* Correction of a bug that prevented to list runit*.R files in the unitTests
+subdirectory of a package under Windows.
+
+
 == svUnit 0.6-0
 * The package does not depends any more from RUnit. It has his own checkXXX()
 function (they are compatible with those in RUnit 0.4.17, except that here the

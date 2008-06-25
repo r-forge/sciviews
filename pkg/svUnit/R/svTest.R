@@ -72,6 +72,8 @@ objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...) {
 	# It is saved in a file runit<name>.R in 'dir'
 	name <- as.character(name)[1]
 	name <- sub("^test\\.(.+)\\.$", "\\1", name)
+	# Under Windows, we transform \\ into /
+	dir <- gsub("\\\\", "/", as.character(dir)[1])
 	Unit <- .prepareUnit(name, dir)
 	# Just get the test from the object
 	Test <- test(x)
