@@ -477,10 +477,7 @@ if (typeof(sv.r.unit) == 'undefined') sv.r.unit = {
 				// If an R source file is changed; if auto mode, source it...
 				if (data.substr(-2, 2).toUpperCase() == ".R" &
 					sv.r.unit.isAutoTest()) {
-					// If data starts with "file://", eliminate this
-					if (data.substr(0, 7) == "file://")
-						data = data.substr(7);
-					sv.r.eval('source("' + data + '")');
+					sv.r.eval('source("' + ko.uriparse.URIToLocalPath(data).replace(/\\/g, "/") + '")');
 					// ... then, run the selected test
 					sv.r.unit.runTest();
 				}
