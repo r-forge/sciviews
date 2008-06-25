@@ -17,12 +17,11 @@ guiUninstall()
 }
 
 \details{
-  The minimum instruction to set up everything in R to communication with Komodo
-  and SciViews-K extension installed is to use:
-  \code{option(ko.serve = 8888); require(svGUI)}. When the \code{ko.serve}
-  option is set, svGUI load svSocket, starts the socket server litening to the
-  port you give in \code{ko.serve} (8888 by default), and install the hooks and
-  callbacks required to fully communicate with Komodo.
+  The minimum instruction to install the communication with Komodo/SciViews-K
+  is to use: \code{options(ko.serve = 8888); require(svGUI)}. When the \code{ko.serve}
+  option is set, svGUI loads svSocket, starts the socket server litening to the
+  port you provide (8888 by default), and install the hooks and callbacks
+  required to fully communicate with Komodo.
 
   Before loading svGUI, you can also set \code{option(ko.port = 7052)} or
   another port number where the Komodo SciViews-K server is listening (7052 is

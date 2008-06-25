@@ -183,6 +183,8 @@ objfile = "", codeSetUp = NULL, codeTearDown = NULL, pos = .GlobalEnv, ...) {
 	if (!is.svSuite(x))
 		stop("'x' must be a 'svSuite' object")
 	name <- as.character(name)[1]
+	# Under Windows, we transform \\ into /
+	dir <- gsub("\\\\", "/", as.character(dir)[1])
 	# Collect all items that are not 'package:...' or 'dir:...'
 	isObj <- regexpr("^[package:|dir:]", x) == -1
 	Objs <- sub("^test[(](.+)[)]$", "\\1", x[isObj])
@@ -216,8 +218,12 @@ function(x, name = make.names(deparse(substitute(x))), ...) {
 		Subdirs[Subdirs == Pkgs] <- ""
 		Pkgs <- sub("^package:([^ ]+).*$", "\\1", Pkgs)
 		for (i in 1:length(Pkgs)) {
+			if (Subdirs[i] == "") {
+			dir <- system.file(package = Pkgs[i], "unitTests")
+		} else {
 			dir <- system.file(package = Pkgs[i], "unitTests", Subdirs[i])
-				if (dir != "") dirs <- c(dirs, dir)
+		}
+			if (dir != "") dirs <- c(dirs, dir)
 		}
 	}
 
@@ -244,6 +250,8 @@ function(x, name = make.names(deparse(substitute(x))), ...) {
 		files <- c(files, list.files(dir, pattern = "^runit.+\\.[rR]$",
 			full.names = TRUE))
 	if (length(files) == 0) return(NULL)	# Nothing to run!
+	# Under Windows, transform all \\ into / in the file names
+	files <- gsub("\\\\", "/", files)
 	# Run this test suite now, that is, source each file in .TestSuiteEnv
 	# and run each testxxx function in it, using .setUp and .tearDown too
 	# Record the list of tests

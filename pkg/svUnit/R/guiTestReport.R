@@ -74,16 +74,17 @@ function (object, sep = "\t", path = NULL, ...) {
 		Types <- rep("units in packages", length(Units))
 		Types[Units == ""] <- "other objects"
 		### TODO: include also dirs!
-		Dir1 <- dirname(Units)
+		Dir1 <- gsub("\\\\", "/", dirname(Units))
 		Dir2 <- dirname(Dir1)
 		Dir3 <- dirname(Dir2)
-		Types[Dir1 == tempdir()] <- "objects in .GlobalEnv"
+		TempDir <- gsub("\\\\", "/", tempdir())
+		Types[Dir1 == TempDir] <- "objects in .GlobalEnv"
 		Types[tolower(basename(Dir2)) == "inst" ||
 			tolower(basename(Dir3)) == "inst"] <- "units in sources"
 		# Keep only "*" in Units
 		Units <- basename(Units)
 		Units[regexpr("^runit.+\\.[rR]$", Units) == -1] <- ""
-		Units[Dir1 == tempdir()] <- ""	# No second level for objects in .GlobalEnv
+		Units[Dir1 == TempDir] <- ""	# No second level for objects in .GlobalEnv
 		Units <- sub("^runit(.+)\\.[rR]$", "\\1", Units)
 		change <- Units != ""
 		Units[change] <- paste(">unit", Units[change])
