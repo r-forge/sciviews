@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+
+ The contents of this file are subject to the Mozilla Public License
+ Version 1.1 (the "License"); you may not use this file except in
+ compliance with the License. You may obtain a copy of the License at
+ http://www.mozilla.org/MPL/
+
+ Software distributed under the License is distributed on an "AS IS"
+ basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ License for the specific language governing rights and limitations
+ under the License.
+
+ The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
+
+ Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
+ ActiveState Software Inc. All Rights Reserved.
+
+ Contributor(s):
+   Romain Francois
+
+ Alternatively, the contents of this file may be used under the terms of
+ either the GNU General Public License Version 2 or later (the "GPL"), or
+ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ in which case the provisions of the GPL or the LGPL are applicable instead
+ of those above. If you wish to allow use of your version of this file only
+ under the terms of either the GPL or the LGPL, and not to allow others to
+ use your version of this file under the terms of the MPL, indicate your
+ decision by deleting the provisions above and replace them with the notice
+ and other provisions required by the GPL or the LGPL. If you do not delete
+ the provisions above, a recipient may use your version of this file under
+ the terms of any one of the MPL, the GPL or the LGPL.
+
+ ***** END LICENSE BLOCK ***** -->
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+  <!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
+  %sciviewskDTD;
+]>
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.p.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk_console.css" type="text/css"?>
+
+<overlay id="sciviewskRconsoleOverlay"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/e4x2dom.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/console.js"/>
+
+  <menupopup id="tabPicker_popup">
+    <menuitem id="show_rconsole_tab"
+      oncommand="uilayout_ensureTabShown('sciviews_rconsole_tab', true)"
+      label="&sciviews.console.tab;"
+    />
+  </menupopup>
+
+  <menupopup id="menu_view_tabs_popup">
+    <menuitem id="show_rconsole_tab2"
+      class="menuitem-iconic-wide"
+      oncommand="uilayout_ensureTabShown('sciviews_rconsole_tab', true)"
+      label="&sciviews.console.tab;"
+    />
+  </menupopup>
+
+  <tabbox id="output_area">
+    <tabs id="output_tabs">
+      <tab id="sciviews_rconsole_tab"
+           label="&sciviews.console.tab;"
+           tooltiptext="&sciviews.console.tip;"
+           onclick="" />
+    </tabs>
+    <tabpanels id="output_tabpanels">
+      <tabpanel flex="1" id="sciviews_rconsole_tabpanel">
+  
+      
+      <vbox flex="1" id="sciviews_rconsole_console_vbox"> 
+      
+        <richlistbox id="sciviews_rconsole_console_results" flex="1" />
+        
+        <splitter><grippy/></splitter>
+        
+        
+        <hbox>
+          <!-- TODO: replace this with a scintilla editor, would we get syntax highlighting for free? -->
+          <!-- TODO: needs a bit of styling -->
+          
+        <!-- here is the input area where R code is typed and sent to the console -->
+        <textbox id="sciviews_rconsole_console_input" cols="20"
+                   onkeypress="sv.r.console.handleConsoleInputKey(event)"
+                   flex="1" multiline="true" rows="2" />
+        </hbox>
+ 
+      </vbox>
+      
+      
+      <tabbox flex="1">
+        <tabs>
+          <tab label="history" id="sciviews_rconsole_console_tab_history" />
+          <tab label="help"  id="sciviews_rconsole_console_tab_help" />
+        </tabs>
+        <tabpanels flex="1">
+          
+          <tabpanel>
+            <vbox flex="1">
+              <hbox>
+                <textbox
+                id="sciviews_rconsole_history_filter"
+                style="min-width:40px; margin-right:0px;"
+                type="timed"
+                timeout="500"
+                flex="1"
+                oninput="sv.r.console.refreshHistory();"
+                multiline="false" rows="1"/>
+              </hbox>  
+              <richlistbox id="sciviews_rconsole_console_history_richlistbox" flex="1"/>
+            </vbox>
+          </tabpanel>
+          
+          <tabpanel>
+            <vbox flex="1"> 
+              <browser id="sciviews_rconsole_browser" src="" flex="1"/>
+            </vbox>
+          </tabpanel>
+        
+        </tabpanels>  
+      </tabbox>
+      
+      
+     </tabpanel> 
+    </tabpanels>
+  </tabbox>
+
+</overlay>
