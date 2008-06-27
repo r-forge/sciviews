@@ -26,3 +26,30 @@
   margin-bottom: 10px;
   margin-top: 0px;
 }
+
+#sciviews_rconsole_console_input{
+  -moz-appearance: none;
+  border-top: solid 1px #666666;
+  border-bottom:none;
+  border-left: none;
+  border-right:none;
+  font-family: Courier New, monospace;
+  font-weight: bold;
+  background-color: #dddddd ;
+}
+
+#sciviews_rconsole_console_splitter{
+  -moz-appearance: none;
+  background-color: #dddddd ;
+}
+
+#sciviews_rconsole_history_filter{
+  -moz-appearance: none;
+  background-image: url("chrome://sciviewsk/skin/images/filter.png");
+  background-position: left ;
+  background-repeat: no-repeat;
+  padding-left: 20px;
+  margin-top: 0px;
+  border:1px solid gray;
+  font-weight:bold;
+}
