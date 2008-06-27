@@ -1,0 +1,28 @@
+.historyPre{
+  margin:0px;
+  padding:0px;
+  font-family: Courier new, monospace;
+}
+
+.historyListitem{
+  border-bottom: solid #999999 1px;
+}
+
+.historyListitem[selected="true"]{
+  background-color: inherit;
+  color: yellow;
+}
+
+.consoleInput{
+  border-top: 1px solid #666666 ;
+  color: blue;
+  font-family:Courier New, monospace;
+  margin:0px;
+}
+
+.consoleOutput{
+  color:black;
+  font-family:Courier New, monospace;
+  margin-bottom: 10px;
+  margin-top: 0px;
+}
