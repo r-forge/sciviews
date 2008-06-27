@@ -89,7 +89,7 @@
       
         <richlistbox id="sciviews_rconsole_console_results" flex="1" />
         
-        <splitter><grippy/></splitter>
+        <splitter id="sciviews_rconsole_console_splitter" ><grippy/></splitter>
         
         
         <hbox>
@@ -122,7 +122,8 @@
                 timeout="500"
                 flex="1"
                 oninput="sv.r.console.refreshHistory();"
-                multiline="false" rows="1"/>
+                multiline="false" rows="1"
+                tooltiptext="&sciviews.console.history.filter.tip;" />
               </hbox>  
               <richlistbox id="sciviews_rconsole_console_history_richlistbox" flex="1"/>
             </vbox>
