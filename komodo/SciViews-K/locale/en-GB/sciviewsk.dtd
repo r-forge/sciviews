@@ -9,3 +9,6 @@
 <!ENTITY sciviews.robjects.Dims "Dims">
 <!ENTITY sciviews.robjects.Group "Group">
 <!ENTITY sciviews.robjects.Class "Class">
+<!ENTITY sciviews.console.tab "R Console" >
+<!ENTITY sciviews.console.tip "R Console" >
+<!ENTITY sciviews.console.history.filter.tip "Filter the history with a regular expression" >
