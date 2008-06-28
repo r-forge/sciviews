@@ -9,3 +9,6 @@
 <!ENTITY sciviews.robjects.Dims "Dims">
 <!ENTITY sciviews.robjects.Group "Groupe">
 <!ENTITY sciviews.robjects.Class "Classe">
+<!ENTITY sciviews.console.tab "Console R" >
+<!ENTITY sciviews.console.tip "Console R" >
+<!ENTITY sciviews.console.history.filter.tip "Filtrer l'historique des commandes" >
