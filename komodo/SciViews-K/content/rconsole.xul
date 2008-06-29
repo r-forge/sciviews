@@ -85,7 +85,7 @@
       <tabpanel flex="1" id="sciviews_rconsole_tabpanel">
   
       
-      <vbox flex="1" id="sciviews_rconsole_console_vbox"> 
+      <vbox id="sciviews_rconsole_console_vbox" flex="1" style="margin-left:10px;"> 
       
         <richlistbox id="sciviews_rconsole_console_results" flex="1" />
         
@@ -98,43 +98,63 @@
           
         <!-- here is the input area where R code is typed and sent to the console -->
         <textbox id="sciviews_rconsole_console_input" cols="20"
-                   onkeypress="sv.r.console.handleConsoleInputKey(event)"
+                   onkeypress="sv.r.console.handleConsoleKeyPress(event)"
+                   onkeyup="sv.r.console.handleConsoleKeyUp(event)"
                    flex="1" multiline="true" rows="2" />
         </hbox>
  
       </vbox>
       
+      <splitter><grippy/></splitter>
       
       <tabbox flex="1">
         <tabs>
+          <tab label="completion" id="sciviews_rconsole_console_tab_completion" />
           <tab label="history" id="sciviews_rconsole_console_tab_history" />
-          <tab label="help"  id="sciviews_rconsole_console_tab_help" />
         </tabs>
         <tabpanels flex="1">
           
+          <!-- completion tab -->
+          <!-- TODO: use this as a tooltip -->
           <tabpanel>
-            <vbox flex="1">
-              <hbox>
-                <textbox
-                id="sciviews_rconsole_history_filter"
-                style="min-width:40px; margin-right:0px;"
-                type="timed"
-                timeout="500"
-                flex="1"
-                oninput="sv.r.console.refreshHistory();"
-                multiline="false" rows="1"
-                tooltiptext="&sciviews.console.history.filter.tip;" />
-              </hbox>  
-              <richlistbox id="sciviews_rconsole_console_history_richlistbox" flex="1"/>
-            </vbox>
+              <vbox flex="1">
+                <tree flex="1">
+                  <treecols>
+                    <treecol primary="true" label="completion" flex="4"/>
+                    <treecol label="description" flex="1"/>
+                  </treecols>
+                  <treechildren id="sciviews_rconsole_completion_tree_main">
+                    <treeitem>
+                      <treerow>
+                        <treecell label="" />
+                        <treecell label="" />
+                      </treerow>
+                    </treeitem>
+                  </treechildren> 
+                </tree>  
+              </vbox>
+              
           </tabpanel>
           
+          <!-- history tab -->
           <tabpanel>
-            <vbox flex="1"> 
-              <browser id="sciviews_rconsole_browser" src="" flex="1"/>
-            </vbox>
+              <vbox flex="1">
+                <hbox>
+                  <label>history</label>
+                  <textbox
+                  id="sciviews_rconsole_history_filter"
+                  style="min-width:40px; margin-right:0px; max-width:100px;"
+                  type="timed"
+                  timeout="500"
+                  flex="1"
+                  oninput="sv.r.console.refreshHistory();"
+                  multiline="false" rows="1"
+                  tooltiptext="&sciviews.console.history.filter.tip;" />
+                </hbox>  
+                <richlistbox id="sciviews_rconsole_console_history_richlistbox" flex="1"/>
+              </vbox>
           </tabpanel>
-        
+          
         </tabpanels>  
       </tabbox>
       
