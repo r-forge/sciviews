@@ -155,6 +155,15 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 
 	# Clean up .GlobalEnv
 	rm(minVersion, res)
+
+	# Make sure Komodo is started now
+	# Note: in Mac OS X, you have to create the symbolic link manually as explained in the Komodo Help with:
+	# sudo ln -s "/Applications/Komodo Edit.app/Contents/MacOS/komodo" /usr/local/bin/komodo
+	# Or the script will complain with: /bin/sh: line 1: komodo: command not found.
+	system("komodo", wait = FALSE)
+
+	# Make sure to use Komodo as your R editor
+	
 }
 
 ### SciViews install end ###
