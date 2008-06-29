@@ -4,7 +4,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // sv.tools.strings.replaceCRLF(str, code); // Replace LF and CR by 'code'
-// sv.tools.strings.removeLastCRLF(str); // Remove last CR and or LF
+// sv.tools.strings.removeLastCRLF(str);    // Remove last CR and or LF
+// sv.tools.strings.toRegex;                // changes a string to a regular expression
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.tools.strings' namespace
@@ -31,5 +32,19 @@ sv.tools.strings.replaceCRLF = function(str, code) {
 sv.tools.strings.removeLastCRLF = function(str) {
 	str = str.replace( /[\n\r]{1,2}$/, "");
     return(str);
+}
+
+// changes a string to a regular expression
+sv.tools.strings.toRegex = function(str){
+	// round brackets
+	str = str.replace( "(", "\\(" );
+	str = str.replace( ")", "\\)" );
+	
+	// square brackets
+	str = str.replace( "[", "\\[" );
+	str = str.replace( "]", "\\]" );
+	
+	// TODO: anything else
+	return( str ) ;
 }
 
