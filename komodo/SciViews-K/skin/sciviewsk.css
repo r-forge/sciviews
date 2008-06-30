@@ -9,6 +9,7 @@
   list-style-image: url("chrome://komodo/skin/global/images/refresh.png");
 }
 treechildren::-moz-tree-cell-text(package) { font-weight: bold; }
+treechildren::-moz-tree-image{ list-style-image: url("chrome://sciviewsk/skin/images/empty.png"); }
 treechildren::-moz-tree-image(package){ list-style-image: url("chrome://sciviewsk/skin/images/package.png"); }
 treechildren::-moz-tree-image(matrix){ list-style-image: url("chrome://sciviewsk/skin/images/matrix.png"); }
 treechildren::-moz-tree-image(array){ list-style-image: url("chrome://sciviewsk/skin/images/array.png"); }
