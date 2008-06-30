@@ -6,12 +6,12 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
     if (nchar(token, type = "chars") < minlength) return(invisible(NULL))
     utils:::.completeToken()
     comps <- utils:::.retrieveCompletions()
-    out <- matrix( "", nrow = length(comps), ncol = 2 )
+    out <- matrix( "", nrow = length(comps), ncol = 3 )
     out[,1] <- comps
     
     ### deal with packages (completions ending with ::)
     if(length(test.pack <- grep("::", comps) )){
-      out[ test.pack,2] <- sapply( sub("::", "", comps[test.pack]), packageDescription, fields = "Description"  ) 
+      out[ test.pack,3] <- sapply( sub("::", "", comps[test.pack]), packageDescription, fields = "Description"  ) 
     }
     
     ### deal with argument completions (ending with =)
@@ -20,9 +20,10 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
       fguess <- utils:::.CompletionEnv[["fguess"]]
       pack <- sub( "^package:", "", find( fguess )[1] )
       if(pack == ".GlobalEnv" ) {
-        out[ test.arg,2] <- ""
+        out[ test.arg,3] <- ""
       } else{
-        out[ test.arg,2] <- paste( "[", fguess, "] ", .extract_argument_description( pack, fguess, arg), sep = "" )
+        out[ test.arg,2] <- fguess
+        out[ test.arg,3] <- .extract_argument_description( pack, fguess, arg)
       }
     }
     
@@ -48,7 +49,8 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
           })
         }
       }
-      out[ test.fun, 2 ] <- desc.fun
+      out[ test.fun, 2 ] <- packs
+      out[ test.fun, 3 ] <- desc.fun
     }
     
     out
