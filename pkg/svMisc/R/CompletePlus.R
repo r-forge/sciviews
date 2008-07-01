@@ -1,4 +1,4 @@
-CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlength = 2 ) {
+CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlength = 2, simplify = FALSE ) {
     utils:::.assignLinebuffer(linebuffer)
     utils:::.assignEnd(cursorPosition)
     utils:::.guessTokenFromLine()
@@ -53,7 +53,11 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
       out[ test.fun, 3 ] <- desc.fun
     }
     
-    out
+    if( simplify ){
+      cat( apply( out, 1, paste, collapse="," ), sep = "\n" )
+    } else {
+      out
+    }
     
 }
 
