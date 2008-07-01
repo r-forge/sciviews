@@ -1,4 +1,5 @@
 import(utils)
+import(tools)
 importFrom(methods, getMethods, isGeneric, showMethods)
 
 export(	addActions,
@@ -14,6 +15,7 @@ export(	addActions,
 		clipsource,
 		compareRVersion,
 		Complete,
+    CompletePlus,
 		def,
 		existsTemp,
 		getEnvironment,
