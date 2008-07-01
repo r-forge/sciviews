@@ -1,5 +1,9 @@
 = svMisc News
 
+== Changes in svMisc 0.9-43
+
+* CompletePlus() created to obtain information on the completion possibilities
+
 == Changes in svMisc 0.9-42
 
 * objList() did not place each item in a line when result is written in a file
