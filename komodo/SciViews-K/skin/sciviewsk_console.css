@@ -53,3 +53,14 @@
   border:1px solid gray;
   font-weight:bold;
 }
+
+#sciviews_rconsole_completion_filter{
+  -moz-appearance: none;
+  background-image: url("chrome://sciviewsk/skin/images/filter.png");
+  background-position: left ;
+  background-repeat: no-repeat;
+  padding-left: 20px;
+  margin-top: 0px;
+  border:1px solid gray;
+  font-weight:bold;
+}
