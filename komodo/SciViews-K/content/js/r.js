@@ -94,10 +94,11 @@ sv.r.evalHidden = function(cmd, earlyExit) {
 //   " koCmd('alert(\"koCmd is back\");')", earlyExit = true);
 
 // Evaluate R expression and call procfun in Komodo with the result as argument
-sv.r.evalCallback = function(cmd, procfun) {
+// context might be used to pass additional data as the second argument of procfun
+sv.r.evalCallback = function(cmd, procfun, context) {
 	// Evaluate a command in hidden mode (contextual help, calltip, etc.)
 	// and call 'procfun' at the end of the evaluation
-	var res = sv.socket.rCommand("<<<h>>>" + cmd, false, null, procfun);
+	var res = sv.socket.rCommand("<<<h>>>" + cmd, false, null, procfun, context);
 	return(res);
 }
 

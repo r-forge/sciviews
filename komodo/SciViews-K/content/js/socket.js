@@ -117,12 +117,12 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 }
 
 // Send an R command through the socket
-sv.socket.rCommand = function(cmd, echo, echofun, procfun) {
+sv.socket.rCommand = function(cmd, echo, echofun, procfun, context) {
 	cmd = sv.tools.strings.replaceCRLF(cmd, "<<<n>>>");
 	if (procfun == null) {	// Do nothing at the end
 		var listener = { finished: function(data) {} }
 	} else {	// Call procfun at the end
-		var listener = { finished: function(data) { procfun(data); } }
+		var listener = { finished: function(data) { procfun(data, context); } }
 	}
 	// TODO: deal with error checking for this command
 	var port = sv.prefs.getString("sciviews.client.socket", "8888");
