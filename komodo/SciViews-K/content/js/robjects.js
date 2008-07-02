@@ -214,6 +214,14 @@ sv.r.objects.__removePackageFromSelection = function(p) {
 
 // Make sure to check .GlobalEnv at the beginning
 // TODO: persitently save user's selection using Komodo mechanism
-sv.r.objects.packageSelected(".GlobalEnv", true);
+// sv.r.objects.packageSelected(".GlobalEnv", true);
 
 sv.r.objects.debug = false ;
+
+sv.robjects.refreshPackage = function(pack){
+  if( sv.r.objects.__isSelected(pack) ){
+    // TODO: there is probably a better way
+    sv.r.objects.packageSelected(".GlobalEnv", false);
+    sv.r.objects.packageSelected(".GlobalEnv", true);
+  }
+}
