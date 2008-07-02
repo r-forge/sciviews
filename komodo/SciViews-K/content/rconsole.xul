@@ -79,7 +79,7 @@
       <tab id="sciviews_rconsole_tab"
            label="&sciviews.console.tab;"
            tooltiptext="&sciviews.console.tip;"
-           onclick="" />
+           onclick="sv.r.console.init();" />
     </tabs>
     <tabpanels id="output_tabpanels">
       <tabpanel flex="1" id="sciviews_rconsole_tabpanel">
@@ -109,7 +109,7 @@
       
       <tabbox flex="1">
         <tabs>
-          <tab label="completion" id="sciviews_rconsole_console_tab_completion" />
+          <tab label="completion" id="sciviews_rconsole_console_tab_completion"  />
           <tab label="history" id="sciviews_rconsole_console_tab_history" />
         </tabs>
         <tabpanels flex="1">
@@ -118,23 +118,38 @@
           <!-- TODO: use this as a tooltip -->
           <tabpanel>
               <vbox flex="1">
+                <hbox>
+                  <label value="&sciviews.rconsole.completion.settings.label;" 
+                        tooltiptext="&sciviews.rconsole.completion.settings.tip;"  />
+                  <checkbox label="&sciviews.rconsole.completion.cb.arguments;"
+                            id="sciviews_rconsole_completion_cb_arguments"
+                            tooltiptext="&sciviews.rconsole.completion.cb.arguments.tip;"
+                            onclick="sv.r.console.updateCompletionChoiceSetting(event, 'arguments' )" />
+                  <checkbox label="&sciviews.rconsole.completion.cb.functions;"
+                            id="sciviews_rconsole_completion_cb_functions"
+                            tooltiptext="&sciviews.rconsole.completion.cb.functions.tip;"
+                            onclick="sv.r.console.updateCompletionChoiceSetting(event, 'functions' )"/>
+                  <checkbox label="&sciviews.rconsole.completion.cb.packages;"
+                            id="sciviews_rconsole_completion_cb_packages"
+                            tooltiptext="&sciviews.rconsole.completion.cb.packages.tip;"
+                            onclick="sv.r.console.updateCompletionChoiceSetting(event, 'packages' )" />
+                  <checkbox label="&sciviews.rconsole.completion.cb.history;"
+                            id="sciviews_rconsole_completion_cb_history"
+                            tooltiptext="&sciviews.rconsole.completion.cb.history.tip;"
+                            onclick="sv.r.console.updateCompletionChoiceSetting(event, 'history' )"/>
+                </hbox>  
                 <tree flex="1">
                   <treecols>
-                    <treecol primary="true" label="completion" flex="4"/>
-                    <treecol label="description" flex="1"/>
+                    <treecol primary="true" label="completion" flex="1"/>
+                    <treecol label="position" flex="1"/>
+                    <treecol label="description" flex="5"/>
                   </treecols>
-                  <treechildren id="sciviews_rconsole_completion_tree_main">
-                    <treeitem>
-                      <treerow>
-                        <treecell label="" />
-                        <treecell label="" />
-                      </treerow>
-                    </treeitem>
-                  </treechildren> 
+                  <treechildren id="sciviews_rconsole_completion_tree_main" /> 
                 </tree>  
               </vbox>
               
           </tabpanel>
+          
           
           <!-- history tab -->
           <tabpanel>
