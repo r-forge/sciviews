@@ -12,3 +12,16 @@
 <!ENTITY sciviews.console.tab "Console R" >
 <!ENTITY sciviews.console.tip "Console R" >
 <!ENTITY sciviews.console.history.filter.tip "Filtrer l'historique des commandes" >
+
+<!ENTITY sciviews.rconsole.completion.cb.arguments "arguments" >
+<!ENTITY sciviews.rconsole.completion.cb.functions "fonctions" >
+<!ENTITY sciviews.rconsole.completion.cb.packages "packages" >
+<!ENTITY sciviews.rconsole.completion.cb.history "historique" >
+
+<!ENTITY sciviews.rconsole.completion.cb.arguments.tip "Afficher les arguments de fonctions" >
+<!ENTITY sciviews.rconsole.completion.cb.functions.tip "Afficher les fonctions" >
+<!ENTITY sciviews.rconsole.completion.cb.packages.tip "Afficher les packages" >
+<!ENTITY sciviews.rconsole.completion.cb.history.tip "Afficher les commandes de l'historique" >
+
+<!ENTITY sciviews.rconsole.completion.settings.label "Reglages" >
+<!ENTITY sciviews.rconsole.completion.settings.tip "Choix du type de completions affichees" >
