@@ -37,12 +37,12 @@ sv.tools.strings.removeLastCRLF = function(str) {
 // changes a string to a regular expression
 sv.tools.strings.toRegex = function(str){
 	// round brackets
-	str = str.replace( "(", "\\(" );
-	str = str.replace( ")", "\\)" );
+	str = str.replace( /\(/g, "\\(" );
+	str = str.replace( /\)/g, "\\)" );
 	
 	// square brackets
-	str = str.replace( "[", "\\[" );
-	str = str.replace( "]", "\\]" );
+	str = str.replace( /\[/g, "\\[" );
+	str = str.replace( /\]/g, "\\]" );
 	
 	// TODO: anything else
 	return( str ) ;
