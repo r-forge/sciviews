@@ -1,13 +1,39 @@
-CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlength = 2, simplify = FALSE ) {
-    utils:::.assignLinebuffer(linebuffer)
-    utils:::.assignEnd(cursorPosition)
-    utils:::.guessTokenFromLine()
-    token <- utils:::.CompletionEnv[["token"]]
-    if (nchar(token, type = "chars") < minlength) return(invisible(NULL))
-    utils:::.completeToken()
-    comps <- utils:::.retrieveCompletions()
+CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlength = 2, simplify = FALSE,
+  types = "arguments,functions,packages" ) {
+    
+    types <- strsplit( types, "," )[[1]]
+    
+    ### call the rcompgen API to get completions
+    if (nchar(linebuffer, type = "chars") < minlength) return(invisible(NULL))
+    .assignLinebuffer(linebuffer)
+    .assignEnd(cursorPosition)
+    .guessTokenFromLine()
+    token <- .CompletionEnv[["token"]]
+    .completeToken()
+    comps <- .retrieveCompletions()
+    if ( !length(comps) ) return(invisible(NULL))
+    
+    ### restrict the completion for which information is gathered (speed things up)
+    if( ! "arguments" %in% types ){
+      comps <- comps[ regexpr("=$", comps) < 0 ]
+    }
+    if ( !length(comps) ) return(invisible(NULL))
+    
+    if( ! "packages" %in% types ){
+      comps <- comps[ regexpr("::$", comps) < 0 ]
+    }
+    if ( !length(comps) ) return(invisible(NULL))
+    
+    if( ! "functions" %in% types ){
+      comps <- comps[ regexpr("(::|=)$", comps) > 0 ]
+    }
+    if ( !length(comps) ) return(invisible(NULL))
+    
+    ### build the output structure
     out <- matrix( "", nrow = length(comps), ncol = 3 )
     out[,1] <- comps
+    
+    # TODO: look at .win32consoleCompletion and figure out if the "additions" can be useful
     
     ### deal with packages (completions ending with ::)
     if(length(test.pack <- grep("::", comps) )){
@@ -17,7 +43,7 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
     ### deal with argument completions (ending with =)
     if(length(test.arg <- grep("=", comps) )){
       arg <- sub("=$", "", comps[test.arg] )
-      fguess <- utils:::.CompletionEnv[["fguess"]]
+      fguess <- .CompletionEnv[["fguess"]]
       pack <- sub( "^package:", "", find( fguess )[1] )
       if(pack == ".GlobalEnv" ) {
         out[ test.arg,3] <- ""
@@ -53,6 +79,8 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
       out[ test.fun, 3 ] <- desc.fun
     }
     
+    out[,3] <- gsub( "(\n|,)", " ", out[,3] )
+    
     if( simplify ){
       cat( apply( out, 1, paste, collapse="," ), sep = "\n" )
     } else {
@@ -61,8 +89,7 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
     
 }
 
-.extract_argument_description <- function( package, fun, arg, lib.loc = NULL){
-  
+.extract_argument_description <- function( package, fun, arg, lib.loc = NULL){  
   dir <- .find.package(package, lib.loc)
   rds <- file.path(dir, "Meta", "Rd.rds")
   if (file_test("-f", rds)) {
@@ -70,7 +97,7 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
     index <- which( sapply( rd.data$Aliases, function(x) any(fun %in% x) ) )
     if( length(index) == 1){
       rdfile <- rd.data$File[index]
-      rddb <- tools:::Rd_db( package = package)
+      rddb <- Rd_db( package = package)
       rdcontent <- paste( rddb[ basename(names(rddb)) == rdfile ][[1]], collapse = "\n" )
       arguments <- .get_Rd_arguments_table( rdcontent )
       arguments[ sapply( arg, function(x) which(arguments[,1] == x  )), 2 ]
@@ -85,7 +112,7 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
 }
 
 .get_Rd_arguments_table <-  function (txt) {
-    txt <- tools:::get_Rd_section(txt, "arguments")
+    txt <- get_Rd_section(txt, "arguments")
     tab <- get_Rd_items_table(txt)
     txt <- tab[,1]
     if (!length(txt)) 
@@ -98,6 +125,10 @@ CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer), minlen
     tab
 }
 
+### inspired from tools:::get_Rd_items
+### build a matrix where first column are the names of the arguments
+### and second column are the description
+### the function gets the information from the Rd help file
 get_Rd_items_table <- function (txt) {
     out <- character() # item names
     desc <- character() # item descriptions
@@ -107,7 +138,7 @@ get_Rd_items_table <- function (txt) {
     pattern <- "(^|\n)[[:space:]]*\\\\item\\{"
     while ((pos <- regexpr(pattern, txt)) != -1L) {
         txt <- substring(txt, pos + attr(pos, "match.length") - 1L)
-        if ((pos <- tools:::delimMatch(txt)) == -1L) 
+        if ((pos <- delimMatch(txt)) == -1L) 
             stop(gettextf("unmatched \\item name in '\\item{%s'", 
                 sub("\n.*$", "", txt)), domain = NA, call. = FALSE)
         newout <- strsplit( substring(txt, pos + 1L, pos + attr(pos, "match.length") - 2L), " *, *" )[[1]]
@@ -117,7 +148,7 @@ get_Rd_items_table <- function (txt) {
             stop(gettextf("no \\item description for item '%s'", 
                 out[length(out)]), domain = NA, call. = FALSE)
         txt <- substring(txt, pos + attr(pos, "match.length") - 1L)
-        if ((pos <- tools:::delimMatch(txt)) == -1L) 
+        if ((pos <- delimMatch(txt)) == -1L) 
             stop(gettextf("unmatched \\item description for item '%s'", 
                 out[length(out)]), domain = NA, call. = FALSE)
         desc <- c( desc, rep( substring(txt, 2L, pos + attr(pos, "match.length") - 2L), length(newout) ) )
