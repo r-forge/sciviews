@@ -12,6 +12,7 @@
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
 
 \examples{
+library(svUnit)
 # Make sure to clear log of errors and failures first
 clearLog()
 
