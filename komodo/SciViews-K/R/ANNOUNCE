@@ -1,0 +1,61 @@
+
+New Vesion of Windows Batchfiles for R
+
+batchfiles 0.4-2 consists of a set of Windows .bat utilities and other
+scripts that run R and associated programs by finding R in the
+registry so that no paths need be set -- a major source of error
+during installation.  Also it implies that paths which might otherwise
+need to be updated when you upgrade R do not need to be.  The tools
+automatically find the new registry entry.
+
+The utilities are Windows batch files or javascript files without
+dependencies.  Just place those you want or all of them anywhere in
+your path and they instantly become available to Windows console
+sessions.  No setting of paths or other formal installation is
+required.
+
+This version of batchfiles has only been tested on Windows Vista but
+most of the utilities may work on earlier versions as well.  Version
+0.3-2 was only tested on Windows XP.
+
+NEW
+
+1. Stangle.bat
+
+A new command Stangle.bat is now available that is similar to
+Sweave.bat except it runs Stangle.  Like Sweave.bat, it can be run
+without arguments to get help.  Sweave.bat and Stangle.bat are
+actually the same file.  Each queries the name by which it was called
+in order to determine what to do.  Like Sweave.bat, Stangle.bat does
+not depend on rtools.
+
+2. rbatchfilesrc.bat
+
+For those situations where use of the registry is not desirable the
+batchfiles have supported certain environment variables that can be
+set in its place.  New to this version is an optional second facility
+for those situations where the registry is not used.   As with the
+setting of environment variables it can be used to override the
+registry values and heuristics or it can be used to have different
+versions of R automatically used by different projects.
+
+For this new second facility the user can place rbatchfilesrc.bat in
+the current directory or %userprofile% directory or the same directory
+as the batchfiles and the various batchfiles will get their
+definitions from that file instead of looking in the registry.  A
+typical rbatchfilesrc.bat might be 3 lines long and look like this:
+
+		set R_HOME=C:\Program Files\R\R-2.7.0
+		set R_TOOLS=C:\Rtools
+		set R_MIKTEX=C:\Program Files\MiKTeX 2.7\miktex\bin
+
+Most people will not need this facility and will instead use the
+automatic registry lookup which completely avoids the need to specify
+path names but for situations as described this facility may be of
+use.
+
+The batchfiles are available on CRAN in the contributed extras area.
+For more information see the batchfiles home page at:
+
+	http://batchfiles.googlecode.com
+
