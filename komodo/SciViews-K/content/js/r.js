@@ -28,6 +28,9 @@
 // sv.r.dataList(loaded); // List R datasets in "loaded" or "all" packages
 // sv.r.data(); // Select one dataset to load
 // sv.r.data_select(data); // Callback function for sv.r.data()
+// sv.r.saveGraph(type, file, title, height, width, method);
+//                         // Save the current R graph in different formats
+// sv.r.quit(save);        // Quit R (ask to save in save in not defined)
 //
 // sv.r.pck namespace: /////////////////////////////////////////////////////////
 // sv.r.pkg.repositories(); // Select repositories for installing R packages
@@ -61,6 +64,8 @@ if (typeof(sv.r) == 'undefined') sv.r = { RMinVersion: "2.7.0" };
 sv.r.eval = function(cmd) {
 	// Store the current R command
 	if (sv.socket.prompt == ":> ") {
+		// Special case for q() and quit() => use sv.r.quit() instead
+		if (cmd == "q()" | cmd == "quit()") return(sv.r.quit());
 		// This is a new command
 		sv.socket.cmd = cmd;
 	} else {
@@ -444,6 +449,41 @@ sv.r.data_select = function(data) {
 	return(res);
 }
 
+// There is also dev.copy2pdf() copy2eps() + savePlot windows and X11(type = "Cairo")
+sv.r.saveGraph = function(type, file, title, height, width, method) {
+  if (typeof(type) == "undefined") { type = "png256"; }
+  // Get the file extension according to type
+  var ext = type.substring(0, 4);
+  if (ext != "pgnm" & ext != "tiff" & ext != "jpeg") { ext = ext.substring(0, 3); }
+  if (ext.substring(0, 2) == "ps") { ext = "ps"; }
+  if (ext == "jpeg") { ext = "jpg" }
+  if (typeof(height) == "undefined") { height = 'dev.size()[2]'; }
+  if (typeof(width) == "undefined") { width = 'dev.size()[1]'; }
+  if (typeof(method) == "undefined") { method = "pdf"; }
+  // Ask for the filename if not provided
+  if (typeof(file) == "undefined") {
+	if (typeof(title) == "undefined") { title = 'Save the graph as "' + type + '"'; }
+	file = ko.filepicker.saveFile("", "Rplot." + ext, title);
+	if (file == null) return;	// User clicked cancel
+  }
+  // Save the current device in R using dev2bitmap()... needs gostscript!
+  sv.r.eval('dev2bitmap("' + file + '", type = "' + type + '", height = ' + height +
+	', width = ' + width + ', method = "' + method + '")');
+}
+
+sv.r.quit = function(save) {
+  if (typeof(save) == "undefined") {
+	// Ask for saving or not
+	var response = ko.dialogs.customButtons("Do you want to save the workspace (.RData) " +
+	  "and the command history (.Rhistory) in the current directory first?",
+	  ["Yes", "No", "Cancel"], // buttons
+	  "No", // default response
+	  null, // text
+	  "Exiting R"); // title
+	  if (response == "Cancel") { return; }
+  }
+  sv.r.eval('q("' + response.toLowerCase() + '")');
+}
 
 // Define the 'sv.r.pkg' namespace /////////////////////////////////////////////
 if (typeof(sv.r.pkg) == 'undefined') sv.r.pkg = new Object();
