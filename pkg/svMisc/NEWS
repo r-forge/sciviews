@@ -1,8 +1,16 @@
 = svMisc News
 
+== Changes in svMisc 0.9-44
+
+* CompletePlus() reworked to use man pages instead of .Rd files
+
+* descFun() and descArgs() added
+
+
 == Changes in svMisc 0.9-43
 
 * CompletePlus() created to obtain information on the completion possibilities
+
 
 == Changes in svMisc 0.9-42
 
@@ -11,7 +19,7 @@
 * objXXX() functions did not always returned results invisibly. Solved.
 
 * Args() is more robust against bad 'name' parameter because it now calls
-  argsAnywhere() within a try().
+argsAnywhere() within a try().
 
 
 == Changes in svMisc 0.9-41
@@ -19,7 +27,7 @@
 * objInfo() returns also estimated size of objects that are not functions.
 
 * objSearch() is reworked to return a single string using 'sep' as separator
-  when sep is not NULL.
+when sep is not NULL.
 
 
 == Changes in svMisc 0.9-40
