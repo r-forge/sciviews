@@ -5,7 +5,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // sv.version; // Get current SciViews-K version (major.minor)
 // sv.release; // The release (bug fixes). Full version is "version.release"
+// sv.showVersion; // Do we display version in an alert() box or just set it?
 // sv.checkVersion(version); // Check if the OpenKore extension version is fine
+// sv.checkToolbox(); // Check that the correct SciViews-K toolbox is installed
 //
 // Various functions defined in the 'sv' namespace directly
 // sv.getText(); // Get current selection, or word under the cursor
@@ -33,7 +35,8 @@ if (typeof(sv) == 'undefined') {
 	sv = {
 		// TODO: set this automatically according to the plugin version
 		version: 0.6,
-		release: 0,
+		release: 3,
+		showVersion: true,
 		checkVersion: function(version) {
 			if (this.version < version) {
 				var title = "SciViews-K"
@@ -383,3 +386,55 @@ sv.cmdout.clear = function() {
 		} finally { scimoz.readOnly = ro; }
 	} catch(e) { alert("problems clearing the Command Output pane\n"); }
 };
+
+sv.checkToolbox = function() {
+    try {
+		var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
+		pkg += "/XRE/extensions/sciviewsk@sciviews.org/templates/SciViews-K.kpz";
+		var partSvc = Components.classes["@activestate.com/koPartService;1"]
+			.getService(Components.interfaces.koIPartService);
+		var SciViewsK_folders = partSvc.getParts("folder", "name", "SciViews-K",
+			"*", partSvc.currentProject, new Object());
+		if (SciViewsK_folders.length == 0) {
+			// The SciViews-K toolbox is not installed yet... do it now
+			ko.toolboxes.importPackage(pkg);
+		} else {
+			// First, eliminate all SciViews-K toolboxes that are too old
+			var VersionMacro;
+			var SciViewsK_folder;
+			sv.showVersion = false;
+			for (var i = 0; i < SciViewsK_folders.length; i++) {
+				SciViewsK_folder = SciViewsK_folders[i];
+				VersionMacro = SciViewsK_folder.getChildWithTypeAndStringAttribute(
+					"macro", "name", "Version", true);
+				if (VersionMacro) {
+					ko.projects.executeMacro(VersionMacro);
+					if (SciViewsKtoolboxVersion < sv.version) {
+						// This toolbox is too old for our extension
+						ko.toolboxes.user.removeItem(SciViewsK_folder, true);
+					}
+				} else {
+					// Probably a corrupted SciViews-K toolbox => eliminate it
+					ko.toolboxes.user.removeItem(SciViewsK_folder, true);
+				}
+			}
+			// Recheck how many SciViews-K toolboxes are left
+			SciViewsK_folders = partSvc.getParts("folder", "name", "SciViews-K",
+				"*", partSvc.currentProject, new Object());
+			if (SciViewsK_folders.length == 0) {
+				// Install the new one now
+				ko.toolboxes.importPackage(pkg);
+			} else if (SciViewsK_folders.length > 1) {
+				// There are duplications, keep only last one
+				for (var i = 0; i < (SciViewsK_folders.length - 1); i++) {
+					SciViewsK_folder = SciViewsK_folders[i];
+					ko.toolboxes.user.removeItem(SciViewsK_folder, true);
+				}
+			}
+		}
+	} catch(e) { alert(e); }
+	finally { sv.showVersion = true; }
+}
+
+// Ensure we check the toolbox is installed once the extension is loaded
+addEventListener("load", sv.checkToolbox, false);

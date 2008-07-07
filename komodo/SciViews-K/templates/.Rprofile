@@ -1,20 +1,29 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
-# Merge this with your .Rprofile file in your home directory to configure
-# R automatically at startup
+# Version 0.6.3, 2008-07-06 Ph. Grosjean (phgrosjean@sciviews.org)
 
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	.SciViewsReady <- FALSE
-	minVersion <- c(R = "2.7.0", svMisc = "0.9-42", svSocket = "0.9-41", svGUI = "0.9-42")
+	minVersion <- c(R = "2.7.0", svMisc = "0.9-44", svSocket = "0.9-41", svGUI = "0.9-42")
+
+	# Get environment variables
+	args <- commandArgs()
 
 	# Configure socket client/server
-	options(ko.serve = 8888)		# Port used by the R socket server
-	options(ko.host = "localhost")	# Machine where Komodo is running (local only for the moment)
-	options(ko.port = 7052)			# Port used by the Komodo socket server
-	options(ko.id = "R")			# The id used for this R kernel in Komodo
-	options(ko.activate = FALSE)		# Do we start/activate Komodo at startup?
-	# Note: set ko.activate to TRUE causes problems currently!
+	par <- args[grep("^--ko.serve=", args)]
+	if (length(par) == 0) par <- 8888 else par <- as.integer(sub("^--ko.serve=", "", par))
+	options(ko.serve = par)			# Port used by the R socket server
+	par <- args[grep("^--ko.host=", args)]
+	if (length(par) == 0) par <- "localhost" else par <- sub("^--ko.host=", "", par)
+	options(ko.host = par)			# Machine where Komodo is running (local only for the moment)
+	par <- args[grep("^--ko.port=", args)]
+	if (length(par) == 0) par <- 7052 else par <- as.integer(sub("^--ko.port=", "", par))
+	options(ko.port = par)			# Port used by the Komodo socket server
+	par <- args[grep("^--ko.id=", args)]
+	if (length(par) == 0) par <- "R" else par <- sub("^--ko.id=", "", par)
+	options(ko.id = par)			# The id used for this R kernel in Komodo
+	rm(par)
 
 	# Load main R packages
 	res <- require(methods, quietly = TRUE)
@@ -71,51 +80,75 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 			cat("R is too old for this version of SciViews, please, upgrade it\n")
 		} else {
 			# Load packages svMisc, svSocket & svGUI (possibly after installing
-			# or upgrading them). User is supposed to have agreed
+			# or upgrading them). User is supposed to agree with this install
+			# from the moment he tries to start and configure R from Komodo Edit
+			ext <- switch(.Platform$pkgType,
+				mac.binary = "\\.tgz",
+				win.binary = "\\.zip",
+				"\\.tar.gz")
 
 			## svMisc
+			file <- dir(pattern = paste("svMisc", ext, sep = ".+"))
+			file <- sort(file)[length(file)]	# Keep oldest one
 			desc <- system.file("DESCRIPTION", package = "svMisc")
 			if (desc == "") {
-				cat("Trying to install missing package 'svMisc'\n")
-				install.packages("svMisc", repos = "http://R-Forge.R-project.org")
-				res <- require(svMisc, quietly = TRUE)
+				cat("Installing missing package 'svMisc'\n")
+				if (length(file)) {
+					install.packages(file, repos = NULL) # or use "http://R-Forge.R-project.org"
+					res <- require(svMisc, quietly = TRUE)
+				} else res <- FALSE
 			} else { # Check version
 				if ((compareVersion(packageDescription("svMisc", fields = "Version"),
 					minVersion["svMisc"]) < 0)) {
-					cat("Trying to update package 'svMisc'\n")
-					install.packages("svMisc", repos = "http://R-Forge.R-project.org")
-				}
-				res <- require(svMisc, quietly = TRUE)
+					cat("Updating package 'svMisc'\n")
+					if (length(file)) {
+						install.packages(file, repos = NULL)
+						res <- require(svMisc, quietly = TRUE)
+					} else res <- FALSE
+				} else res <- require(svMisc, quietly = TRUE)
 			}
 
 			## svSocket
+			file <- dir(pattern = paste("svSocket", ext, sep = ".+"))
+			file <- sort(file)[length(file)]	# Keep oldest one
 			desc <- system.file("DESCRIPTION", package = "svSocket")
 			if (desc == "") {
-				cat("Trying to install missing package 'svSocket'\n")
-				install.packages("svSocket", repos = "http://R-Forge.R-project.org")
-				res[2] <- require(svSocket, quietly = TRUE)
+				cat("Installing missing package 'svSocket'\n")
+				if (length(file)) {
+					install.packages(file, repos = NULL)
+					res[2] <- require(svSocket, quietly = TRUE)
+				} else res[2] <- FALSE
 			} else { # Check version
 				if ((compareVersion(packageDescription("svSocket", fields = "Version"),
 					minVersion["svSocket"]) < 0)) {
-					cat("Trying to update package 'svSocket'\n")
-					install.packages("svSocket", repos = "http://R-Forge.R-project.org")
-				}
-				res[2] <- require(svSocket, quietly = TRUE)
+					cat("Updating package 'svSocket'\n")
+					if (length(file)) {
+						install.packages(file, repos = NULL)
+						res[2] <- require(svSocket, quietly = TRUE)
+					} else res[2] <- FALSE
+				} else res[2] <- require(svSocket, quietly = TRUE)
 			}
 
 			## svGUI
+			file <- dir(pattern = paste("svGUI", ext, sep = ".+"))
+			file <- sort(file)[length(file)]	# Keep oldest one
 			desc <- system.file("DESCRIPTION", package = "svGUI")
+			res[3] <- TRUE
 			if (desc == "") {
-				cat("Trying to install missing package 'svGUI'\n")
-				install.packages("svGUI", repos = "http://R-Forge.R-project.org")
+				cat("Installing missing package 'svGUI'\n")
+				if (length(file)) {
+					install.packages(file, repos = NULL)
+				} else res[3] <- FALSE
 			} else { # Check version
 				if ((compareVersion(packageDescription("svGUI", fields = "Version"),
 					minVersion["svGUI"]) < 0)) {
-					cat("Trying to update package 'svGUI'\n")
-					install.packages("svGUI", repos = "http://R-Forge.R-project.org")
+					cat("Updating package 'svGUI'\n")
+					if (length(file)) {
+						install.packages(file, repos = NULL)
+					} else res[3] <- FALSE
 				}
 			}
-			rm(desc)
+			rm(desc, ext, file)
 
 			# Try starting the R socket server
 			if (inherits(try(startSocketServer(port = getOption("ko.serve")),
@@ -125,27 +158,11 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 				cat("Solve the problem, then type: require(svGUI)\n")
 			} else {
 				# Finally, load svGUI
-				res[3] <- require(svGUI, quietly = TRUE)
+				if (res[3]) res[3] <- require(svGUI, quietly = TRUE)
 
 				if (all(res)) {
 					cat("R is SciViews ready!\n")
 					.SciViewsReady <- TRUE
-					if (is.null(getOption("ko.id"))) options(ko.id = "R")	# Default
-					# Do we (re)activate Komodo now?
-					koact <- getOption("ko.activate")
-					if (is.null(koact)) koact <- FALSE
-					if (koact[1]) {
-						if ((.Platform$pkgType == "mac.binary")) {
-							Res <- system("osascript -e 'tell application \"Komodo\" to activate'",
-								intern = TRUE)
-							rm(Res)
-						}	### TODO: the same under Windows and Linux
-						# Indicate to Komodo that R is ready
-						koCmd('ko.statusBar.AddMessage("<<<data>>>", "R", 10000, true);',
-							data = paste("'", getOption("ko.id"), "' (R ", R.Version()$major, ".",
-							R.Version()$minor, ") connected", sep = ""))
-					}
-					rm(koact)
 				} else {
 					cat("R is not SciViews ready, install latest svMisc, svSocket & svGUI packages\n")
 				}
@@ -153,17 +170,87 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 		}
 	}
 
-	# Clean up .GlobalEnv
+	# Make sure Komodo is started now
+	# Note: in Mac OS X, you have to create the symbolic link manually as explained
+	# in the Komodo Help with:
+	# sudo ln -s "/Applications/Komodo Edit.app/Contents/MacOS/komodo" /usr/local/bin/komodo
+	# You must issue something similar too under Linux (see Komodo installation guide)
+	# Or the script will complain.
+
+	## Don't need this here, since R is supposed to be started from within Komodo!
+	#system("komodo", wait = FALSE)
+
+	# Look if and where komodo is installed
+	if (.Platform$OS.type == "unix") {
+		Komodo <- "/usr/local/bin/komodo"
+		# Check that this file exists
+		if (!file.exists(Komodo)) {
+			# File not found, display a message with missing link
+			Komodo <- NULL
+			# TODO: look why I can't find Komodo on Linux Ubuntu
+			#cat("Komodo is not found by R. Please, follow instructions at\n",
+			#	"http://www.sciviews.org/SciViews-K to install it correctly.\n",
+			#	"In particular, you must create a symbolic link in /user/local/bin:\n",
+			#	"sudo ln -s <KomodoBinLocation>/komodo /usr/local/bin/komodo\n",
+			#	"otherwise, R cannot find it!\n")
+		} else {
+			# Change the editor and the pager to Komodo
+			options(editor = Komodo)
+			#TODO: we need something else here: options(pager = Komodo)
+		}
+	} else {
+		# TODO: this does not seem to work, becasue the path with spaces is not recognized?
+		Komodo <- "komodo"	# On Windows, 'komodo' should be enough
+		owarn <- getOption("warn")
+		options(warn = -1)
+		res <- try(system(Komodo, wait = FALSE), silent = TRUE)
+		if (res == -1) {
+			Komodo <- NULL
+		#	cat("R cannot find Komodo. Please, make sure you install it correctly\n",
+		#		"You can find it at http://www.activestate.com/Products/komodo_edit.\n")
+		} else {
+			# Change the editor and the pager to Komodo
+			options(editor = Komodo)
+			#TODO: we need something else here: options(pager = Komodo)
+		}
+		options(warn = owarn)
+		rm(owarn)
+	}
 	rm(minVersion, res)
 
-	# Make sure Komodo is started now
-	# Note: in Mac OS X, you have to create the symbolic link manually as explained in the Komodo Help with:
-	# sudo ln -s "/Applications/Komodo Edit.app/Contents/MacOS/komodo" /usr/local/bin/komodo
-	# Or the script will complain with: /bin/sh: line 1: komodo: command not found.
-	system("komodo", wait = FALSE)
+	# Change the working directory to the users working dir (by default) or to
+	# the directory that is specified in --dir=
+	dir <- args[grep("^--dir=", args)]
+	if (length(dir) == 0) {
+		dir <- "~"	# Use home directory as default one
+	} else dir <- sub("^--dir=", "", dir)
+	setwd(dir)
 
-	# Make sure to use Komodo as your R editor
-	
+	# Do we load .RData and .Rhistory?
+	if (!"--no-restore" %in% args && !"--no.restore-data" %in% args)
+		if (file.exists(".RData")) load(".RData")
+	if (!"--no-restore" %in% args && !"--no.restore-history" %in% args)
+		if (file.exists(".Rhistory")) loadhistory()
+
+	# Do we reactivate Komodo now?
+	koact <- getOption("ko.activate")
+	if (is.null(koact)) {
+		koact <- "--ko-activate" %in% args
+		options(ko.activate = koact)
+	}
+	if (.SciViewsReady && isTRUE(koact)) {
+		if ((.Platform$pkgType == "mac.binary")) {
+			system("osascript -e 'tell application \"Komodo\" to activate'",
+				intern = TRUE)
+		} else if (!is.null(Komodo)) {
+			# TODO: The following start komodo if not started yet, but does not activate it!
+			system(Komodo, wait = FALSE)
+		}
+		# Indicate to Komodo that R is ready
+		koCmd('ko.statusBar.AddMessage("<<<data>>>", "R", 10000, true);',
+			data = paste("'", getOption("ko.id"), "' (R ", R.Version()$major, ".",
+			R.Version()$minor, ") connected", sep = ""))
+	}
+	rm(koact, Komodo, args, dir)
 }
-
 ### SciViews install end ###
