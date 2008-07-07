@@ -1,7 +1,7 @@
 .historyPre{
   margin:0px;
   padding:0px;
-  font-family: Courier new, monospace;
+  font-family: Monaco, "Courier new", monospace;
 }
 
 .historyListitem{
@@ -16,13 +16,13 @@
 .consoleInput{
   border-top: 1px solid #666666 ;
   color: blue;
-  font-family:Courier New, monospace;
+  font-family: Monaco, "Courier New", monospace;
   margin:0px;
 }
 
 .consoleOutput{
   color:black;
-  font-family:Courier New, monospace;
+  font-family: Monaco, "Courier New", monospace;
   margin-bottom: 10px;
   margin-top: 0px;
 }
@@ -33,7 +33,7 @@
   border-bottom:none;
   border-left: none;
   border-right:none;
-  font-family: Courier New, monospace;
+  font-family: Monaco, "Courier New", monospace;
   font-weight: bold;
   background-color: #dddddd ;
 }
