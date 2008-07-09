@@ -126,11 +126,11 @@ sv.r.console.setConsoleContent = function(cmd){
 }
 
 sv.r.console.getCompletionTypes = function(){
-  var out = "" ;
+  var out = [] ;
   var types = [ "arguments", "packages", "functions" ] ;
   for( var i=0; i<types.length; i++){
     if( sv.prefs.getString( "sciviews.console.completion.setting." + types[i] ) == "true"){
-      out += types[i] + "," ;
+      out[out.length] = types[i] ;
     }
   }
   return(out);
@@ -142,7 +142,13 @@ sv.r.console.complete = function(){
   sv.r.console._completionCounter++ ;
   var types = sv.r.console.getCompletionTypes() ;
   if( types != ""){
-    cmd = "CompletePlus('" + sv.r.console.getConsoleContent().replace(/'/g, "\\'")  + "' , simplify = TRUE, types= '"+ types +"')" ;
+    var types_vector = 'c("' + types[0] ;
+    for( var i=1; i<types.length; i++){
+      types_vector += '", "' + types[i] ;
+    }
+    types_vector += '") ' ;
+    cmd = "CompletePlus('" + sv.r.console.getConsoleContent().replace(/'/g, "\\'")  +
+      "' , simplify = TRUE, types= " + types_vector +  " )" ;
     sv.r.evalCallback(cmd, sv.r.console.complete_cb, sv.r.console._completionCounter );
   }
 }
@@ -205,7 +211,7 @@ sv.r.console.updateCompletionTab = function( completions ) {
     var tab, comp;
     for(var i=0; i<completions.length; i++){
       if(completions[i] != ""){
-        tab = completions[i].split(",");
+        tab = completions[i].split("\t");
         comp = tab[0];
         if( argRx.test(comp) ){
           argCompletions[ argCompletions.length] = tab ;
