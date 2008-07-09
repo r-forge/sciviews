@@ -61,20 +61,11 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
     test.fun <- setdiff(1:length(comps), c(test.arg, test.pack, test.others))
     if (length(test.fun)) {
 		funs <- comps[test.fun]
-		packs <- sub("^package:", "", sapply(funs, find))
-		desc.fun <- rep("", length(packs))
+		packs <- find.multiple( funs )
+    desc.fun <- rep("", length(packs))
 		for (pack in unique(packs)) {
 			if (pack != ".GlobalEnv") {
 				desc.fun[packs == pack] <- descFun(funs[packs == pack], pack)
-				#dir <- .find.package(pack)
-				#rds <- file.path(dir, "Meta", "Rd.rds")
-				#rd.data <- .readRDS(rds)
-				#funInThisPack <- funs[packs == pack]
-				#desc.fun[packs == pack] <- sapply(funInThisPack, function(x) {
-				#	index <- which(sapply(rd.data$Aliases, function(y)
-				#		any(x %in% y)))
-				#	rd.data$Title[index]
-				#})
 			}
 		}
 		out[test.fun, 2] <- packs
@@ -82,87 +73,32 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
     }
 
     out[, 3] <- gsub("\t", "    ", out[, 3])
+    out[, 3] <- gsub("\n", " ", out[, 3])
+    
 	# Make sure that arguments are witten 'arg = ', and not 'arg='
 	out[, 1] <- sub("=$", " = ", out[, 1])
 
-    if (simplify) {
+  if (simplify) {
 		cat(apply(out, 1, paste, collapse = "\t"), sep = "\n")
-    } else {
+  } else {
 		return(out)
-    }
+  }
 }
 
-## PhG: the following code is replaced by argsHelp() which is faster, and
-## do not depend on *experimental* code in the 'tools' package (limits also dependencies!)
-#.extract_argument_description <-
-#function (package, fun, arg, lib.loc = NULL) {
-#	dir <- .find.package(package, lib.loc)
-#	rds <- file.path(dir, "Meta", "Rd.rds")
-#	if (file_test("-f", rds)) {
-#		rd.data <- .readRDS(rds)
-#		index <- which(sapply(rd.data$Aliases, function(x) any(fun %in% x)))
-#		if (length(index) == 1) {
-#			rdfile <- rd.data$File[index]
-#			rddb <- Rd_db(package = package)
-#			rdcontent <- paste(rddb[basename(names(rddb)) == rdfile][[1]],
-#				collapse = "\n")
-#			arguments <- .get_Rd_arguments_table(rdcontent)
-#			arguments[sapply(arg, function(x) which(arguments[, 1] == x)), 2]
-#			# TODO: do some error handling
-#		} else {
-#			rep("", length(arg))
-#		}
-#	} else {
-#		rep("", length(arg))
-#	}
-#}
-#
-#.get_Rd_arguments_table <-
-#function (txt) {
-#    txt <- get_Rd_section(txt, "arguments")	# tools:::get_Rd_section
-#    tab <- get_Rd_items_table(txt)
-#    txt <- tab[, 1]
-#    if (!length(txt))
-#        return(character())
-#    txt <- gsub("\\\\l?dots", "...", txt)
-#    txt <- sub("^[[:space:]]+", "", txt)
-#    txt <- sub("[[:space:]]+$", "", txt)
-#    txt <- gsub("\\\\_", "_", txt)
-#    tab[, 1] <- txt
-#    tab
-#}
-#
-#### inspired from tools:::get_Rd_items
-#### build a matrix where first column are the names of the arguments
-#### and second column are the description
-#### the function gets the information from the Rd help file
-#get_Rd_items_table <-
-#function (txt) {
-#    out <- character() # item names
-#    desc <- character() # item descriptions
-#
-#    if (length(txt) != 1L)
-#        stop("argument 'txt' must be a character string")
-#    pattern <- "(^|\n)[[:space:]]*\\\\item\\{"
-#    while ((pos <- regexpr(pattern, txt)) != -1L) {
-#        txt <- substring(txt, pos + attr(pos, "match.length") - 1L)
-#        if ((pos <- delimMatch(txt)) == -1L)
-#            stop(gettextf("unmatched \\item name in '\\item{%s'",
-#                sub("\n.*$", "", txt)), domain = NA, call. = FALSE)
-#        newout <- strsplit(substring(txt, pos + 1L, pos +
-#			attr(pos, "match.length") - 2L), " *, *")[[1]]
-#        out <- c(out, newout)
-#        txt <- substring(txt, pos + attr(pos, "match.length"))
-#        if ((pos <- regexpr("^[[:space:]]*\\{", txt)) == -1L)
-#            stop(gettextf("no \\item description for item '%s'",
-#                out[length(out)]), domain = NA, call. = FALSE)
-#        txt <- substring(txt, pos + attr(pos, "match.length") - 1L)
-#        if ((pos <- delimMatch(txt)) == -1L)
-#            stop(gettextf("unmatched \\item description for item '%s'",
-#                out[length(out)]), domain = NA, call. = FALSE)
-#        desc <- c(desc, rep(substring(txt, 2L, pos + attr(pos, "match.length")
-#			- 2L), length(newout)))
-#        txt <- substring(txt, pos + attr(pos, "match.length"))
-#    }
-#    cbind(out, desc)
-#}
+### similar to "find" but `what` can be a vector
+### also, this one only searches in packages (position of the search path matching '^package:')
+### and only gives one result per what
+find.multiple <- function (what) {
+    stopifnot(is.character(what))
+    sp <- grep( "^package:", search(), value = T )
+    out <- rep( "" , length(what) )
+    for (i in sp) {
+            ok <- what %in% ls(i, all.names = TRUE) & out == ""
+            out[ok] <- i
+            if(all(out!="")) break
+    }
+    names(out) <- what
+    sub( "^package:", "", out )
+}
+
+
