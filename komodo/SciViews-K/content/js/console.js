@@ -11,18 +11,48 @@ if (typeof(sv.r.console) == 'undefined') sv.r.console = { };
 
 sv.r.console.handleConsoleKeyPress = function(e){
   
-  if( e.keyCode == 38 && e.ctrlKey ){ // [ctrl] + [up]: cycle history
-    return(0);
-  }
-  
-  if( e.keyCode == 40 && e.ctrlKey ){ // [ctrl] + [down]: cycle history
-    return(0);    
+  // cycle history
+  if( e.ctrlKey && ( e.keyCode == 38 || e.keyCode == 40) ){
+    // nothing is in the history
+    if( sv.r.console.history.length == 0 ){
+      return( 0 );
+    }
+    
+    var rx = sv.r.console.getHistoryRegex() ;
+    var loop = function(i, rx){
+      var cmd = sv.r.console.history[ i ];
+      if( !rx || rx.test( cmd ) ){
+        sv.r.console.setConsoleContent( cmd );
+        sv.r.console.historyIndex = i ;
+        return( true ) ;
+      }
+      return(false) ;
+    }
+    
+    if( e.keyCode == 38 ){ 
+      // [ctrl] + [up]: cycle up history
+      for( var i=sv.r.console.historyIndex-1; i>=0; i--){
+        if( loop( i, rx) ) return(0) ;
+      }
+      for( var i=sv.r.console.history.length-1; i>=sv.r.console.historyIndex; i--){
+        if( loop( i, rx) ) return(0) ;
+      }
+    } else{
+      // [ctrl] + [down]: cycle down history
+      for( var i=sv.r.console.historyIndex+1; i<sv.r.console.history.length; i++){
+        if( loop( i, rx) ) return(0) ;
+      }
+      for( var i=0; i<=sv.r.console.historyIndex; i++){
+        if( loop( i, rx) ) return(0) ;
+      }
+    }
+    return(0) ;  
+    
   }
   
   if( e.keyCode == 13){ // [enter] pressed : submit to R
     sv.r.console.setCurrentCommand (sv.r.console.getConsoleContent() ) ;
     sv.r.console.parse() ;
-    
     return(0); 
   }
   
@@ -50,6 +80,7 @@ sv.r.console.clearConsoleContent = function(){
 }
 
 // function to run R code in the console
+// TODO: modify this using the context in the call to evalCallback
 sv.r.console.run = function(cmd){
   sv.r.console.setCurrentCommand( cmd );
   sv.r.console.parse() ;
@@ -97,8 +128,20 @@ sv.r.console.run_cb  = function(data){
 // TODO: use something else for the history, the R history, a file, mozStorage, ... ?
 // TODO: make the history persistant
 sv.r.console.history = [];
+sv.r.console.historyIndex = 0 ; 
 sv.r.console.addCommandToHistory = function(cmd){
   sv.r.console.history[ sv.r.console.history.length ] = cmd ;
+}
+
+sv.r.console.getHistoryRegex = function(){
+  var txt = document.getElementById( "sciviews_rconsole_history_filter" ) ;
+  if( txt == "" ) return( false) ;
+  try{
+    var out = new RegExp( txt ) ;
+  } catch( e ){
+    return false;
+  }
+  return out;
 }
 
 sv.r.console.refreshHistory = function(){
@@ -122,7 +165,8 @@ sv.r.console.refreshHistory = function(){
 
 // set the content of the console
 sv.r.console.setConsoleContent = function(cmd){
-  document.getElementById( "sciviews_rconsole_console_input" ).value = "" ;
+  if( !cmd ) cmd = "" ;
+  document.getElementById( "sciviews_rconsole_console_input" ).value = cmd ;
 }
 
 sv.r.console.getCompletionTypes = function(){
