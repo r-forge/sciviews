@@ -140,9 +140,9 @@
                 </hbox>  
                 <tree flex="1">
                   <treecols>
-                    <treecol primary="true" label="completion" flex="1"/>
-                    <treecol label="position" flex="1"/>
-                    <treecol label="description" flex="5"/>
+                    <treecol primary="true" label="completion" flex="1" />
+                    <treecol label="position" flex="1" />
+                    <treecol label="description" flex="6"/>
                   </treecols>
                   <treechildren id="sciviews_rconsole_completion_tree_main" /> 
                 </tree>  
