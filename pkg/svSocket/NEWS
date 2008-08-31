@@ -1,5 +1,9 @@
 = svSocket News
 
+== Changes in svSocket 0.9-42
+* Made compatible with R 2.6.x
+
+
 == Changes in svSocket 0.9-41
 
 * Correction in startSocketServer(): the SocketServerProc function was not

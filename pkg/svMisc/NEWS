@@ -1,5 +1,9 @@
 = svMisc News
 
+== Changes in svMisc 0.9-45
+* Made compatible with R 2.6.x
+
+
 == Changes in svMisc 0.9-44
 
 * CompletePlus() reworked to use man pages instead of .Rd files
