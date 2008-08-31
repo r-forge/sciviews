@@ -28,6 +28,11 @@
 // sv.r.dataList(loaded); // List R datasets in "loaded" or "all" packages
 // sv.r.data(); // Select one dataset to load
 // sv.r.data_select(data); // Callback function for sv.r.data()
+// sv.r.browseVignettes(); // Open a web page listing all installed vignettes
+// sv.r.saveWorkspace(file, title); // Save data in a .Rdata file
+// sv.r.loadWorkspace(file, title); // Load data from a .RData file
+// sv.r.saveHistory(file, title); // Save the history in a file
+// sv.r.loadHistory(file, title); // Load the history from a file
 // sv.r.saveGraph(type, file, title, height, width, method);
 //                         // Save the current R graph in different formats
 // sv.r.quit(save);        // Quit R (ask to save in save in not defined)
@@ -448,6 +453,57 @@ sv.r.data_select = function(data) {
 	}
 	return(res);
 }
+
+// Open a menu with all installed vignettes in the default web browser
+sv.r.browseVignettes = function() {
+	var res = sv.r.eval('browseVignettes()');
+	return(res);
+}
+
+// Save the content of the workspace in a file
+sv.r.saveWorkspace = function(file, title) {
+  // Ask for the filename if not provided
+  if (typeof(file) == "undefined") {
+	if (typeof(title) == "undefined") { title = 'Save the R workspace in a file'; }
+	file = ko.filepicker.saveFile("", ".RData", title);
+	if (file == null) return;	// User clicked cancel
+  }
+  sv.r.eval('save.image("' + file + '")');
+}
+
+// Load the content of a .RData file in the workspace
+sv.r.loadWorkspace = function(file, title) {
+  // Ask for the filename if not provided
+  if (typeof(file) == "undefined") {
+	if (typeof(title) == "undefined") { title = 'Load an .RData file'; }
+	file = ko.filepicker.openFile("", ".RData", title);
+	if (file == null) return;	// User clicked cancel
+  }
+  sv.r.eval('load("' + file + '")');
+}
+
+// Save the history in a file
+sv.r.saveHistory = function(file, title) {
+  // Ask for the filename if not provided
+  if (typeof(file) == "undefined") {
+	if (typeof(title) == "undefined") { title = 'Save the command history in a file'; }
+	file = ko.filepicker.saveFile("", ".Rhistory", title);
+	if (file == null) return;	// User clicked cancel
+  }
+  sv.r.eval('savehistory("' + file + '")');
+}
+
+// Load the history from a file
+sv.r.loadHistory = function(file, title) {
+  // Ask for the filename if not provided
+  if (typeof(file) == "undefined") {
+	if (typeof(title) == "undefined") { title = 'Load the history from a file'; }
+	file = ko.filepicker.openFile("", ".Rhistory", title);
+	if (file == null) return;	// User clicked cancel
+  }
+  sv.r.eval('loadhistory("' + file + '")');
+}
+
 
 // There is also dev.copy2pdf() copy2eps() + savePlot windows and X11(type = "Cairo")
 sv.r.saveGraph = function(type, file, title, height, width, method) {

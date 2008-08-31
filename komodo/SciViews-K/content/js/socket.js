@@ -10,7 +10,7 @@
 // Parameters:
 // sv.socket.host;  // The address of the R server host (local only for now)
 // sv.socket.cmdout // Do we echo exchange to the Output Command pane?
-// sv.socket.promt  // Look at this to know if we are in multiline mode
+// sv.socket.prompt // Look at this to know if we are in multiline mode
 // sv.socket.cmd    // In case of multiline mode, the partial command so far
 //
 // sv.socket.rClient(host, port, outputData, listener, echo); // Main client fct
@@ -38,7 +38,7 @@ sv.socket.svSocketMinVersion = "0.9-40";
 /////// Socket client //////////////////////////////////////////////////////////
 sv.socket.host = "127.0.0.1"; // Host to connect to (local host only, currently)
 sv.socket.cmdout = true;      // Do we write to 'Command Output'?
-sv.socket.prompt = ":> ";     // The prompt, could be changed o continue prompt
+sv.socket.prompt = ":> ";     // The prompt, could be changed to continue prompt
 sv.socket.cmd = "";           // The command to send to R
 
 // The main socket client function to connect to R socket server
@@ -58,7 +58,7 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 			classes["@mozilla.org/scriptableinputstream;1"]
 			.createInstance(Components.interfaces.nsIScriptableInputStream);
 		instream.init(stream);
-    
+
 		var dataListener = {
 			data: "",
 			onStartRequest: function(request, context) { this.data = ""; },
@@ -97,7 +97,7 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 					chunk = chunk.replace(/ \r?\n?$/, " ");
 				}
 				this.data += chunk;
-				// Do we "echo" these results somewhere? 
+				// Do we "echo" these results somewhere?
 				if (echo) {
 					if (echofun == null) {
 						// Use default echo function (to the Command Output)
@@ -148,7 +148,7 @@ var outputString;			// The string with the result to send to the client
 
 // Core function for the SciViews-K socket server: create the serverSocket object
 sv.socket.serverStart = function() {
-	var listener = {   
+	var listener = {
 		onSocketAccepted : function(socket, transport) {
 			try {
 				// Make sure to clean input and output strings before use
@@ -159,7 +159,7 @@ sv.socket.serverStart = function() {
 					sv.cmdout.append("#--# SciViews-K socket client: " +
 						transport.host + " on port " + transport.port + "\n");
 				}
-        
+
 				// Then, read data from the client
 				var inputStream = transport.openInputStream(nsITransport.
 					OPEN_BLOCKING, 0, 0);
@@ -168,20 +168,20 @@ sv.socket.serverStart = function() {
 					.createInstance(Components.interfaces.
 					nsIScriptableInputStream);
 				sin.init(inputStream);
-        
+
 				// Wait for input up to 10 sec max, with synchroneous com only)
 				var millis = 10000;
 				var date = new Date();
 				var curDate = null;
 				do {
 					curDate = new Date();
-					inputString = sin.read(512);  
+					inputString = sin.read(512);
 				} while(inputString == "" & curDate - date < millis)
-        
+
 				// Read the complete data
 				while (sin.available() > 0)
 					inputString += sin.read(512);
-        
+
 				// Is there data send?
 				if (inputString == "") {
 					outputString += "Error: no command send!\n"
@@ -203,7 +203,7 @@ sv.socket.serverStart = function() {
 						sv.cmdout.append("#--# Result:\n" + outputString);
 					}
 				}
-        
+
 				// And finally, return the result to the socket client
 				// (append \n at the end)
 				outputString += "\n";
