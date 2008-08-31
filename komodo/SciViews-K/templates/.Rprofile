@@ -1,6 +1,6 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
-# Version 0.6.3, 2008-07-06 Ph. Grosjean (phgrosjean@sciviews.org)
+# Version 0.6.4, 2008-08-18 Ph. Grosjean (phgrosjean@sciviews.org)
 
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
@@ -10,6 +10,8 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	# Get environment variables
 	args <- commandArgs()
 
+	## TODO: also check environment variables like:
+	#par <- Sys.getenv("ko.serve") (returns "" if not set)
 	# Configure socket client/server
 	par <- args[grep("^--ko.serve=", args)]
 	if (length(par) == 0) par <- 8888 else par <- as.integer(sub("^--ko.serve=", "", par))
@@ -24,6 +26,8 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	if (length(par) == 0) par <- "R" else par <- sub("^--ko.id=", "", par)
 	options(ko.id = par)			# The id used for this R kernel in Komodo
 	rm(par)
+
+### If started --quiet, display a simplified message
 
 	# Load main R packages
 	res <- require(methods, quietly = TRUE)

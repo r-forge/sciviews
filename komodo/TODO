@@ -2,16 +2,31 @@
 
 * Object explorer: refresh content, tooltip, menu, changer fonction refresh
 
-* sv.r.source() is buggy + add in menus/toolbars
+* svIO and svViews in relation to objects explorer
 
-* Package help, vignettes, demos, packages management
+* sv.r.source("all") is buggy + add in menus/toolbars
 
-* doBraceMatch
+* A more convenient Help page + rework R Help/R Help Search (external)
 
-* setwd() with GUI
+* GUI for vignettes and demos
 
-* Finalize the R starting functions and place them in extensions; eliminate
-"R kernels"
+* doBraceMatch()
+
+* Tidy R code tool
+
+* Use JSON to transport objects between R and Komodo
+
+* Avoid restarting a second time when the toolbox is installed + extract dir box
+
+* R does not find Komodo (on Windows, and Linux) + way to reactivate Komodo window
+
+* Problem installing a .xpi file from R in Windows
+
+* setwd() with GUI, allow choosing starting dir for R kernels started from Komodo
+
+* Configuration of R when started from .RData files.
+
+* Button for loading/saving workspace and history
 
 * R reference cards
 
@@ -25,7 +40,7 @@
 
 * Make R and Rd syntax highlighting; sweave later on
 
-* Allow for projects in packages (developments and binaries)
+* Projects in packages (developments and binaries) + SciViews-K Unit features
 
 * Make the User's and Developer's manuals
 
