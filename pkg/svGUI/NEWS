@@ -1,5 +1,8 @@
 = svGUI News
 
+== Changes in svGUI 0.9-43
+* Made compatible with R 2.6.x
+
 == Changes in svGUI 0.9-42
 * koCmd() is now more robust and do not issue a warning or an error if the
 Komodo server is not available (but the error message is returned by the
