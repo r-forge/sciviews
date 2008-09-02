@@ -138,6 +138,9 @@ sv.r.setwd = function(ask) {
 			res = sv.r.eval('.odir <- setwd("' +
 				kv.document.file.dirName.replace(/\\/g, "//") + '")');
 		}
+	} else if (ask == "session") {
+		// Switch back to the session directory defined in 'R.initdir' option
+		res = sv.r.eval('.odir <- setwd(getOption("R.initdir"))');
 	} else if (ask == "previous") {
 		// Produce an error in R if .odir is not defined, but it is fine!
 		res = sv.r.eval('if (exists(".odir")) .odir <- setwd(.odir); getwd()');
@@ -531,7 +534,7 @@ sv.r.quit = function(save) {
   if (typeof(save) == "undefined") {
 	// Ask for saving or not
 	var response = ko.dialogs.customButtons("Do you want to save the workspace (.RData) " +
-	  "and the command history (.Rhistory) in the current directory first?",
+	  "and the command history (.Rhistory) in the session directory first?",
 	  ["Yes", "No", "Cancel"], // buttons
 	  "No", // default response
 	  null, // text
