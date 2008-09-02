@@ -1,5 +1,14 @@
 = SciViews-K To Do
 
+* There is a bug with the abbrev expansion that prevents correct detection of
+abbrev when the file is not saved or saved with a different extension than .R
+
+* Files with .R extension are recognized as REBOL files!
+
+* Pager currently display the file in a buffer and does not use title or
+delete.file (file not deleted!). Try using a web browser instead, with
+correct title and look for a method to allow deleting the file
+
 * Object explorer: refresh content, tooltip, menu, changer fonction refresh
 
 * svIO and svViews in relation to objects explorer
@@ -7,6 +16,8 @@
 * sv.r.source("all") is buggy + add in menus/toolbars
 
 * A more convenient Help page + rework R Help/R Help Search (external)
+
+* Add R language entry in Help menu
 
 * GUI for vignettes and demos
 
@@ -26,8 +37,6 @@
 
 * Configuration of R when started from .RData files.
 
-* Button for loading/saving workspace and history
-
 * R reference cards
 
 * R completion
@@ -38,7 +47,9 @@
 
 * Make ESS functions + the ESS GUI
 
-* Make R and Rd syntax highlighting; sweave later on
+* Make Rd syntax highlighting; sweave later on
+
+* R Linter
 
 * Projects in packages (developments and binaries) + SciViews-K Unit features
 
