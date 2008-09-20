@@ -111,7 +111,7 @@
               id="svunit-auto-tests-button"
               label="&sciviews.runit.autoTest;"
               tooltiptext="&sciviews.runit.autoTest.tip;"
-              checked="true"
+              checked="false"
               oncommand="sv.r.unit.autoTest();"/>
             <progressmeter
               id="svunit-progress-bar"
