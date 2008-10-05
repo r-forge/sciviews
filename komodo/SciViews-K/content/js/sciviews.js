@@ -35,7 +35,7 @@ if (typeof(sv) == 'undefined') {
 	sv = {
 		// TODO: set this automatically according to the plugin version
 		version: 0.6,
-		release: 4,
+		release: 5,
 		showVersion: true,
 		checkVersion: function(version) {
 			if (this.version < version) {
