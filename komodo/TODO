@@ -1,5 +1,13 @@
 = SciViews-K To Do
 
+* Allow defining in which library to install R packages during configuration of
+R.
+
+* Start from the R server port configuration and make it a multi-session system.
+
+* Web site: place SciViews-K in position 1 and indicate minimal and maximal
+versions of R and Komodo we need.
+
 * There is a bug with the abbrev expansion that prevents correct detection of
 abbrev when the file is not saved or saved with a different extension than .R
 
@@ -56,3 +64,9 @@ correct title and look for a method to allow deleting the file
 * Make the User's and Developer's manuals
 
 * Update the web site
+
+
+= Experimentation TODO
+
+* All data operations on ~/svData do not work if the directory is not created!
+

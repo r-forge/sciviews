@@ -53,7 +53,7 @@
     <script src="chrome://komodo/content/library/dialogs.js" type="application/x-javascript"/>
     <script src="chrome://komodo/content/library/filepickers.js" type="application/x-javascript"/>
     <script src="chrome://komodo/content/library/windowManager.js" type="application/x-javascript"/>
-    <script src="chrome://sciviewsk/content/js/prefs.js" type="application/x-javascript"/>
+    <script src="chrome://sciviewsk/content/js/prefs-R.js" type="application/x-javascript"/>
 
     <groupbox orient="vertical">
         <caption label="Default R Interpreter"/>
