@@ -46,6 +46,9 @@ descSlots <- function( object, slots, package = NULL, lib.loc = NULL ){
 	character( length( slots ) )
 }
 
+descSquare <- function( completions, package = NULL ){
+	character( length( completions ))
+}
 
 descArgs <-
 function (fun, args = NULL, package = NULL, lib.loc = NULL) {
