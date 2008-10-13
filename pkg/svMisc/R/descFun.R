@@ -76,7 +76,7 @@ function (fun, args = NULL, package = NULL, lib.loc = NULL) {
 	res <- tapply(argsDesc, cumsum(argsFirstLine), paste, collapse = " ")
 	res <- as.vector(res)
 	# Create multiple entries for "arg1, arg2, ..."
-	argsNames <- strsplit(argsNames, ", ")
+	argsNames <- strsplit(argsNames, ", *")
 	Times <- sapply(argsNames, length)
 	res <- rep(res, Times)
 	names(res) <- unlist(argsNames)

@@ -31,9 +31,6 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
     out <- matrix("", nrow = length(comps), ncol = 3)
     out[, 1] <- comps
 
-    # TODO: look at utils:::.win32consoleCompletion and figure out if the
-	# "additions" can be useful
-
     ### deal with packages (completions ending with ::)
     if (length(test.pack <- grep("::", comps)))
 		out[test.pack, 3] <- sapply(sub("::", "", comps[test.pack]),
@@ -41,17 +38,16 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
 
     ### deal with argument completions (ending with =)
     if (length(test.arg <- grep("=", comps))) {
-		arg <- sub("=$", "", comps[test.arg])
-		fguess <- utils:::.CompletionEnv[["fguess"]]
-		pack <- sub( "^package:", "", find(fguess)[1])
-		if(pack == ".GlobalEnv") {
-			out[test.arg, 3] <- ""
-		} else{
-			out[test.arg, 2] <- fguess
-			#out[test.arg, 3] <- .extract_argument_description(pack, fguess, arg)
-			out[test.arg, 3] <- descArgs(fguess, arg, pack)
-		}
-    }
+			arg <- sub("=$", "", comps[test.arg])
+			fguess <- utils:::.CompletionEnv[["fguess"]]
+			pack <- sub( "^package:", "", find(fguess)[1])
+			if(pack == ".GlobalEnv") {
+				out[test.arg, 3] <- ""
+			} else{
+				out[test.arg, 2] <- fguess
+				out[test.arg, 3] <- descArgs(fguess, arg, pack)
+			}
+    }     
 
     ### TODO: do not know what to do with these
     test.others <- grep(" ", comps)
