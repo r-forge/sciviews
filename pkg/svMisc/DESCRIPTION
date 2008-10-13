@@ -3,8 +3,8 @@ Title: SciViews GUI API - Miscellaneous functions
 Imports: utils, methods
 Depends: R (>= 2.6.0)
 Description: Supporting functions for the GUI API (various utilitary functions)
-Version: 0.9-45
-Date: 2008-08-31
+Version: 0.9-46
+Date: 2008-10-13
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL (>= 2)
