@@ -49,23 +49,43 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
 			}
     }     
 
+		### deal with completions with "$"
+		if (length(test.dollar <- grep("\\$", comps))) {
+			elements <- comps[ test.dollar ]
+			object   <- gsub( "\\$.*$" , "" , comps )[1]
+			after    <- gsub( "^.*\\$" , "" , comps )
+			pack     <- find.multiple( object )
+			out[ test.dollar, 2 ] <- pack
+			out[ test.dollar, 3 ] <- descData( object, after, package = pack )
+		}
+		
+		### deal with completions with "@"
+		if( length(test.slot <- grep("@", comps)) ){
+			elements <- comps[ test.dollar ]
+			object   <- gsub( "@.*$" , "" , comps )[1]
+			slots    <- gsub( "^.*@" , "" , comps )
+			pack     <- find.multiple( object )
+			out[ test.dollar, 2 ] <- pack
+			out[ test.dollar, 3 ] <- descSlots( object, slots, package = pack )
+		}
+		
     ### TODO: do not know what to do with these
     test.others <- grep(" ", comps)
     # TODO: are there other kind of completions I miss here
 
     ### deal with function completions
-    test.fun <- setdiff(1:length(comps), c(test.arg, test.pack, test.others))
+    test.fun <- setdiff(1:length(comps), c(test.arg, test.pack, test.others, test.dollar, test.slot))
     if (length(test.fun)) {
-		funs <- comps[test.fun]
-		packs <- find.multiple( funs )
-    desc.fun <- rep("", length(packs))
-		for (pack in unique(packs)) {
-			if (pack != ".GlobalEnv") {
-				desc.fun[packs == pack] <- descFun(funs[packs == pack], pack)
+			funs <- comps[test.fun]
+			packs <- find.multiple( funs )
+    	desc.fun <- rep("", length(packs))
+			for (pack in unique(packs)) {
+				if (pack != ".GlobalEnv") {
+					desc.fun[packs == pack] <- descFun(funs[packs == pack], pack)
+				}
 			}
-		}
-		out[test.fun, 2] <- packs
-		out[test.fun, 3] <- desc.fun
+			out[test.fun, 2] <- packs
+			out[test.fun, 3] <- desc.fun
     }
 
     out[, 3] <- gsub("\t", "    ", out[, 3])
