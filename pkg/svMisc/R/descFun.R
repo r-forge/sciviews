@@ -38,6 +38,15 @@ function (fun, package, lib.loc = NULL) {
 	return(res)
 }
 
+descData <- function( data, columns, package = NULL, lib.loc = NULL ){
+	character( length( columns ) )
+}
+
+descSlots <- function( object, slots, package = NULL, lib.loc = NULL ){
+	character( length( slots ) )
+}
+
+
 descArgs <-
 function (fun, args = NULL, package = NULL, lib.loc = NULL) {
 	# Start from the text version of the online help instead of the .Rd file
