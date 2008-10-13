@@ -69,12 +69,19 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
 			out[ test.dollar, 3 ] <- descSlots( object, slots, package = pack )
 		}
 		
+		### deal with completions with "["
+		if( length(test.square <- grep("\\[", comps)) ){
+			elements <- comps[ test.square ]
+			out[ test.square, 2 ] <- ""
+			out[ test.square, 3 ] <- descSquare( elements, package = pack )
+		}
+		
     ### TODO: do not know what to do with these
     test.others <- grep(" ", comps)
     # TODO: are there other kind of completions I miss here
 
     ### deal with function completions
-    test.fun <- setdiff(1:length(comps), c(test.arg, test.pack, test.others, test.dollar, test.slot))
+    test.fun <- setdiff(1:length(comps), c(test.arg, test.pack, test.others, test.dollar, test.slot, test.square))
     if (length(test.fun)) {
 			funs <- comps[test.fun]
 			packs <- find.multiple( funs )
