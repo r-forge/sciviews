@@ -87,7 +87,7 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
 			packs <- find.multiple( funs )
     	desc.fun <- rep("", length(packs))
 			for (pack in unique(packs)) {
-				if (pack != ".GlobalEnv") {
+				if (! pack %in% c("", ".GlobalEnv" ) ) {
 					desc.fun[packs == pack] <- descFun(funs[packs == pack], pack)
 				}
 			}
