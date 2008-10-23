@@ -12,8 +12,8 @@ function (tests) {
 		# * test(OBJ) where OBJ is any object with a 'test' attribute
 		# * OBJ being a 'svTest' object (with non "exotic" name!),
 		# Syntax is checked, but not existence/validity of corresponding tests!
-		check1 <- (regexpr("^package:[a-zA-Z._]+$", tests) > -1)
-		check2 <- (regexpr("^package:[a-zA-Z._]+ *\\(.+\\)$", tests) > -1)
+		check1 <- (regexpr("^package:[a-zA-Z][a-zA-Z._0-9]*$", tests) > -1)
+		check2 <- (regexpr("^package:[a-zA-Z][a-zA-Z._0-9]* *\\(.+\\)$", tests) > -1)
 		check3 <- (regexpr("^dir:.+", tests) > -1)
 		check4 <- (regexpr("^test\\(.+\\)$", tests) > -1)
 		check5 <- (regexpr("^[a-zA-Z0-9_.]+$", tests) > -1)
