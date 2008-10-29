@@ -1,0 +1,56 @@
+import( utils )
+
+export( checkUsageFile )
+
+# sidekick.R
+export( sidekick )
+
+# errorlist.R
+export( getErrors )
+export( addError )
+export( resetErrors )
+export( emptyError )
+
+# parseError.R
+export( parseError )
+
+# tryParse.R
+export( tryParse )
+
+# trySource.R
+export( trySource )
+
+# check_description.R
+export( check_description )
+
+# complete_description.R
+export( completeDescription )
+
+# completion.R
+export( ltyComplete     )
+export( colComplete     )
+export( pchComplete     )
+export( CompletePlusWrap)
+
+# complete_namespace.R
+export( namespaceComplete )
+
+# check_namespace.R
+export( namespaceParser )
+   
+# packages.R
+export( packwebdesc       )
+export( packdesc          )
+export( installedPackages ) 
+export( loadedPackages    )
+
+# rdparse.R
+export( rdparse )
+
+S3method( print, rsitesearch )
+S3method( head, rsitesearch )
+S3method( tail, rsitesearch )
+S3method( summary, rsitesearch )
+S3method( "[", rsitesearch )
+
+
