@@ -16,7 +16,7 @@ installedPackages <- function( pattern = NULL){
  def <- c( getOption("defaultPackages"), "base")
  ip <- cbind( ip, 
    "Loaded"  = ifelse( ip[,'Package'] %in% lp , 1, 0 ), 
-   "Default" = ifelse( ip[,'Package'] %in% def, 1, 0 )
+   "Default" = ifelse( ip[,'-Package'] %in% def, 1, 0 )
  )
  ip 
 }
