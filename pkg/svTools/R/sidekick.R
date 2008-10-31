@@ -29,8 +29,7 @@ sidekick <- function( file ){
 
 sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, env = new.env(), parent = 0, file ){
 	
-	if( top ) {
-		
+	if( top ) {		
 		env[["data"]] <- data.frame( 
 			id = numeric(0), 
 			srcref1 = numeric(0), 
@@ -42,15 +41,15 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 			mode = character(0), stringsAsFactors = FALSE )
 		if( p %of% "try-error" ){
 			return( env[["data"]] )
-		}
-		
+		}		
 		maxId <- 0
 	} else {
 		maxId <- max( env[["data"]][, "id"] ) 
 	}
 	
+	isIf <- looksLikeAnIf( p )
 	atts <- attributes( p )
-	descriptions <-as.character( p )
+	descriptions <- as.character( p )
 	hasAttrs <- "srcref" %in% names(atts)
 	if( hasAttrs ){
 		srcrefs <- t( sapply( attr(p, "srcref"), as.integer ) )  
@@ -64,55 +63,96 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 			mode = modes, 
 			stringsAsFactors = FALSE)
 		env[["data"]] <- rbind( env[["data"]], data )
-		
-	}
+	} 
 	
 	calls <- sapply( p, mode ) %in% c("call","function")
-  for( i in 1:length(p)){
-		if( !is.null(p) && calls[i] ){
-			test <- try( looksLikeAFunction( p[[i]] ), silent = TRUE )
-			if( test ){
-				env[["data"]][ ids[i], "mode" ] <- "function"
-				try( sidekickParse( p[[i]], top = FALSE, env = env, parent = if( hasAttrs) ids[i] else parent ), silent = TRUE )  
-			} else {
-				test <- try( looksLikeAnIf( p[[i]] ), silent = TRUE )
-				if( ! test %of% "try-error" && test ){
-					pa <- try( addIfNode( TRUE, env = env, parent = if( hasAttrs ) ids[i] else parent, p[[i]][[3]] ), silent = TRUE )
-					sidekickParse( p[[i]][[3]], top = FALSE, env = env, parent = pa )
-					if( length(p[[i]]) == 4){
-						pa <- try( addIfNode( FALSE, env = env, parent = if( hasAttrs ) ids[i] else parent, p[[i]][[4]] ), silent = TRUE )
-						sidekickParse( p[[i]][[4]], top = FALSE, env = env, parent = pa )
-					}		
-				} else{
+  
+	if( isIf ) {
+		env[["data"]][ parent, "mode" ] <- "if"
+		pa <- try( addIfNode( TRUE, env = env, parent = parent, p[[3]] ), silent = TRUE )
+		sidekickParse( p[[3]], top = FALSE, env = env, parent = pa )  
+		if( length(p) == 4) {
+			pa <- try( addIfNode( FALSE, env = env, parent = parent, p[[4]] ), silent = TRUE )
+			if( looksLikeAnIf( p[[4]]) ){
+				data <- data.frame( 
+					id          = pa + 1,
+					getIfSrcref( p[[4]] ),
+					description = paste( "if(", as.character( p[[4]][[2]]) , ")", sep = "" ), 
+					parent      = pa , 
+					mode        =  "if" )
+				env[["data"]] <- rbind( env[["data"]], data )
+				env[["data"]][ pa, 2:5] <- data[, 2:5] 
+				pa <- pa + 1
+			}
+			sidekickParse( p[[4]], top = FALSE, env = env, parent = pa )  
+		}
+	} else{
+		for( i in 1:length(p)){
+			if( !is.null(p) && calls[i] ){
+				test <- try( looksLikeAFunction( p[[i]] ), silent = TRUE )
+				if( test ){
+					env[["data"]][ ids[i], "mode" ] <- "function"
+					try( sidekickParse( p[[i]], top = FALSE, env = env, parent = if( hasAttrs) ids[i] else parent ), silent = TRUE )  
+				} else {
+					# test <- try( looksLikeAnIf( p[[i]] ), silent = TRUE )
+					# if( ! test %of% "try-error" && test ){
+					# 	pa <- try( addIfNode( TRUE, env = env, parent = if( hasAttrs ) ids[i] else parent, p[[i]][[3]] ), silent = TRUE )
+					# 	sidekickParse( p[[i]][[3]], top = FALSE, env = env, parent = pa )
+					# 	if( length(p[[i]]) == 4){
+					# 		pa <- try( addIfNode( FALSE, env = env, parent = if( hasAttrs ) ids[i] else parent, p[[i]][[4]] ), silent = TRUE )
+					# 		sidekickParse( p[[i]][[4]] , top = FALSE, env = env, parent = pa )
+					# 	}	
+					# } else{
 					sidekickParse( p[[i]], top = FALSE, env = env, parent = if( hasAttrs) ids[i] else parent )
+					# }
 				}
 			}
 		}
 	}
-	
 	if( top ){
 		env[["data"]]
 	}
 	
 }
 
+getIfSrcref <- function( p ){
+	x <- attr(p, "srcref" )
+	if( is.null( x ) ){
+		x <- attr( p[[3]], "srcref" )
+		if( length(p) == 4 ){
+			x <- append( x, attr(p[[4]], "srcref" ) )
+		}
+	}
+	y <- lapply( x, as.integer)
+	srcref <- c( head( y , 1 )[[1]][1:2], tail(y,1)[[1]][3:4] )
+	data.frame( srcref1= srcref[1], srcref2 = srcref[2], srcref3 = srcref[3], 
+	  srcref4 = srcref[4], stringsAsFactors = FALSE )
+}
+
 addIfNode <- function( value = T, env = env, parent, nextnode ){
 	
 	data <- env[["data"]]
-	if( !is.null( srcref <- attr(nextnode, "srcref") ) ){
-	  id <- max(data$id) + 1
-		lap.out <- lapply( srcref, as.integer )
-		srcref <- t(c( 
-		  head( lap.out ,1)[[1]][1:2], 
-			tail( lap.out ,1)[[1]][3:4] ) ) 
-		colnames( srcref ) <- paste( "srcref", 1:4, sep = "") 
-	  mode <- paste( "if", value, sep = ":" )
-		description <- mode
-		env[["data"]] <- rbind( env[["data"]], data.frame( id = id, srcref, description = description, mode = mode, parent = parent ) )
-	  id
-	} else{
-		parent
+	srcref <- attr(nextnode, "srcref")
+	if( is.null( srcref ) ){
+		if( !looksLikeAnIf( nextnode ) ){
+			return(parent)
+		} else{          
+			srcref <- attr( nextnode[[3]], "srcref" )
+			if( length(nextnode) == 4 ){
+				srcref <- append( srcref, attr( nextnode[[3]], "srcref" ) )
+			}
+		}
 	}
+	id <- max(data$id) + 1
+	lap.out <- lapply( srcref, as.integer )
+	srcref <- t(c(  
+	  head( lap.out ,1)[[1]][1:2], 
+		tail( lap.out ,1)[[1]][3:4] ) ) 
+	colnames( srcref ) <- paste( "srcref", 1:4, sep = "") 
+	mode <- paste( "if", value, sep = ":" )
+	description <- mode
+	env[["data"]] <- rbind( env[["data"]], data.frame( id = id, srcref, description = description, mode = mode, parent = parent ) )
+	id
 	 
 }
 
@@ -131,4 +171,18 @@ looksLikeAnIf <- function(p){
 	if( length( p[[1]] ) != 1 ) return(FALSE)
 	as.character(p[[1]]) == "if"
 }
+
+
+dump. <- function( data, id = 0, level = 0 ){
+	offset <- paste( rep( "\t", level ), collapse = "" ) 
+	ids <- data$id[ data$parent == id ]
+	if( length( ids ) ){
+		for( i in 1:length(ids) ){
+			 description <- data$description[ids[i]]
+			 if( description != "{" ) cat( offset, description, "\n" )
+			 dump.( data, id = ids[i], level = level + 1)
+		}
+	}
+}
+
 
