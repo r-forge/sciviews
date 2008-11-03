@@ -58,6 +58,7 @@ getErrors <- function( file = NULL , pattern = NULL){
 	if( nrow( out ) ) {
 		out <- out[ order( out$file, out$line) , ]
 		out$line <- as.integer( out$line )
+		out
 	} else emptyError() 
 }
 
