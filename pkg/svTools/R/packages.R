@@ -16,14 +16,13 @@ installedPackages <- function( pattern = NULL){
  def <- c( getOption("defaultPackages"), "base")
  ip <- cbind( ip, 
    "Loaded"  = ifelse( ip[,'Package'] %in% lp , 1, 0 ), 
-   "Default" = ifelse( ip[,'-Package'] %in% def, 1, 0 )
+   "Default" = ifelse( ip[,'Package'] %in% def, 1, 0 )
  )
  ip 
 }
 
 
-packdesc  <- function (pkg, lib.loc = NULL, fields = NULL, drop = TRUE, encoding = "") 
-{
+packdesc  <- function (pkg, lib.loc = NULL, fields = NULL, drop = TRUE, encoding = "") {
     retval <- list()
     if (!is.null(fields)) {
         fields <- as.character(fields)

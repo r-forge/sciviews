@@ -1,8 +1,8 @@
 Package: svTools
 Type: Package
 Title: Set of tools (wrapper for packages tools and codetools)
-Version: 0.0-1
-Date: 2008-10-31
+Version: 0.0-2
+Date: 2008-11-03
 Author: Romain Francois <francoisromain@free.fr>
 Maintainer: Romain Francois <francoisromain@free.fr>
 Description: Set of tools aimed at wrapping some of the functionalities
