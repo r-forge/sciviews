@@ -55,7 +55,10 @@ getErrors <- function( file = NULL , pattern = NULL){
 	if( ! is.null(file) ){
 		out <- out[ out$file == tools:::file_path_as_absolute(file) , ]
 	}
-	if( nrow( out ) ) out[ order( out$file, out$line) , ] else emptyError() 
+	if( nrow( out ) ) {
+		out <- out[ order( out$file, out$line) , ]
+		out$line <- as.integer( out.line )
+	} else emptyError() 
 }
 
 #' Creates an empty structured error
