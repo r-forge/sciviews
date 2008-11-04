@@ -23,7 +23,16 @@ sidekick <- function( file ){
 	}
 	
 	### calls the actual sidekick function
-	sidekickParse( p )
+	out <- sidekickParse( p )
+	# TODO: replace this in the code so that no conversion is necessary at that point
+
+	out$id <- as.integer( out$id )
+	out$srcref1 <- as.integer( out$srcref1 )
+	out$srcref2 <- as.integer( out$srcref2 )
+	out$srcref3 <- as.integer( out$srcref3 )
+	out$srcref4 <- as.integer( out$srcref4 )
+	out$parent  <- as.integer( out$parent )
+	out
 }
 
 
@@ -31,13 +40,13 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 	
 	if( top ) {		
 		env[["data"]] <- data.frame( 
-			id = numeric(0), 
-			srcref1 = numeric(0), 
-			srcref2 = numeric(0),
-			srcref3 = numeric(0),
-			srcref4 = numeric(0),
+			id = integer(0), 
+			srcref1 = integer(0), 
+			srcref2 = integer(0),
+			srcref3 = integer(0),
+			srcref4 = integer(0),
 			description = character(0), 
-			parent = numeric(0), 
+			parent = integer(0), 
 			mode = character(0), stringsAsFactors = FALSE )
 		if( p %of% "try-error" ){
 			return( env[["data"]] )
@@ -94,17 +103,7 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 					env[["data"]][ ids[i], "mode" ] <- "function"
 					try( sidekickParse( p[[i]], top = FALSE, env = env, parent = if( hasAttrs) ids[i] else parent ), silent = TRUE )  
 				} else {
-					# test <- try( looksLikeAnIf( p[[i]] ), silent = TRUE )
-					# if( ! test %of% "try-error" && test ){
-					# 	pa <- try( addIfNode( TRUE, env = env, parent = if( hasAttrs ) ids[i] else parent, p[[i]][[3]] ), silent = TRUE )
-					# 	sidekickParse( p[[i]][[3]], top = FALSE, env = env, parent = pa )
-					# 	if( length(p[[i]]) == 4){
-					# 		pa <- try( addIfNode( FALSE, env = env, parent = if( hasAttrs ) ids[i] else parent, p[[i]][[4]] ), silent = TRUE )
-					# 		sidekickParse( p[[i]][[4]] , top = FALSE, env = env, parent = pa )
-					# 	}	
-					# } else{
 					sidekickParse( p[[i]], top = FALSE, env = env, parent = if( hasAttrs) ids[i] else parent )
-					# }
 				}
 			}
 		}
