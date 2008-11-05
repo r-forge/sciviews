@@ -1,13 +1,16 @@
 
 CompletePlusWrap <- function( ... ){
 	out <- CompletePlus( ..., minlength = 1 )
-	types <- rep( "function" , nrow(out ) )
-	completions <- out[,1]
-	types[ completions %~% "= *$" ] <- "argument"
-	types[ completions %~% ":: *$" ] <- "package"
-	# arguments first, then functions, then packages
-	out <- cbind( out, types )	[ order(types),, drop = FALSE ]
-	
+	if( is.null(out) ){
+		out <- matrix( "", nc = 4, nr = 0 ) 
+	}else{
+		types <- rep( "function" , nrow(out ) )
+		completions <- out[,1]
+		types[ completions %~% "= *$" ] <- "argument"
+		types[ completions %~% ":: *$" ] <- "package"
+		# arguments first, then functions, then packages
+		out <- cbind( out, types )	[ order(types),, drop = FALSE ]
+	}
 	token <- utils:::.guessTokenFromLine( )
 	fun <- utils:::inFunction()
   if(length(fun) && !is.na(fun)){
