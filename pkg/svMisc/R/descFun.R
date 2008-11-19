@@ -78,7 +78,7 @@ function (fun, args = NULL, package = NULL, lib.loc = NULL) {
 	File. <- file( File, encoding = enc, open = "r" )
 	
 	# Read content of the text file
-	Data <- scan(File., what = character(), sep = "\n" )
+	Data <- scan(File., what = character(), sep = "\n", quiet = TRUE )
 	close( File. )
 	
 	# Get the Arguments: section
