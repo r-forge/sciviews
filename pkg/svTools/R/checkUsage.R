@@ -10,11 +10,10 @@
 checkUsageFile <- function( file ){
 	
 	### first parse for errors
-	p.out <- tryParse( file, action = .addError )
+	p.out <- tryParse( file, action = addError )
 	if( p.out %of% "data.frame" ){
 		return( getErrors( file = file ) ) 
 	}
-	
 	resetErrors( file = file )
 	
 	# silly hack to retrieve information from codetools
