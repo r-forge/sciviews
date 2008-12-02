@@ -44,11 +44,9 @@ language R
 
 include "Rlex.udl"
 
-# Shouldn't I change this?
 family markup
-sublanguage html
-
+sublanguage HTML #not used
 initial IN_M_DEFAULT
 
 state IN_M_DEFAULT:
-/./ : redo, => IN_CSL_DEFAULT
+/./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
