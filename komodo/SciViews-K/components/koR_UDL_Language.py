@@ -60,7 +60,7 @@ class KoRLanguage(KoUDLLanguage):
     defaultExtension = '.R'
 
     # ??? I don't understand this... could someone explain me?
-    lang_from_udl_family = {'SSL': 'R', 'M': 'HTML'}
+    lang_from_udl_family = {'SSL': 'R' }    # R - might be - a server side language (yet all this works with CSL too), and can contain only R
 
     # Code from koJavaScriptLanguage.py
 
@@ -69,12 +69,14 @@ class KoRLanguage(KoUDLLanguage):
         "line": [ "#" ]
     }
     # TODO: we probably have to rework and complete these lists!
-    _dedenting_statements = [u'return', u'break']
-    _indenting_statements = [u'switch']
+    _dedenting_statements = ['return', 'break', 'else', 'next']
+    _indenting_statements = ['switch', 'if', 'ifelse', 'while', 'for', 'repeat']
     searchURL = "http://wiki.r-project.org/rwiki/rhelp.php?id=%W"
     namedBlockDescription = 'R functions and classes'
+    
     # TODO: I need to change this!
-    namedBlockRE = r'^[ |\t]*?(?:([\w|\.|_]*?)\s*=\s*function|function\s*([\w|\_]*?)|([\w|\_]*?)\s*:\s*function).*?$'
+    # this matches R function now, but I cannot see any effect / KB
+    namedBlockRE = r'^[ \t]*(?:[\.\w\x80-\xff][_\.\w\x80-\xff]+|(`).+\1)\s*<-\s*function\s*\(.*$'
     supportsSmartIndent = "brace"
 
     # Bypass KoUDLLanguage.get_linter, which doesn't know how to find
