@@ -2632,31 +2632,40 @@ state IN_SSL_DEFAULT:
 # name, many keywords, string, regex, number, or a few
 # closing operators.
 
-/[-+]\.\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_FLOAT
-#/[-+]\./ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_FLOAT
+/[-+]?\.\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_FLOAT
 
 '"'  : paint(upto, SSL_DEFAULT), => IN_SSL_DSTRING
 '\'' : paint(upto, SSL_DEFAULT), => IN_SSL_SSTRING
 '`'  : paint(upto, SSL_DEFAULT), => IN_SSL_BSTRING
 
 
-
 /(?<[,\(])\s*[a-zA_Z\.]+\s*(?=\=)/ :  paint(upto, SSL_DEFAULT), paint(include, SSL_VARIABLE)
 
 /$NAMESEQ/ : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER)
 
+# any name is alowed to be a list element/slot, and these should not be styled as keywords
+# TODO: allow for spases after $ or @, eg. object $ non.keyword.element
+/[\$@](?=[a-z])/ : paint(upto, SSL_DEFAULT), \
+    paint(include, SSL_OPERATOR), => IN_SSL_NON_KEYWORD_IDENTIFIER_1
+
+
+# TODO: SSL_VARIABLE could be used for styling function argument names
+# eg. ( name = ..., name2 = ...)
+# something like this:
+#/(?<=[,\(])\s*[a-z]+(?=\s*=)/ :  paint(upto, SSL_DEFAULT), paint(include, SSL_VARIABLE)
+
+
 # Now a bunch of operators
 # Multi-char operators first
-
-#/\$(?=[a-zA-Z])/ : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), => IN_SSL_OBJ_PART
 
 /%.*%/ : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 /[$OP]/ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_OP1
 
 
-
-#state IN_SSL_OBJ_PART :
-#/[^$CS]/ : paint(upto, SSL_IDENTIFIER), redo, no_keyword, => IN_SSL_DEFAULT
+###### Slot names and list elements ######
+state IN_SSL_NON_KEYWORD_IDENTIFIER_1:
+/[^$CS]/ : paint(upto, SSL_IDENTIFIER), redo, no_keyword, \
+    => IN_SSL_DEFAULT
 
 ################ Comments ################
 # We have only line comments in R => return to default on next line
@@ -2707,21 +2716,22 @@ state IN_SSL_BSTRING:
 ################ Numbers ################
 # TODO: check against all number styles in R!
 state IN_SSL_NUMBER_INT :
+/\d/ : #stay
 '.' : => IN_SSL_NUMBER_FLOAT
 'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT
-/\d/ : #stay
 /[Ee][-+]?/ : => IN_SSL_NUMBER_EXP
 /./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
 
 state IN_SSL_NUMBER_FLOAT:
 /[\d]/ : #stay
+'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT
 /[Ee][-+]?/ : => IN_SSL_NUMBER_EXP
 #'.' : paint(upto, SSL_NUMBER), paint(include, SSL_OPERATOR),  => IN_SSL_DEFAULT
 /./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
 
 state IN_SSL_NUMBER_EXP:
-'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT
 /\d/ : #stay
+'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT
 /[^\d]/ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
 
 
