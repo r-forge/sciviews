@@ -4,6 +4,7 @@
 #' the R parser (parse) into a rectangular representation
 #' @export
 #' @param file File to parse
+#' @param encoding the character encoding to use
 #' @return A data frame with the following columns : 
 #' - id : Identifier of the current node
 #' - srcref1, ..., srcref4 : identifies the position of the current node in the file
@@ -15,9 +16,18 @@
 #' cat( "jitter <- " , deparse( jitter ), sep = "\n", file = tf )
 #' sidekick( tf )
 #' unlink( tf )
-sidekick <- function( file ){
+sidekick <- function( file, encoding = "unknown" ){
+	
+	if( is.character(file) ){
+		filename <- file
+		file <- file( filename, encoding = encoding )
+		on.exit( close( file ) )
+	} else{
+		filename <- summary(f)$description
+	}
+	
 	### try to parse and return an error if failed
-	p <- try( parse( file ), silent = TRUE )
+	p <- try( parse( file, srcfile=filename ), silent = TRUE )
 	if( p %of% "try-error" ){
 		return( list( type = "error", data = parseError( p ) ) )
 	}

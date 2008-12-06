@@ -5,12 +5,18 @@
 #' file and identifies where are located each of the findings of checkUsage
 #' @export
 #' @param file file to analyse
+#' @param encoding Character encoding to use
 #' @return A data frame containing information about errors
 #' @author Romain Francois \email{francoisromain@@free.fr}
-checkUsageFile <- function( file ){
+checkUsageFile <- function( file, encoding = "unknown" ){
+	
+	if( encoding != "unknown" ){
+		old.op <- options( encoding = encoding )
+		on.exit( options( old.op ) )
+	}
 	
 	### first parse for errors
-	p.out <- tryParse( file, action = addError )
+	p.out <- tryParse( file, action = addError, encoding = encoding )
 	if( p.out %of% "data.frame" ){
 		return( getErrors( file = file ) ) 
 	}
@@ -32,9 +38,9 @@ checkUsageFile <- function( file ){
 			exprs <- p[[i]][[3]][[3]]
 			srcref <- do.call( rbind, lapply( attr( exprs, "srcref" ), as.integer ) )  
 			for( j in 1:length( exprs ) ){
-				src <- as.character( attr( exprs, "srcref" )[[j]] )
+				src <- as_character_srcref( attr( exprs, "srcref" )[[j]], useSource = TRUE, encoding = encoding )
 			  matchingLines <- grep( sprintf(rx2, param), src )
-			  if( length( matchingLines ) ){
+				if( length( matchingLines ) ){
 			  	return( matchingLines + as.integer( srcref[j,1] ) - 1 )
 			  }
 			}
@@ -93,9 +99,9 @@ checkUsageFile <- function( file ){
 				codetools:::checkUsage( env[[fname]], all = TRUE, report = report, name = "" )
 				if( length(findings) ){
 					
-					searchAndReport( "changed by assignment"                , find.local_assigned_but_not_used )  
-					searchAndReport( "assigned but may not be used"         , find.no_global_def )  
-					searchAndReport( "no visible global function definition", find.no_local_def_as_function )  
+					searchAndReport( "changed by assignment"                , find.parameter_changed_by_assignment) 
+					searchAndReport( "assigned but may not be used"         , find.local_assigned_but_not_used) 
+					searchAndReport( "no visible global function definition", find.no_global_def )  
 					searchAndReport( "no apparent local function definition", find.no_local_def_as_function )  
 					searchAndReport( "multiple local function definitions"  , find.multiple_local_def )  
 					
@@ -113,4 +119,30 @@ checkUsageFile <- function( file ){
 	getErrors( file = file )
 	
 }
+
+as_character_srcref <- function (x, useSource = TRUE, encoding = "unknown"){
+    srcfile <- attr(x, "srcfile")
+    if (useSource)
+        lines <- try(getSrcLines_(srcfile, x[1], x[3], encoding = encoding), TRUE)
+    if (!useSource || inherits(lines, "try-error"))
+        lines <- paste("<srcref: file \"", srcfile$filename,
+            "\" chars ", x[1], ":", x[2], " to ", x[3], ":",
+            x[4], ">", sep = "")
+    else {
+				if (length(lines) < x[3] - x[1] + 1)
+            x[4] <- .Machine$integer.max
+        lines[length(lines)] <- substring(lines[length(lines)], 1, x[4])
+        lines[1] <- substring(lines[1], x[2])
+    }
+    lines
+}
+
+getSrcLines_ <- function (srcfile, first, last, encoding = "unknown" ){
+    if (first > last)
+        return(character(0))
+    lines <- tail( readLines(srcfile, n = last, warn = FALSE, encoding = encoding), -(first-1) )
+		return(lines)
+}
+
+
 
