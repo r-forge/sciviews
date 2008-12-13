@@ -5,10 +5,7 @@ function (expr) {
 	rval <- NULL	# Just to avoid a note during code analysis
 	file <- textConnection("rval", "w", local = TRUE)
 	sink(file, type = "output")
-	sink(file, type = "message")
-
-	# string to match to check if a warning was generated in eval environment:
-	callFromEvalEnv <- "eval.with.vis(Expr, .GlobalEnv, baseenv())"
+	#sink(file, type = "message")  # not necessarry anymore since there is custom error handler
 
 	# This is a hack to display warning(..., immediate.) correctly
 	# (except from base objects) because there is no way to detect it
@@ -32,7 +29,7 @@ function (expr) {
 	}, envir = TempEnv())
 	on.exit({
 		sink(type = "output")
-		sink(type = "message")
+		#sink(type = "message")
 		close(file)
 		if (exists("warning", envir = TempEnv()))
 			rm("warning", envir = TempEnv())
@@ -53,29 +50,28 @@ function (expr) {
 		})
 		# Evaluate instruction(s) in the user workspace (.GlobalEnv)
 		#myEvalEnv.. <- .GlobalEnv # << is this necessary?
+
 		res <- try(withCallingHandlers(.Internal(eval.with.vis(Expr,
 			.GlobalEnv, baseenv())),
-			warning = function (w) {
+			warning = function (e) {
+				# changed some variable names to match corresponding ones in the error handler below
 
-				Mes <- w$message
-				Call <- w$call
+				msg <- conditionMessage(e)
+				call <- conditionCall(e)
 
 				# Possibly truncate it
 				wl <- getOption("warning.length")
 				if (is.null(wl)) wl <- 1000 # Default value
-				if (nchar(Mes) > wl)
-					Mes <- paste(substr(Mes, 1, wl),
+				if (nchar(msg) > wl)
+					msg <- paste(substr(msg, 1, wl),
 					.gettext("[... truncated]"))   #  [... truncated] not in it?
 
 				# Result depends upon 'warn'
 				Warn <- getOption("warn")
 
 				# If warning generated in eval environment,  make it NULL
-				# isTRUE prevents from an error when Call is NULL
-				if (isTRUE(Call == callFromEvalEnv))
-					w$call <- character(0)
-
-				#w <<- Warn # << what is this for?
+				if (!is.null(call) && identical(call[[1]], quote(eval.with.vis)))
+					e$call <- NULL
 
 				if (Warn < 0) { # Do nothing!
 					return()
@@ -87,33 +83,59 @@ function (expr) {
 					if (length(lwarn) >= 50) return()
 
 					# Add the warning to this list and save in TempEnv()
-					assign("warns", append(lwarn, list(w)), envir = TempEnv())
+					assign("warns", append(lwarn, list(e)), envir = TempEnv())
 
 					return()
 				} else if (Warn > 1) { # Generate an error!
-
-					Mes <- .gettextf("(converted from warning) %s", Mes)
-					stop(simpleError(Mes, call = Call))
+					msg <- .gettextf("(converted from warning) %s", Mes)
+					stop(simpleError(msg, call = call))
 				} else {
 					# warn = 1
 					# Print the warning message immediately
 					# Format the warning message
-					# If warning generated in eval environment do not print call
-					if (is.null(Call)) { 	# `isTRUE` prevents from an error when Call is NULL
-						cat(.gettextf("Warning: %s\n", Mes))
-					} else {
-						if (nchar(paste(Call, Mes, collapse="")) < 58) {
-							cat(.gettextf("Warning in %s : %s\n",
-								deparse(Call),		# `as.character` gives not exactly what we want here
-								Mes))
-						} else {
-							cat(.gettextf("Warning in %s :\n  %s\n",
-								deparse(Call), Mes))
-						}
-					}
+
+					# this is modified code from base::try
+					if (!is.null(call)) {
+						dcall <- deparse(call)[1]
+						prefix <- paste(.gettext("Warning in"), dcall, ": ")
+						sm <- strsplit(msg, "\n")[[1]]
+						if (nchar(dcall, type="w") + nchar(sm[1], type="w") > 58) # to match value in errors.c
+							prefix <- paste(prefix, "\n  ", sep = "")
+					} else prefix <- .gettext("Warning : ")
+
+					msg <- paste(prefix, msg, "\n", sep="")
+					cat(msg)
+
 				}
 			},
 			interrupt = function (i) cat(.gettext("<INTERRUPTED!>\n"))
+			# this is modified code from base::try
+			, error = function(e) {
+				call <- conditionCall(e)
+				msg <- conditionMessage(e)
+
+				## Patch up the call to produce nicer result for testing as
+				## try(stop(...)).  This will need adjusting if the
+				## implementation of tryCatch changes.
+				## Use identical() since call[[1]] can be non-atomic.
+				if (!is.null(call) && identical(call[[1]], quote(eval.with.vis)))
+					call <- NULL
+				if (!is.null(call)) {
+					dcall <- deparse(call)[1]
+					prefix <- paste(.gettext("Error in"), dcall, ": ")
+					sm <- strsplit(msg, "\n")[[1]]
+					if (nchar(dcall, type="w") + nchar(sm[1], type="w") > 61) # to match value in errors.c
+						prefix <- paste(prefix, "\n  ", sep = "")
+				} else prefix <- .gettext("Error : ")
+
+				msg <- paste(prefix, msg, "\n", sep="")
+				## Store the error message for legacy uses of try() with
+				## geterrmessage().
+				.Internal(seterrmessage(msg[1]))
+				if (identical(getOption("show.error.messages"), TRUE)) {
+					cat(msg)
+				}
+			}
 		), silent = TRUE)
 		# Possibly add 'last.warning' as attribute to res
 		if (exists("warns", envir = TempEnv())) {
@@ -150,13 +172,20 @@ function (expr) {
 	for (i in 1:length(expr)) {
 		tmp <- evalVis(expr[[i]])
 		if (inherits(tmp, "try-error")) {
-	   		# Rework the error message if occurring in calling env
-			mess <- unclass(tmp)
-			# if (regexpr("eval\\.with\\.vis[(]Expr, myEvalEnv\\.\\., baseenv[(][)][)]", # strange regexp?
-			# this is simplier
-			if (regexpr(callFromEvalEnv, mess, fixed = TRUE) > 0)
-				mess <- sub("^[^:]+: *(\n *\t*| *\t*)", .gettext("Error: "), mess)
-			cat(mess)
+
+	# This is not necessary anymore, since errors are printed by error handler:
+	#{{
+	#
+	#   		# Rework the error message if occurring in calling env
+	#		mess <- unclass(tmp)
+	#		# if (regexpr("eval\\.with\\.vis[(]Expr, myEvalEnv\\.\\., baseenv[(][)][)]", # strange regexp?
+	#		# this is simplier
+	#		if (regexpr(callFromEvalEnv, mess, fixed = TRUE) > 0)
+	#			mess <- sub("^[^:]+: *(\n *\t*| *\t*)", .gettext("Error: "), mess)
+	#		cat(mess)
+	#}}
+
+
 			last.warning <- attr(tmp, "last.warning")
 			if (!is.null(last.warning)) {
 				cat(.gettext("In addition: "))
