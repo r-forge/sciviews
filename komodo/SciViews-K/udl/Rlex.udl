@@ -2625,13 +2625,12 @@ state IN_SSL_DEFAULT:
 # We have to lex numbers in states in case we reach EOF right after the
 # "e" in a floating pt constant, for example
 # TODO: check this against the way to specify numbers in R!
-/0[Xx][0-9a-fA-F]+L?/ : paint(upto, SSL_DEFAULT), paint(include, SSL_NUMBER)
-/(?<![$CS])[-+]?[0-9]/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_INT
+/0[Xx][\da-fA-F]+L?/ : paint(upto, SSL_DEFAULT), paint(include, SSL_NUMBER)
+/(?<![$CS])[-+]?\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_INT
 
 # A "." can start a number only if it doesn't follow a
 # name, many keywords, string, regex, number, or a few
 # closing operators.
-
 /[-+]?\.\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_FLOAT
 
 '"'  : paint(upto, SSL_DEFAULT), => IN_SSL_DSTRING
@@ -2658,7 +2657,7 @@ state IN_SSL_DEFAULT:
 # Now a bunch of operators
 # Multi-char operators first
 
-/%.*%/ : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
+/%[$CS$OP]*%/ : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 /[$OP]/ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_OP1
 
 
@@ -2724,7 +2723,6 @@ state IN_SSL_NUMBER_INT :
 
 state IN_SSL_NUMBER_FLOAT:
 /[\d]/ : #stay
-'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT
 /[Ee][-+]?/ : => IN_SSL_NUMBER_EXP
 #'.' : paint(upto, SSL_NUMBER), paint(include, SSL_OPERATOR),  => IN_SSL_DEFAULT
 /./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
@@ -2806,3 +2804,6 @@ fold "}" SSL_OPERATOR -
 
 fold "#{{" SSL_COMMENT +
 fold "#}}" SSL_COMMENT -
+
+fold "(" SSL_OPERATOR +
+fold ")" SSL_OPERATOR -
