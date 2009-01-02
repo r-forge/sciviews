@@ -29,26 +29,32 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.socket' namespace
-if (typeof(sv.socket) == 'undefined') sv.socket = new Object();
-
-// Will be used later for compatibility checking between R and Komodo tools
-sv.socket.svSocketMinVersion = "0.9-40";
-
-
 /////// Socket client //////////////////////////////////////////////////////////
-sv.socket.host = "127.0.0.1"; // Host to connect to (local host only, currently)
-sv.socket.cmdout = true;      // Do we write to 'Command Output'?
-sv.socket.prompt = ":> ";     // The prompt, could be changed to continue prompt
-sv.socket.cmd = "";           // The command to send to R
+sv.socket = {
+	svSocketMinVersion: "0.9-40", // Will be used later for compatibility checking between R and Komodo tools
+	host: "127.0.0.1", // Host to connect to (local host only, currently)
+	cmdout: true,     // Do we write to 'Command Output'?
+	prompt: ":> ",     // The prompt, could be changed to continue prompt
+	cmd: "",           // The command to send to R
+	charsetUpdated: false,
+	charset: "latin1"
+};
 
 // The main socket client function to connect to R socket server
 sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
+
 	try {
 		var transportService = Components.
 			classes["@mozilla.org/network/socket-transport-service;1"]
 			.getService(Components.interfaces.nsISocketTransportService);
 		var transport = transportService.createTransport(null, 0,
 			host, port, null);
+
+		// Convert output string from unicode to R's charset (Bug #240)
+		var converter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
+			.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
+		converter.charset = sv.socket.charset;
+		outputData = converter.ConvertFromUnicode(outputData);
 
 		var outstream = transport.openOutputStream(0, 0, 0);
 		outstream.write(outputData, outputData.length);
@@ -72,29 +78,27 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 				inputStream, offset, count) {
 				// TODO: limit the total amount of data send through the socket!
 				var chunk = instream.read(count);
+
+				// Convert read string to unicode (Bug #240)
+				chunk = converter.ConvertToUnicode(chunk);
+
 				// Determine if we have a prompt at the end
-				var cl = chunk.length;
-				if (chunk.substring(cl-5, cl-3) == "> " |
-					chunk.substring(cl-4, cl-2) == "> ") {
+				if (chunk.search(/\+\s+$/) > -1) {
+					sv.socket.prompt = ":+ ";
+					// remove endline from prompt if it is a continuation
+					chunk = chunk.rtrim() + " ";
+				} else if (chunk.search(/>\s+$/) > -1) {
 					sv.socket.prompt = ":> ";
 				}
-				if (chunk.substring(cl-5, cl-3) == "+ " |
-					chunk.substring(cl-4, cl-2) == "+ ") {
-					sv.socket.prompt = ":+ ";
-				}
+
 				// Do we need to close the connection
 				// (\f received, followed by \n, \r, or both)?
 				if (chunk.match("\n\f") == "\n\f") {
 					instream.close();
 					outstream.close();
 					// Eliminate the trailing (\r)\n\f chars before the prompt
-					if (chunk.indexOf("\r\n\f") > -1) {
-						chunk = chunk.replace("\r\n\f", "");
-					} else {
-						chunk = chunk.replace("\n\f", "");
-					}
 					// Eliminate the last carriage return after the prompt
-					chunk = chunk.replace(/ \r?\n?$/, " ");
+					chunk = chunk.replace(/(\r?\n\f|\s+$)/, "");
 				}
 				this.data += chunk;
 				// Do we "echo" these results somewhere?
@@ -104,7 +108,7 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 						sv.cmdout.append(chunk, newline = false);
 					} else echofun(chunk);
 				}
-			},
+			}
 		}
 
 		var pump = Components.
@@ -112,12 +116,26 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 			createInstance(Components.interfaces.nsIInputStreamPump);
 		pump.init(stream, -1, -1, 0, 0, false);
 		pump.asyncRead(dataListener, null);
-	} catch (e) { return(e); }
+	} catch (e) {
+		return(e);
+	}
 	return(null);
 }
 
+
 // Send an R command through the socket
 sv.socket.rCommand = function(cmd, echo, echofun, procfun, context) {
+
+	// Get R's character set before first request and store in sv.socket.charset (Bug #240)
+	// TODO: 	sv.socket.charset does not change until next R command, update charset at server init
+	//		will return wrong charset with non-windows encodings other than utf-8 and latin1
+	if (!sv.socket.charsetUpdated) {
+		sv.socket.charsetUpdated = true;
+		sv.r.evalCallback(".tmp <- l10n_info(); cat(if (.tmp$`UTF-8`) \"UTF-8\" else if (.tmp$`Latin-1`) \"LATIN1\" else paste(\"CP\", .tmp$codepage, sep=\"\")); rm(.tmp);", function(s) {
+			sv.socket.charset = s;
+		});
+	}
+
 	cmd = sv.tools.strings.replaceCRLF(cmd, "<<<n>>>");
 	if (procfun == null) {	// Do nothing at the end
 		var listener = { finished: function(data) {} }
@@ -160,6 +178,8 @@ sv.socket.serverStart = function() {
 						transport.host + " on port " + transport.port + "\n");
 				}
 
+
+
 				// Then, read data from the client
 				var inputStream = transport.openInputStream(nsITransport.
 					OPEN_BLOCKING, 0, 0);
@@ -181,6 +201,10 @@ sv.socket.serverStart = function() {
 				// Read the complete data
 				while (sin.available() > 0)
 					inputString += sin.read(512);
+
+
+				// INTL
+				inputString = converter.ConvertToUnicode(inputString);
 
 				// Is there data send?
 				if (inputString == "") {
