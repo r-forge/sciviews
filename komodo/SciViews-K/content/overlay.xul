@@ -53,6 +53,7 @@
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/io.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/e4x2dom.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>

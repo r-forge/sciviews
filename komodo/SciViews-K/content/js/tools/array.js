@@ -28,7 +28,7 @@ sv.tools.array.contains = function(a, s) {
 
 // Return an array from which 's' item is eliminated fro the array 'a'
 sv.tools.array.removeItem = function(a, s) {
-	b = [];
+	var b = [];
 	for (i in a) {
 		if (i != s) {
 			b[i] = a[i]
