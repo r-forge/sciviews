@@ -14,6 +14,10 @@
 // sv.getLine(); // Get current line in the active buffer
 // sv.getPart(what, resel, clipboard); // Get a part of text in the buffer
             // or copy it to the clipboard (reset selection if resel == false)
+
+// sv.getTextRange(what, gotoend, select); // Get a part of text in the buffer, but do not operate on selection
+// sv.fileOpen(directory, filename, title, filter, multiple); // file open dialog, more custimizable replacement for ko.filepicker.open
+
 // sv.browseURI(URI, internal); // Show URI in internal or external browser
 // sv.showFile(path, readonly); // Show a file in Komodo, possibly as read-only
 // sv.helpURL(URL); // Display URL help in the default browser
@@ -28,11 +32,12 @@
 // OpenKore Command Output management ('sv.cmdout' namespace)
 // sv.cmdout.append(str, newline); // Append text to the Command Output pane
 // sv.cmdout.clear(); // Clear the Command Output pane
-//
+// sv.cmdout.message(msg, timeout); // // Display message on the Command Output pane's bar
+
 ////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') {
-	sv = {
+	var sv = {
 		// TODO: set this automatically according to the plugin version
 		version: 0.6,
 		release: 5,
@@ -90,6 +95,7 @@ sv.getLine = function() {
 	// Return the content of the current line
 	return(currentLine);
 };
+
 
 // Select a part of text in the current buffer and return it
 sv.getPart = function(what, resel, clipboard) {
@@ -162,6 +168,176 @@ sv.getPart = function(what, resel, clipboard) {
 	return(text);
 };
 
+
+// Select a part of text in the current buffer and return it
+// differs from sv.getPart that it does not touch the selection
+sv.getTextRange = function(what, gotoend, select) {
+	var text = "";
+	var kv = ko.views.manager.currentView;
+	if (!kv) {
+		return "";
+	}
+	kv.setFocus();
+	var ke = kv.scimoz;
+	// retain these so we can reset the selection after the extraction
+	var curPos = ke.currentPos;
+	var curLine = ke.lineFromPosition(curPos);
+
+	var pStart = Math.min (ke.anchor, curPos);
+	var pEnd = Math.max (ke.anchor, curPos);
+
+	// Depending on 'what', we select different parts of the file
+	// By default, we keep current selection
+	switch(what) {
+	case "sel":
+	   // Simply retain current selection
+	   break;
+	case "function":
+	   // Select an entire R function
+	   // TODO: 	what to do if cursor if outside any function?
+	   // 		currently all of the current level is selected in such case
+	   var funcRx = /function\s*\(/;
+	   var l0, l1;
+		// go up from curLine until line matches funcRx
+	   for (l0 = curLine; l0 >= 0
+			&& ke.getTextRange(pStart = ke.positionFromLine(l0),
+			   ke.getLineEndPosition(l0)).search(funcRx) == -1;
+			l0--) {
+	   }
+	   // get line number corresponding to last element of the function's fold level
+	   l1 = ke.getLastChild(curLine, ke.getFoldLevel(l0));
+	   pEnd = ke.getLineEndPosition(l1);
+
+	   break;
+	case "block":
+		// Select all content between two bookmarks
+		var Mark1, Mark2;
+		Mark1 = ke.markerPrevious(curLine, -1);
+		if (Mark1 == -1)	Mark1 = 0;
+		Mark2 = ke.markerNext(curLine, -1);
+		if (Mark2 == -1)	Mark2 = ke.lineCount - 1;
+
+		pStart = ke.positionFromLine(Mark1);
+		pEnd = ke.getLineEndPosition(Mark2);
+
+	   break;
+	case "para":
+	   // Select the entire paragraph
+	   // go up from curLine until
+	   for (var i = curLine; i >= 0
+			&& ke.lineLength(i) > 0
+			&& ke.getTextRange(
+			   pStart = ke.positionFromLine(i),
+			   ke.getLineEndPosition(i)).trim() != "";
+			i--) {		}
+
+	   for (var i = curLine; i <= ke.lineCount
+			&& ke.lineLength(i) > 0
+			&& ke.getTextRange(ke.positionFromLine(i),
+			   pEnd = ke.getLineEndPosition(i)).trim() != "";
+			i++) {		}
+
+	   break;
+	case "line":
+		 // Select whole current line
+		pStart = ke.positionFromLine(curLine);
+		pEnd = ke.getLineEndPosition(curLine);
+	   break;
+	case "linetobegin":
+	   // Select line content from beginning to anchor
+	   pStart = ke.positionFromLine(curLine);
+	   break;
+	case "linetoend":
+	   // Select line from anchor to end of line
+	   pEnd = ke.getLineEndPosition(curLine);
+	   break;
+	case "end":
+	   // take text from current line to the end
+	   pStart = ke.positionFromLine(curLine);
+	   pEnd = ke.textLength;
+
+	   break;
+	case "all":
+	default:
+	   // Take everything
+	   text = ke.text;
+	}
+
+	if (what != "all") {
+		text = ke.getTextRange(pStart, pEnd).trim();
+		if (gotoend) {
+			ke.gotoPos(pEnd);
+		}
+		if (select) {
+			ke.setSel(pStart, pEnd);
+		}
+	}
+
+	return(text);
+}
+
+
+// file open dialog, more custimizable replacement for ko.filepicker.open
+sv.fileOpen = function(directory, filename, title, filter, multiple) {
+	const nsIFilePicker = Components.interfaces.nsIFilePicker;
+
+	var fp = Components.classes["@mozilla.org/filepicker;1"]
+	  .createInstance(nsIFilePicker);
+
+	if (!title)
+	  title = "Open file";
+
+	var mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
+
+	fp.init(window, title, mode);
+
+	if (filter) {
+	  if (typeof(filter) == "string") {
+		filter = filter.split(',');
+	  }
+
+	  var fi;
+	  for (var i = 0; i  < filter.length; i++) {
+		fi = filter[i].split("|");
+		if (fi.length == 1)
+		  fi[1] = fi[0];
+		fp.appendFilter(fi[0], fi[1]);
+	  }
+	}
+
+  fp.appendFilters(nsIFilePicker.filterAll);
+
+  if (directory) {
+	var lf = Components.classes["@mozilla.org/file/local;1"].
+			createInstance(Components.interfaces.nsILocalFile);
+	lf.initWithPath(directory);
+	fp.displayDirectory = lf;
+  }
+  if (filename) {
+	   fp.defaultString = filename;
+  }
+
+  var rv = fp.show();
+
+  if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
+	var path;
+	if (multiple) {
+		var files = fp.files;
+		path = new Array();
+		while (files.hasMoreElements()) {
+		  var file = files.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+		  path.push(file.path);
+		}
+
+	} else {
+		path = fp.file.path;
+	}
+	return(path);
+  }
+  return (null);
+}
+
+
 // Browse for the URI, either in an internal, or external (default) browser
 sv.browseURI = function(URI, internal) {
 	if (URI == "") {
@@ -221,7 +397,10 @@ sv.helpURL = function(URL) {
 		var helpURL = URL.replace("<keyword>", sel);
 		ko.browse.openUrlInDefaultBrowser(helpURL);
 		return(true);
-	} catch(e) { alert(e); }
+	} catch(e) {
+		alert(e);
+	}
+	return(false);
 };
 
 // Get contextual help for a word in the buffer, or for snippets
@@ -355,7 +534,9 @@ sv.cmdout.append = function(str, newline) {
 		// Find out the newline sequence uses, and write the text to it.
 		var scimoz = document.getElementById("runoutput-scintilla").scimoz;
 		var prevLength = scimoz.length;
-		if (newline == null) str += ["\r\n", "\n", "\r"][scimoz.eOLMode];
+		if (newline == null)
+			str += ["\r\n", "\n", "\r"][scimoz.eOLMode];
+
 		var str_byte_length = ko.stringutils.bytelength(str);
 		var ro = scimoz.readOnly;
 		try {
@@ -369,6 +550,8 @@ sv.cmdout.append = function(str, newline) {
 
 // Clear text in the Output Command pane
 sv.cmdout.clear = function() {
+	sv.cmdout.message();
+
 	try {
 		var runout = ko.run.output;
 		// Make sure the command output window is visible
@@ -386,6 +569,24 @@ sv.cmdout.clear = function() {
 		} finally { scimoz.readOnly = ro; }
 	} catch(e) { alert("problems clearing the Command Output pane\n"); }
 };
+
+// Display message on the command ouptut bar
+sv.cmdout.message = function(msg, timeout) {
+	document.getElementById('output_tabpanels').selectedIndex = 0;
+	var runoutputDesc = document.getElementById('runoutput-desc');
+	if (msg == null) {
+		msg = "";
+	}
+
+	runoutputDesc.setAttribute("label", msg);
+
+	window.clearTimeout(runoutputDesc.timeout);
+
+	if (timeout > 0) {
+		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message()", timeout);
+	}
+}
+
 
 sv.checkToolbox = function() {
     try {
@@ -436,5 +637,7 @@ sv.checkToolbox = function() {
 	finally { sv.showVersion = true; }
 }
 
+
 // Ensure we check the toolbox is installed once the extension is loaded
-addEventListener("load", sv.checkToolbox, false);
+addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
+//addEventListener("load", sv.checkToolbox, false);

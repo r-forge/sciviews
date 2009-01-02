@@ -8,23 +8,28 @@
 // sv.tools.strings.toRegex;                // changes a string to a regular expression
 ////////////////////////////////////////////////////////////////////////////////
 
+// trim function for the String object
+String.prototype.trim = function() {
+	return this.replace(/^\s+|\s+$/g, '');
+}
+// right trim
+String.prototype.rtrim = function() {
+	return this.replace(/\s+$/, '');
+}
+
+// left trim
+String.prototype.ltrim = function() {
+	return this.replace(/^\s+/, '');
+}
+
+
 // Define the 'sv.tools.strings' namespace
 if (typeof(sv.tools.strings) == 'undefined') sv.tools.strings = new Object();
 
 // Replace line feed and carriage return by 'code'
 sv.tools.strings.replaceCRLF = function(str, code) {
 	// Replace all \r\n by 'code' in cmd
-	while (str.indexOf("\r\n") > -1) {
-		str = str.replace("\r\n", code);
-	}
-	// Replace all \n by 'code' in cmd
-	while (str.indexOf("\n") > -1) {
-		str = str.replace("\n", code);
-	}
-	// Replace all \r by 'code' in cmd
-	while (str.indexOf("\r") > -1) {
-		str = str.replace("\r", code);
-	}
+	str = str.replace(/(\r?\n|\r)/g, code);
 	return(str);
 }
 
@@ -36,15 +41,9 @@ sv.tools.strings.removeLastCRLF = function(str) {
 
 // changes a string to a regular expression
 sv.tools.strings.toRegex = function(str){
-	// round brackets
-	str = str.replace( /\(/g, "\\(" );
-	str = str.replace( /\)/g, "\\)" );
-	
-	// square brackets
-	str = str.replace( /\[/g, "\\[" );
-	str = str.replace( /\]/g, "\\]" );
-	
+	// brackets
+	str = str.replace( /([\(\)\[\]])/g, "\\$1" );
+
 	// TODO: anything else
 	return( str ) ;
 }
-
