@@ -92,13 +92,14 @@
     <tabs id="project_toolbox_tabs">
       <tab id="sciviews_robjects_tab"
            label="&sciviews.robjects.tab;"
-           insertafter="codebrowser_tab"
+           insertafter="project_tab,codebrowser_tab"
            tooltiptext="&sciviews.robjects.tip;"
            onclick="sv.r.objects.getPackageList()" />
     </tabs>
     <tabpanels id="project_toolbox_tabpanels">
-      <tabpanel flex="1" id="sciviews_robjects_tabpanel"
-                insertafter="codebrowserviewbox">
+      <tabpanel flex="1"
+        id="sciviews_robjects_tabpanel"
+        insertafter="projectviewbox,codebrowserviewbox">
       <vbox flex="1" id="sciviews_robjects_vbox">
         <hbox align="center"
               id="sciviews_robjects_hbox"
