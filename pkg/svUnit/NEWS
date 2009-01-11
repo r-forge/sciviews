@@ -1,5 +1,9 @@
 = svUnit News
 
+== svUnit 0.6-2
+* There is now a vignette for the svUnit package.
+
+
 == svUnit 0.6-1
 * Correction of a bug in Windows relative to path separators \\ versus /,
 especially usinf tempdir().
