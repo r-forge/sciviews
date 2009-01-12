@@ -332,7 +332,7 @@ sv.r.display = function(topic, what) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
 	if (topic == "") {
-		alert("Nothing is selected!");
+		//alert("Nothing is selected!");
 	} else {
 		// Display data in different ways, depending on what
 		switch(what) {
@@ -385,8 +385,10 @@ sv.r.help = function(topic, pkg) {
 		cmd += pkg? ' package = "' + pkg + '", ' : "";
 		cmd += topic? ' topic = "' + topic + '", ' : "";
 
+		cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
+
 		// TODO: error handling when package does not exists
-		res = sv.r.evalCallback('cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))', sv.browseURI);
+		res = sv.r.evalCallback(cmd, sv.browseURI);
 
 		ko.statusBar.AddMessage("R help asked for '" + topic + "'",
 			"R", 5000, true);
@@ -400,7 +402,7 @@ sv.r.example = function(topic) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
 	if (topic == "") {
-		alert("Nothing is selected!");
+		//alert("Nothing is selected!");
 	} else {
 		res = sv.r.eval("example(" + topic + ")");
 		ko.statusBar.AddMessage("R example run for '" + topic + "'",
@@ -455,7 +457,7 @@ sv.r.siteSearch = function(topic) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
 	if (topic == "") {
-		alert("Nothing is selected!");
+		//alert("Nothing is selected!");
 	} else {
 		res = sv.r.evalHidden('RSiteSearch("' + topic + '")', earlyExit = true);
 		ko.statusBar.AddMessage("R site search asked for '" + topic + "'",
@@ -528,13 +530,13 @@ sv.r.saveWorkspace = function(file, title) {
   sv.r.eval('save.image("' + file + '")');
 }
 
+
 // Load the content of a .RData file into the workspace, or attach it
 sv.r.loadWorkspace = function(file, attach) {
   // Ask for the filename if not provided
   if (!file) {
 	//file = ko.filepicker.openFile("", ".RData", title);
-	file = sv.fileOpen("", ".RData", 'Load an .RData file', ['R workspace (*.RData)|*.RData'], true);
-	alert(typeof file)
+	file = sv.fileOpen("", ".RData", 'Load an .RData file', ['R workspace (*.RData)|*.RData'], true)[0];
 	if (!file)
 		return;	// User clicked cancel
   }
@@ -679,8 +681,8 @@ sv.r.pkg.load = function() {
 				var topic = ko.dialogs.selectFromList("Load R package",
 					"Select R package(s) to load:", items);
 				if (topic != null) {
-
-					res = sv.r.eval('cat(paste(lapply(c("' + topic.join('", "') + '"), function(pkg) {	res <- try(library(package = pkg, character.only = TRUE)); 	paste ("Package", sQuote(pkg), if (inherits(res, "try-error")) "could not be loaded"  else "loaded")	}), collapse = "\\n"), "\\n")');
+					res = sv.r.evalCallback('cat(paste(lapply(c("' + topic.join('", "') + '"), function(pkg) {	res <- try(library(package = pkg, character.only = TRUE)); 	paste ("Package", sQuote(pkg), if (inherits(res, "try-error")) "could not be loaded"  else "loaded")	}), collapse = "\\n"), "\\n")',
+									sv.cmdout.append);
 
 				}
 			}
@@ -797,7 +799,7 @@ sv.r.pkg.install = function(isCRANMirrorSet) {
 					ko.statusBar.AddMessage("", "R");
 					var res = false;
 					if (pkgs.trim() == "") {
-						alert("Error?");
+						alert("Error?"); // TODO: remove this later
 					} else {
 						var items = pkgs.split(sv.r.sep);
 						items = ko.dialogs.selectFromList("Install R package",
