@@ -87,7 +87,7 @@ function (expr) {
 
 					return()
 				} else if (Warn > 1) { # Generate an error!
-					msg <- .gettextf("(converted from warning) %s", Mes)
+					msg <- .gettextf("(converted from warning) %s", msg)
 					stop(simpleError(msg, call = call))
 				} else {
 					# warn = 1
