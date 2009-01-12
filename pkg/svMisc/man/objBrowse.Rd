@@ -6,6 +6,7 @@
 \alias{objList}
 \alias{objMenu}
 \alias{objSearch}
+\alias{print.objList}
 
 \title{ Functions to implement an object browser }
 \description{
@@ -21,10 +22,15 @@ objDir()
 objInfo(id = "default", envir = .GlobalEnv, object = "", path = NULL)
 objList(id = "default", envir = .GlobalEnv, object = "", all.names = FALSE,
     pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL,
-	compare = TRUE)
+    compare = TRUE)
+
+
 objMenu(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 	path = NULL)
 objSearch(sep = "\t", path = NULL, compare = TRUE)
+
+print.objList(x, sep="\t", sep2 = "\n", ...)
+
 }
 
 \arguments{
@@ -36,7 +42,6 @@ objSearch(sep = "\t", path = NULL, compare = TRUE)
     with '.')? }
   \item{pattern}{ A pattern to match for selecting variables }
   \item{group}{ A group to filter }
-  \item{sep}{ Separator to use between items in the file (if path is not NULL) }
   \item{path}{ The path where to write a temporary file with the requested
     information. Use \code{path = NULL} (default) if you don't pass this
     data to your GUI client by mean of a file }
@@ -47,7 +52,12 @@ objSearch(sep = "\t", path = NULL, compare = TRUE)
     not (by default) }
   \item{compare}{ If \code{compare == TRUE}, result is compared with last cached
     value and the client is updated only if something changed }
+  \item{sep}{ Separator to use between items (if path is not NULL) }
+  \item{x}{object returned by \code{objList}}
+  \item{sep2} {Separator to use between object entries}
+  \item{\dots} {further arguments, not used.}
 }
+
 \details{
   \code{objBrowse()} does the horsework. \code{objDir()} gets the temporary directory
     where exchange files are stored, in case you exchange data through files.
@@ -59,6 +69,7 @@ objSearch(sep = "\t", path = NULL, compare = TRUE)
   \code{objInfo()} computes a tooltip info for a given object.
   \code{objMenu()} computes a context menu for selected object(s) in the object
     explorer managed by the GUI client.
+  \code{print.objList()} print method for \code{objList} objects.
 }
 \value{
   Depending on the function, a list, a string, a reference to an external,
