@@ -9,6 +9,7 @@
 <!ENTITY sciviews.robjects.Dims "Dims">
 <!ENTITY sciviews.robjects.Group "Groupe">
 <!ENTITY sciviews.robjects.Class "Classe">
+<!ENTITY sciviews.robjects.FullName "Full name">
 <!ENTITY sciviews.console.tab "Console R" >
 <!ENTITY sciviews.console.tip "Console R" >
 <!ENTITY sciviews.console.history.filter.tip "Filtrer l'historique des commandes" >
@@ -25,3 +26,22 @@
 
 <!ENTITY sciviews.rconsole.completion.settings.label "Reglages" >
 <!ENTITY sciviews.rconsole.completion.settings.tip "Choix du type de completions affichees" >
+
+<!ENTITY sciviews.robjects.insName "Insert name into text" >
+<!ENTITY sciviews.robjects.insFullName "Insert full name into text" >
+<!ENTITY sciviews.robjects.rmObj "Remove objects" >
+<!ENTITY sciviews.robjects.loadPkg "Load package" >
+<!ENTITY sciviews.robjects.detach "Detach package" >
+<!ENTITY sciviews.robjects.clrFilter "Clear filter text" >
+<!ENTITY sciviews.robjects.filterByDims "Filter dimensions" >
+<!ENTITY sciviews.robjects.filterByGroup "Filter group" >
+<!ENTITY sciviews.robjects.filterByClass "Filter class" >
+<!ENTITY sciviews.robjects.filterByName "Filter name" >
+<!ENTITY sciviews.robjects.help "Help" >
+<!ENTITY sciviews.robjects.names "Names" >
+<!ENTITY sciviews.robjects.str "Structure" >
+<!ENTITY sciviews.robjects.plot "Plot" >
+<!ENTITY sciviews.robjects.print "Print" >
+<!ENTITY sciviews.robjects.summary "Summary" >
+
+<!ENTITY sciviews.robjects.filterEmptyText "Filter objects..." >

@@ -4,11 +4,12 @@
 <!ENTITY sciviews.robjects.refresh.tip "Refresh R objects">
 <!ENTITY sciviews.robjects.showHide "Search path">
 <!ENTITY sciviews.robjects.showHide.tip "Show/hide search path">
-<!ENTITY sciviews.robjects.filter.tip "Filter the names of the objects">
+<!ENTITY sciviews.robjects.filter.tip "Filter objects">
 <!ENTITY sciviews.robjects.Name "Name">
 <!ENTITY sciviews.robjects.Dims "Dims">
 <!ENTITY sciviews.robjects.Group "Group">
 <!ENTITY sciviews.robjects.Class "Class">
+<!ENTITY sciviews.robjects.FullName "Full name">
 <!ENTITY sciviews.console.tab "R Console" >
 <!ENTITY sciviews.console.tip "R Console" >
 <!ENTITY sciviews.console.history.filter.tip "Filter the history with a regular expression" >
@@ -26,4 +27,21 @@
 <!ENTITY sciviews.rconsole.completion.settings.label "Settings" >
 <!ENTITY sciviews.rconsole.completion.settings.tip "Select which completions are displayed" >
 
+<!ENTITY sciviews.robjects.insName "Insert name into text" >
+<!ENTITY sciviews.robjects.insFullName "Insert full name into text" >
+<!ENTITY sciviews.robjects.rmObj "Remove objects" >
+<!ENTITY sciviews.robjects.loadPkg "Load package" >
+<!ENTITY sciviews.robjects.detach "Detach package" >
+<!ENTITY sciviews.robjects.clrFilter "Clear filter text" >
+<!ENTITY sciviews.robjects.filterByDims "Filter dimensions" >
+<!ENTITY sciviews.robjects.filterByGroup "Filter group" >
+<!ENTITY sciviews.robjects.filterByClass "Filter class" >
+<!ENTITY sciviews.robjects.filterByName "Filter name" >
+<!ENTITY sciviews.robjects.help "Help" >
+<!ENTITY sciviews.robjects.names "Names" >
+<!ENTITY sciviews.robjects.str "Structure" >
+<!ENTITY sciviews.robjects.plot "Plot" >
+<!ENTITY sciviews.robjects.print "Print" >
+<!ENTITY sciviews.robjects.summary "Summary" >
 
+<!ENTITY sciviews.robjects.filterEmptyText "Filter objects..." >
