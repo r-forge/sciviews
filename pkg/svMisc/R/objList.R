@@ -4,6 +4,14 @@ pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL, compare = T
 	# Empty result. Change back to data frame?
 	Nothing <- structure(NULL, class = c("objList", "NULL"))
 
+	#Nothing <- structure(list(character(0), character(0), character(0), character(0), character(0), logical(0)), .Names = c("Envir",  "Name", "Dims", "Group", "Class", "Recursive"), class = c("objList", "NULL","data.frame"))
+	#
+	#if (!all.info)
+	#	Nothing <- Nothing[,-1]
+
+
+
+
 	# Make sure that id is character
 	id <- as.character(id)[1]
 	if (id == "") id <- "default"
