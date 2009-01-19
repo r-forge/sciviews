@@ -19,6 +19,10 @@
 sidekick <- function( file, encoding = "unknown" ){
 	
 	if( is.character(file) ){
+		if( file %~% '^rwd:' ){
+			file <- sub( 'rwd:', getwd(), file ) 
+		}
+		
 		filename <- file
 		file <- file( filename, encoding = encoding )
 		on.exit( close( file ) )
@@ -70,16 +74,15 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 	atts <- attributes( p )
 	descriptions <- as.character( p )
 	hasAttrs <- "srcref" %in% names(atts)
+	ids <- maxId + 1:length(p)
 	if( hasAttrs ){
 		srcrefs <- t( sapply( attr(p, "srcref"), as.integer ) )  
 		colnames( srcrefs ) <- paste("srcref", 1:4 , sep = "")
 		srcrefs <- as.data.frame( srcrefs ) 
-		ids <- maxId + 1:length(p)
 		modes <- sapply( p, mode )
 		data <- data.frame( id = ids, 
-			srcrefs, description = descriptions, 
 			parent = rep( parent, length(p) ), 
-			mode = modes, 
+			mode = modes, srcrefs, description = descriptions, 
 			stringsAsFactors = FALSE)
 		env[["data"]] <- rbind( env[["data"]], data )
 	} 

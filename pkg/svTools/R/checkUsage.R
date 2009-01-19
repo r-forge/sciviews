@@ -10,6 +10,10 @@
 #' @author Romain Francois \email{francoisromain@@free.fr}
 checkUsageFile <- function( file, encoding = "unknown" ){
 	
+	if( is.character(file) && file %~% '^rwd:' ){
+		file <- sub( '^rwd:', getwd(), file )
+	}
+	
 	if( encoding != "unknown" ){
 		old.op <- options( encoding = encoding )
 		on.exit( options( old.op ) )
