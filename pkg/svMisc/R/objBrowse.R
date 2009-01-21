@@ -25,14 +25,14 @@ function(id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
 				stop("Impossible to create the Object Browser 'path' directory!")
 		}
 	}
-	
+
 	# Control that 'Search.txt' is up-to-date
 	ChangedSearch <- objSearch(path = path, compare = !regenerate)
-	
+
 	# Make sure id is character
 	id <- as.character(id)[1]
 	if (id == "") id <- "default"
-	
+
 	# Get the five parameters pos, envir, all.names, pattern & group
     allPars <- getTemp(".guiObjParsCache", default = NULL)
     if (!is.null(allPars)) {
@@ -44,7 +44,7 @@ function(id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
     }
     if (is.null(Pars))
 		Pars <- list(pos = 1, envir = ".GlobalEnv", all.names = FALSE,
-			pattern = "", group = "") 
+			pattern = "", group = "")
     # Possibly change some parameters (and make sure they are valid!)
 	ParsChanged <- FALSE
 	if (!is.null(pos)) {
@@ -93,12 +93,19 @@ function(id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
     # Control that 'List_<id>.txt' is up-to-date, but only if pos == 1 or
 	# envir is not a package or regenerate or Pars or Search have changed
 	# to limit the work done on workspaces that are unlikely to have change
-	if (Pars$pos == 1 || regexpr("^package:", envir) == -1 || regenerate ||
-		ParsChanged || ChangedSearch) {
-	    ChangedList <- objList(id = id, envir = Pars$pos,
+	if (ParsChanged || regenerate || (ChangedSearch != "") || (Pars$pos == 1) || (regexpr("^package:", envir) == -1)) {
+		ChangedList <- objList(id = id, envir = Pars$pos,
 			all.names = Pars$all.names, pattern = Pars$pattern,
-	    	group = Pars$group, sep = sep, path = path, compare = !regenerate)
+			group = Pars$group, path = path, compare = !regenerate,
+			sep = sep)
+
+		ChangedList <- if(!is.null(nrow(ChangedList)) && nrow(ChangedList) > 0) {
+			apply(ChangedList, 1, paste, collapse = sep)
+
+		} else ""
+
 	} else ChangedList <- ""
+
 
 	# We return the data, or indication that the data have changed to the client
 	Data <- ""
@@ -120,4 +127,3 @@ function(id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
 	# Return the data invisibly
 	 return(invisible(Data))
 }
-
