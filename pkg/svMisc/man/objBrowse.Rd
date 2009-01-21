@@ -7,6 +7,8 @@
 \alias{objMenu}
 \alias{objSearch}
 \alias{print.objList}
+\alias{write.objList}
+
 
 \title{ Functions to implement an object browser }
 \description{
@@ -20,16 +22,19 @@ objBrowse(id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
 objClear(id = "default")
 objDir()
 objInfo(id = "default", envir = .GlobalEnv, object = "", path = NULL)
-objList(id = "default", envir = .GlobalEnv, object = "", all.names = FALSE,
-    pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL,
-    compare = TRUE)
-
+objList(id = "default", envir = .GlobalEnv, object = NULL, all.names = FALSE,
+	pattern = "", group = "", all.info = FALSE, path = NULL, compare = TRUE,
+	\dots)
 
 objMenu(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 	path = NULL)
 objSearch(sep = "\t", path = NULL, compare = TRUE)
 
-print.objList(x, sep="\t", sep2 = "\n", ...)
+\method{print}{objList}(x, sep = "\t", eol = "\n", header = !attr(x, "all.info"), \dots)
+
+write.objList(x, path, sep = "\t", \dots)
+
+
 
 }
 
@@ -46,16 +51,23 @@ print.objList(x, sep="\t", sep2 = "\n", ...)
     information. Use \code{path = NULL} (default) if you don't pass this
     data to your GUI client by mean of a file }
   \item{regenerate}{ Do we force to regenerate the information? }
-  \item{object}{ The currently selected object in the object browser }
+  \item{object}{ name of the object selected in the object browser,
+	components/arguments of which should be listed}
   \item{objects}{ A list with selected items in the object browser }
   \item{all.info}{ Do we return all the information (envir as first column or
     not (by default) }
   \item{compare}{ If \code{compare == TRUE}, result is compared with last cached
     value and the client is updated only if something changed }
   \item{sep}{ Separator to use between items (if path is not NULL) }
-  \item{x}{object returned by \code{objList}}
-  \item{sep2} {Separator to use between object entries}
-  \item{\dots} {further arguments, not used.}
+  \item{x}{ Object returned by \code{objList}}
+  \item{eol}{ Separator to use between object entries, default is to list each
+	item in a separate line}
+  \item{header}{ If TRUE, two-line header is printed, of the form: \cr
+	\#Environment=environment name \cr
+	\#Object=object name \cr
+	Default is not to print header if all.info is true.
+	}
+  \item{\dots}{further arguments, passed to \code{write.table}}
 }
 
 \details{

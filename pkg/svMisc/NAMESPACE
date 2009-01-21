@@ -38,7 +38,6 @@ export(	addActions,
 		isWin,
 		listMethods,
 		listTypes,
-		lsObj,
 		objBrowse,
 		objClear,
 		objDir,
@@ -54,6 +53,7 @@ export(	addActions,
 		Sys.tempdir,
 		Sys.userdir,
 		TempEnv,
-		tempvar)
+		tempvar,
+		write.objList)
 S3method( print, objList )
 
