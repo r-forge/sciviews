@@ -1,7 +1,10 @@
 = svGUI News
 
+== Changes in svGUI 0.9-44
+* Preparation for CRAN submission: polishing the package
+
 == Changes in svGUI 0.9-43
-* Made compatible with R 2.6.x
+* Made compatible with R 2.6.x (previous version was compatible with R 2.7.0).
 
 == Changes in svGUI 0.9-42
 * koCmd() is now more robust and do not issue a warning or an error if the
