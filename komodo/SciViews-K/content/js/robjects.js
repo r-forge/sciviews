@@ -806,8 +806,6 @@ rObjectsTree._processPackageList = function(data, refreshObjects) {
 	rObjectsTree.displayPackageList(refreshObjects);
 };
 
-
-
 rObjectsTree.toggleViewSearchPath = function(event) {
 	var what = event.target.tagName;
 	var broadcaster = document.getElementById("cmd_robjects_viewSearchPath");
@@ -829,7 +827,6 @@ rObjectsTree.toggleViewSearchPath = function(event) {
 		}
 	}
 }
-
 
 // Display the list of packages in the search path
 rObjectsTree.displayPackageList = function(refreshObjects) {
@@ -859,7 +856,6 @@ rObjectsTree.displayPackageList = function(refreshObjects) {
 		rObjectsTree.refreshAll();
 };
 
-
 // Change the display status of a package by clicking an item in the list
 rObjectsTree.packageSelectedEvent = function(event) {
 	var el = event.target;
@@ -871,7 +867,6 @@ rObjectsTree.packageSelectedEvent = function(event) {
 	}
 	//print(el.checked);
 };
-
 
 rObjectsTree.refreshAll = function () {
 	var selectedPackages = new Array(rObjectsTree.treeData.length);
@@ -1010,7 +1005,6 @@ rObjectsTree.insertName = function(fullNames) {
 	scimoz.insertText(scimoz.currentPos, namesArr.join(', '));
 }
 
-
 rObjectsTree.setFilterBy = function(menuItem, column) {
 	var filterBy = ['name', 'dims', 'class', 'group', 'fullName'].indexOf(column);
 	if (filterBy == -1)
@@ -1058,8 +1052,6 @@ rObjectsTree.contextOnShow = function() {
 		document.getElementById("robjects_cmd_help").setAttribute("disabled", !isPackage && !inPackage);
 	}
 }
-
-
 
 rObjectsTree.do = function(action) {
 	var obj = [];
@@ -1110,8 +1102,6 @@ rObjectsTree.do = function(action) {
 	//view.setFocus();
 	//scimoz.insertText(scimoz.currentPos, res.join(";" + ["\r\n", "\n", "\r"][scimoz.eOLMode]));
 }
-
-
 
 rObjectsTree.onEvent = function(event) {
 	if (event.type == "keypress") {
@@ -1164,7 +1154,6 @@ rObjectsTree.onEvent = function(event) {
 			return;
 	}
 
-
 	// default action: insert selected names:
 	rObjectsTree.insertName(event.ctrlKey);
 	event.originalTarget.focus();
@@ -1172,21 +1161,21 @@ rObjectsTree.onEvent = function(event) {
 
 // drag & drop handling for search paths list
 rObjectsTree.packageListObserver = {
-onDrop : function (event, transferData, session) {
-	window.temp = transferData;
-	var data = transferData;
-	var path;
-	if (transferData.flavour.contentType == "application/x-moz-file") {
-		path = transferData.data.path;
-	} else if (transferData.flavour.contentType == "text/unicode") {
-		path = new String(transferData.data).trim();
-	}
-	if (path.search(/\.RData$/i) > 0) {
-		//sv.cmdout.append(path);
-		sv.r.loadWorkspace(path, true);
-		rObjectsTree.getPackageList();
-	}
-  },
+	onDrop : function (event, transferData, session) {
+		window.temp = transferData;
+		var data = transferData;
+		var path;
+		if (transferData.flavour.contentType == "application/x-moz-file") {
+			path = transferData.data.path;
+		} else if (transferData.flavour.contentType == "text/unicode") {
+			path = new String(transferData.data).trim();
+		}
+		if (path.search(/\.RData$/i) > 0) {
+			//sv.cmdout.append(path);
+			sv.r.loadWorkspace(path, true);
+			rObjectsTree.getPackageList();
+		}
+	},
 
 	onDragEnter : function(event, flavour, session) {
 		var s = "";
@@ -1196,19 +1185,16 @@ onDrop : function (event, transferData, session) {
 		sv.cmdout.append(s);
 	},
 
+	onDragOver : function(event, flavour, session) {
+		session.canDrop = flavour.contentType == 'text/unicode'	|| flavour.contentType == 'application/x-moz-file';
+	},
 
-
-  onDragOver : function(event, flavour, session) {
-    session.canDrop = flavour.contentType == 'text/unicode'	|| flavour.contentType == 'application/x-moz-file';
-  },
-
-
-  getSupportedFlavours : function () {
-    var flavours = new FlavourSet();
-    flavours.appendFlavour("application/x-moz-file","nsIFile");
-    flavours.appendFlavour("text/unicode");
-    return flavours;
-  }
+	getSupportedFlavours : function () {
+		var flavours = new FlavourSet();
+		flavours.appendFlavour("application/x-moz-file","nsIFile");
+		flavours.appendFlavour("text/unicode");
+		return flavours;
+	}
 }
 
 rObjectsTree.packageListKeyEvent = function(event) {

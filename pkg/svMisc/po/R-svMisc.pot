@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.3.0\n"
 "Report-Msgid-Bugs-To: bugs@r-project.org\n"
-"POT-Creation-Date: 2007-07-24 17:04\n"
+"POT-Creation-Date: 2009-01-22 15:56\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11,46 +11,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 
-msgid "Package or bundle '%s' was not found in %s.  Would you like to install it now?"
+msgid "'obj' should inherit from 'list'"
 msgstr ""
 
-msgid "Missing package or bundle '%s' was neither installed nor loaded"
+msgid "Data you add in actions must be a named character vector"
 msgstr ""
 
-msgid "Local Repository"
+msgid "'obj' should inherit from 'character'"
 msgstr ""
 
-msgid "Local Zip File"
+msgid "Icons map you add must be a named character vector"
 msgstr ""
 
-msgid "Select the directory PACKAGES description file"
-msgstr ""
-
-msgid "Packages description"
-msgstr ""
-
-msgid "file:"
-msgstr ""
-
-msgid "The repository '%s' does not appear to be a valid repository.\nWould you like to try another repository?"
-msgstr ""
-
-msgid "The package '%s' was not found in the selected repository (%s).\nWould you like to try another repository?"
-msgstr ""
-
-msgid "The selected file name does not contain the package name '%s'. Would you like to select a different file instead?"
-msgstr ""
-
-msgid "The selected file name does not end with '.zip'. Would you like to select a different file instead?"
-msgstr ""
-
-msgid "The package or bundle was not found on %s"
-msgstr ""
-
-msgid "Impossible to send the command: %s"
-msgstr ""
-
-msgid "bad argument"
+msgid "must be a list!"
 msgstr ""
 
 msgid "'type' could be only 'google', 'archive' or 'wiki', currently!"
@@ -59,7 +32,7 @@ msgstr ""
 msgid "'f' must ba a character string!"
 msgstr ""
 
-msgid "'f' is not an existing function!"
+msgid "Impossible to create the Object Browser 'path' directory!"
 msgstr ""
 
 msgid "'value' must be numeric!"
@@ -75,4 +48,100 @@ msgid "on"
 msgstr ""
 
 msgid "'x' must be character string(s)!"
+msgstr ""
+
+msgid "Load...\nLoad R objects"
+msgstr ""
+
+msgid "Source...\nSource R code"
+msgstr ""
+
+msgid "Save as...\nSave to a file"
+msgstr ""
+
+msgid "Import...\nImport data in R"
+msgstr ""
+
+msgid "Export...\nExport data to a file"
+msgstr ""
+
+msgid "Report...\nPrepare a report for this object"
+msgstr ""
+
+msgid "Set Working dir...\nChange current R working directory"
+msgstr ""
+
+msgid "Print or show\nPrint or show the content of the object"
+msgstr ""
+
+msgid "<<<fun>>>()\nApply method <<<fun>>>() to the object"
+msgstr ""
+
+msgid "Names\nNames of variables contained in the object"
+msgstr ""
+
+msgid "Str\nCompact str() representation of an object"
+msgstr ""
+
+msgid "Help\nHelp on an object"
+msgstr ""
+
+msgid "Example\nRun examples for this object"
+msgstr ""
+
+msgid "Edit\nEdit an object"
+msgstr ""
+
+msgid "Fix\nFix an R object"
+msgstr ""
+
+msgid "Remove\nRemove (permanently!) one or several objects from memory"
+msgstr ""
+
+msgid "Require <<<pkg>>>\nRequire the package <<<pkg>>>"
+msgstr ""
+
+msgid "Require (compact)\nCompact require one or several R packages"
+msgstr ""
+
+msgid "Attach\nAttach an object to the search path"
+msgstr ""
+
+msgid "Detach\nDetach an object or package from the search path"
+msgstr ""
+
+msgid "Detach and unload\nDetach a package from the search path and unload it"
+msgstr ""
+
+msgid "Reattach\nReattach an object to the search path"
+msgstr ""
+
+msgid "Package info\nShow detailed information for this package"
+msgstr ""
+
+msgid "View (default)\nDefault view for this object"
+msgstr ""
+
+msgid "View <<<type>>>\nDisplay a '<<<type>>>' view for this object"
+msgstr ""
+
+msgid "Copy (default)\nCopy this object to the clipboard (default format)"
+msgstr ""
+
+msgid "Copy <<<type>>>\nCopy this object to the clipboard in '<<<type>>>' format"
+msgstr ""
+
+msgid "Functions\nGeneric functions and methods"
+msgstr ""
+
+msgid "View\nView the object"
+msgstr ""
+
+msgid "Copy\nCopy the object to the clipboard"
+msgstr ""
+
+msgid "'strip' must be a 'svStripbar' object"
+msgstr ""
+
+msgid "'widgets' must be 'menu', 'item', 'sep' or 'space'"
 msgstr ""

@@ -33,9 +33,6 @@ objSearch(sep = "\t", path = NULL, compare = TRUE)
 \method{print}{objList}(x, sep = "\t", eol = "\n", header = !attr(x, "all.info"), \dots)
 
 write.objList(x, path, sep = "\t", \dots)
-
-
-
 }
 
 \arguments{
@@ -89,7 +86,8 @@ write.objList(x, path, sep = "\t", \dots)
   is returned invisibly.
 }
 
-\author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
+\author{Philippe Grosjean (\email{phgrosjean@sciviews.org}) and
+  Kamil Barton (\email{kbarton@zbs.bialowieza.pl})}
 
 \seealso{ \code{\link{Complete}}, \code{\link{CallTip}} }
 

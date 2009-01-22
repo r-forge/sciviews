@@ -47,7 +47,7 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
 				out[test.arg, 2] <- fguess
 				out[test.arg, 3] <- descArgs(fguess, arg, pack)
 			}
-    }     
+    }
 
 		### deal with completions with "$"
 		if (length(test.dollar <- grep("\\$", comps))) {
@@ -58,7 +58,7 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
 			out[ test.dollar, 2 ] <- pack
 			out[ test.dollar, 3 ] <- descData( object, after, package = pack )
 		}
-		
+
 		### deal with completions with "@"
 		if( length(test.slot <- grep("@", comps)) ){
 			elements <- comps[ test.dollar ]
@@ -68,14 +68,14 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
 			out[ test.dollar, 2 ] <- pack
 			out[ test.dollar, 3 ] <- descSlots( object, slots, package = pack )
 		}
-		
+
 		### deal with completions with "["
 		if( length(test.square <- grep("\\[", comps)) ){
 			elements <- comps[ test.square ]
 			out[ test.square, 2 ] <- ""
 			out[ test.square, 3 ] <- descSquare( elements, package = pack )
 		}
-		
+
     ### TODO: do not know what to do with these
     test.others <- grep(" ", comps)
     # TODO: are there other kind of completions I miss here
@@ -97,7 +97,7 @@ simplify = FALSE, types = c("arguments", "functions", "packages")) {
 
     out[, 3] <- gsub("\t", "    ", out[, 3])
     out[, 3] <- gsub("\n", " ", out[, 3])
-    
+
 	# Make sure that arguments are witten 'arg = ', and not 'arg='
 	out[, 1] <- sub("=$", " = ", out[, 1])
 
@@ -123,5 +123,3 @@ find.multiple <- function (what) {
     names(out) <- what
     sub( "^package:", "", out )
 }
-
-

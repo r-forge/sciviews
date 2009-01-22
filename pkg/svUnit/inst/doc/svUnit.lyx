@@ -4,7 +4,7 @@
 \begin_header
 \textclass literate-article-sweave
 \begin_preamble
-% \VignetteIndexEntry{svUnit - A frameworkfor unit testing in R}
+% \VignetteIndexEntry{svUnit - A framework for unit testing in R}
 \end_preamble
 \language english
 \inputencoding auto

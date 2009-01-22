@@ -55,5 +55,5 @@ export(	addActions,
 		TempEnv,
 		tempvar,
 		write.objList)
-S3method( print, objList )
 
+S3method(print, objList)
