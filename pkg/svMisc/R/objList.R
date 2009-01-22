@@ -47,7 +47,7 @@ pattern = "", group = "", all.info = FALSE, path = NULL, compare = TRUE, ...) {
 			obj <- envir[[ name ]]
 			res <- c(
 				Name = name,
-				Dims = if (is.null(Dim <- dim(obj))) length(obj) else paste(Dim, collapse = "?"),
+				Dims = if (is.null(Dim <- dim(obj))) length(obj) else paste(Dim, collapse = "x"),
 				Group = mode(obj),
 				Class = class(obj)[1],
 				Recursive = is.recursive(obj) || mode(obj) == "S4"
