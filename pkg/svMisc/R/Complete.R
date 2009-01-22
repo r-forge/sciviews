@@ -1,14 +1,14 @@
 "Complete" <-
 function(code, givetype = FALSE, sep = "\t") {
 	### TODO: implement 'givetype'!
-	
+
 	# Get a completion list, given a part of the code
 	code <- paste(as.character(code), collapse = "\n")
 	if (is.null(code) || length(code) == 0 || code == "") return("")
-		
+
 	# Use the internal win32consoleCompletion function in utils package
 	res <- utils:::.win32consoleCompletion(code, nchar(code))
-	
+
 	# Is there a single addition?
 	if (res$addition != "") {
 		res <- paste(sep, gsub("=", " = ", res$addition), sep = "")
@@ -22,5 +22,5 @@ function(code, givetype = FALSE, sep = "\t") {
 		return("")
 	} else {
 		return(res)
-	}	
+	}
 }

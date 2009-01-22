@@ -1,11 +1,16 @@
-// input/output wrappers:
-//sv.io.readfile(filename, encoding))
-//sv.io.writefile(filename, content, encoding, append)
+// SciViews-K functions
+// Various functions for input/output
+// by Kamil Barton
 
+////////////////////////////////////////////////////////////////////////////////
+// sv.io.defaultEncoding                 // Encoding in use currently
+// sv.io.readfile(filename, encoding);   // Read a file with encoding
+// sv.io.writefile(filename, content, encoding, append);
+                                        // Write in a file with encoding
+////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.io' namespace
 if (typeof(sv.io) == 'undefined') sv.io = new Object();
-
 
 sv.io.defaultEncoding = "latin1";
 
@@ -22,7 +27,6 @@ sv.io.readfile = function(filename, encoding) {
         .createInstance(Components.interfaces.nsIConverterInputStream);
 
 	try {
-
 		file.initWithPath(filename);
 		fis.init(file, -1, -1, 0);
 		is.init(fis, encoding, 1024, 0xFFFD);
@@ -47,7 +51,6 @@ sv.io.readfile = function(filename, encoding) {
 }
 
 sv.io.writefile = function(filename, content, encoding, append) {
-
 	if (!encoding)
 		encoding = sv.io.defaultEncoding;
 
@@ -62,10 +65,10 @@ sv.io.writefile = function(filename, content, encoding, append) {
 	var os = Components.classes["@mozilla.org/intl/converter-output-stream;1"]
         .createInstance(Components.interfaces.nsIConverterOutputStream);
 
-	//PR_CREATE_FILE = 0x08;
-	//PR_WRONLY 	 0x02
-	//PR_APPEND 	 0x10
-	//PR_TRUNCATE 	 0x20
+	//PR_CREATE_FILE = 0x08
+	//PR_WRONLY 	 = 0x02
+	//PR_APPEND 	 = 0x10
+	//PR_TRUNCATE 	 = 0x20
 
 	try {
 		file.initWithPath(filename);
@@ -79,5 +82,4 @@ sv.io.writefile = function(filename, content, encoding, append) {
 	finally {
 		os.close();
 	}
-
 }

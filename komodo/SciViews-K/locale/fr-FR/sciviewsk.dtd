@@ -1,3 +1,20 @@
+<!ENTITY sciviews.console.tab "Console R">
+<!ENTITY sciviews.console.tip "Console R">
+<!ENTITY sciviews.console.history.filter.tip "Filtrer l'historique des commandes">
+
+<!ENTITY sciviews.rconsole.completion.cb.arguments "arguments">
+<!ENTITY sciviews.rconsole.completion.cb.functions "fonctions">
+<!ENTITY sciviews.rconsole.completion.cb.packages "packages">
+<!ENTITY sciviews.rconsole.completion.cb.history "historique">
+
+<!ENTITY sciviews.rconsole.completion.cb.arguments.tip "Afficher les arguments de fonctions">
+<!ENTITY sciviews.rconsole.completion.cb.functions.tip "Afficher les fonctions">
+<!ENTITY sciviews.rconsole.completion.cb.packages.tip "Afficher les packages">
+<!ENTITY sciviews.rconsole.completion.cb.history.tip "Afficher les commandes de l'historique">
+
+<!ENTITY sciviews.rconsole.completion.settings.label "Reglages">
+<!ENTITY sciviews.rconsole.completion.settings.tip "Choix du type de completions affichees">
+
 <!ENTITY sciviews.robjects.tab "R Objects">
 <!ENTITY sciviews.robjects.tip "Explorateur d'objets R">
 <!ENTITY sciviews.robjects.refresh "RŽactualiser">
@@ -10,38 +27,22 @@
 <!ENTITY sciviews.robjects.Group "Groupe">
 <!ENTITY sciviews.robjects.Class "Classe">
 <!ENTITY sciviews.robjects.FullName "Full name">
-<!ENTITY sciviews.console.tab "Console R" >
-<!ENTITY sciviews.console.tip "Console R" >
-<!ENTITY sciviews.console.history.filter.tip "Filtrer l'historique des commandes" >
 
-<!ENTITY sciviews.rconsole.completion.cb.arguments "arguments" >
-<!ENTITY sciviews.rconsole.completion.cb.functions "fonctions" >
-<!ENTITY sciviews.rconsole.completion.cb.packages "packages" >
-<!ENTITY sciviews.rconsole.completion.cb.history "historique" >
-
-<!ENTITY sciviews.rconsole.completion.cb.arguments.tip "Afficher les arguments de fonctions" >
-<!ENTITY sciviews.rconsole.completion.cb.functions.tip "Afficher les fonctions" >
-<!ENTITY sciviews.rconsole.completion.cb.packages.tip "Afficher les packages" >
-<!ENTITY sciviews.rconsole.completion.cb.history.tip "Afficher les commandes de l'historique" >
-
-<!ENTITY sciviews.rconsole.completion.settings.label "Reglages" >
-<!ENTITY sciviews.rconsole.completion.settings.tip "Choix du type de completions affichees" >
-
-<!ENTITY sciviews.robjects.insName "Insert name into text" >
-<!ENTITY sciviews.robjects.insFullName "Insert full name into text" >
-<!ENTITY sciviews.robjects.rmObj "Remove objects" >
-<!ENTITY sciviews.robjects.loadPkg "Load package" >
-<!ENTITY sciviews.robjects.detach "Detach package" >
-<!ENTITY sciviews.robjects.clrFilter "Clear filter text" >
-<!ENTITY sciviews.robjects.filterByDims "Filter dimensions" >
-<!ENTITY sciviews.robjects.filterByGroup "Filter group" >
-<!ENTITY sciviews.robjects.filterByClass "Filter class" >
-<!ENTITY sciviews.robjects.filterByName "Filter name" >
-<!ENTITY sciviews.robjects.help "Help" >
-<!ENTITY sciviews.robjects.names "Names" >
+<!ENTITY sciviews.robjects.insName "Inserer le nom dans le texte">
+<!ENTITY sciviews.robjects.insFullName "Inserer le nom complet dans le texte">
+<!ENTITY sciviews.robjects.rmObj "Effacer les objets">
+<!ENTITY sciviews.robjects.loadPkg "Charger un package" >
+<!ENTITY sciviews.robjects.detach "Detacher un package">
+<!ENTITY sciviews.robjects.clrFilter "Effacer les criteres de filtration">
+<!ENTITY sciviews.robjects.filterByDims "Filtrer les dimensions">
+<!ENTITY sciviews.robjects.filterByGroup "Filtrer les groupes">
+<!ENTITY sciviews.robjects.filterByClass "Filtrer les classes">
+<!ENTITY sciviews.robjects.filterByName "Filter les noms" >
+<!ENTITY sciviews.robjects.help "Aide" >
+<!ENTITY sciviews.robjects.names "Noms" >
 <!ENTITY sciviews.robjects.str "Structure" >
-<!ENTITY sciviews.robjects.plot "Plot" >
-<!ENTITY sciviews.robjects.print "Print" >
-<!ENTITY sciviews.robjects.summary "Summary" >
+<!ENTITY sciviews.robjects.plot "Graphique" >
+<!ENTITY sciviews.robjects.print "Imprimer" >
+<!ENTITY sciviews.robjects.summary "Resume" >
 
-<!ENTITY sciviews.robjects.filterEmptyText "Filter objects..." >
+<!ENTITY sciviews.robjects.filterEmptyText "Filtrer les objets..." >
