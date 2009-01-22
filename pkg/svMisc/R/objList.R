@@ -205,7 +205,7 @@ pattern = "", group = "", all.info = FALSE, path = NULL, compare = TRUE, ...) {
 			d <- dim(x)
 			if (is.null(d)) d <- length(x)
 
-			ret <- c(paste(d, collapse="\u00D7"),
+			ret <- c(paste(d, collapse="x"),
 					mode(x),
 					class(x)[1],
 					is.function(x) || (is.recursive(x) && !is.language(x) && sum(d) != 0)
@@ -253,7 +253,7 @@ pattern = "", group = "", all.info = FALSE, path = NULL, compare = TRUE, ...) {
 			o.mode <- ""
 		}
 
-		ret <- c(paste(d, collapse="\u00D7"), o.class,	o.mode, FALSE)
+		ret <- c(paste(d, collapse="x"), o.class,	o.mode, FALSE)
 
 		return (ret)
 
@@ -279,7 +279,7 @@ pattern = "", group = "", all.info = FALSE, path = NULL, compare = TRUE, ...) {
 		d <- dim(x)
 		if (is.null(d)) d <- length(x)
 
-			ret <- c(paste(d, collapse="\u00D7"),
+			ret <- c(paste(d, collapse="x"),
 					mode(x),
 					class(x)[1],
 					is.function(x) || (is.recursive(x) && !is.language(x) && sum(d) != 0)
