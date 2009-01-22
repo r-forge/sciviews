@@ -39,18 +39,18 @@ getParentIndex
 getLevel
 hasNextSibling
 getImageSrc
-getProgressMode
+getProgressMode - not really needed
 getCellValue
 cycleHeader
 selectionChanged
-cycleCell
+cycleCell - not really needed
 performAction
 performActionOnCell
 getRowProperties
 getCellProperties
 getColumnProperties
-canDrop
-drop
+canDrop - always false
+drop - not needed so far
 
 // other //
 
@@ -126,6 +126,7 @@ var rObjectsTree = {
 		}
 
 		var rowsBefore = this.visibleData.length;
+
 		this.visibleData = [];
 		this.addVItems(this.treeData, -1, 0);
 		var rowsChanged = this.visibleData.length - rowsBefore;
@@ -227,7 +228,7 @@ var rObjectsTree = {
 		// when used as a callback, this = window, have to use rObjectsTree instead
 
 		if (data == "") { return; }	//no changes
-		var lines = data.split("\n");
+		var lines = data.split(/\r?\n/);
 
 		var item, line, pack, idx;
 		var sep = ';';
@@ -263,6 +264,7 @@ var rObjectsTree = {
 						parentObject: rObjectsTree.treeData
 					});
 					packAdded.push(pack);
+
 				} else if (packAdded.indexOf(pack) == -1) {
 					rObjectsTree.treeData[p].children = [];
 					packAdded.push(pack);
@@ -270,7 +272,7 @@ var rObjectsTree = {
 
 				dimNumeric = 1;
 				if (dimRegExp.test(line[2])) {
-					dim = line[2].split('x');
+					dim = line[2].split(/x/);
 					for (var j in dim)
 						dimNumeric *= parseInt(dim[j]);
 				}
@@ -280,8 +282,7 @@ var rObjectsTree = {
 					dims: line[2],
 					group: line[3],
 					class: line[4],
-					list: line[5].trim() == "TRUE" || line[3] == "S4",  // hack to enable browsing S4 objects slots
-													     // TODO: change this in objList?
+					list: line[5] == "TRUE",
 					type: "object",
 					childrenLoaded: false,
 					isOpen: false,
@@ -301,19 +302,16 @@ var rObjectsTree = {
 	},
 
 	_addObjectList: function(pack) {
-
+		// need this for attached files on windows:
 		pack = pack.replace("\\", "\\\\");
 
 		var id = sv.prefs.getString("sciviews.client.id", "SciViewsK");
-		//var cmd = 'cat(unlist(objList(id = "' + id + '_' + pack + '", envir = "' + pack +
-		//	'", all.info = TRUE, sep = ";", compare = FALSE)), sep = "\\n")';
 
 		// for use with modified objList
 		var cmd = 'print(objList(id = "' + id + '_' + pack + '", envir = "' + pack +
-			'", all.info = TRUE, compare = FALSE), sep = ";", sep2 = "\\n")';
+			'", all.info = TRUE, compare = FALSE), sep = ";", eol = "\\n")';
 
-		if (this.debug)
-			sv.cmdout.append(cmd);
+		if (this.debug)	sv.cmdout.append(cmd);
 		sv.r.evalCallback(cmd, this._parseObjectList, this);
 	},
 
@@ -328,7 +326,6 @@ var rObjectsTree = {
 
 	},
 
-
 	packageSelected: function(pack, status) {
 		if (status) {
 			rObjectsTree._addObjectList(pack);
@@ -337,7 +334,7 @@ var rObjectsTree = {
 		}
 	},
 
-	_addSubObject: function(obj, idx) {
+	_addSubObject: function(obj) {
 		var objName = obj.origItem.name;
 		// objList does not quote non syntactic names, so we do it here:
 		if (
@@ -349,7 +346,11 @@ var rObjectsTree = {
 
 		var env = obj.origItem.env.replace("\\", "\\\\");
 
-		var cmd = 'cat(lsObj("' + objName + '", "' + env + '", sep = ";;"), sep="\\n")';
+		var id = sv.prefs.getString("sciviews.client.id", "SciViewsK");
+
+		var cmd = 'print(objList(id = "' + id + '_' + env + '_' + objName + '", envir = "' + env +
+			'", object = "' + objName + '", all.info = FALSE, compare = FALSE), sep = ";;", eol = "\\n")';
+
 
 		if (this.debug)
 			sv.cmdout.append(cmd);
@@ -359,14 +360,34 @@ var rObjectsTree = {
 
 	_parseSubObjectList: function(data, obj) {
 		var sep = ';;';
-		if (data == "") { //no changes
+
+		var lines = data.split(/\r?\n/);
+
+		if (data == "" || lines.length < 3) {
 			obj.isContainer = false;
 			rObjectsTree.treeBox.invalidateRow(obj.origItem.index);
 			return;
 		}
 
 
-		var lines = data.split("\n");
+		var env = lines[0].substr(lines[0].lastIndexOf("=") + 1).rtrim(); // Environment
+		var treeParent = lines[1].substr(lines[1].lastIndexOf("=") + 1).rtrim(); // parent object
+
+		var vd = rObjectsTree.visibleData;
+		if (!obj) {
+			if (treeParent) {
+				// TODO: smarter way to do it than searching through all items
+				for (var i = 0; i < vd.length; i++) {
+					if (vd[i].origItem.env == env && vd[i].orgItem.fullName == treeParent) {
+						obj = vd[i];
+						break;
+					}
+				}
+			} else {
+				// TODO: search for pkgs on top level
+			}
+		}
+
 		var origItem = obj.origItem;
 		origItem.childrenLoaded = true;
 
@@ -374,31 +395,31 @@ var rObjectsTree = {
 		var dimNumeric, dim, dimRegExp = /^(\d+x)*\d+$/;
 
 		origItem.children = [];
-		for (var i = 0; i < lines.length; i++) {
+		for (var i = 2; i < lines.length; i++) {
 			if (lines[i].indexOf(sep) != -1) {
 				line = lines[i].split(sep);
-				if (line.length < 7)
+				if (line.length < 6)
 					continue;
 
 				dimNumeric = 1;
 				if (dimRegExp.test(line[3])) {
-					dim = line[3].split('x');
+					dim = line[2].split(/x/);
 					for (var j in dim)
 						dimNumeric *= parseInt(dim[j]);
 				}
 
 				origItem.children.push({
-					name: line[1],
-					fullName: line[2],
-					dims: line[3],
-					group: line[5],
+					name: line[0],
+					fullName: line[1],
+					dims: line[2],
+					group: line[3],
 					class: line[4],
-					list: line[6].trim() == "TRUE",
+					list: line[5] == "TRUE",
 					type: childType,
 					childrenLoaded: false,
 					isOpen: false,
-					env: line[0],
-					sortData: [line[1].toLowerCase(), dimNumeric, line[4].toLowerCase(), line[5].toLowerCase()],
+					env: env,
+					sortData: [line[0].toLowerCase(), dimNumeric, line[4].toLowerCase(), line[3].toLowerCase()],
 					index: -1,
 					parentObject: origItem
 				});
@@ -571,7 +592,7 @@ var rObjectsTree = {
 		}
 
 		if (item.isList && !item.origItem.isOpen && !item.origItem.childrenLoaded) {
-			this._addSubObject(item, idx);
+			this._addSubObject(item);
 			return;
 		}
 
@@ -603,6 +624,7 @@ var rObjectsTree = {
 
 
 		} else { // opening subtree
+
 			if (typeof(item.children) == "undefined") {
 				this.addVIChildren(item, idx, false);
 			}
@@ -856,11 +878,16 @@ rObjectsTree.refreshAll = function () {
 	for (var i = 0; i < selectedPackages.length; i++)
 		selectedPackages[i] = rObjectsTree.treeData[i].name;
 
-	rObjectsTree.treeData = [];
-	sv.r.evalCallback('invisible(sapply(c("' + selectedPackages.join('","')	+ '"), function(x) cat(x, objList(envir = x, sep=";", all.info = TRUE, compare = FALSE), sep="\\n")))', rObjectsTree._parseObjectList);
+	if (selectedPackages.length == 0)
+		selectedPackages.push('.GlobalEnv');
+
+	// for use with modified objList
+	var cmd = 'invisible(sapply(c("' + selectedPackages.join('","')	+ '"), function(x) print(objList(envir = x, all.info = TRUE, compare = FALSE), sep = ";")))';
+	sv.r.evalCallback(cmd, rObjectsTree._parseObjectList);
+
 }
 
-rObjectsTree.removeSelected = function() {
+rObjectsTree.removeSelected = function(doRemove) {
 	var view = ko.views.manager.currentView;
 	if (!view)
 		return false;
@@ -868,7 +895,7 @@ rObjectsTree.removeSelected = function() {
 
 	var scimoz = view.scimoz;
 	var item, type, name, vItem, cmd = [];
-	var ObjectsToRm = {}, envToDetach = [];
+	var rmItems = {}, ObjectsToRemove = {}, envToDetach = [], ObjectsToSetNull = {};
 
 	var rows = this.getSelectedRows();
 
@@ -880,10 +907,8 @@ rObjectsTree.removeSelected = function() {
 
 		switch (type){
 			case "environment":
-				if (name != ".GlobalEnv" && name != "TempEnv") {
+				if (name != ".GlobalEnv" && name != "TempEnv")
 					envToDetach.push(name);
-					cmd.push("detach(\"" + name + "\")");
-				}
 				break;
 			case "object":
 			case "sub-object":
@@ -895,24 +920,30 @@ rObjectsTree.removeSelected = function() {
 						parent = this.visibleData[parent.parentIndex].origItem;
 
 						if (!parent
-							|| (ObjectsToRm[env] && (ObjectsToRm[env].indexOf(parent.fullName) != -1))
+							|| (rmItems[env] && (rmItems[env].indexOf(parent.fullName) != -1))
 							|| (parent.type == "environment" && (envToDetach.indexOf(parent.name) != -1))) {
 							break thisItem;
 						}
 
 					}
-					if (typeof ObjectsToRm[env] == "undefined")
-						ObjectsToRm[env] = [];
+					if (typeof rmItems[env] == "undefined")
+						rmItems[env] = [];
 
-					ObjectsToRm[env].push(name);
-					if (type == "sub-object")
-						cmd.push(name + " <- NULL");
-					else
-						cmd.push("rm(" + name + ", pos = \"" + env + "\")");
+					rmItems[env].push(name);
 
+					if (type == "sub-object") {
+						if (typeof ObjectsToSetNull[env] == "undefined")
+							ObjectsToSetNull[env] = [];
+
+						ObjectsToSetNull[env].push(name);
+
+					} else {
+						if (typeof ObjectsToRemove[env] == "undefined")
+							ObjectsToRemove[env] = [];
+						ObjectsToRemove[env].push(name);
+					}
 
 					var siblings = item.parentObject.children;
-
 					for (var j in siblings) {
 						if (siblings[j] == item) {
 							siblings.splice(j, 1);
@@ -927,8 +958,27 @@ rObjectsTree.removeSelected = function() {
 
 	this.createVisibleData();
 
-	var nl = ["\r\n", "\n", "\r"][scimoz.eOLMode];
-	scimoz.insertText(scimoz.currentPos, cmd.join(nl));
+
+
+	for (i in envToDetach)
+		cmd.push('detach("' + envToDetach[i] + '")');
+
+	for (var env in ObjectsToRemove)
+		cmd.push('rm(list = c("' + ObjectsToRemove[env].join('", "') + '"), pos = "' + env + '")');
+
+	for (var env in ObjectsToSetNull) {
+		cmd.push('eval(expression(' + ObjectsToSetNull[env].join(" <- NULL, ") + ' <- NULL), envir = as.environment("' + env + '"))');
+	}
+
+
+	if(doRemove) {
+		sv.r.evalCallback(cmd.join("\n"), sv.cmdout.append);
+		//sv.cmdout.append(cmd);
+	} else {
+		var nl = ["\r\n", "\n", "\r"][scimoz.eOLMode];
+		scimoz.insertText(scimoz.currentPos, cmd.join(nl));
+	}
+
 
 	return true;
 }
@@ -1067,11 +1117,12 @@ rObjectsTree.onEvent = function(event) {
 	if (event.type == "keypress") {
 		var keyCode = event.keyCode;
 
-		sv.cmdout.append("keyCode: " + keyCode);
+		if (this.debug)
+			sv.cmdout.append("keyCode: " + keyCode);
 
 		switch (keyCode) {
 			case 46: // Delete key
-				rObjectsTree.removeSelected();
+				rObjectsTree.removeSelected(event.shiftKey);
 				event.originalTarget.focus();
 				return;
 			case 45: //insert
@@ -1081,8 +1132,9 @@ rObjectsTree.onEvent = function(event) {
 				// Ctrt + A
 				if (event.ctrlKey && event.charCode == 97 || event.charCode == 65){
 					rObjectsTree.selection.selectAll();
-					return;
+
 				}
+				return;
 			case 93:
 				//windows context menu key
 				var contextMenu =  document.getElementById("rObjectsContext");
@@ -1107,8 +1159,8 @@ rObjectsTree.onEvent = function(event) {
 		if (event.button != 0)
 			return;
 
-		if (rObjectsTree.selection.currentIndex == -1
-			|| rObjectsTree.isContainer(rObjectsTree.selection.currentIndex))
+		if (rObjectsTree.selection && (rObjectsTree.selection.currentIndex == -1
+			|| rObjectsTree.isContainer(rObjectsTree.selection.currentIndex)))
 			return;
 	}
 
