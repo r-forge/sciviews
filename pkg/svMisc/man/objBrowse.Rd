@@ -23,14 +23,14 @@ objClear(id = "default")
 objDir()
 objInfo(id = "default", envir = .GlobalEnv, object = "", path = NULL)
 objList(id = "default", envir = .GlobalEnv, object = NULL, all.names = FALSE,
-	pattern = "", group = "", all.info = FALSE, path = NULL, compare = TRUE,
-	\dots)
+	pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL,
+	compare = TRUE, \dots)
 
 objMenu(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 	path = NULL)
 objSearch(sep = "\t", path = NULL, compare = TRUE)
 
-\method{print}{objList}(x, sep = "\t", eol = "\n", header = !attr(x, "all.info"), \dots)
+\method{print}{objList}(x, sep = NA, eol = "\n", header = !attr(x, "all.info"), \dots)
 
 write.objList(x, path, sep = "\t", \dots)
 }
