@@ -4,7 +4,7 @@
 \title{ Get an environment dedicated to temporary variables (and create it if needed)  }
 \description{
   This function creates and returns the reference to a TempEnv environment
-  located just before /code{Autoloads} on the search path.
+  located just before \code{Autoloads} on the search path.
 }
 
 \usage{
