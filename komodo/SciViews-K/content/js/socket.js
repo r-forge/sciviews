@@ -51,10 +51,10 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 			host, port, null);
 
 		// Convert output string from unicode to R's charset (Bug #240)
-		var converter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
-			.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
-		converter.charset = sv.socket.charset;
-		outputData = converter.ConvertFromUnicode(outputData);
+//		var converter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
+//			.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
+//		converter.charset = sv.socket.charset;
+//		outputData = converter.ConvertFromUnicode(outputData);
 
 		var outstream = transport.openOutputStream(0, 0, 0);
 		outstream.write(outputData, outputData.length);
@@ -80,7 +80,7 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 				var chunk = instream.read(count);
 
 				// Convert read string to unicode (Bug #240)
-				chunk = converter.ConvertToUnicode(chunk);
+//				chunk = converter.ConvertToUnicode(chunk);
 
 				// Determine if we have a prompt at the end
 				if (chunk.search(/\+\s+$/) > -1) {
@@ -178,8 +178,6 @@ sv.socket.serverStart = function() {
 						transport.host + " on port " + transport.port + "\n");
 				}
 
-
-
 				// Then, read data from the client
 				var inputStream = transport.openInputStream(nsITransport.
 					OPEN_BLOCKING, 0, 0);
@@ -202,9 +200,8 @@ sv.socket.serverStart = function() {
 				while (sin.available() > 0)
 					inputString += sin.read(512);
 
-
 				// INTL
-				inputString = converter.ConvertToUnicode(inputString);
+//				inputString = converter.ConvertToUnicode(inputString);
 
 				// Is there data send?
 				if (inputString == "") {

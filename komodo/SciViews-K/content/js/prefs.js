@@ -7,6 +7,9 @@ sv.prefs.setString("sciviews.server.socket", "7052", false);
 sv.prefs.setString("sciviews.client.socket", "8888", false);
 sv.prefs.setString("sciviews.client.id", "SciViewsK", false);
 
+// Default working directory for R
+sv.prefs.setString("sciviews.session.dir", "~", false);
+
 // Where do we want to display R help? In internal browser or not?
 sv.prefs.setString("sciviews.r.help", "internal", false);
 

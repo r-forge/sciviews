@@ -1,11 +1,11 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
-# Version 0.6.6, 2008-09-02 Ph. Grosjean (phgrosjean@sciviews.org)
+# Version 0.7.0, 2009-01-23 Ph. Grosjean (phgrosjean@sciviews.org)
 
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	.SciViewsReady <- FALSE
-	minVersion <- c(R = "2.6.0", svMisc = "0.9-45", svSocket = "0.9-42", svGUI = "0.9-43")
+	minVersion <- c(R = "2.6.0", svMisc = "0.9-47", svSocket = "0.9-43", svGUI = "0.9-44")
 
 	# First of all, check R version... redefine compareVersion() because it is
 	# not defined in very old R versions... and thus we don't get an explicit
@@ -21,9 +21,8 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 		}
 		if (length(b) > length(a)) return(-1) else return(0)
 	}
-	res <- checkVersion(paste(R.Version()$major, R.Version()$minor, sep = "."),
-		minVersion["R"])
-	rm(checkVersion)
+	rVersion <- paste(R.Version()$major, R.Version()$minor, sep = ".")
+	res <- checkVersion(rVersion, minVersion["R"])
 	if (res < 0) {
 		res <- FALSE
 		cat("R is too old for this version of SciViews (R >=",
@@ -95,6 +94,10 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 			# Make sure tcltk can start: on Mac OS X < 10.5 only,
 			# that is, darwin < 9, we need to check that X11 is installed
 			# (optional component!) and started!
+			# But this is not needed any more for R >= 2.8.0. Before we
+			# activate this test, we must find a way to start Tk later,
+			# when tktoplevel() is first invoked!
+			#if (checkVersion(rVersion, "2.8.0") < 0) {
 			if (regexpr("^darwin[5-8]", R.Version()$os) > -1) {
 				# First, is the DISPLAY environment variable defined?
 				dis <- Sys.getenv("DISPLAY")
@@ -121,6 +124,7 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 				}
 				rm(dis)
 			}
+			#} # Test if R >= 2.8.0 for setting DISPLAY environment variable
 			if (res) {
 				res <- suppressPackageStartupMessages(require(tcltk, quietly = TRUE))
 				if (!res) {
@@ -131,6 +135,7 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 			}
 		} else cat("Tcl/Tk is required by SciViews,\nbut it is not supported by this R installation\n")
 	} else cat("Problem loading standard R packages, check R installation\n")
+	rm(checkVersion, rVersion)
 
 	if (res) {
 		# Load packages svMisc, svSocket & svGUI (possibly after installing
