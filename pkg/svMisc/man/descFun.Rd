@@ -24,7 +24,7 @@ descArgs(fun, args = NULL, package = NULL, lib.loc = NULL)
 	of the arguments to search for }
   \item{package}{ A character string with the name of the package that contains
     \code{fun}, or \code{NULL} for searching in all loaded packages }
-  \item{lib.loc} { A character vector of directory names of \R libraries, or
+  \item{lib.loc}{ A character vector of directory names of \R libraries, or
     \code{NULL}. The default value of \code{NULL} corresponds to all libraries
 	currently known. If the default is used, the loaded packages are searched
 	before the libraries. }

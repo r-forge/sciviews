@@ -20,7 +20,7 @@ CallTip(code, only.args = FALSE, location = FALSE)
   \item{only.args}{ Do we return only arguments of the function
     (\code{arg1, arg2 = TRUE, ...}),
   or the full call, like (\code{myfun(arg1, arg2 = TRUE, ...)}). }
-  \item{location} { If \code{TRUE} then the location (in which package the
+  \item{location}{ If \code{TRUE} then the location (in which package the
     function resides) is appended to the calltip between square brackets }
 }
 
@@ -28,7 +28,7 @@ CallTip(code, only.args = FALSE, location = FALSE)
   A string with the calling syntax of the function
 }
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
-\note{ \code{Args()} is supposed to display S3/S4 methods, and primitives
+\note{ \code{Args()} is supposed to display S3 and S4 methods, and primitives
   adequately,... but this is not implemented yet in the current version! }
 
 \examples{

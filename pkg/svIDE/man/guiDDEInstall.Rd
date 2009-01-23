@@ -20,7 +20,7 @@ guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
     can use "clipboard" to send the result to the clipboard under Windows only }
   \item{onlyargs}{ Do we return the whole calltip or only the function arguments? }
   \item{width}{ Reformat the calltip to with (use 0 for not reformatting it) }
-  \item{location} { If \code{TRUE} then the location (in which package the
+  \item{location}{ If \code{TRUE} then the location (in which package the
     function resides) is appended to the calltip between square brackets }
   \item{givetype}{ Return also the type of each object in the completion list (possibly
     to use set a different icon in the list displayed by the external program) }
