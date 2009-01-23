@@ -1,5 +1,10 @@
 = svMisc News
 
+== Changes in svMisc 0.9-47
+
+* objList(), print.objectList() and write.objList() reworked (PhG)
+
+
 == Changes in svMisc 0.9-46
 
 * Added objList(), print() method for 'objList' objects and write.objList() (KB)
