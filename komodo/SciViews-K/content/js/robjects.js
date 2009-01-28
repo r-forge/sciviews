@@ -3,8 +3,9 @@
 //TODO: quoting non-syntactic sub-names inserted into text
 //TODO: preserve opened sub-objects on refresh
 //TODO: context menu for search-paths list
-//TODO: "remove" command: Shift + Command - removes immediatelly (confirmation box first), Command - adds R code to the current document
 //TODO: renaming objects on the list - editable names
+
+//"remove" command: Shift + Command - removes immediatelly (confirmation box first), Command - adds R code to the current document
 
 
 //sv.r.objects = rObjectsTree;
@@ -102,9 +103,9 @@ searchPaths
 */
 
 
-
 var rObjectsTree = {
 	debug: false,
+	//debug: true,
 	visibleData : [],
 	treeData: [],
 	isInitialized: false,
@@ -227,8 +228,14 @@ var rObjectsTree = {
 	_parseObjectList: function(data, tv) {
 		// when used as a callback, this = window, have to use rObjectsTree instead
 
-		if (data == "") { return; }	//no changes
+       if (data == "" || (data.trim() == "An empty objects list") )
+       	return;	//no changes
+
 		var lines = data.split(/\r?\n/);
+
+        // get rid of the "Objects list:" line
+        if (lines[0].indexOf("Objects list:") != -1)
+        	lines.shift()
 
 		var item, line, pack, idx;
 		var sep = ';';
@@ -363,18 +370,21 @@ var rObjectsTree = {
 
 		var lines = data.split(/\r?\n/);
 
-		if (data == "" || lines.length < 3) {
+		if (data == "" || (data.trim() == "An empty objects list") || lines.length < 4) {
 			obj.isContainer = false;
 			rObjectsTree.treeBox.invalidateRow(obj.origItem.index);
 			return;
 		}
 
+       // get rid of the "Objects list:" line
+       if (lines[0].indexOf("Objects list:") != -1)
+          lines.shift()
 
-		var env = lines[0].substr(lines[0].lastIndexOf("=") + 1).rtrim(); // Environment
-		var treeParent = lines[1].substr(lines[1].lastIndexOf("=") + 1).rtrim(); // parent object
+		var env = lines[0].substr(lines[0].lastIndexOf("=") + 1).trim(); // Environment - 1st line
+		var treeParent = lines[1].substr(lines[1].lastIndexOf("=") + 1).trim(); // parent object - 2ng line
 
 		var vd = rObjectsTree.visibleData;
-		if (!obj) {
+		if (!obj) { // reloading sub-lists without passing parent tree item - not used yet
 			if (treeParent) {
 				// TODO: smarter way to do it than searching through all items
 				for (var i = 0; i < vd.length; i++) {
