@@ -111,7 +111,7 @@ pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL, compare = T
 			assignTemp(".guiObjListCache", allList)
 		}
 	}
-	
+
 	# Create the 'objList' object
 	attr(res, "all.info") <- all.info
 	attr(res, "envir") <- ename
@@ -151,15 +151,20 @@ function (x, sep = NA, eol = "\n", header = !attr(x, "all.info"), ...)
 	if (!inherits(x, "objList"))
 		stop("x must be an 'objList' object")
 	if (NROW(x) > 0) {
+
+
 		cat("Objects list:\n")
 		if (header) {
-			cat("\tEnvironment = ", attr(x, "envir"), "\n", sep = "")
-			cat("\tObject = ", if (is.null(attr(x, "object"))) "" else
-				attr(x, "object"), "\n", sep = "")
+            header.sep <- if (is.na(sep)) " = " else "="
+
+		    cat("Environment", attr(x, "envir"), sep = header.sep)
+                    cat("\n")
+		    cat("Object", if (is.null(attr(x, "object"))) "" else
+			    attr(x, "object"), sep = header.sep)
+                    cat("\n")
 		}
 
 		if (is.na(sep)) {
-			cat("\n")
 			print(as.data.frame(x))
 		} else if (!is.null(nrow(x)) && nrow(x) > 0) {
 			write.table(x, row.names = FALSE, col.names = FALSE, sep = sep,
