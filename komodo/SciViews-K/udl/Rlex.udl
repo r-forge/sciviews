@@ -2638,7 +2638,7 @@ state IN_SSL_DEFAULT:
 '`'  : paint(upto, SSL_DEFAULT), => IN_SSL_BSTRING
 
 
-/(?<[,\(])\s*[a-zA_Z\.]+\s*(?=\=)/ :  paint(upto, SSL_DEFAULT), paint(include, SSL_VARIABLE)
+#/(?<[,\(])\s*[a-zA_Z\.]+\s*(?=\=)/ :  paint(upto, SSL_DEFAULT), paint(include, SSL_VARIABLE)
 
 /$NAMESEQ/ : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER)
 
