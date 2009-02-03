@@ -1,11 +1,16 @@
-//TODO: sort inserted child nodes, restoring natural order of sub-elements (add orderIndex property to inserted elements)
+//TODO: sort inserted child nodes (3-state sorting), restoring natural order of sub-elements
+	//(add orderIndex property to inserted elements)
 //TODO: resolve filtering modes: should sub-object be filtered too?
 //TODO: quoting non-syntactic sub-names inserted into text
 //TODO: preserve opened sub-objects on refresh
 //TODO: context menu for search-paths list
 //TODO: renaming objects on the list - editable names
+//TODO: add context menu item for environments: remove all objects
+//TODO: tollbar: dropdown menu for packages maintenance (add, install, etc)
+//TODO: solve problems with selection, when removing objects
 
-//"remove" command: Shift + Command - removes immediatelly (confirmation box first), Command - adds R code to the current document
+
+//DONE: "remove" command: Shift + Command - removes immediatelly (confirmation box first), Command - adds R code to the current document
 
 
 //sv.r.objects = rObjectsTree;
@@ -228,14 +233,14 @@ var rObjectsTree = {
 	_parseObjectList: function(data, tv) {
 		// when used as a callback, this = window, have to use rObjectsTree instead
 
-       if (data == "" || (data.trim() == "An empty objects list") )
-       	return;	//no changes
+		if (data == "" || (data.trim() == "An empty objects list") )
+			return;	//no changes
 
 		var lines = data.split(/\r?\n/);
 
-        // get rid of the "Objects list:" line
-        if (lines[0].indexOf("Objects list:") != -1)
-        	lines.shift()
+		// get rid of the "Objects list:" line
+		if (lines[0].indexOf("Objects list:") != -1)
+			lines.shift();
 
 		var item, line, pack, idx;
 		var sep = ';';
@@ -370,15 +375,20 @@ var rObjectsTree = {
 
 		var lines = data.split(/\r?\n/);
 
-		if (data == "" || (data.trim() == "An empty objects list") || lines.length < 4) {
+		if (data == "" || (data.trim() == "An empty objects list")
+		    || lines.length < 3) {
 			obj.isContainer = false;
 			rObjectsTree.treeBox.invalidateRow(obj.origItem.index);
 			return;
 		}
 
-       // get rid of the "Objects list:" line
-       if (lines[0].indexOf("Objects list:") != -1)
-          lines.shift()
+		// This is ony for compatibility with different print.objList versions
+		// may be removed when final form of output will be estabilished
+		// get rid of the "Objects list:" line
+		if (lines[0].indexOf("Objects list:") != -1)
+			lines.shift()
+		if (!lines.length)
+			return;
 
 		var env = lines[0].substr(lines[0].lastIndexOf("=") + 1).trim(); // Environment - 1st line
 		var treeParent = lines[1].substr(lines[1].lastIndexOf("=") + 1).trim(); // parent object - 2ng line

@@ -196,6 +196,7 @@ sv.getTextRange = function(what, gotoend, select) {
 	   // Select an entire R function
 	   // TODO: 	what to do if cursor if outside any function?
 	   // 		currently all of the current level is selected in such case
+	   // TODO: handle multiline: fff <- \n function(\n?)
 	   var funcRx = /function\s*\(/;
 	   var l0, l1;
 		// go up from curLine until line matches funcRx
@@ -518,7 +519,7 @@ sv.prefs.setString("RWiki-help", "", true);
 
 
 // Control the command output tab //////////////////////////////////////////////
-if (typeof(sv.cmdout) == 'undefined') sv.cmdout = new Object();
+if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 
 // Append text to the Command Output pane
 sv.cmdout.append = function(str, newline) {
@@ -574,11 +575,12 @@ sv.cmdout.clear = function() {
 sv.cmdout.message = function(msg, timeout) {
 	document.getElementById('output_tabpanels').selectedIndex = 0;
 	var runoutputDesc = document.getElementById('runoutput-desc');
-	if (msg == null) {
+	if (msg == null)
 		msg = "";
-	}
 
-	runoutputDesc.setAttribute("label", msg);
+	runoutputDesc.style.color = "rgb(0, 0, 0)";
+
+	runoutputDesc.setAttribute("value", msg);
 
 	window.clearTimeout(runoutputDesc.timeout);
 
@@ -586,7 +588,6 @@ sv.cmdout.message = function(msg, timeout) {
 		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message()", timeout);
 	}
 }
-
 
 sv.checkToolbox = function() {
     try {
@@ -639,5 +640,8 @@ sv.checkToolbox = function() {
 
 
 // Ensure we check the toolbox is installed once the extension is loaded
+
+
 addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
 //addEventListener("load", sv.checkToolbox, false);
+

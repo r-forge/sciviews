@@ -1,12 +1,17 @@
 // SciViews-K functions
-// Various functions for input/output
+// Various file related functions
 // by Kamil Barton
 
 ////////////////////////////////////////////////////////////////////////////////
-// sv.io.defaultEncoding                 // Encoding in use currently
+// sv.io.defaultEncoding                 // Default file encoding to use
 // sv.io.readfile(filename, encoding);   // Read a file with encoding
 // sv.io.writefile(filename, content, encoding, append);
-                                        // Write in a file with encoding
+                                    // Write in a file with encoding
+//sv.io.fileExists(file) 				// Checks for existence of a file: returns 2
+						// for directory, 1 for file, otherwise 0
+
+//sv.io.tempFile(prefix)			// creates unique temporary file, accessible
+						// by all users, and returns its name
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.io' namespace
@@ -83,3 +88,62 @@ sv.io.writefile = function(filename, content, encoding, append) {
 		os.close();
 	}
 }
+
+
+sv.io.fileExists = function(path) {
+	var file = Components.classes["@mozilla.org/file/local;1"].
+		createInstance(Components.interfaces.nsILocalFile);
+
+	try {
+		file.initWithPath(path);
+	} catch(e) {
+		return 0;
+	}
+
+
+	if (file.exists()) {
+		if (file.isDirectory())
+			return 2;
+		else if (file.isFile())
+			return 1;
+	}
+	return 0;
+}
+
+
+sv.io.tempFile = function(prefix) {
+	var nsIFile = Components.interfaces.nsIFile;
+	var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"].
+		 getService(Components.interfaces.nsIProperties);
+	var tempDir = dirSvc.get("TmpD", nsIFile).path;
+
+	var tmpfile = Components.classes["@mozilla.org/file/local;1"].
+		createInstance(Components.interfaces.nsILocalFile);
+
+	if (!prefix)
+		prefix = "svtmp";
+
+	tmpfile.initWithPath(tempDir);
+	tmpfile.append(prefix)
+	tmpfile.createUnique(nsIFile.NORMAL_FILE_TYPE, 0777);
+
+	return tmpfile.path;
+}
+
+/*
+Stuff:
+
+ var nsIFile = Components.interfaces.nsIFile;
+var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"].
+                     getService(Components.interfaces.nsIProperties);
+var nsIFile = Components.interfaces.nsIFile;
+var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"].
+                     getService(Components.interfaces.nsIProperties);
+
+var file = Components.classes["@mozilla.org/file/local;1"].
+	createInstance(Components.interfaces.nsILocalFile);
+
+// profile directory:
+var profileDir = dirSvc.get("ProfD", nsIFile );
+//C:\Documents and Settings\kamil\Dane aplikacji\ActiveState\KomodoEdit\5.0\host-DeepThought\XRE
+*/
