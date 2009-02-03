@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+
+ The contents of this file are subject to the Mozilla Public License
+ Version 1.1 (the "License"); you may not use this file except in
+ compliance with the License. You may obtain a copy of the License at
+ http://www.mozilla.org/MPL/
+
+ Software distributed under the License is distributed on an "AS IS"
+ basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ License for the specific language governing rights and limitations
+ under the License.
+
+ The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
+
+ Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
+ ActiveState Software Inc. All Rights Reserved.
+
+ Contributor(s):
+   Philippe Grosjean
+   Romain Francois
+   Kamil Barton
+   ActiveState Software Inc
+
+ Alternatively, the contents of this file may be used under the terms of
+ either the GNU General Public License Version 2 or later (the "GPL"), or
+ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ in which case the provisions of the GPL or the LGPL are applicable instead
+ of those above. If you wish to allow use of your version of this file only
+ under the terms of either the GPL or the LGPL, and not to allow others to
+ use your version of this file under the terms of the MPL, indicate your
+ decision by deleting the provisions above and replace them with the notice
+ and other provisions required by the GPL or the LGPL. If you do not delete
+ the provisions above, a recipient may use your version of this file under
+ the terms of any one of the MPL, the GPL or the LGPL.
+
+ ***** END LICENSE BLOCK ***** -->
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+  <!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
+  %sciviewskDTD;
+]>
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.p.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
+
+
+<overlay id="sciviewskOverlay"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	   >
+
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
+  <!--No longer neeeded for robjects.js <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/e4x2dom.js"/>-->
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/io.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
+
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
+
+  <commandset id="allcommands">
+    <command id="Tasks:svAbout" oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
+
+    <command id="cmd_svStartR" key="key_cmd_svStartR"
+		     oncommand="ko.commands.doCommand('cmd_svStartR');" desc="R: Start R Console (windows)" label="Start R Console (windows)" accel="R" />
+
+    <commandset id="cmdset_r_control" commandupdater="true"
+		    events="current_view_language_changed"
+		    oncommandupdate="ko.commands.updateCommandset(this);" >
+	<command id="cmd_sv_RRunAll"  key="key_cmd_sv_RRunAll"   oncommand="ko.commands.doCommand('cmd_sv_RRunAll')"
+			 desc="R: Send file content" label="Send file content" accel="S" />
+	<command id="cmd_sv_RSourceAll"  key="key_cmd_sv_RSourceAll"  oncommand="ko.commands.doCommand('cmd_sv_RSourceAll')"
+		   desc="R: Source file" label="Source file" accel="a" />
+	<command id="cmd_sv_RRunBlock"  key="key_cmd_sv_RRunBlock"  oncommand="ko.commands.doCommand('cmd_sv_RRunBlock')"
+		   desc="R: Send marked block" label="Send marked block" accel="b" />
+	<command id="cmd_sv_RRunFunction"  key="key_cmd_sv_RRunFunction"  oncommand="ko.commands.doCommand('cmd_sv_RRunFunction')"
+		   desc="R: Send function under cursor" label="Send function under cursor" accel="c" />
+	<command id="cmd_sv_RRunLine"  key="key_cmd_sv_RRunLine"  oncommand="ko.commands.doCommand('cmd_sv_RRunLine')"
+		   desc="R: Send active line" label="Send active line" accel="l" />
+	<command id="cmd_sv_RRunPara"  key="key_cmd_sv_RRunPara"  oncommand="ko.commands.doCommand('cmd_sv_RRunPara')"
+		   desc="R: Send current paragraph" label="Send current paragraph" accel="p" />
+
+	<command id="cmd_sv_RSourceBlock"  key="key_cmd_sv_RSourceBlock"  oncommand="ko.commands.doCommand('cmd_sv_RSourceBlock')"
+		   desc="R: Source marked block" label="Source marked block" accel="m" />
+	<command id="cmd_sv_RSourceFunction"  key="key_cmd_sv_RSourceFunction"  oncommand="ko.commands.doCommand('cmd_sv_RSourceFunction')"
+		   desc="R: Source function under cursor" label="Source function under cursor" accel="s" />
+
+	<command id="cmd_sv_RSourcePara"  key="key_cmd_sv_RSourcePara"  oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
+		   desc="R: Source current paragraph" label="Source current paragraph" accel="r" />
+
+	<commandset id="cmdset_r_control" commandupdater="true"
+		    events="select"
+		    oncommandupdate="ko.commands.updateCommandset(this);" >
+	  <command id="cmd_sv_RRunSelection"  key="key_cmd_sv_RRunSelection"  oncommand="ko.commands.doCommand('cmd_sv_RRunSelection')"
+	     desc="R: Send selection" label="Send selection" accel="i" />
+	  <command id="cmd_sv_RSourceSelection"  key="key_cmd_sv_RSourceSelection"  oncommand="ko.commands.doCommand('cmd_sv_RSourceSelection')"
+		   desc="R: Source selection" label="Source selection" accel="u" />
+	</commandset>
+
+
+    </commandset>
+  </commandset>
+
+  <menupopup id="popup_tools">
+    <menuitem id="menu_sciviewsk"
+              label="SciViews-K"
+              observes="Tasks:svAbout"
+              class="menu-iconic-wide"/>
+  </menupopup>
+
+  <menubar id="menubar_main">
+   <menu id="sciviews_menu" label="R Control" accesskey="R" insertbefore="menu_window,help_menu">
+    <menupopup id="popup_sciviews_main">
+	<menuitem id="r_start_console_menu" observes="cmd_svStartR" class="menuitem-iconic run-command-icon" />
+	<menuseparator/>
+	<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll" />
+	<menuitem id="r_src_all_menu" observes="cmd_sv_RSourceAll" />
+	<menuitem id="r_send_block_menu" observes="cmd_sv_RRunBlock" />
+	<menuitem id="r_send_function_menu" observes="cmd_sv_RRunFunction" />
+	<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine" />
+	<menuitem id="r_send_para_menu" observes="cmd_sv_RRunPara" />
+	<menuitem id="r_send_sel_menu" observes="cmd_sv_RRunSelection" />
+	<menuitem id="r_src_block_menu" observes="cmd_sv_RSourceBlock" />
+	<menuitem id="r_src_function_menu" observes="cmd_sv_RSourceFunction" />
+	<menuitem id="r_src_para_menu" observes="cmd_sv_RSourcePara" />
+	<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection" />
+    </menupopup>
+   </menu>
+  </menubar>
+</overlay>
