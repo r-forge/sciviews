@@ -30,7 +30,8 @@ objMenu(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 	path = NULL)
 objSearch(sep = "\t", path = NULL, compare = TRUE)
 
-\method{print}{objList}(x, sep = NA, eol = "\n", header = !attr(x, "all.info"), \dots)
+\method{print}{objList}(x, sep = NA, eol = "\n", header = !attr(x, "all.info"),
+	raw.output = !is.na(sep), \dots)
 
 write.objList(x, path, sep = "\t", \dots)
 }
@@ -45,7 +46,7 @@ write.objList(x, path, sep = "\t", \dots)
   \item{pattern}{ A pattern to match for selecting variables }
   \item{group}{ A group to filter }
   \item{path}{ The path where to write a temporary file with the requested
-    information. Use \code{path = NULL} (default) if you don't pass this
+    information. Set to NULL (default) if you don't pass this
     data to your GUI client by mean of a file }
   \item{regenerate}{ Do we force to regenerate the information? }
   \item{object}{ name of the object selected in the object browser,
@@ -53,17 +54,18 @@ write.objList(x, path, sep = "\t", \dots)
   \item{objects}{ A list with selected items in the object browser }
   \item{all.info}{ Do we return all the information (envir as first column or
     not (by default) }
-  \item{compare}{ If \code{compare == TRUE}, result is compared with last cached
+  \item{compare}{ If TRUE, result is compared with last cached
     value and the client is updated only if something changed }
   \item{sep}{ Separator to use between items (if path is not NULL) }
   \item{x}{ Object returned by \code{objList}}
   \item{eol}{ Separator to use between object entries, default is to list each
 	item in a separate line}
   \item{header}{ If TRUE, two-line header is printed, of the form: \cr
-	\#Environment=environment name \cr
-	\#Object=object name \cr
-	Default is not to print header if all.info is true.
+	Environment=environment name \cr
+	Object=object name \cr
+	Default is not to print header if \code{all.info} is true.
 	}
+  \item{raw.output}{If TRUE, a compact, better suited for parsing output is produced}
   \item{\dots}{further arguments, passed to \code{write.table}}
 }
 
@@ -72,7 +74,8 @@ write.objList(x, path, sep = "\t", \dots)
     where exchange files are stored, in case you exchange data through files.
     You can use a better way to communicate with your GUI (you have to provide
     your code) and disable writing to files by using \code{path = NULL}.
-  \code{objList()} lists objects in a given environment.
+  \code{objList()} lists objects in a given environment, elements of
+    a recursive objects or function arguments.
   \code{objSearch()} lists the search path.
   \code{objClear()} clears any reference to a given object browser.
   \code{objInfo()} computes a tooltip info for a given object.

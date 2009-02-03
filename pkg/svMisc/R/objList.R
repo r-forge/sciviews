@@ -146,22 +146,24 @@ function (x, path, sep = "\t", ...)
 }
 
 "print.objList" <-
-function (x, sep = NA, eol = "\n", header = !attr(x, "all.info"), ...)
+function (x, sep = NA, eol = "\n", header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 {
 	if (!inherits(x, "objList"))
 		stop("x must be an 'objList' object")
 	if (NROW(x) > 0) {
 
-
-		cat("Objects list:\n")
+		if (!raw.output)
+			cat("Objects list:\n")
 		if (header) {
-            header.sep <- if (is.na(sep)) " = " else "="
+			header.fmt <- if (raw.output) "Env=%s\nObj=%s\n" else
+				"\tEnvironment: %s\n\tObject: %s\n"
 
-		    cat("Environment", attr(x, "envir"), sep = header.sep)
-                    cat("\n")
-		    cat("Object", if (is.null(attr(x, "object"))) "" else
-			    attr(x, "object"), sep = header.sep)
-                    cat("\n")
+			objname <- if (is.null(attr(x, "object"))) {
+				if (raw.output) "" else "<All>"
+				} else attr(x, "object")
+
+			cat(sprintf(header.fmt,  attr(x, "envir"), objname))
+
 		}
 
 		if (is.na(sep)) {
@@ -170,7 +172,7 @@ function (x, sep = NA, eol = "\n", header = !attr(x, "all.info"), ...)
 			write.table(x, row.names = FALSE, col.names = FALSE, sep = sep,
 				eol = eol, quote = FALSE)
 		}
-	} else {
+	} else if (!raw.output) {
 		cat("An empty objects list\n")
 	}
 	return(invisible(x))
