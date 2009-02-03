@@ -139,51 +139,91 @@ sv.r.escape = function() {
 }
 
 // Set the current working directory (to current buffer dir, or ask for it)
-sv.r.setwd = function (ask) {
-    var res = false;
-
-	var kv = ko.views.manager.currentView;
-	if (!kv) {
-		return false;
+sv.r.setwd = function (dir, ask, type) {
+	// TODO: simplify this:
+	// for compatibility with previous versions
+	switch (arguments.length) {
+		case  1:
+			type = dir;
+			dir = null;
+			ask = false;
+		break;
+		case 2:
+			type = dir;
+			dir = null;
+		break;
+		default:
 	}
 
-	kv.setFocus();
+	var getDirFromR = "";
 
-    if (ask == null) {
-        if (!kv.document.isUntitled) {
-            //alert("File is not saved yet. Unable to get its directory!");
-            res = sv.r.eval(".odir <- setwd(\"" + kv.document.file.dirName.replace(/\\/g, "/") + "\")");
-			res = true;
-        }
-    } else if (ask == "session") {
-        res = sv.r.eval(".odir <- setwd(getOption(\"R.initdir\"))");
-		res = true;
-    } else if (ask == "previous") {
-        res = sv.r.eval("if (exists(\".odir\")) .odir <- setwd(.odir); getwd()");
-		res = true;
-    }
-
-	if (!res){
-		// try to set current project dir ar default directory
-		var ap = ko.projects.manager.getCurrentProject();
-		if (ap != null) {
-			dir = ko.projects.getDefaultDirectory(ap);
-		} else if (!kv.document.isUntitled) {
-			// if not, look for current file directory
-			dir = kv.document.file.dirName;
-		} else {
-			dir = "";
+	if (!dir || (sv.io.fileExists(dir) == 2)) { // if dir doesn't exist or unspecified
+		//alert(dir + ":" + type)
+		checkType:
+		switch (type) {
+			case "this":
+				break;
+			case "session":
+				getDirFromR = "getOption(\"R.initdir\")";
+				//sv.r.eval(".odir <- setwd(getOption(\"R.initdir\"))");
+				break;
+			case "previous":
+				//sv.r.eval("if (exists(\".odir\")) .odir <- setwd(.odir); getwd()");
+				getDirFromR = "if (exists(\".odir\")) .odir else getwd()";
+				break;
+			case "init":
+				//sv.r.eval(".odir <- setwd(getOption(\"R.initdir\"))");
+				getDirFromR = "getOption(\"R.initdir\")";
+				break;
+			case "current":
+				getDirFromR = "getwd()";
+				ask = true;	// assume  ask is always true in shis case
+				break;
+			case "file":
+				var kv = ko.views.manager.currentView;
+				if (kv) {
+					kv.setFocus();
+					if (!kv.document.isUntitled) {
+						// if not, look for current file directory
+						dir = kv.document.file.dirName;
+					}
+					break;
+				}
+			case "project":
+			default:
+				dir = "";
+				// try to set current project dir ar default directory
+				var ap = ko.projects.manager.getCurrentProject();
+				var kv = ko.views.manager.currentView;
+				if (ap != null) {
+					dir = ko.projects.getDefaultDirectory(ap);
+				} else {
+					type = "file";
+					break checkType;
+				}
 		}
+	}
 
+	if (getDirFromR) {
+		var cmd = "cat(path.expand(" + getDirFromR + "))";
+
+		sv.r.evalCallback(cmd, function(curDir) {
+			if (navigator.platform.search(/^Win/) == 0)
+				curDir = curDir.replace(/\//g, "\\");
+			sv.r.setwd(curDir, ask, "this");
+		});
+		return;
+	}
+
+	if (ask || !dir) {
 		dir = ko.filepicker.getFolder(dir, "Choose working directory");
+	}
 
-		if (dir != null) {
-			res = sv.r.eval(".odir <- setwd(\"" + dir.replace(/\\/g, "/") + "\")");
-		}
-		res = true;
-    }
-
-    return res;
+	if (dir != null) {
+		sv.r.evalHidden(".odir <- setwd(\"" + dir.replace(/\\/g, "\\\\") + "\")");
+		sv.cmdout.message("Current R's working directory is: \"" + dir + "\"", 10000);
+	}
+    return;
 }
 
 // Run current selection or line buffer in R
@@ -253,7 +293,8 @@ sv.r.source = function(what) {
 
 		var file = kv.document.file.path.replace(/\\/g, "/");
 
-		if (what == null) what = "all"; // Default value
+		if (!what)
+			what = "all"; // Default value
 
 		// Special case: if "all" and document is saved, source the original file
 		if (what == "all" && !(kv.document.isUntitled || kv.document.isDirty)) {
@@ -263,23 +304,19 @@ sv.r.source = function(what) {
 			// else, save all or part in the temporary file and source that file.
 			// After executing, tell R to delete it.
 			var code = (what == "all")? ke.text : sv.getTextRange(what);
-			sv.cmdout.clear();
-			sv.cmdout.append(':> source("' + file + '*") # unsaved buffer: ' + what);
+			//sv.cmdout.clear();
+			sv.cmdout.append(':> source("' + file + '*") # unsaved buffer (' + what + ')');
 
-			sv.r.evalCallback(
-				// ask R about temporary filename. There should be easier way to do it.
-				"cat(tempfile('sv'))",
-				function(file, text) {
-					sv.io.writefile(file, text, 'utf-8', false);
+			var tempFile = sv.io.tempFile();
+			sv.io.writefile(tempFile, code, 'utf-8', false);
+			tempFile = tempFile.replace(/\\/g, "\\\\");
 
-					file = file.replace(/\\/g, "/");
-					res = sv.r.evalCallback(
-						'source("' + file + '", encoding = "utf-8"); unlink("' + file + '");',
-						sv.cmdout.append
-					);
-				},
-				code);
+			var cmd = 'source("' + tempFile + '", encoding = "utf-8");\nunlink("' + tempFile + '");';
 
+			sv.r.evalCallback(cmd, function(data) {
+				sv.cmdout.append(sv.tools.strings.removeLastCRLF(data));
+				sv.cmdout.append(":>");
+			});
 		}
 	} catch(e) {
 		return e;
@@ -290,6 +327,9 @@ sv.r.source = function(what) {
 // Send whole or a part of the current buffer to R
 // place cursor at next line
 sv.r.send = function(what) {
+	sv.cmdout.message("sv.r.send "+what, 3000);
+	//alert("sv.r.send "+what);
+
 	var res = false;
 	var kv = ko.views.manager.currentView;
 	if (!kv)
@@ -303,9 +343,11 @@ sv.r.send = function(what) {
 
 		var code = sv.getTextRange(what, true);
 		if (code) {
+			// indent multiline commands to make the output look nicer
+			code = code.replace(/\r?\n/g, "\n   ")
 			res = sv.r.eval(code);
 		}
-		if (what == "line" || what == "linetoend" || what == "para")
+		if (what == "line" || what == "linetoend") // || what == "para"
 			ke.charRight();
 
 	} catch(e) {
