@@ -65,11 +65,15 @@
 
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
 
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
+
+
   <commandset id="allcommands">
     <command id="Tasks:svAbout" oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
 
     <command id="cmd_svStartR" key="key_cmd_svStartR"
-		     oncommand="ko.commands.doCommand('cmd_svStartR');" desc="R: Start R Console (windows)" label="Start R Console (windows)" accel="R" />
+		     oncommand="ko.commands.doCommand('cmd_svStartR');"
+		 desc="R: Start R Console (windows)" label="Start R Console (windows)" accel="R" />
 
     <commandset id="cmdset_r_control" commandupdater="true"
 		    events="current_view_language_changed"
@@ -118,19 +122,19 @@
   <menubar id="menubar_main">
    <menu id="sciviews_menu" label="R Control" accesskey="R" insertbefore="menu_window,help_menu">
     <menupopup id="popup_sciviews_main">
-	<menuitem id="r_start_console_menu" observes="cmd_svStartR" class="menuitem-iconic run-command-icon" />
+	<menuitem id="r_start_console_menu" observes="cmd_svStartR" class="menuitem-iconic r-run-command-icon" />
 	<menuseparator/>
-	<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll" />
-	<menuitem id="r_src_all_menu" observes="cmd_sv_RSourceAll" />
-	<menuitem id="r_send_block_menu" observes="cmd_sv_RRunBlock" />
-	<menuitem id="r_send_function_menu" observes="cmd_sv_RRunFunction" />
-	<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine" />
-	<menuitem id="r_send_para_menu" observes="cmd_sv_RRunPara" />
-	<menuitem id="r_send_sel_menu" observes="cmd_sv_RRunSelection" />
-	<menuitem id="r_src_block_menu" observes="cmd_sv_RSourceBlock" />
-	<menuitem id="r_src_function_menu" observes="cmd_sv_RSourceFunction" />
-	<menuitem id="r_src_para_menu" observes="cmd_sv_RSourcePara" />
-	<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection" />
+	<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine" class="menuitem-iconic r-run-line-icon" />
+	<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll" class="menuitem-iconic r-run-all-icon" />
+	<menuitem id="r_src_all_menu" observes="cmd_sv_RSourceAll" class="menuitem-iconic r-source-all-icon" />
+	<menuitem id="r_send_sel_menu" observes="cmd_sv_RRunSelection" class="menuitem-iconic r-run-selection-icon" />
+	<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection" class="menuitem-iconic r-source-selection-icon" />
+	<menuitem id="r_send_block_menu" observes="cmd_sv_RRunBlock" class="menuitem-iconic r-run-block-icon" />
+	<menuitem id="r_src_block_menu" observes="cmd_sv_RSourceBlock" class="menuitem-iconic r-source-block-icon" />
+	<menuitem id="r_send_para_menu" observes="cmd_sv_RRunPara" class="menuitem-iconic r-run-para-icon" />
+	<menuitem id="r_src_para_menu" observes="cmd_sv_RSourcePara" class="menuitem-iconic r-source-para-icon" />
+	<menuitem id="r_send_function_menu" observes="cmd_sv_RRunFunction" class="menuitem-iconic r-run-function-icon" />
+	<menuitem id="r_src_function_menu" observes="cmd_sv_RSourceFunction" class="menuitem-iconic r-source-function-icon" />
     </menupopup>
    </menu>
   </menubar>
