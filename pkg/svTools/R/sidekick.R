@@ -75,7 +75,10 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 	hasAttrs <- "srcref" %in% names(atts)
 	ids <- maxId + 1:length(p)
 	if( hasAttrs ){
-		srcrefs <- t( sapply( attr(p, "srcref"), function( y ) as.integer(y)[1:4] ) )  
+	  srcrefs <- t( sapply( attr(p, "srcref"), function( y ) {
+			positions <- as.integer(y)
+			if( length(positions) == 4 ) positions else positions[ c(1,5,3,6) ]
+	  } ) )  
 		colnames( srcrefs ) <- paste("srcref", 1:4 , sep = "")
 		srcrefs <- as.data.frame( srcrefs ) 
 		modes <- sapply( p, mode )
