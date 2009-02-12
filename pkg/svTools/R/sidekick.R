@@ -51,7 +51,6 @@ sidekick <- function( file, encoding = "unknown" ){
 
 
 sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, env = new.env(), parent = 0, file ){
-	
 	if( top ) {		
 		env[["data"]] <- data.frame( 
 			id = integer(0), 
@@ -76,7 +75,7 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 	hasAttrs <- "srcref" %in% names(atts)
 	ids <- maxId + 1:length(p)
 	if( hasAttrs ){
-		srcrefs <- t( sapply( attr(p, "srcref"), as.integer ) )  
+		srcrefs <- t( sapply( attr(p, "srcref"), function( y ) as.integer(y)[1:4] ) )  
 		colnames( srcrefs ) <- paste("srcref", 1:4 , sep = "")
 		srcrefs <- as.data.frame( srcrefs ) 
 		modes <- sapply( p, mode )
