@@ -1,5 +1,6 @@
 "addItems" <-
-function(x, y, use.names = TRUE, replace = TRUE) {
+function (x, y, use.names = TRUE, replace = TRUE)
+{
 	if (replace) res <- c(y, x) else res <- c(x, y)
 	if (use.names) {
 		res <- res[!duplicated(names(res))]
@@ -10,15 +11,16 @@ function(x, y, use.names = TRUE, replace = TRUE) {
 }
 
 "addActions" <-
-function(obj = ".svActions", text = NULL, code = NULL, state = NULL,
-	options = NULL, replace = TRUE) {
+function (obj = ".svActions", text = NULL, code = NULL, state = NULL,
+	options = NULL, replace = TRUE)
+{
 	dat <- getTemp(obj, default = list())
 	if (!inherits(dat, "list"))
 		stop("'obj' should inherit from 'list'")
-	
+
 	# Make sure we return an svActions object
 	class(dat) <- unique(c("svActions", class(dat)))
-	
+
 	# Add new actions characteristics to dat; make sure newdata are correct
 	"addData" <- function(x, newdata, replace) {
 		newnames <- names(newdata)
@@ -33,26 +35,27 @@ function(obj = ".svActions", text = NULL, code = NULL, state = NULL,
 	if (!is.null(code)) dat$code <- addData(dat$code, code, replace)
 	if (!is.null(state)) dat$state <- addData(dat$state, state, replace)
 	if (!is.null(options)) dat$options <- addData(dat$options, options, replace)
-	
+
 	# Reassign the modified values
 	assignTemp(obj, dat)
 	return(invisible(dat))
 }
 
 "addIcons" <-
-function(obj = ".svIcons", icons, replace = TRUE) {
+function (obj = ".svIcons", icons, replace = TRUE)
+{
 	# get the list of icons
 	icn <- getTemp(obj, default = character())
 	if (!inherits(icn, "character"))
 		stop("'obj' should inherit from 'character'")
-	
+
 	# Check that new icons are correctly formatted
 	nicons <- names(icons)
 	if (is.null(nicons))
 		stop("Icons map you add must be a named character vector")
-	icons <- as.character(icons)	
+	icons <- as.character(icons)
 	names(icons) <- nicons
-	
+
 	# Add new icons to it
 	icn <- addItems(icn, icons, replace = replace)
 
@@ -65,7 +68,8 @@ function(obj = ".svIcons", icons, replace = TRUE) {
 }
 
 "addMethods" <-
-function(methods) {
+function (methods)
+{
 	# get the list of methods
 	met <- getOption("svGUI.methods")
 	if (!is.null(met)) methods <- addItems(met, methods, use.names = FALSE)

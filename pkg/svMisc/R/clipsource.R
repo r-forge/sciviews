@@ -1,5 +1,6 @@
 "clipsource" <-
-function(primary = TRUE, ...) {
+function (primary = TRUE, ...)
+{
 	# Source data from the clipboard, manage clipboard correctly depending
 	# on the OS
 	if (isWin()) { # Windows OS
@@ -16,5 +17,5 @@ function(primary = TRUE, ...) {
 	on.exit(close(data))
 	# Invoke source() with the data from the clipboard
 	res <- source(data, ...)
-	return(invisible(res))	
-} 
+	return(invisible(res))
+}

@@ -1,5 +1,6 @@
 "captureAll" <-
-function (expr) {
+function (expr)
+{
 	# capture.all() is inspired from capture.output(), but it captures
 	# both the output and the message streams
 	rval <- NULL	# Just to avoid a note during code analysis
@@ -35,7 +36,8 @@ function (expr) {
 			rm("warning", envir = TempEnv())
 	})
 
-	"evalVis" <- function (Expr) {
+	"evalVis" <- function (Expr)
+	{
 		# We need to install our own warning handling
 		# and also, we use a customized interrupt handler
 		owarns <- getOption("warning.expression")
@@ -152,7 +154,8 @@ function (expr) {
 	}
 
 	# This is my function to display delayed warnings
-	WarningMessage <- function (last.warning) {
+	WarningMessage <- function (last.warning)
+	{
 		assign("last.warning", last.warning, envir = baseenv())
 		n.warn <- length(last.warning)
 		if (n.warn < 11) {	# If less than 11 warnings, print them
@@ -173,7 +176,7 @@ function (expr) {
 		tmp <- evalVis(expr[[i]])
 		if (inherits(tmp, "try-error")) {
 
-	# This is not necessary anymore, since errors are printed by error handler:
+	# This is not necessary any more, since errors are printed by error handler:
 	#{{
 	#
 	#   		# Rework the error message if occurring in calling env

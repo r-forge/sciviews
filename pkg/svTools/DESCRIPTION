@@ -6,10 +6,9 @@ Date: 2008-12-11
 Author: Romain Francois <francoisromain@free.fr>
 Maintainer: Romain Francois <francoisromain@free.fr>
 Description: Set of tools aimed at wrapping some of the functionalities
-	of the packages tools, utils and codetools into a nicer format so 
+	of the packages tools, utils and codetools into a nicer format so
 	that an IDE can use them
-License: GPL-3
+License: GPL (>= 2)
 LazyLoad: yes
 LazyData: yes
 Depends: operators, codetools, svMisc, tools, utils
-

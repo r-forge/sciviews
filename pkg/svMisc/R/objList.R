@@ -1,6 +1,7 @@
 "objList" <-
 function (id = "default", envir = .GlobalEnv, object = NULL, all.names = FALSE,
-pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL, compare = TRUE, ...)
+	pattern = "", group = "", all.info = FALSE, sep = "\t", path = NULL,
+	compare = TRUE, ...)
 {
 	# Make sure that id is character
 	id <- as.character(id)[1]
@@ -146,7 +147,8 @@ function (x, path, sep = "\t", ...)
 }
 
 "print.objList" <-
-function (x, sep = NA, eol = "\n", header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
+function (x, sep = NA, eol = "\n", header = !attr(x, "all.info"),
+	raw.output = !is.na(sep), ...)
 {
 	if (!inherits(x, "objList"))
 		stop("x must be an 'objList' object")

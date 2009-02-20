@@ -1,5 +1,6 @@
 "startSocketServer" <-
-function (port = 8888, server.name = "Rserver", procfun = processSocket) {
+function (port = 8888, server.name = "Rserver", procfun = processSocket)
+{
     # OK, could be port = 80 to emulate a simple HTML server
     # This is the main function that starts the server
     # This function implements a basic R socket server on 'port'
@@ -34,7 +35,8 @@ function (port = 8888, server.name = "Rserver", procfun = processSocket) {
 
     if (!tclProcExists("SocketServerProc")) {
 		# Create the callback when a client sends data
-		"SocketServerProc" <- function () {
+		"SocketServerProc" <- function ()
+		{
 			require(tcltk)
 			# Note: I don't know how to pass arguments here.
 			# So, I use Tcl global variables instead:
@@ -67,7 +69,8 @@ function (port = 8888, server.name = "Rserver", procfun = processSocket) {
 			# Make sure this message is not processed twice
 			.Tcl("set ::sockMsg {}")
 
-			"TempEnv_" <- function () {
+			"TempEnv_" <- function ()
+			{
 				pos <-  match("TempEnv", search())
 				if (is.na(pos)) { # Must create it
 					TempEnv <- list()
@@ -78,7 +81,8 @@ function (port = 8888, server.name = "Rserver", procfun = processSocket) {
 				return(pos.to.env(pos))
 			}
 
-			"getTemp_" <- function (x, default = NULL, mode = "any") {
+			"getTemp_" <- function (x, default = NULL, mode = "any")
+			{
 				if  (exists(x, envir = TempEnv_(), mode = mode,
 						inherits = FALSE)) {
 					return(get(x, envir = TempEnv_(), mode = mode,
@@ -112,7 +116,8 @@ function (port = 8888, server.name = "Rserver", procfun = processSocket) {
 			return(TRUE) # The command is processed
 		}
 		# This is a copy of tclFun from tcltk2, to avoid a Depends: tcltk2
-		"tclFun_" <- function (f, name = deparse(substitute(f))) {
+		"tclFun_" <- function (f, name = deparse(substitute(f)))
+		{
 			# Register a simple R function (no arguments) as a callback in Tcl,
 			# and give it the same name)
 			# Indeed, .Tcl.callback(f) in tcltk package does the job...

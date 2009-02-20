@@ -1,5 +1,6 @@
 "Complete" <-
-function(code, givetype = FALSE, sep = "\t") {
+function (code, givetype = FALSE, sep = "\t")
+{
 	### TODO: implement 'givetype'!
 
 	# Get a completion list, given a part of the code

@@ -1,6 +1,7 @@
 "koCmd" <-
-function(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
-port = getOption("ko.port")) {
+function (cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
+	port = getOption("ko.port"))
+{
     if (is.null(host)) host <- "localhost"	# Default value
 	if (is.null(port)) port <- 7052			# Idem
 	cmd <- gsub("\n", "\\\\n", cmd)

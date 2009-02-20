@@ -1,5 +1,6 @@
 "guiCallTip" <-
-function(code, file = NULL, onlyargs = FALSE, width = 60, location = FALSE) {
+function (code, file = NULL, onlyargs = FALSE, width = 60, location = FALSE)
+{
     # This is an interface to CallTip for external programs
     # Clear ::SciViewsR_CallTip
     .Tcl("set ::SciViewsR_CallTip {}")
@@ -36,7 +37,8 @@ function(code, file = NULL, onlyargs = FALSE, width = 60, location = FALSE) {
 }
 
 "guiComplete" <-
-function(code, file = NULL, givetype = FALSE, sep = "|") {
+function (code, file = NULL, givetype = FALSE, sep = "|")
+{
     # This is an interfacte to Complete for external programs
     # Clear ::SciViewsR_Complete
     .Tcl("set ::SciViewsR_Complete {}")
@@ -68,7 +70,8 @@ function(code, file = NULL, givetype = FALSE, sep = "|") {
 }
 
 "guiDDEInstall" <-
-function() {
+function ()
+{
     # Register a dde server for R and install callbacks for serveur functions
 
     # Make sure tcl/tk dde is operational

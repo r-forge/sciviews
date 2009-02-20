@@ -1,8 +1,9 @@
 "isHelp" <-
-function(topic, package = NULL, lib.loc = NULL) {
+function (topic, package = NULL, lib.loc = NULL)
+{
 	# Code taken from example(), but here we don't run the example!
 	topic <- substitute(topic)
-    if (!is.character(topic)) 
+    if (!is.character(topic))
         topic <- deparse(topic)[1]
     INDICES <- .find.package(package, lib.loc, verbose = FALSE)
     file <- index.search(topic, INDICES, "AnIndex", "R-ex")

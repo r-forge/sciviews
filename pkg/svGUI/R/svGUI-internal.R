@@ -1,5 +1,6 @@
 ".onLoad" <-
-function(lib, pkg) {
+function (lib, pkg)
+{
 	serve <- getOption("ko.serve")
 	if (!is.null(serve)) {
 		startSocketServer(port = as.integer(serve)[1])
@@ -8,7 +9,8 @@ function(lib, pkg) {
 }
 
 ".onUnload" <-
-function(libpath) {
+function (libpath)
+{
 	serve <- getOption("ko.serve")
 	if (!is.null(serve) && "package:svSocket" %in% search())
 		stopSocketServer(port = as.integer(serve)[1])

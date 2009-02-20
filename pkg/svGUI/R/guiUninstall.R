@@ -1,5 +1,6 @@
 "guiUninstall" <-
-function() {
+function ()
+{
 	# Eliminate .guiCmd
 	rmTemp(".guiCmd")
 	rmTemp(".guiObjBrowse")
@@ -7,7 +8,7 @@ function() {
 	rmTemp(".guiObjMenu")
 
 	rmTemp(".koCmd")
-	
+
 	# Unregister the TaskCallback
 	# Use getTaskCallbackNames() to know if some tasks are registered
 	Callback.Id <- getTemp(".guiObjCallbackId", default = NULL)

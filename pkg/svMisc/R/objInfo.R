@@ -1,7 +1,8 @@
 "objInfo" <-
-function(id = "default", envir = .GlobalEnv, object = "", path = NULL) {	
+function (id = "default", envir = .GlobalEnv, object = "", path = NULL)
+{
 	# Get a tooltip information for an object (for mouseover method)
-	
+
 	# Format envir as character (use only first item provided!)
 	if (is.environment(envir)) envir <- deparse(substitute(envir))
 	if (is.numeric(envir)) envir <- search()[envir[1]]
@@ -43,19 +44,19 @@ function(id = "default", envir = .GlobalEnv, object = "", path = NULL) {
 			Info[length(Info) + 1] <- size
 		}
 	}
-	
+
 	if (!is.null(path)) {
 		# Save the data in a file
 		if (path == "") path <- objDir()
 		InfoFile <- file.path(path, paste("Info_", id, ".txt", sep = ""))
 		cat(Info, collapse = "\n", file = InfoFile)
 	}
-	
+
 	### TODO: allow different functions to pass data to different GUI clients
 	# Possibly call a .guiObjInfo function to pass the data to the GUI client
 	CmdFun <- getTemp(".guiObjInfo", mode = "function")
     if (!is.null(CmdFun)) CmdFun(id = id, data = Info)
-	
+
 	# Return the info tooltip invisibly
 	 return(invisible(Info))
 }

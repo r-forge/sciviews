@@ -4,7 +4,8 @@
 # and objList() in the svMisc package
 
 "trObjSearch" <-
-function(path = NULL) {
+function (path = NULL)
+{
 	res <- objSearch(sep = "\n", compare = FALSE)
 	if (is.null(path)) {
 		return(data.frame(search.. = strsplit(res, "\n")[[1]]))
@@ -14,8 +15,9 @@ function(path = NULL) {
 }
 
 "trObjList" <-
-function(id = "default", envir = ".GlobalEnv", all.names = TRUE,
-pattern = "", group = "", path = NULL) {
+function (id = "default", envir = ".GlobalEnv", all.names = TRUE,
+	pattern = "", group = "", path = NULL)
+{
 	# Get data
 	res <- objList(id = id, envir = envir, all.names = all.names,
 		pattern = pattern, compare = FALSE)

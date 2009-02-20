@@ -1,6 +1,7 @@
 "createCallTipFile" <-
-function(file = "Rcalltips.txt", pos = 2:length(search()), field.sep = "=",
-    only.args = FALSE, return.location = FALSE) {
+function (file = "Rcalltips.txt", pos = 2:length(search()), field.sep = "=",
+    only.args = FALSE, return.location = FALSE)
+{
 	# Create a .txt file containing calltips for R functions.
 	cat("", file = file) # Create the beginning of the file
 

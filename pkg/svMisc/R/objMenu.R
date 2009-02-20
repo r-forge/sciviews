@@ -1,6 +1,7 @@
 "objMenu" <-
 function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
-	path = NULL) {
+	path = NULL)
+{
 	### TODO: look also in .required in .GlobalEnv to determine if one can detach a package
 	### TODO: copy name to clipboard, send name to editor in menu
 
@@ -24,7 +25,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 	# - Selecting environments and objects inside environments is not allowed
 	# - Selecting multiples environments is not supported
 	# - Selectiong items in different environments is not allowed
-			
+
 	popup <- .createStripbar("popupbar")
 
 	# Format envir as character (use only first item provided!)
@@ -34,10 +35,10 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 	# Get the current position in the search path for envir
 	pos <- match(envir, search(), nomatch = -1)
 	if (pos < 1) return(invisible(popup))		# NOT FOUND!
-		
+
 	# Do we replace envir or not?
 	if (envir == ".GlobalEnv") Envir <- "<<<envir>>>" else Envir <- envir
-	
+
 	# Look at 'objects'
 	if (length(objects) > 1) {	# We have a multiple selection
 		objType <- "multiple"
@@ -45,7 +46,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 		objsPar <- paste(objects, collapse = ", ")
 		popup <- .addStripbar(popup, c("save", "remove"), obj = objsPar,
 			envir = Envir)
-		
+
 	} else {	# Only one item is selected
 		if (objects == "") {	# This is a menu for the environment
 			# The menu is different depending if we are in .GlobalEnv or not
@@ -59,7 +60,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 						"sep_",
 						"detach (d)"
 					), envir = envir)
-				
+
 			} else if (regexpr("^package:", envir) > -1) {	# A package envir
 				objType <- "package"
 				objPar <- sub("^package:", "", envir)
@@ -81,7 +82,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 						paste("detach", state, sep = ""),
 						paste("detachUnload", state, sep = "")
 					), package = objPar, envir = Envir)
-				
+
 			} else {	# Another environment than .GlobalEnv, but not a package
 				objType <- "environment"
 				req <- getOption("required.environments")
@@ -94,30 +95,30 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 						paste("detach", state, sep = "")
 					), envir = Envir)
 			}
-			
+
 		} else {	# This is a menu for an object
 			if (!exists(objects, where = envir)) return(invisible(popup))
 			objType <- "object"
 			obj <- get(objects, pos = envir)
 			objPar <- class(obj)
-	
+
 			# We look if there is an help file and examples for this object
 			hlp <- isHelp(objects)
-			names(hlp) <- NULL 
+			names(hlp) <- NULL
 			# then we add 'help' and 'example' at the top of the menu
 			popup <- .addStripbar(popup, c(
 					ifelse(hlp, c("help", "example"),
 						c("help (d)", "example (d)")),
 					"sep_"
 				), obj = objects)
-			
+
 			# Add a series of standard functions/methods for this object
 			mets <- listMethods(class = objPar)
 			popup <- .addStripbar(popup, c(
 					"Functions_.",
 					"._print",
 					ifelse("summary" %in% mets, "._generic", "._generic (d)")
-				), obj = objects, fun = "summary")			
+				), obj = objects, fun = "summary")
 			popup <- .addStripbar(popup, c(
 					ifelse("plot" %in% mets, "._generic", "._generic (d)"),
 					ifelse(!is.null(names(obj)), "._names", "._names (d)"),
@@ -132,7 +133,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 					popup <- .addStripbar(popup, "._generic", obj = objects,
 						fun = met)
 			}
-			
+
 			# Add a &View menu and at least one entry: &Default view
 			enabledViews <- "svViews" %in% search()	# We need this package
 			if (enabledViews) {
@@ -154,13 +155,13 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 						"report (d)"
 					), obj = objects, pkg = "svViews")
 			}
-			
+
 			# Add &edit/fix and &save
 			popup <- .addStripbar(popup, c(
 					ifelse(envir == ".GlobalEnv", "edit", "fix"),
 					"save"
 				), obj = objects, envir = Envir)
-			
+
 			# If we are in .GlobalEnv and the object is a data.frame or a list,
 			# then I can attach/detach it
 			if (envir == ".GlobalEnv" && inherits(obj, "list")) {
@@ -173,7 +174,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 						obj = objects)
 				}
 			}
-	
+
 			# Create the '&copy' submenu with all possible entries
 			# plus &Export and &Remove
 			enabledCopy <- "svIO" %in% search()	# We need this package
@@ -201,10 +202,10 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 						"sep_",
 						"remove"
 					), obj = objects, envir = Envir, pkg = "svIO")
-			}			
+			}
 		}
 	}	# Done (menu construction)
-	
+
 	# Possibly call a custom function .objMenu() in TempEnv to finalize the menu
 	# Depending on objType, we send something we already calculated to avoid
 	# doing it twice:
@@ -218,7 +219,7 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
     if (!is.null(CmdFun))
 		popup <- CmdFun(popup, id = id, envir = envir, pos = pos,
 			objects = objects, path = path, objType = objType, objPar = objPar)
-	
+
 	if (!is.null(path)) {
 		# Save the data in a file
 		if (path == "") path <- objDir()
@@ -226,12 +227,12 @@ function(id = "default", envir = .GlobalEnv, objects = "", sep = "\t",
 		write.table(popup, file = MenuFile, sep = sep, row.names = FALSE,
 			col.names = FALSE)
 	}
-	
+
 	### TODO: make this more flexible
 	# Possibly call a .guiObjMenu function to pass the data to the GUI client
 	CmdFun <- getTemp(".guiObjMenu", mode = "function")
     if (!is.null(CmdFun)) CmdFun(id = id, data = popup)
-	
+
 	# Return the menu specification invisibly
 	 return(invisible(popup))
 }

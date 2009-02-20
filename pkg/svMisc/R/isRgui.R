@@ -1,2 +1,3 @@
 "isRgui" <-
-function() (.Platform$GUI[1] == "Rgui")
+function ()
+	(.Platform$GUI[1] == "Rgui")

@@ -1,5 +1,6 @@
 "Sys.userdir" <-
-function() {
+function ()
+{
 	if (isWin()) {
 		# Return the user directory ("My Documents" under Windows)
 		udir <- Sys.getenv("R_User")

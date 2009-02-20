@@ -1,5 +1,6 @@
-svSuite <-
-function (tests) {
+"svSuite" <-
+function (tests)
+{
 	# Check provided tests and build a 'svSuite' object
 	tests <- as.character(tests)
 	# Remove NAs and empty strings ("") from tests
@@ -26,16 +27,17 @@ function (tests) {
 	return(tests)
 }
 
-as.svSuite <-
+"as.svSuite" <-
 function (x)
 	return(svSuite(x))
 
-is.svSuite <-
+"is.svSuite" <-
 function (x)
 	return(inherits(x, "svSuite"))
 
-print.svSuite <-
-function (x, ...) {
+"print.svSuite" <-
+function (x, ...)
+{
 	if (!is.svSuite(x))
 		stop("'x' must be a 'svSuite' object")
 	if (length(x) < 1) {
@@ -63,10 +65,11 @@ function (x, ...) {
 	return(invisible(x))
 }
 
-svSuiteList <-
+"svSuiteList" <-
 function (packages = TRUE, objects = TRUE, dirs = getOption("svUnit.dirs"),
 	excludeList = getOption("svUnit.excludeList"), pos = .GlobalEnv,
-	loadPackages = FALSE) {
+	loadPackages = FALSE)
+{
 	# List unit test (1) in loaded packages (2) in objects in pos and (3) in
 	# directories, possibly filtering them using an exclusion list
 	# Note: Komodo should list test unit files in loaded projects too!
@@ -174,9 +177,10 @@ function (packages = TRUE, objects = TRUE, dirs = getOption("svUnit.dirs"),
 	return(items)
 }
 
-makeUnit.svSuite <-
-function(x, name = make.names(deparse(substitute(x))), dir = tempdir(),
-objfile = "", codeSetUp = NULL, codeTearDown = NULL, pos = .GlobalEnv, ...) {
+"makeUnit.svSuite" <-
+function (x, name = make.names(deparse(substitute(x))), dir = tempdir(),
+	objfile = "", codeSetUp = NULL, codeTearDown = NULL, pos = .GlobalEnv, ...)
+{
 	# Take an 'svSuite' object and make a unit from its function tests
 	# that are not written yet in a test unit in a file
 	# They are saved in a file named runit<name>.R in 'dir'
@@ -200,8 +204,9 @@ objfile = "", codeSetUp = NULL, codeTearDown = NULL, pos = .GlobalEnv, ...) {
 	return(Unit)
 }
 
-runTest.svSuite <-
-function(x, name = make.names(deparse(substitute(x))), ...) {
+"runTest.svSuite" <-
+function (x, name = make.names(deparse(substitute(x))), ...)
+{
 	# Compile and run the test for this 'svSuite' object
 	if (!is.svSuite(x))
 		stop("'x' must be a 'svSuite' object")

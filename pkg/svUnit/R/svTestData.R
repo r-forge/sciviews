@@ -1,15 +1,17 @@
-is.svTestData <-
-function (x) {
+"is.svTestData" <-
+function (x)
+{
 	# It this a svTestData object
 	return(inherits(x, "svTestData"))
 }
 
-stats <-
+"stats" <-
 function (object, ...)
 	UseMethod("stats")
 
-stats.svTestData <-
-function (object, ...) {
+"stats.svTestData" <-
+function (object, ...)
+{
     if (!is.svTestData(object))
         stop("'object' must inherit from 'svTestData'")
     Stats <- attr(object, "stats")
@@ -21,8 +23,9 @@ function (object, ...) {
     return(list(kind = Kinds, timing = Stats["timing"]))
 }
 
-print.svTestData <-
-function (x, all = FALSE, header = TRUE, file = "", append = FALSE, ...) {
+"print.svTestData" <-
+function (x, all = FALSE, header = TRUE, file = "", append = FALSE, ...)
+{
     # If there is a context attribute, print info about the tests
     cat("", file = file, append = append)
     Context <- attr(x, "context")
@@ -49,8 +52,9 @@ function (x, all = FALSE, header = TRUE, file = "", append = FALSE, ...) {
     return(invisible(x))
 }
 
-summary.svTestData <-
-function (object, header = TRUE, file = "", append = FALSE, ...) {
+"summary.svTestData" <-
+function (object, header = TRUE, file = "", append = FALSE, ...)
+{
     # If there is a context attribute, print info about the tests
     cat("", file = file, append = append)
     Context <- attr(object, "context")

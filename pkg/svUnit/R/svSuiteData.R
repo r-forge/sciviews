@@ -1,11 +1,13 @@
-is.svSuiteData <-
-function (x) {
+"is.svSuiteData" <-
+function (x)
+{
 	# It this a svSuiteData object
 	return(inherits(x, "svSuiteData"))
 }
 
-stats.svSuiteData <-
-function (object, ...) {
+"stats.svSuiteData" <-
+function (object, ...)
+{
     if (!is.svSuiteData(object))
         stop("'object' must inherit from 'svSuiteData'")
     # Get the list of tests
@@ -33,13 +35,14 @@ function (object, ...) {
     return(Res)
 }
 
-metadata <-
+"metadata" <-
 function (object, ...)
 	UseMethod("metadata")
 
-metadata.svSuiteData <-
-function (object, fields = c("R.version", "sessionInfo", "time", "description"),
-...) {
+"metadata.svSuiteData" <-
+function (object,
+	fields = c("R.version", "sessionInfo", "time", "description"), ...)
+{
     # Extract metadata information from a 'svSuiteData' object
 	if (!is.svSuiteData(object))
 		stop("'object' must inherit from 'svSuiteData'")
@@ -51,8 +54,9 @@ function (object, fields = c("R.version", "sessionInfo", "time", "description"),
 	return(Res)
 }
 
-print.svSuiteData <-
-function (x, all = FALSE, file = "", append = FALSE, ...) {
+"print.svSuiteData" <-
+function (x, all = FALSE, file = "", append = FALSE, ...)
+{
     if (!is.svSuiteData(x))
         stop("'x' must inherit from 'svSuiteData'")
     Tests <- ls(x)
@@ -76,28 +80,29 @@ function (x, all = FALSE, file = "", append = FALSE, ...) {
     return(invisible(x))
 }
 
-summary.svSuiteData <-
+"summary.svSuiteData" <-
 function (object, ...)
     protocol_text.svSuiteData(object, ...)
 
-protocol <-
+"protocol" <-
 function (object, type = "text", file = "", append = FALSE, ...)
 	UseMethod("protocol")
 
-protocol.default <-
+"protocol.default" <-
 function (object, type = "text", file = "", append = FALSE, ...)
 	get(paste("protocol", type[1], sep = "_"))(object, file = file, append = append, ...)
 
-protocol.svSuiteData <-
+"protocol.svSuiteData" <-
 function (object, type = "text", file = "", append = FALSE, ...)
 	get(paste("protocol", type[1], sep = "_"))(object, file = file, append = append, ...)
 
-protocol_text <-
+"protocol_text" <-
 function (object, file = "", append = FALSE, ...)
 	UseMethod("protocol_text")
 
-protocol_text.svSuiteData <-
-function (object, file = "", append = FALSE, ...) {
+"protocol_text.svSuiteData" <-
+function (object, file = "", append = FALSE, ...)
+{
     if (!is.svSuiteData(object))
         stop("'object' must inherit from 'svSuiteData'")
     Tests <- sort(ls(object))
