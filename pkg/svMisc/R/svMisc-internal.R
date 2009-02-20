@@ -1,15 +1,17 @@
 ".onLoad" <-
-function(lib, pkg) {
+function (lib, pkg)
+{
 	.initialize()
 }
 
 ".initialize" <-
-function(replace = TRUE) {
+function (replace = TRUE)
+{
 	# Create .svActions if it does not exists yet
 	.svActions <- list()
 	class(.svActions) <- unique(c("svActions", class(.svActions)))
 	assignTemp(".svActions", .svActions, replace.existing = FALSE)
-	
+
 	# Define actions we need for the object browser menus
 	addTemp(".svActions", "text", c(
 		load =      gettext("Load...\nLoad R objects"),
@@ -43,7 +45,7 @@ function(replace = TRUE) {
 		View =      gettext("View\nView the object"),
 		Copy =      gettext("Copy\nCopy the object to the clipboard")
 	), replace = replace)
-	
+
 	addTemp(".svActions", "code", c(
 		load =     "guiLoad([[[pos = \"<<<envir>>>\"]]])",
 		source =   "guiSource([[[pos = \"<<<envir>>>\"]]])",
@@ -71,14 +73,14 @@ function(replace = TRUE) {
 		viewDef =  "view(<<<obj>>>)",
 		view =		"view(<<<obj>>>, type = \"<<<type>>>\")",
 		copyDef =	"copy(<<<obj>>>)",
-		copy =		"copy(<<<obj>>>, type = \"<<<type>>>\")"	
+		copy =		"copy(<<<obj>>>, type = \"<<<type>>>\")"
 	), replace = replace)
-	
+
 	addTemp(".svActions", "state", c(
 		viewDef = "d",
 		copyDef = "d"
 	), replace = replace)
-	
+
 	addTemp(".svActions", "options", c(
 		generic = ""
 	), replace = replace)
@@ -97,7 +99,8 @@ function(replace = TRUE) {
 }
 
 ".createStripbar" <-
-function(type = c("menubar", "popupbar", "toolbar", "buttonbar", "statusbar")) {
+function (type = c("menubar", "popupbar", "toolbar", "buttonbar", "statusbar"))
+{
 	type <- match.arg(type)
 	strp <- data.frame(widget = character(), value = character(),
 		tip = character(), code = character(), icon = character(),
@@ -109,8 +112,9 @@ function(type = c("menubar", "popupbar", "toolbar", "buttonbar", "statusbar")) {
 }
 
 ".addStripbar" <-
-function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
-	icons = NULL) {
+function (strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
+	icons = NULL)
+{
 	if (!inherits(strip, "svStripbar"))
 		stop("'strip' must be a 'svStripbar' object")
 	Type <- attr(strip, "type")
@@ -122,7 +126,7 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 	# Clean up state to keep only digits
 	state <- tolower(sub("^ *[(]([cCuUdDeEhHvV]+)[)] *$", "\\1", state))
 	widgets <- substr(widgets, 1, pos - 1)
-	
+
 	# If widgets is a named character vector, just check it is
 	# 'menu', 'item', 'sep' or 'space', otherwise, compile name = widget
 	wnames <- names(widgets)
@@ -133,7 +137,7 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 		widgets[regexpr("_[.]$", wnames) > -1] <- "menu"
 		widgets[regexpr("_$", wnames) > -1] <- "sep"
 		widgets[regexpr("__$", wnames) > -1] <- "space"
-		names(widgets) <- wnames 
+		names(widgets) <- wnames
 	} else {
 		# Name is provided => check content for 'menu', 'item', 'sep' or 'space'
 		if (!all(widgets %in% c("menu", "item", "sep", "space")))
@@ -144,21 +148,21 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 	tree <- sub("^([.]+)_.*$", "\\1", wnames)
 	tree[regexpr("^[.]+$", tree) == -1] <- ""
 	tree <- gsub("[.]", "|", tree)
-	
+
 	# Clean up widget names
 	wnames <- sub("^[.]+_", "", wnames)
 	wnames <- sub("_[.|_]{0,1}$", "", wnames)
-	
+
 	# Guess some of the values from the names
 	valuedef <- wnames
 	valuedef[widgets == "sep"] <- "-"
 	valuedef[widgets == "space"] <- "<->"
-	
+
 	# Collect together 'text', 'code', 'state' and 'options' from actions,
 	# .svActions.[gui] and .svActions
 	if (is.null(gui)) gui <- "___"	# Default value if no gui exists
 	act.gui <- getTemp(paste(".svActions", gui, sep = "."),
-		default = structure(list(), class = c("svActions", "list")))	
+		default = structure(list(), class = c("svActions", "list")))
 	act <- getTemp(".svActions",
 		default = structure(list(), class = c("svActions", "list")))
 	# Collect together items
@@ -166,14 +170,15 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 	defcode <- c(actions$code, act.gui$code, act$code)
 	defstate <- c(actions$state, act.gui$state, act$state)
 	defoptions <- c(actions$options, act.gui$options, act$options)
-	
+
 	# Do the same for icons
 	deficons <- c(icons,
 		getTemp(paste(".svIcons", gui, sep = "."), default = character()),
 		getTemp(".svIcons", default = character()))
-	
+
 	# The function used to replace placeholders in text and code
-	"replace" <- function(x, ...) {
+	"replace" <- function (x, ...)
+	{
 		# Do replacement for ... arguments
 		args <- list(...)
 		largs <- length(args)
@@ -192,7 +197,7 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 		x <- gsub("\\]\\]\\]", "", x)
 		return(x)
 	}
-	
+
 	# Compute the different elements we need
 	## text => value (first line) and tip (the rest)
 	text <- replace(deftext[wnames], ...)
@@ -202,8 +207,8 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 	pos[pos == -1] <- 1000000
 	value <- substr(text, 1, pos - 1)
 	value[value == ""] <- valuedef[value == ""]
-	tip <- substr(text, pos + 1, 1000000)	
-	
+	tip <- substr(text, pos + 1, 1000000)
+
 	# Indicate menu hierarchy in value
 	value <- paste(tree, value, sep = "")
 
@@ -211,7 +216,7 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 	code <- replace(defcode[wnames], ...)
 	code[is.na(code)] <- ""
 	names(code) <- wnames
-	
+
 	## icon
 	icon <- deficons[wnames]
 	icon[is.na(icon)] <- ""
@@ -221,7 +226,7 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 	options <- defoptions[wnames]
 	options[is.na(options)] <- ""
 	names(options) <- wnames
-	
+
 	## Compute state => checked, disabled and hidden
 	state2 <- defstate[wnames]
 	state2[is.na(state2)] <- ""
@@ -265,8 +270,29 @@ function(strip, widgets, gui = getOption("svGUI.name"), actions = NULL, ...,
 # This is a hack using ngettext() that uses unmodified version of the message
 # Restriction: on the contrary to gettext(), .gettext() can translate only
 # one message at a time, and default domain is changed to "R"
-".gettext" <- function (msg, domain = "R")
+".gettext" <-
+function (msg, domain = "R")
     ngettext(1, msg, "", domain = domain)
 
-".gettextf" <- function (fmt, ..., domain = "R")
+".gettextf" <-
+function (fmt, ..., domain = "R")
     sprintf(ngettext(1, fmt, "", domain = domain), ...)
+
+
+# Similar to "find" but `what` can be a vector
+# also, this one only searches in packages (position of the search path
+# matching '^package:') and only gives one result per what
+".find.multiple" <-
+function (what)
+{
+    stopifnot(is.character(what))
+    sp <- grep( "^package:", search(), value = TRUE)
+    out <- rep( "" , length(what))
+    for (i in sp) {
+        ok <- what %in% ls(i, all.names = TRUE) & out == ""
+        out[ok] <- i
+        if (all(out!="")) break
+    }
+    names(out) <- what
+    sub("^package:", "", out)
+}

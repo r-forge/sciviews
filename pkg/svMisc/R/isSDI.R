@@ -1,5 +1,6 @@
 "isSDI" <-
-function() {
+function ()
+{
 	# This function is specific to Windows, but it is defined everywhere
 	# so that we don't have to test the platform before use!
 	# Check if Rgui was started in SDI mode (needed by some GUI clients)
@@ -33,7 +34,7 @@ function() {
         if (!file.exists(ConfFile))
 			return(FALSE)	# No config file found => default behavious: MDI
 	}
-	
+
 	# 4) Read the Rconsole file
 	Conf <- read.table(ConfFile, sep = "------", header = FALSE)
 	# Look for a line starting with 'MDI'

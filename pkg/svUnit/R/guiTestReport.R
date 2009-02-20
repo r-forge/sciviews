@@ -1,5 +1,6 @@
-guiSuiteList <-
-function (sep = "\t", path = NULL, compare = TRUE) {
+"guiSuiteList" <-
+function (sep = "\t", path = NULL, compare = TRUE)
+{
     Suites <- svSuiteList()
 	if (compare) {
 		oldSuites <- .getTemp(".guiSuiteListCache", default = "")
@@ -28,8 +29,9 @@ function (sep = "\t", path = NULL, compare = TRUE) {
 	}
 }
 
-guiSuiteAutoList <-
-function (...) {
+"guiSuiteAutoList" <-
+function (...)
+{
 	# Is koCmd() available?
 	if (!exists("koCmd", mode = "function")) return(TRUE)
 	# Is it something changed in the unit list?
@@ -40,14 +42,16 @@ function (...) {
 	return(TRUE)
 }
 
-guiTestFeedback <-
-function (object, path = NULL, ...) {
+"guiTestFeedback" <-
+function (object, path = NULL, ...)
+{
 	# Give feedback to client about the currently running tests
 	### TODO: feedback about test run
 }
 
-guiTestReport <-
-function (object, sep = "\t", path = NULL, ...) {
+"guiTestReport" <-
+function (object, sep = "\t", path = NULL, ...)
+{
 	# Report the results of a test to the GUI client
 	if (!is.svSuiteData(object))
 		stop("'object' must be a 'svSuiteData' object")

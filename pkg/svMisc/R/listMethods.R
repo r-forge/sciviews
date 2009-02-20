@@ -1,18 +1,19 @@
 "listMethods" <-
-function(f = character(), class = NULL, S3 = TRUE, S4 = TRUE,
-	mixed = TRUE, filter = getOption("svGUI.methods")) {
+function (f = character(), class = NULL, S3 = TRUE, S4 = TRUE,
+	mixed = TRUE, filter = getOption("svGUI.methods"))
+{
 	# Given a function, if it is generic then return a list of its methods
 	# or given a class name, return all methods for this class
-	
+
 	## Check argument
 	if (!inherits(f, "character"))
 		stop("'f' must ba a character string!")
-	
+
 	## List methods for a given class
 	if (!is.null(class)) {
 		class <- as.character(class)[1]
 		res <- list()
-		
+
 		## S3 version
 		if (S3) {
 			s3 <- unclass(methods(class = class))
@@ -22,7 +23,7 @@ function(f = character(), class = NULL, S3 = TRUE, S4 = TRUE,
 				s3 <- s3[s3 %in% paste(filter, class, sep = ".")]
 			res$S3 <- sub(paste(".", class, sep = ""), "", s3)
 		}
-		
+
 		## S4 version
 		if (S4) {
 			if (is.null(filter)) filter <- character()
@@ -34,12 +35,12 @@ function(f = character(), class = NULL, S3 = TRUE, S4 = TRUE,
 		}
 		if (mixed) res <- sort(unique(c(res$S3, res$S4)))
 		return(res)
-		
+
 	} else {	## List all methods for one generic function
 		# Keep only first item if a vector is provided
 		f <- f[1]
 		res <- list()
-		
+
 		## S3 version
 		if (S3) {
 			# Does the function exists somewhere?
@@ -63,7 +64,7 @@ function(f = character(), class = NULL, S3 = TRUE, S4 = TRUE,
 				res$S3 <- character(0)
 			}
 		}
-		
+
 		## S4 version
 		if (S4) {
 			# Is it an S4 generic function?

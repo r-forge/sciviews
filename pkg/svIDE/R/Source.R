@@ -1,12 +1,13 @@
 "Source" <-
-function(file, out.form = getOption("R.output.format"), local = FALSE,
+function (file, out.form = getOption("R.output.format"), local = FALSE,
     echo = FALSE, print.eval = TRUE, verbose = getOption("verbose"),
     prompt.echo = getOption("prompt"), max.deparse.length = 150,
-    chdir = FALSE, prompt = FALSE) {
+    chdir = FALSE, prompt = FALSE)
+{
 
     # This is a reworked version of .Rsource from RpadUtils (Tom Short)
     # but this version uses source() itself
-	
+
     if (is.null(out.form)) out.form <- "text"
     # capture.all() is inspired from capture.output(), but it captures
     # both the output and the message streams and it evaluates in .GlobalEnv
@@ -20,18 +21,18 @@ function(file, out.form = getOption("R.output.format"), local = FALSE,
             sink(type = "message")
             close(file)
         })
-    
+
     	for (i in seq(length = length(args))) {
             expr <- args[[i]]
-            if (mode(expr) == "expression") 
+            if (mode(expr) == "expression")
 				tmp <- lapply(expr, withVisible) #tmp <- lapply(expr, evalVis)
-            else if (mode(expr) == "call") 
+            else if (mode(expr) == "call")
 				tmp <- list(withVisible(expr))	 #tmp <- list(evalVis(expr))
-			else if (mode(expr) == "name") 
+			else if (mode(expr) == "name")
             	tmp <- list(withVisible(expr))   #tmp <- list(evalVis(expr))
             else stop("bad argument")
             for (item in tmp) {
-				if (item$visible) 
+				if (item$visible)
 				print(item$value)
             }
     	}
@@ -42,7 +43,7 @@ function(file, out.form = getOption("R.output.format"), local = FALSE,
     	cat("====\n")
     	return(file)
     }
-	
+
     # We capture output from source() with default args slightly modified
     ### TODO: get rid of source() and use something like:
     # (try(parse(textConnection("ls()")), silent = TRUE))

@@ -1,5 +1,6 @@
 "getTemp" <-
-function(x, default = NULL, mode = "any", item = NULL) {
+function (x, default = NULL, mode = "any", item = NULL)
+{
     if (is.null(item)) Mode <- mode else Mode <- "any"
     if  (exists(x, envir = TempEnv(), mode = Mode, inherits = FALSE)) {
         dat <- get(x, envir = TempEnv(), mode = Mode, inherits = FALSE)
@@ -10,7 +11,7 @@ function(x, default = NULL, mode = "any", item = NULL) {
                 if (mode != "any" && mode(dat) != mode) dat <- default
                 return(dat)
             } else {
-                return(default)    
+                return(default)
             }
         }
     } else { # Variable not found, return the default value

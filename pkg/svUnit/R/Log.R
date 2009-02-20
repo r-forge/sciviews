@@ -1,12 +1,14 @@
-Log <-
-function (description = NULL) {
+"Log" <-
+function (description = NULL)
+{
 	if (!exists(".Log", envir = .GlobalEnv, inherits = FALSE))
 		createLog(description = description)
 	return(get(".Log", envir = .GlobalEnv, inherits = FALSE))
 }
 
-createLog <-
-function (description = NULL, deleteExisting = FALSE) {
+"createLog" <-
+function (description = NULL, deleteExisting = FALSE)
+{
     # Create a log consisting in an environment with class svSuiteData
     if (isTRUE(deleteExisting) && exists(".Log", envir = .GlobalEnv,
         inherits = FALSE)) rm(.Log, envir = .GlobalEnv)
@@ -38,16 +40,18 @@ function (description = NULL, deleteExisting = FALSE) {
     }
 }
 
-clearLog <-
-function () {
+"clearLog" <-
+function ()
+{
 	if (exists(".Log", envir = .GlobalEnv, inherits = FALSE)) {
 		rm(list = ".Log", envir = .GlobalEnv)
 		return(invisible(TRUE))
 	} else return(invisible(FALSE))
 }
 
-errorLog <-
-function (stopit = TRUE, summarize = TRUE) {
+"errorLog" <-
+function (stopit = TRUE, summarize = TRUE)
+{
 	.Log <- Log()
 	Res <- table(stats(.Log)$kind)
 	if (isTRUE(stopit) && any(Res[2:3] > 0)) {
@@ -58,14 +62,16 @@ function (stopit = TRUE, summarize = TRUE) {
 	return(invisible(Res))
 }
 
-lastTest <-
-function () {
+"lastTest" <-
+function ()
+{
     # Return a svTestData object with data from last recorded test
 	Log()$.lastTest
 }
 
-lastSuite <-
-function () {
+"lastSuite" <-
+function ()
+{
     # Return data about last suite run
 	Log()$.lastSuite
 }

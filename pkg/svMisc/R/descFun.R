@@ -1,5 +1,7 @@
-descFun <-
-function (fun, package, lib.loc = NULL) {
+# These are all hidden functions for the moment!
+"descFun" <-
+function (fun, package, lib.loc = NULL)
+{
 	fun <- as.character(fun)
 	if (length(fun) == 0) return("")
 	# Get the description associated with this Topic
@@ -38,20 +40,21 @@ function (fun, package, lib.loc = NULL) {
 	return(res)
 }
 
-descData <- function( data, columns, package = NULL, lib.loc = NULL ){
-	character( length( columns ) )
-}
+"descData" <-
+function (data, columns, package = NULL, lib.loc = NULL)
+	character(length(columns))
 
-descSlots <- function( object, slots, package = NULL, lib.loc = NULL ){
-	character( length( slots ) )
-}
+"descSlots" <-
+function (object, slots, package = NULL, lib.loc = NULL)
+	character(length(slots))
 
-descSquare <- function( completions, package = NULL ){
-	character( length( completions ))
-}
+"descSquare" <-
+function (completions, package = NULL)
+	character(length(completions))
 
-descArgs <-
-function (fun, args = NULL, package = NULL, lib.loc = NULL) {
+"descArgs" <-
+function (fun, args = NULL, package = NULL, lib.loc = NULL)
+{
 	# Start from the text version of the online help instead of the .Rd file
 	if (is.null(package)) {
 		File <- as.character(help(fun,
@@ -61,26 +64,26 @@ function (fun, args = NULL, package = NULL, lib.loc = NULL) {
 			lib.loc = lib.loc, chmhelp = FALSE, htmlhelp = FALSE))
 	}
 	if (length(File) == 0) return(rep("", length(args)))
-	
-	# doing the same as help to extract the file if it is in a zip 
+
+	# doing the same as help to extract the file if it is in a zip
 	File <- zip.file.extract(File, "Rhelp.zip")
-	   
+
 	# guess the encoding (from print.help_files_with_topic)
 	first <- readLines( File, n = 1)
-	enc <- if (length(grep("\\(.*\\)$", first)) > 0)                                                                                                            
-    sub("[^(]*\\((.*)\\)$", "\\1", first)                                                                         
-  else ""                                                                                                         
-  if (enc == "utf8")                                                                                              
-    enc <- "UTF-8"                                                                                                
-  if (.Platform$OS.type == "windows" && enc ==                                                                    
-    "" && l10n_info()$codepage < 1000)                                                                            
-    enc <- "CP1252"
-	File. <- file( File, encoding = enc, open = "r" )
-	
+	enc <- if (length(grep("\\(.*\\)$", first)) > 0) {
+		sub("[^(]*\\((.*)\\)$", "\\1", first)
+	} else ""
+	if (enc == "utf8")
+		enc <- "UTF-8"
+	if (.Platform$OS.type == "windows" && enc == "" &&
+		l10n_info()$codepage < 1000)
+		enc <- "CP1252"
+	File. <- file(File, encoding = enc, open = "r")
+
 	# Read content of the text file
-	Data <- scan(File., what = character(), sep = "\n", quiet = TRUE )
-	close( File. )
-	
+	Data <- scan(File., what = character(), sep = "\n", quiet = TRUE)
+	close(File.)
+
 	# Get the Arguments: section
 	argsStart <- (1:length(Data))[Data == "_\bA_\br_\bg_\bu_\bm_\be_\bn_\bt_\bs:"]
 	if (length(argsStart) == 0)	# Not found
@@ -88,7 +91,7 @@ function (fun, args = NULL, package = NULL, lib.loc = NULL) {
 	# Eliminate everything before this section
 	Data <- Data[(argsStart[1] + 1):length(Data)]
 	# Check where next section starts
-	nextSection <- suppressWarnings( (1:length(Data))[regexpr("^_\\b", Data) > -1] )
+	nextSection <- suppressWarnings((1:length(Data))[regexpr("^_\\b", Data) > -1])
 	if (length(nextSection) > 0)	# Cut everything after this section
 		Data <- Data[1:(nextSection[1] - 1)]
 	# Split description by arguments. Looks like: "^ *argument[, argument]: " + desc

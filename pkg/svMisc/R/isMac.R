@@ -1,2 +1,3 @@
 "isMac" <-
-function() (.Platform$pkgType == "mac.binary")
+function ()
+	(.Platform$pkgType == "mac.binary")

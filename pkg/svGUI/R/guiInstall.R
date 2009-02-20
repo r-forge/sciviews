@@ -1,5 +1,6 @@
 "guiInstall" <-
-function() {
+function ()
+{
 	assignTemp(".guiCmd", function(command, ...) {
 		command <- switch(command, ## TODO: define these commands
 			load = "",

@@ -1,14 +1,16 @@
 "listTypes" <-
-function(method, class = "default", strict = FALSE) {
+function (method, class = "default", strict = FALSE)
+{
 	# List all custom functions for a method and for a given class
 	# For instance, a custom view is a function as 'view..<customview>.class'
-	
-	"makeList" <- function(method, class) {
+
+	"makeList" <- function (method, class)
+	{
 		Pat <- paste("^", method, "\\.\\.([^.]+)\\.", class, "$", sep = "")
 		return(sub(Pat, "\\1",
 			apropos(Pat, ignore.case = FALSE, mode = "function")))
 	}
-	
+
 	method <- as.character(method)[1]
 	class <- as.character(class)
 	List <- makeList(method, class[1])

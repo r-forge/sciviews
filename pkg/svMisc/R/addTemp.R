@@ -1,5 +1,6 @@
 "addTemp" <-
-function(x, item, value, use.names = TRUE, replace = TRUE) {
+function (x, item, value, use.names = TRUE, replace = TRUE)
+{
     x <- as.character(x)[1]
     item <- as.character(item)[1]
     if (existsTemp(x)) dat <- getTemp(x) else dat <- list()
@@ -9,6 +10,6 @@ function(x, item, value, use.names = TRUE, replace = TRUE) {
 	if (item %in% names(dat))
 	    value <- addItems(dat[[item]], value,
 			use.names = use.names, replace = replace)
-    dat[[item]] <- value   
+    dat[[item]] <- value
 	assignTemp(x, dat)
 }

@@ -1,5 +1,6 @@
 "changeTemp" <-
-function(x, item, value, replace.existing = TRUE) {
+function (x, item, value, replace.existing = TRUE)
+{
     x <- as.character(x)[1]
     item <- as.character(item)[1]
     if (existsTemp(x)) dat <- getTemp(x) else dat <- list()

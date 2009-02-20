@@ -1,5 +1,6 @@
 "getKeywords" <-
-function(pos = 2:length(search())){
+function (pos = 2:length(search()))
+{
 	# Get a sorted list of unique function names for libraries loaded
 	# in positions provided by pos
 	res <- NULL

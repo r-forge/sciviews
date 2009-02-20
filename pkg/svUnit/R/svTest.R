@@ -1,5 +1,6 @@
-svTest <-
-function (testFun) {
+"svTest" <-
+function (testFun)
+{
 	# Create a 'svTest' object, using testFun: a function without arguments
 	# that contains one or more checkXX() assertions
 	if (!is.function(testFun))
@@ -12,34 +13,39 @@ function (testFun) {
 	return(testFun)
 }
 
-print.svTest <-
-function (x, ...) {
+"print.svTest" <-
+function (x, ...)
+{
 	cat("svUnit test function:\n")
 	print(body(x))
 	return(invisible(x))
 }
 
-as.svTest <-
-function (x) {
+"as.svTest" <-
+function (x)
+{
 	# Coercion to a 'svTest' object
 	return(svTest(x))
 }
 
-is.svTest <-
-function (x) {
+"is.svTest" <-
+function (x)
+{
 	# It this a svTest object
 	return(inherits(x, "svTest"))
 }
 
-is.test <-
-function (x) {
+"is.test" <-
+function (x)
+{
 	# Is this a 'svTest'object
 	# or do this object contain a non NULL 'test' attribute?
 	return(is.svTest(x) || !is.null(attr(x, "test")))
 }
 
-test <-
-function (x) {
+"test" <-
+function (x)
+{
 	# If x is a 'svTest' object, return it, otherwise,
 	# get the 'test' attribute from the object, if it exists
 	if (is.svTest(x)) {
@@ -54,20 +60,22 @@ function (x) {
 	}
 }
 
-`test<-` <-
-function (x, value) {
+"test<-" <-
+function (x, value)
+{
 	# Add 'value' as a 'test' attribute to 'x' after coercing it to 'svTest'
 	attr(x, "test") <- as.svTest(value)
     return(x)
 }
 
-makeUnit <-
+"makeUnit" <-
 function (x, ...)
 	UseMethod("makeUnit")
 
-makeUnit.default <-
+"makeUnit.default" <-
 function (x, name = make.names(deparse(substitute(x))), dir = tempdir(),
-objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...) {
+	objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...)
+{
 	# Take an object and make a unit from the tests it contains
 	# It is saved in a file runit<name>.R in 'dir'
 	name <- as.character(name)[1]
@@ -86,9 +94,10 @@ objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...) {
 	return(Unit)
 }
 
-makeUnit.svTest <-
+"makeUnit.svTest" <-
 function (x, name = make.names(deparse(substitute(x))), dir = tempdir(),
-objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...) {
+	objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...)
+{
 	# I know: this is not needed, but it is there in case additional work
 	# would be needed in the future, and also to show that makeUnit is
 	# designed to work on 'svTest' objects
@@ -96,21 +105,23 @@ objfile = "", codeSetUp = NULL, codeTearDown = NULL, ...) {
 		codeSetUp = codeSetUp, codeTearDown = codeTearDown, ...))
 }
 
-runTest <-
+"runTest" <-
 function (x, ...)
 	UseMethod("runTest")
 
-runTest.default <-
-function (x, name = deparse(substitute(x)), objfile = "", tag = "", msg = "",
-...) {
+"runTest.default" <-
+function (x, name = deparse(substitute(x)), objfile = "", tag = "",
+	msg = "", ...)
+{
 	# Run the test for the 'test' attribute of this object
 	name <- paste("test(", name, ")", sep = "")
 	return(runTest(test(x), name = name, objfile = objfile, tag = tag, msg = msg, ...))
 }
 
-runTest.svTest <-
-function (x, name = deparse(substitute(x)), objfile = "", tag = "", msg = "",
-...) {
+"runTest.svTest" <-
+function (x, name = deparse(substitute(x)), objfile = "", tag = "",
+	msg = "", ...)
+{
 	if (!is.svTest(x))
 		stop("'x' must be a 'svTest' object")
 		# Names of object and test

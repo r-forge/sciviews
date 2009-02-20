@@ -1,5 +1,6 @@
-.onLoad <-
-function (lib, pkg) {
+".onLoad" <-
+function (lib, pkg)
+{
 	# The default exclusion list, if it is not defined yet
 	# Although there are unit tests defined in these packages (as examples),
 	# we don't want to include them, by default, in our test suite!
@@ -11,8 +12,9 @@ function (lib, pkg) {
 	.assignTemp(".taskCallbackId", addTaskCallback(guiSuiteAutoList))
 }
 
-.onUnload <-
-function (libpath) {
+".onUnload" <-
+function (libpath)
+{
 	# Delete the taskCallback
 	taskCallbackId <- .getTemp(".taskCallbackId", NULL)
 	if (!is.null(taskCallbackId)) removeTaskCallback(taskCallbackId)
@@ -21,12 +23,13 @@ function (libpath) {
 		get("koCmd")('sv.r.unit.getRUnitList_Callback("");')
 }
 
-.packageName <- "svUnit"
+".packageName" <- "svUnit"
 
-.komodoExtensionMinVersion <- "0.6.0"
+".komodoExtensionMinVersion" <- "0.6.0"
 
-.installUpgradeKomodoExtension <-
-function () {
+".installUpgradeKomodoExtension" <-
+function ()
+{
 	if (!exists("koCmd", mode = "function")) return()
 	# Look if the SciViews-K Unit Komodo extension is installed and is of the
 	# right version. Otherwise, propose to install, or update it
@@ -54,8 +57,9 @@ function () {
 	}
 }
 
-.compareVersion <-
-function (a, b) {
+".compareVersion" <-
+function (a, b)
+{
     # This is the same as compareVersion() in utils, but we don't want dependencies on utils
 	if (is.na(a))
         return(-1)
@@ -79,10 +83,11 @@ function (a, b) {
     else return(0)
 }
 
-.kindLevels <- c("OK", "**FAILS**", "**ERROR**", "DEACTIVATED")
+".kindLevels" <- c("OK", "**FAILS**", "**ERROR**", "DEACTIVATED")
 
-.kind <-
-function (val = TRUE) {
+".kind" <-
+function (val = TRUE)
+{
     # TRUE or 1 -> 1 = "OK"
     # FALSE or 0 -> 2 = "**FAILS**"
     # -1 -> 3 = "**ERROR**"
@@ -90,8 +95,9 @@ function (val = TRUE) {
     factor(.kindLevels[-(as.integer(val) - 2)], levels = .kindLevels)
 }
 
-.kindMax <-
-function (kinds) {
+".kindMax" <-
+function (kinds)
+{
     # If there are no record, must be because all tests succeed!
     if (length(kinds) == 0) return(.kind(TRUE))
     Kinds <- as.numeric(kinds)
@@ -100,8 +106,9 @@ function (kinds) {
         levels = .kindLevels)
 }
 
-.formatTime <-
-function (x, secDigits = 0, minSec = 10^-secDigits, prepend = " run in") {
+".formatTime" <-
+function (x, secDigits = 0, minSec = 10^-secDigits, prepend = " run in")
+{
 	# x is given in seconds, and it returns a pretty formatted string with time
 	if (is.null(x) || is.na(x)[1]) return("")
 	x <- as.numeric(x)
@@ -119,8 +126,9 @@ function (x, secDigits = 0, minSec = 10^-secDigits, prepend = " run in") {
 }
 # Test: .formatTime((0:10)*400 + 0.56)
 
-.formatResult <-
-function (result, level = getOption("svUnit.strLevel")) {
+".formatResult" <-
+function (result, level = getOption("svUnit.strLevel"))
+{
 	if (is.null(level)) level <- 1 else level <- as.integer(level[1])
 	if (level < 1) return("")	# Return an empty string
 	# Capture the report returned by the str() function
@@ -142,8 +150,9 @@ function (result, level = getOption("svUnit.strLevel")) {
 	return(paste(Str, collapse = "\n"))
 }
 
-.logTest <-
-function (timing, test, msg = "", description = NULL) {
+".logTest" <-
+function (timing, test, msg = "", description = NULL)
+{
     .Log <- Log(description = description)
     # Determine the name of the test
     if (missing(test)) {    # Is it defined globally?
@@ -191,10 +200,11 @@ function (timing, test, msg = "", description = NULL) {
     return(test)
 }
 
-.logTestData <-
+".logTestData" <-
 function (test, msg, call, timing, val, kind = .kind(val), res,
-obj = .Log$..Obj, file = .Log$..File, tag = .Log$..Tag,
-printTest = getOption("svUnit.printTest")) {
+	obj = .Log$..Obj, file = .Log$..File, tag = .Log$..Tag,
+	printTest = getOption("svUnit.printTest"))
+{
     # Add these data to .lastTest
     .Log$.lastTest <- structure(data.frame(
         msg = msg, call = call, timing = timing, kind = kind, res = res,
@@ -208,8 +218,9 @@ printTest = getOption("svUnit.printTest")) {
 	if (isTRUE(printTest)) print(.Log$.lastTest)
 }
 
-.prepareUnit <-
-function (name, dir) {
+".prepareUnit" <-
+function (name, dir)
+{
 	# Prepare for writing a test unit file
 	dir <- gsub("\\\\", "/", as.character(dir)[1])
 	# Check that dir exists (do not create it!)
@@ -227,8 +238,9 @@ function (name, dir) {
 	return(Unit)
 }
 
-.writeSetUp <-
-function (unit, file = "", msg = "", tag = "", code = NULL) {
+".writeSetUp" <-
+function (unit, file = "", msg = "", tag = "", code = NULL)
+{
 	# Write the .setUp() function in the test unit file
 	# Here, we write a context to localize tested objects and test unit files
 	catUnit <- function(...) cat(..., sep = "", file = unit, append = TRUE)
@@ -248,8 +260,9 @@ function (unit, file = "", msg = "", tag = "", code = NULL) {
 	catUnit('}\n')
 }
 
-.writeTearDown <-
-function (unit, code = NULL, rm.unit = TRUE, rm.file = TRUE) {
+".writeTearDown" <-
+function (unit, code = NULL, rm.unit = TRUE, rm.file = TRUE)
+{
 	# Write the .tearDown() function in the test unit file
 	# Here, we undo what was done in .setUp()
 	catUnit <- function(...) cat(..., sep = "", file = unit, append = TRUE)
@@ -268,8 +281,9 @@ function (unit, code = NULL, rm.unit = TRUE, rm.file = TRUE) {
 	catUnit('}\n')
 }
 
-.writeTest <-
-function (unit, objname, pos = .GlobalEnv, obj = NULL) {
+".writeTest" <-
+function (unit, objname, pos = .GlobalEnv, obj = NULL)
+{
 	# Make sure that the name of a test function is syntactically correct
 	# and starts with 'test'
 	if (regexpr("^test", objname) > -1) {
@@ -322,8 +336,9 @@ function (unit, objname, pos = .GlobalEnv, obj = NULL) {
 	catUnit(body, sep = "\n")
 }
 
-.runTest <-
-function (x, envir, test, objfile = "", unit = "", tag = "", msg = "") {
+".runTest" <-
+function (x, envir, test, objfile = "", unit = "", tag = "", msg = "")
+{
 	# Run one test in a protected environment catching errors and warnings
 	# and preparing a suitable context
 	name <- sub("^test\\.(.+)\\.$", "\\1", test)
@@ -396,12 +411,13 @@ function (x, envir, test, objfile = "", unit = "", tag = "", msg = "") {
 	return(test)
 }
 
-.assignTemp <-
+".assignTemp" <-
 function (x, value)
     assign(x, value, envir = .TempEnv())
 
-.getTemp <-
-function (x, default = character(0)) {
+".getTemp" <-
+function (x, default = character(0))
+{
     if  (exists(x, envir = .TempEnv(), inherits = FALSE)) {
         return(get(x, envir = .TempEnv(), inherits = FALSE))
     } else { # Variable not found, return the default value
@@ -409,8 +425,9 @@ function (x, default = character(0)) {
     }
 }
 
-.TempEnv <-
-function() {
+".TempEnv" <-
+function ()
+{
     pos <-  match("TempEnv", search())
     if (is.na(pos)) { # Must create it
         TempEnv <- list()

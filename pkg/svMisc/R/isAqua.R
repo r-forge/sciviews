@@ -1,2 +1,3 @@
 "isAqua" <-
-function() (.Platform$GUI[1] == "AQUA")
+function ()
+	(.Platform$GUI[1] == "AQUA")

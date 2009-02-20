@@ -2,9 +2,10 @@
 # in the 'RUnit' package (these functions are directly inspired from those
 # in RUnit). Make version that are more compatible with Komodo/SciViews-K Unit)
 
-checkEquals <-
+"checkEquals" <-
 function (target, current, msg = "", tolerance = .Machine$double.eps^0.5,
-checkNames = TRUE, ...) {
+	checkNames = TRUE, ...)
+{
     val <- FALSE
     timing <- as.numeric(system.time({
         ret <- try({
@@ -46,8 +47,9 @@ checkNames = TRUE, ...) {
     return(invisible(val))
 }
 
-checkEqualsNumeric <-
-function (target, current, msg = "", tolerance = .Machine$double.eps^0.5, ...) {
+"checkEqualsNumeric" <-
+function (target, current, msg = "", tolerance = .Machine$double.eps^0.5, ...)
+{
     val <- FALSE
     timing <- as.numeric(system.time({
         ret <- try({
@@ -83,8 +85,9 @@ function (target, current, msg = "", tolerance = .Machine$double.eps^0.5, ...) {
     return(invisible(val))
 }
 
-checkIdentical <-
-function (target, current, msg = "") {
+"checkIdentical" <-
+function (target, current, msg = "")
+{
     val <- FALSE
     timing <- as.numeric(system.time({
         ret <- try({
@@ -113,8 +116,9 @@ function (target, current, msg = "") {
     return(invisible(val))
 }
 
-checkTrue <-
-function (expr, msg = "") {
+"checkTrue" <-
+function (expr, msg = "")
+{
     val <- FALSE
     timing <- as.numeric(system.time({
         ret <- try({
@@ -146,8 +150,9 @@ function (expr, msg = "") {
     return(invisible(val))
 }
 
-checkException <-
-function (expr, msg = "", silent = getOption("svUnit.silentException")) {
+"checkException" <-
+function (expr, msg = "", silent = getOption("svUnit.silentException"))
+{
     val <- FALSE
     timing <- as.numeric(system.time({
         ret <- try({

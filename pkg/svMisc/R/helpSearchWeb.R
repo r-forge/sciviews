@@ -1,5 +1,6 @@
 "helpSearchWeb" <-
-function(apropos, type = c("google", "archive", "wiki"), browse = TRUE) {
+function (apropos, type = c("google", "archive", "wiki"), browse = TRUE)
+{
 	apropos <- paste(apropos, collapse = " ", sep = "")
 	apropos <- gsub(" ", "+", apropos)
 	type <- type[1]
@@ -14,4 +15,3 @@ function(apropos, type = c("google", "archive", "wiki"), browse = TRUE) {
 	if (browse) browseURL(RSearchURL)
 	return(invisible(RSearchURL))
 }
-

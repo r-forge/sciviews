@@ -1,5 +1,6 @@
 "CallTip" <-
-function(code, only.args = FALSE, location = FALSE) {
+function (code, only.args = FALSE, location = FALSE)
+{
 	# Get a call tip, given a part of the code
 	# Extract the last variable name, given it is either at the end,
 	# or terminated by '('

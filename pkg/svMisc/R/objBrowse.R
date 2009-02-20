@@ -1,6 +1,7 @@
 "objBrowse" <-
-function(id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
-	group = NULL, sep = "\t", path = NULL, regenerate = FALSE) {
+function (id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
+	group = NULL, sep = "\t", path = NULL, regenerate = FALSE)
+{
     # Maintain files for remote Object Browser
     # If four first parameters are NULL, use cached version of these parameters,
 	# or default values
@@ -93,7 +94,8 @@ function(id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
     # Control that 'List_<id>.txt' is up-to-date, but only if pos == 1 or
 	# envir is not a package or regenerate or Pars or Search have changed
 	# to limit the work done on workspaces that are unlikely to have change
-	if (ParsChanged || regenerate || (ChangedSearch != "") || (Pars$pos == 1) || (regexpr("^package:", envir) == -1)) {
+	if (ParsChanged || regenerate || (ChangedSearch != "") || (Pars$pos == 1) ||
+		(regexpr("^package:", envir) == -1)) {
 		ChangedList <- objList(id = id, envir = Pars$pos,
 			all.names = Pars$all.names, pattern = Pars$pattern,
 			group = Pars$group, path = path, compare = !regenerate,
@@ -101,7 +103,6 @@ function(id = "default", envir = .GlobalEnv, all.names = NULL, pattern = NULL,
 
 		ChangedList <- if(!is.null(nrow(ChangedList)) && nrow(ChangedList) > 0) {
 			apply(ChangedList, 1, paste, collapse = sep)
-
 		} else ""
 
 	} else ChangedList <- ""

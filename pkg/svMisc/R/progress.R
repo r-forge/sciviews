@@ -1,6 +1,7 @@
 "progress" <-
-function(value, max.value = NULL, progress.bar = FALSE, char = "|",
-init = (value == 0), console = TRUE, gui = TRUE) {
+function (value, max.value = NULL, progress.bar = FALSE, char = "|",
+	init = (value == 0), console = TRUE, gui = TRUE)
+{
 	if (!is.numeric(value))
 		stop("'value' must be numeric!")
 	if (is.null(max.value)) {
@@ -40,7 +41,7 @@ init = (value == 0), console = TRUE, gui = TRUE) {
 					if (ticks > 0) {
 						scaleticks <- paste(rep("-", ticks), collapse = "")
 					} else scaleticks <- "-"
-					scalebar <- paste(" 0", scaleticks, maxV, "\n", sep = "")	
+					scalebar <- paste(" 0", scaleticks, maxV, "\n", sep = "")
 				}
 				cat(rep(" ", l1), scalebar, msg1, " ", sep = "")
 				pos1 <- 0
@@ -51,7 +52,7 @@ init = (value == 0), console = TRUE, gui = TRUE) {
 			if (pos2 > pos1) {
 				CmdProgress$pos <- pos2
 				assignTemp(".progress", CmdProgress)
-				cat(rep(as.character(char[1]), pos2 - pos1)) 	
+				cat(rep(as.character(char[1]), pos2 - pos1))
 			}
 		}
 		# Under Windows or MacOS, make sure the message is actualized
@@ -76,7 +77,7 @@ init = (value == 0), console = TRUE, gui = TRUE) {
 			cat(backspaces, rep(" ", l3), sep = "")
 		} else {
 			# Treatment is different if it is 'x%' or 'x on y' display type
-			if (percent) { 
+			if (percent) {
 				message <- paste(msg1, " ", value, "%  ", sep = "",
 					collapse = "")
 			} else {
@@ -86,11 +87,11 @@ init = (value == 0), console = TRUE, gui = TRUE) {
 		}
 		cat(backspaces, message, sep = "")
 		CmdProgress$msglength <- nchar(message)
-		assignTemp(".progress", CmdProgress) 
+		assignTemp(".progress", CmdProgress)
 		# Under Windows or MacOS, make sure the message is actualized
 		flush.console()
 	}
-    
+
 	# An additional, graphical display of progression may be implemented too
 	# using custom functions as items in .progress in TempEnv... Here we look
 	# for and trigger them...
