@@ -1,0 +1,18 @@
+# Example of a menu specification (for Rgui only)
+# by Ph. Grosjean, 2005 <phgrosjean@sciviews.org>
+
+# Add menus to the RGui console (Windows only)
+$ConsoleMain
+|$Testit
+||One									~~ cat("One triggered!\n")
+||-
+||Two									~~ cat("Two triggered!\n")		~~ state = "disable"
+||$SubMenu
+|||Three								~~ cat("Three triggered!\n")
+|||Four									~~ cat("Four triggered!\n")
+||Five									~~ cat("Five triggered!\n")
+
+# Add menu to the RGui console popup (Windows only)
+$ConsolePopup
+|$TestitPopup
+||Six									~~ cat("Six triggered!\n")
