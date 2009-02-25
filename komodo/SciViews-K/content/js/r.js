@@ -63,6 +63,10 @@
 // sv.r.pkg.remove_select(pkgs); // Callback function for sv.r.pkg.remove()
 ////////////////////////////////////////////////////////////////////////////////
 
+// TODO: in overlay: add "source file" context menu item in the project tab
+
+
+
 // Define the 'sv.r' namespace
 if (typeof(sv.r) == 'undefined')
 	sv.r = {
@@ -208,20 +212,22 @@ sv.r.setwd = function (dir, ask, type) {
 		var cmd = "cat(path.expand(" + getDirFromR + "))";
 
 		sv.r.evalCallback(cmd, function(curDir) {
-			if (navigator.platform.search(/^Win/) == 0)
-				curDir = curDir.replace(/\//g, "\\");
+			if (navigator.platform.search(/^Win/) == 0) {
+				curDir = curDir.replace(/\//g, '\\');
+			}
+			//sv.cmdout.append("curDir:"+curDir);
 			sv.r.setwd(curDir, ask, "this");
 		});
 		return;
 	}
 
 	if (ask || !dir) {
-		dir = ko.filepicker.getFolder(dir, "Choose working directory");
+		dir = ko.filepicker.getFolder(dir, sv.translate("ChooseWorkingDir"));
 	}
 
 	if (dir != null) {
-		sv.r.evalHidden(".odir <- setwd(\"" + dir.replace(/\\/g, "\\\\") + "\")");
-		sv.cmdout.message("Current R's working directory is: \"" + dir + "\"", 10000);
+		sv.r.evalHidden(".odir <- setwd(\"" + dir.addslashes() + "\")");
+		sv.cmdout.message(sv.translate("WorkingDirSetTo", dir), 10000);
 	}
     return;
 }
@@ -290,28 +296,34 @@ sv.r.source = function(what) {
 			return false; // No current view, do nothing!
 		kv.setFocus();
 		var ke = kv.scimoz;
+		var doc = kv.document;
 
-		var file = kv.document.file.path.replace(/\\/g, "/");
+		var file;
+		if (!doc.isUntitled) {
+			file = doc.file.path.addslashes();
+		} else {
+			file = doc.baseName;
+		}
 
 		if (!what)
 			what = "all"; // Default value
 
 		// Special case: if "all" and document is saved, source the original file
-		if (what == "all" && !(kv.document.isUntitled || kv.document.isDirty)) {
+		if (what == "all" && !(doc.isUntitled || doc.isDirty)) {
 			res = sv.r.eval('source("' + file +  '", encoding = "' + kv.encoding + '")');
 		} else {
 
 			// else, save all or part in the temporary file and source that file.
 			// After executing, tell R to delete it.
 			var code = (what == "all")? ke.text : sv.getTextRange(what);
-			//sv.cmdout.clear();
-			sv.cmdout.append(':> source("' + file + '*") # unsaved buffer (' + what + ')');
+			sv.cmdout.clear();
+			sv.cmdout.append(':> #source("' + file + '*") # unsaved buffer (' + what + ')');
 
 			var tempFile = sv.io.tempFile();
 			sv.io.writefile(tempFile, code, 'utf-8', false);
-			tempFile = tempFile.replace(/\\/g, "\\\\");
+			tempFile = tempFile.addslashes();
 
-			var cmd = 'source("' + tempFile + '", encoding = "utf-8");\nunlink("' + tempFile + '");';
+			var cmd = 'tryCatch(source("' + tempFile + '", encoding = "utf-8"), finally = {unlink("' + tempFile + '")});';
 
 			sv.r.evalCallback(cmd, function(data) {
 				sv.cmdout.append(sv.tools.strings.removeLastCRLF(data));
@@ -319,7 +331,7 @@ sv.r.source = function(what) {
 			});
 		}
 	} catch(e) {
-		return e;
+		alert(e);
 	}
 	return res;
 }
@@ -327,9 +339,8 @@ sv.r.source = function(what) {
 // Send whole or a part of the current buffer to R
 // place cursor at next line
 sv.r.send = function(what) {
-	sv.cmdout.message("sv.r.send "+what, 3000);
+	//sv.cmdout.message("sv.r.send "+what, 3000);
 	//alert("sv.r.send "+what);
-
 	var res = false;
 	var kv = ko.views.manager.currentView;
 	if (!kv)
@@ -343,7 +354,7 @@ sv.r.send = function(what) {
 
 		var code = sv.getTextRange(what, true);
 		if (code) {
-			// indent multiline commands to make the output look nicer
+			// indent multiline commands
 			code = code.replace(/\r?\n/g, "\n   ")
 			res = sv.r.eval(code);
 		}
@@ -366,7 +377,6 @@ sv.r.addHistory = function(data, cmd) {
 		sv.socket.rCommand("<<<H>>>" + ".sv.tmp <- strsplit(\"" + quotedCmd + "\", \"\\\\s*([\\r\\n]|<<<n>>>)+\\\\s*\", perl = T)[[1]]; .sv.tmp <- .sv.tmp[.sv.tmp != \"\"]; lapply(.sv.tmp, function(x) {.Internal(addhistory((x))) }); rm(.sv.tmp);", false);
 	}
 }
-
 
 // Display R objects in different ways
 // TODO: allow custom methods + arguments + forcevisible + affect to var
@@ -403,8 +413,7 @@ sv.r.display = function(topic, what) {
 // Start R help in the default browser
 sv.r.helpStart = function() {
 	var res = sv.r.eval("help.start()");
-	ko.statusBar.AddMessage("R help started... should display in browser soon",
-		"R", 5000, true);
+	ko.statusBar.AddMessage(sv.translate("RHelpStarted"), "R", 5000, true);
 	return(res);
 }
 
@@ -417,7 +426,7 @@ sv.r.help = function(topic, pkg) {
 
 		if (topic == "") {
 			// let's not cry so much about an empty selection
-			ko.statusBar.AddMessage("Selection is empty...", "R", 1000, false);
+			ko.statusBar.AddMessage(SelectionEmpty, "R", 1000, false);
 			//alert("Nothing is selected!");
 		}
 
@@ -432,7 +441,7 @@ sv.r.help = function(topic, pkg) {
 		// TODO: error handling when package does not exists
 		res = sv.r.evalCallback(cmd, sv.browseURI);
 
-		ko.statusBar.AddMessage("R help asked for '" + topic + "'",
+		ko.statusBar.AddMessage(sv.translate("RHelpAskedFor", topic),
 			"R", 5000, true);
 
 	}
@@ -447,7 +456,7 @@ sv.r.example = function(topic) {
 		//alert("Nothing is selected!");
 	} else {
 		res = sv.r.eval("example(" + topic + ")");
-		ko.statusBar.AddMessage("R example run for '" + topic + "'",
+		ko.statusBar.AddMessage(sv.translate("RExampleFor", topic),
 			"R", 5000, true);
 	}
 	return(res);
@@ -576,13 +585,21 @@ sv.r.saveWorkspace = function(file, title) {
 // Load the content of a .RData file into the workspace, or attach it
 sv.r.loadWorkspace = function(file, attach) {
   // Ask for the filename if not provided
-  if (!file) {
-	//file = ko.filepicker.openFile("", ".RData", title);
-	file = sv.fileOpen("", ".RData", 'Load an .RData file', ['R workspace (*.RData)|*.RData'], true)[0];
-	if (!file)
-		return;	// User clicked cancel
-  }
-  sv.r.eval((attach? "attach" : "load" ) + '("' + file.replace(/\\/g, "/") + '")');
+	if (!file) {
+		file = sv.fileOpen("", ".RData", "Browse for workspace",
+		      ["R workspace (*.RData)|*.RData"], true);
+	} else if (typeof files == "string") {
+		file = file.split(/[;,]/);
+	}
+	if (!file || !file.length)
+	      return;
+
+	var load = attach?  "attach" : "load";
+
+	var cmd = [];
+	for (var i in file)
+		cmd[i] = load + "(\"" + file[i].addslashes() + "\")";
+	sv.r.eval(cmd.join("\n"));
 }
 
 // Save the history in a file
@@ -593,7 +610,7 @@ sv.r.saveHistory = function(file, title) {
 	file = ko.filepicker.saveFile("", ".Rhistory", title);
 	if (file == null) return;	// User clicked cancel
   }
-  sv.r.eval('savehistory("' + file.replace(/\\/g, "/") + '")');
+  sv.r.eval('savehistory("' + file.addslashes() + '")');
 }
 
 // Load the history from a file
@@ -604,7 +621,7 @@ sv.r.loadHistory = function(file, title) {
 	file = ko.filepicker.openFile("", ".Rhistory", title);
 	if (file == null) return;	// User clicked cancel
   }
-  sv.r.eval('loadhistory("' + file.replace(/\\/g, "/") + '")');
+  sv.r.eval('loadhistory("' + file.addslashes() + '")');
 }
 
 // There is also dev.copy2pdf() copy2eps() + savePlot windows and X11(type = "Cairo")
@@ -625,7 +642,7 @@ sv.r.saveGraph = function(type, file, title, height, width, method) {
 	if (file == null) return;	// User clicked cancel
   }
   // Save the current device in R using dev2bitmap()... needs gostscript!
-  sv.r.eval('dev2bitmap("' + file.replace(/\\/g, "/") + '", type = "' + type + '", height = ' + height +
+  sv.r.eval('dev2bitmap("' + file.addslashes() + '", type = "' + type + '", height = ' + height +
 	', width = ' + width + ', method = "' + method + '")');
 }
 
@@ -706,7 +723,7 @@ sv.r.pkg.loaded = function() {
 // Load one R package
 sv.r.pkg.load = function() {
 	var res = false;
-	ko.statusBar.AddMessage("Listing available R packages... please wait",
+	ko.statusBar.AddMessage(sv.translate("ListingPackages"),
 		"R", 20000, true);
 
 	// Get list of installed R packages that are not loaded yet
@@ -720,8 +737,8 @@ sv.r.pkg.load = function() {
 			} else {	// Something is returned
 				var items = pkgs.split(sv.r.sep);
 				// Select the item you want in the list
-				var topic = ko.dialogs.selectFromList("Load R package",
-					"Select R package(s) to load:", items);
+				var topic = ko.dialogs.selectFromList(sv.translate("titleLoadPackage"),
+					sv.translate("SelectPkgToLoad") + ":", items);
 				if (topic != null) {
 					res = sv.r.evalCallback('cat(paste(lapply(c("' + topic.join('", "') + '"), function(pkg) {	res <- try(library(package = pkg, character.only = TRUE)); 	paste ("Package", sQuote(pkg), if (inherits(res, "try-error")) "could not be loaded"  else "loaded")	}), collapse = "\\n"), "\\n")',
 									sv.cmdout.append);
@@ -834,7 +851,7 @@ sv.r.pkg.install = function(isCRANMirrorSet) {
 		);
 
 	} else {
-		ko.statusBar.AddMessage("Listing available R packages... please wait",
+		ko.statusBar.AddMessage(sv.translate("ListingPackages"),
 				"R", 20000, true);
 		res = sv.r.evalCallback('cat(available.packages()[,1], sep="' + sv.r.sep + '")',
 				function(pkgs) {
@@ -844,12 +861,12 @@ sv.r.pkg.install = function(isCRANMirrorSet) {
 						alert("Error?"); // TODO: remove this later
 					} else {
 						var items = pkgs.split(sv.r.sep);
-						items = ko.dialogs.selectFromList("Install R package",
-							"Select package(s) to install:", items);
+						items = ko.dialogs.selectFromList(sv.translate("titleInstallPackage"),
+							sv.translate("SelectPkgsToInstall") + ":", items);
 
 						if (items != null) {
 							items = '"' + items.join('", "') + '"';
-							ko.statusBar.AddMessage("Installing packages... please wait", "R");
+							ko.statusBar.AddMessage(sv.translate("InstallingPkgs"), "R");
 							sv.socket.rCommand("install.packages(c(" + items + "))",
 								true, null, function(data) {
 									ko.statusBar.AddMessage("", "R");
@@ -864,6 +881,7 @@ sv.r.pkg.install = function(isCRANMirrorSet) {
 	return(res);
 }
 
+
 // replacement for .CRANmirror, optionally calls .install after execution
 sv.r.pkg.chooseCRANMirror = function(andInstall) {
 	var res = false;
@@ -877,13 +895,13 @@ sv.r.pkg.chooseCRANMirror = function(andInstall) {
 				alert("Error getting CRAN Mirrors list.");
 			} else {
 				var items = repos.split(sv.r.sep);
-				items = ko.dialogs.selectFromList("CRAN mirrors",
-					"Select CRAN mirror to use:", items, "one");
+				items = ko.dialogs.selectFromList(sv.translate("CRANMirrors"),
+					sv.translate("SelectCRANMirror"), items, "one");
 
 				if (items != null) {
 					res = sv.r.evalCallback(".sv.tmp <- getCRANmirrors(all = FALSE, local.only = FALSE); .sv.repos <- getOption(\"repos\"); .sv.repos[\"CRAN\"] <- gsub(\"/$\", \"\", .sv.tmp$URL[.sv.tmp$Name == \"" + items[0] + "\"]); options(repos =.sv.repos); rm(.sv.repos, .sv.tmp); cat(getOption(\"repos\")['CRAN']);",
 						function(url) {
-							ko.statusBar.AddMessage("Current CRAN mirror is set to " + url, "R", 5000, false);
+							ko.statusBar.AddMessage(sv.translate("CRANMirrorSetTo", url), "R", 5000, false);
 							if (andInstall)
 								sv.r.pkg.install(true);
 						},
@@ -893,7 +911,7 @@ sv.r.pkg.chooseCRANMirror = function(andInstall) {
 			return(res);
 		}
 	);
-	ko.statusBar.AddMessage("Retrieving CRAN mirrors list... please wait",
+	ko.statusBar.AddMessage(sv.translate("RetrievingCRANMirrors"),
 		"R", 20000, true);
 	return(res);
 }
@@ -907,7 +925,7 @@ sv.r.pkg.installLocal = function() {
 	//var files = ko.filepicker.openFiles(null, null,
 	//	"Select R package(s) to install (.tar.gz, .zip or .tgz)");
 
-	var files = sv.fileOpen(null, null, "Select R package(s) to install",
+	var files = sv.fileOpen(null, null, sv.translate("SelectPkgsToInstall"),
 		['Zip archive (*.zip)|*.zip', 'Gzip archive (*.tgz;*.tar.gz)|*.tgz;*.tar.gz'], true);
 
 
@@ -915,14 +933,14 @@ sv.r.pkg.installLocal = function() {
 		var cmd = "install.packages("
 
 		if (typeof(files) == "object") {
-			cmd += 'c("' + files.join('", "').replace(/\\/g, "/") + '")';
+			cmd += 'c("' + files.join('", "').addslashes() + '")';
 		} else {
-			cmd += '"' + files.replace(/\\/g, "/") + '"';
+			cmd += '"' + files.addslashes() + '"';
 		}
 		cmd += ', repos = NULL)';
 
 		res = sv.r.eval(cmd);
-		ko.statusBar.AddMessage("Installing R package(s)... please wait",
+		ko.statusBar.AddMessage(sv.translate("InstallingPackages"),
 			"R", 5000, true);
 	}
 	return(res);

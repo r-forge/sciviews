@@ -1,8 +1,8 @@
 // this is replacement for language specific help on selection function
 // (cmd_helpLanguage command)
-// to handle R help not using system command
+// to handle R help (without using system command)
 
-// this should be keep updated with new versions of the original function
+// this should be kept updated with new versions of the original function
 ko.help.language = function () {
     var language = null;
     var view = ko.window.focusedView();
@@ -27,7 +27,6 @@ ko.help.language = function () {
 			var topic;
 			try {
 				topic = ko.interpolate.interpolateStrings("%w").trim();
-				//alert("*" + topic + "*")
 				sv.r.help(topic);
 				return;
 			} catch (e) {}

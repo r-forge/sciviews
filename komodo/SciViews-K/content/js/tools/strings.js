@@ -8,6 +8,8 @@
 // sv.tools.strings.toRegex;                // changes a string to a regular expression
 ////////////////////////////////////////////////////////////////////////////////
 
+//Addidtional methods to String object:
+
 // trim function for the String object
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g, '');
@@ -21,6 +23,17 @@ String.prototype.rtrim = function() {
 String.prototype.ltrim = function() {
 	return this.replace(/^\s+/, '');
 }
+
+String.prototype.addslashes = function () {
+	// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+	return this.replace(/([\\"'])/g, "\\$1").replace(/\x00/g, "\\0");
+}
+
+//uncomment in case it is needed
+//sv.tools.addslashes = function stripslashes( str ) {
+//    // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+//    return new String(str).replace(/\x00/g, String.fromCharCode(0)).replace(/\\([\\'"])/g, '$1');
+//}
 
 
 // Define the 'sv.tools.strings' namespace

@@ -1,0 +1,70 @@
+richlistbox[empty] {
+	visibility: hidden;
+}
+
+/* List Items */
+richlistitem {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  -moz-padding-start: 7px;
+  -moz-padding-end: 7px;
+  border-bottom: 1px dotted #C0C0C0;
+}
+
+richlistitem[loaded="false"]:not([selected]) {
+  opacity: 0.3;
+}
+
+richlistitem[required=true] {
+	color: #d5442b;
+}
+
+richlistitem description.title {
+	font-weight: bold;
+}
+
+
+richlistitem[update=true] {
+	background-color: #e1ffc4;
+}
+
+
+richlistitem[selected="true"] {
+	color: HighlightText;
+	background-attachment: scroll;
+	background-color: Highlight;
+	background-image: url(itemEnabledFader.png);
+	background-position: 0% 0%;
+	background-repeat: repeat;
+}
+
+
+richlistitem:not([selected="true"]) description.description-full {
+	visibility: collapse;
+}
+
+richlistitem[selected="true"] description.description {
+	visibility: collapse;
+}
+
+richlistitem:not([selected="true"]) hbox.buttons {
+	visibility: collapse;
+}
+
+tab:first-child {
+	-moz-border-radius: 6px 6px 0px 0px;
+}
+
+tab:last-child {
+  -moz-border-radius: 0px 6px 0px 0px;
+}
+tab {
+	-moz-image-region: rect(10px, 15px, 5px, 0px);
+ 	color: GrayText;
+	min-height: 45px;
+}
+
+tab[selected="true"] {
+  color: ButtonText;
+  font-weight: bold;
+}
