@@ -46,3 +46,33 @@
 <!ENTITY sciviews.robjects.summary "Resume" >
 
 <!ENTITY sciviews.robjects.filterEmptyText "Filtrer les objets..." >
+
+<!ENTITY pkgMgr "Package manager">
+<!ENTITY pkgMgr.key "M">
+<!ENTITY rSendBlock "Send marked block">
+<!ENTITY rSendBlock.key "B">
+<!ENTITY rSendFile "Send file content">
+<!ENTITY rSendFile.key "S">
+<!ENTITY rSendFun "Send function under cursor">
+<!ENTITY rSendFun.key "F">
+<!ENTITY rSendLine "Send active line">
+<!ENTITY rSendLine.key "L">
+<!ENTITY rSendPara "Send current paragraph">
+<!ENTITY rSendPara.key "P">
+<!ENTITY rSendSel "Send selection">
+<!ENTITY rSendSel.key "S">
+<!ENTITY rSrcBlock "Source marked block">
+<!ENTITY rSrcBlock.key "O">
+<!ENTITY rSrcFile "Source file">
+<!ENTITY rSrcFile.key "I">
+<!ENTITY rSrcFun "Source function under cursor">
+<!ENTITY rSrcFun.key "U">
+<!ENTITY rSrcPara "Source current paragraph">
+<!ENTITY rSrcPara.key "A">
+<!ENTITY rSrcSel "Source selection">
+<!ENTITY rSrcSel.key "E">
+<!ENTITY startRConsole "Start R Console">
+<!ENTITY startRConsole.key "C">
+
+<!ENTITY svBrowseWD "Browse for working directory">
+<!ENTITY svBrowseWD.key "D">
