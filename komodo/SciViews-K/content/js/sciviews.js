@@ -99,79 +99,20 @@ sv.getLine = function() {
 
 // Select a part of text in the current buffer and return it
 sv.getPart = function(what, resel, clipboard) {
-	var text = "";
-	var kv = ko.views.manager.currentView;
-	if (kv) {
-		kv.setFocus();
-		var ke = kv.scimoz;
-		// retain these so we can reset the selection after the extraction
-		var curAnchor = ke.anchor;
-		var curPos = ke.currentPos;
-		var curLine = ke.lineFromPosition(curPos);
-		// Depending on 'what', we select different parts of the file
-		// By default, we keep current selection
-		switch(what) {
-		 case "sel":
-			// Simply retain current selection
-			break;
-		 //case "function":
-			// Try to select an entire R function
-			// TODO...
-			//break;
-		 case "block":
-			// Select all content between two bookmarks
-			var Mark1 = ke.markerPrevious(curLine, -1);
-			if (Mark1 == -1) Mark1 = 0; // Select from the start of the document
-			var Mark2 = ke.markerNext(curLine, -1);
-			if (Mark2 == -1) Mark2 = ke.lineCount - 1; // Select to end of doc
-			ke.selectionStart = ke.positionFromLine(Mark1);
-			ke.selectionEnd = ke.positionFromLine(Mark2);
-			ke.lineEndExtend();
-			break;
-		 case "para":
-			// Select the entire paragraph
-			ke.paraDown();
-			ke.paraUpExtend();
-			break;
-		 case "line":
-			// Select whole current line
-			ke.home();
-			ke.lineEndExtend();
-			break;
-		 case "linetobegin":
-			// Select line content from beginning to anchor
-			ke.lineUpExtend();
-			ke.lineEndExtend();
-			ke.charRightExtend();
-			break;
-		 case "linetoend":
-			// Select line from anchor to end of line
-			ke.lineEndExtend();
-			break;
-		 case "end":
-			// take text from current line to the end
-			ke.home();
-			ke.documentEndExtend();
-			break;
-		 case "all":
-		 default:
-			// Take everything
-			ke.selectAll();
-		}
-		if (clipboard) {
-			// Copy to clipboard instead of returning the text
-			ke.copy();
-		} else text = ke.selText;
-		// Possibly reset the selection
-		if (resel == false) ke.setSel(curAnchor, curPos);
+	var range;
+	var text = sv.getTextRange(what, false, !resel, range);
+	if (clipboard) {
+		// Copy to clipboard instead of returning the text
+		ke.copyRange(range.value.start, range.value.end);
 	}
 	return(text);
 };
 
 
+
 // Select a part of text in the current buffer and return it
 // differs from sv.getPart that it does not touch the selection
-sv.getTextRange = function(what, gotoend, select) {
+sv.getTextRange = function(what, gotoend, select, range) {
 	var text = "";
 	var kv = ko.views.manager.currentView;
 	if (!kv) {
@@ -193,21 +134,76 @@ sv.getTextRange = function(what, gotoend, select) {
 	   // Simply retain current selection
 	   break;
 	case "function":
-	   // Select an entire R function
-	   // TODO: 	what to do if cursor if outside any function?
-	   // 		currently all of the current level is selected in such case
-	   // TODO: handle multiline: fff <- \n function(\n?)
-	   var funcRx = /function\s*\(/;
-	   var l0, l1;
-		// go up from curLine until line matches funcRx
-	   for (l0 = curLine; l0 >= 0
-			&& ke.getTextRange(pStart = ke.positionFromLine(l0),
-			   ke.getLineEndPosition(l0)).search(funcRx) == -1;
-			l0--) {
-	   }
-	   // get line number corresponding to last element of the function's fold level
-	   l1 = ke.getLastChild(curLine, ke.getFoldLevel(l0));
-	   pEnd = ke.getLineEndPosition(l1);
+	   // tricky one: select an entire R function
+	   // this should work even with extremely messy coded ones.
+
+	   // function declaration pattern:
+	   var funcRegExStr = "\\S+\\s*(<-|=)\\s*function\\s*\\(";
+
+		var findSvc = Components.classes['@activestate.com/koFindService;1']
+			.getService(Components.interfaces.koIFindService);
+
+		// save previous find settings
+		var oldFindPref = {searchBackward: true, matchWord: false, patternType: 0};
+		for (var i in oldFindPref) oldFindPref[i] = findSvc.options[i];
+
+		findSvc.options.matchWord = false;
+		findSvc.options.patternType = 2;
+
+		var line0, line1, pos1, pos2, pos3;
+		var lineArgsStart, lineBodyStart, lineBodyEnd, firstLine; //lineArgsEnd
+		var pos0 = ke.getLineEndPosition(curLine);
+		var findRes;
+
+		do {
+			//  search for function pattern backwards:
+			findSvc.options.searchBackward = true;
+			findRes = findSvc.find("", // view.document.displayPath
+									ke.text, funcRegExStr,
+									ke.charPosAtPosition(pos0), 0); //start, end
+			if (!findRes) break;
+
+			// function declaration start:
+			pos0 = ke.positionAtChar(0, findRes.start);
+			// opening brace of function declaration
+			pos1 = ke.positionAtChar(0, findRes.end);
+			// closing brace of function declaration
+			pos2 = ke.braceMatch(pos1 - 1) + 1;
+
+			// find first character following the closing brace
+			findSvc.options.searchBackward = false;
+			findRes = findSvc.find("",  //view.document.displayPath
+									ke.text, "\\S",
+									ke.charPosAtPosition(pos2) + 1,
+									ke.charPosAtPosition(ke.length));
+			if (!findRes) break;
+
+			//  beginning of the function body:
+			pos3 = ke.positionAtChar(0, findRes.end);
+
+			lineArgsStart = ke.lineFromPosition(pos1);
+			//lineArgsEnd = ke.lineFromPosition(pos2);
+			lineBodyStart = ke.lineFromPosition(pos3);
+
+			// get first line of the folding block:
+			firstLine = (ke.getFoldParent(lineBodyStart) != lineArgsStart)?
+				lineBodyStart : lineArgsStart;
+
+			// get end of the function body
+			lineBodyEnd = ke.getLastChild(firstLine, ke.getFoldLevel(firstLine));
+
+		// repeat if selected function does not embrace cursor position and if
+		// there are possibly any functions enclosing it:
+		} while (lineBodyEnd < curLine && ke.getFoldParent(lineArgsStart) != -1);
+
+		if (lineBodyEnd >= curLine) {
+			pStart = pos0;
+			pEnd =  ke.getLineEndPosition(lineBodyEnd);
+		}
+
+		// restore previous find settings
+		for (var i in oldFindPref) findSvc.options[i] = oldFindPref[i];
+
 
 	   break;
 	case "block":
@@ -274,6 +270,10 @@ sv.getTextRange = function(what, gotoend, select) {
 		}
 	}
 
+	if (typeof (range) == "object") {
+		range.value = {start: pStart, end: pEnd};
+	}
+
 	return(text);
 }
 
@@ -286,7 +286,7 @@ sv.fileOpen = function(directory, filename, title, filter, multiple) {
 	  .createInstance(nsIFilePicker);
 
 	if (!title)
-	  title = "Open file";
+	  title = sv.translate("titleOpenFile");
 
 	var mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
 
@@ -338,11 +338,10 @@ sv.fileOpen = function(directory, filename, title, filter, multiple) {
   return (null);
 }
 
-
 // Browse for the URI, either in an internal, or external (default) browser
 sv.browseURI = function(URI, internal) {
 	if (URI == "") {
-		alert("Item not found!");	// Because we call this from other
+		alert(sv.translate("ItemNotFound"));	// Because we call this from other
 		// functions that returns "" in case it doesn't find it (see sv.r.help)
 	} else {
 		if (internal == null)
@@ -360,7 +359,7 @@ sv.browseURI = function(URI, internal) {
 // Show a text file in a buffer, possibly in read-only mode
 sv.showFile = function(path, readonly) {
 	if (path == "") {
-		alert("Item not found!"); // Same remark as for sv.browseURI()
+		alert(sv.translate("ItemNotFound")); // Same remark as for sv.browseURI()
 	} else {
 		ko.open.URI(path, "editor");
 		if (readonly == true) {
@@ -386,7 +385,7 @@ sv.helpURL = function(URL) {
 		if (sel == "") {
 			// Try to get the URL-escaped word under the cursor
 			if (ko.interpolate.getWordUnderCursor(ke) == "") {
-				alert("Nothing is currently selected!");
+				alert(sv.translate("NothingSelected"));
 				return(false);
 			} else {
 				sel = ko.interpolate.interpolateStrings('%W');
@@ -448,7 +447,7 @@ sv.helpContext = function() {
 				}
 
 				// No help data found
-				var msg = "No help found for this tool!";
+				var msg = sv.translate("NoHelpFoundForTool");
 				StatusBar_AddMessage(msg, "debugger", 5000, true);
 				return(false);
 			}
@@ -456,7 +455,7 @@ sv.helpContext = function() {
 			// Try to get R help for current word
 			topic = sv.getText();
 			if (topic == "") {
-				alert("Nothing is selected!");
+				alert(sv.translate("NothingSelected"));
 			} else sv.r.help(topic);
 		}
 		return(true);
@@ -517,6 +516,22 @@ sv.prefs.setString("R-help", "", true);
 // Help page on the R Wiki
 sv.prefs.setString("RWiki-help", "", true);
 
+// translate messages using data from chrome://sciviewsk/locale/main.properties
+sv.translate = function(textId) {
+	var strbundle = document.getElementById("svBundle");
+	try {
+		if (arguments.length > 1) {
+			var param = [];
+			for (var i = 1; i < arguments.length; i++)
+				param = param.concat(arguments[i]);
+			return strbundle.getFormattedString(textId, param);
+		} else {
+			return strbundle.getString(textId);
+		}
+	} catch (e) {
+		return "<" + textId + ">";
+	}
+}
 
 // Control the command output tab //////////////////////////////////////////////
 if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
@@ -642,6 +657,5 @@ sv.checkToolbox = function() {
 // Ensure we check the toolbox is installed once the extension is loaded
 
 
-addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
+//addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
 //addEventListener("load", sv.checkToolbox, false);
-

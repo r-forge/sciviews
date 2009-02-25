@@ -81,12 +81,10 @@
   </menupopup>
 </popupset>
 
-
-
 <broadcasterset id="broadcasterset_global">
   <broadcaster
     id="cmd_robjects_viewSearchPath"
-    desc="&sciviews.robjects.tab;: &sciviews.robjects.showHide;"
+    tooltiptext="&sciviews.robjects.tab;: &sciviews.robjects.showHide;"
     label="&sciviews.robjects.showHide;"
     splitter="bottom_splitter"
     box="robjects_searchpath_panel"
@@ -186,16 +184,52 @@
 		  />
 		  <toolbarbutton
 		    id="sciviews_robjects_searchpath_button"
-                observes="cmd_robjects_viewSearchPath"
+            observes="cmd_robjects_viewSearchPath"
 		    buttonstyle="pictures"
 		    class="searchPath-icon"
+			checked="true"
+			persist="state checked"
 		  />
-              <toolbarbutton
-		    id="sciviews_robjects_loadPkg_button"
+		  <toolbarbutton
+		    id="r_objects_pkg_menu"
 		    buttonstyle="pictures"
-		    class="robjects-loadPkg-icon"
-                oncommand="sv.r.pkg.load();"
-		  />
+		    class="robjects-pkg-icon"
+			type="menu"
+			orient="horizontal">
+			<menupopup>
+			  <menuitem id="r_objects_pkg_load"
+						label="Load packages..."
+						accesskey="l"
+						class="menuitem-iconic r-pkg-load-icon"
+						oncommand="sv.r.pkg.load();" />
+			  <menuitem id="r_objects_pkg_load"
+						label="Attach workspace..."
+						accesskey="a"
+						class="menuitem-iconic r-data-attach"
+						oncommand="sv.r.loadWorkspace(null, true);" />
+
+			  <menuitem id="r_objects_pkg_install"
+						label="Install..."
+						accesskey="i"
+						class="menuitem-iconic r-pkg-install-icon"
+						oncommand="sv.r.pkg.install();" />
+			  <menuitem id="r_objects_pkg_installLocal"
+						label="Install from local files..."
+						accesskey="c"
+						class="menuitem-iconic r-pkg-install-local-icon"
+						oncommand="sv.r.pkg.installLocal();" />
+			  <menuitem id="r_objects_pkg_update"
+						label="Update"
+						accesskey="u"
+						class="menuitem-iconic r-pkg-update-icon"
+						oncommand="sv.r.pkg.update();" />
+			  <menuitem id="r_objects_pkg_remove"
+						label="Remove..."
+						accesskey="r"
+						class="menuitem-iconic r-pkg-remove-icon"
+						oncommand="sv.r.pkg.remove();" />
+			</menupopup>
+		  </toolbarbutton>
 
           <toolbarseparator style="min-width:10px;" flex="1"/>
           <toolbarbutton id="sciviews_robjects_filter"
@@ -240,11 +274,13 @@
 		</hbox>
         <vbox id="robjects_searchpath_panel"
           persist="height collapsed"
+		  flex="1"
           >
           <listbox flex="1" id="sciviews_robjects_searchpath_listbox"
 	    ondragdrop="nsDragAndDrop.drop(event,window.rObjectsTree.packageListObserver);"
 	    ondragover="nsDragAndDrop.dragOver(event,rObjectsTree.packageListObserver);"
 	    onkeypress="rObjectsTree.packageListKeyEvent(event);"
+	    oncommand="rObjectsTree.packageSelectedEvent(event);"
 	    />
         </vbox>
         <splitter

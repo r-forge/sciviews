@@ -46,7 +46,6 @@
 <?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
 <?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
 
-
 <overlay id="sciviewskOverlay"
          xmlns:html="http://www.w3.org/1999/xhtml"
          xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -62,53 +61,61 @@
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
-
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
-
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
 
+<stringbundleset>
+<stringbundle id="svBundle" src="chrome://sciviewsk/locale/main.properties" />
+</stringbundleset>
 
   <commandset id="allcommands">
-    <command id="Tasks:svAbout" oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
+    <command id="Tasks:svAbout"
+			 oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
 
     <command id="cmd_svStartR" key="key_cmd_svStartR"
 		     oncommand="ko.commands.doCommand('cmd_svStartR');"
-		 desc="R: Start R Console (windows)" label="Start R Console (windows)" accel="R" />
+		 desc="R: &startRConsole; (windows)" label="&startRConsole; (windows)" accesskey="&startRConsole.key;" />
+
+	<command id="cmd_svOpenPkgManager" key="key_cmd_svOpenPkgManager"
+		    oncommand="sv.command.openPkgManager();"
+			desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;" />
+
+	<command id="cmd_svBrowseWD" key="key_cmd_svBrowseWD"
+		oncommand="sv.r.setwd('current', true);"
+		desc="R: &svBrowseWD;" label="&svBrowseWD;" accesskey="&svBrowseWD.key;" />
 
     <commandset id="cmdset_r_control" commandupdater="true"
 		    events="current_view_language_changed"
 		    oncommandupdate="ko.commands.updateCommandset(this);" >
-	<command id="cmd_sv_RRunAll"  key="key_cmd_sv_RRunAll"   oncommand="ko.commands.doCommand('cmd_sv_RRunAll')"
-			 desc="R: Send file content" label="Send file content" accel="S" />
-	<command id="cmd_sv_RSourceAll"  key="key_cmd_sv_RSourceAll"  oncommand="ko.commands.doCommand('cmd_sv_RSourceAll')"
-		   desc="R: Source file" label="Source file" accel="a" />
+	<command id="cmd_sv_RRunAll"  key="key_cmd_sv_RRunAll"  oncommand="ko.commands.doCommand('cmd_sv_RRunAll')"
+			 desc="R: &rSendFile;" label="&rSendFile;" accesskey="&rSendFile.key;" />
+	<command id="cmd_sv_RSourceAll"  key="key_cmd_sv_RSourceAll" oncommand="ko.commands.doCommand('cmd_sv_RSourceAll')"
+		   desc="R: &rSrcFile;" label="&rSrcFile;" accesskey="&rSrcFile.key;" />
 	<command id="cmd_sv_RRunBlock"  key="key_cmd_sv_RRunBlock"  oncommand="ko.commands.doCommand('cmd_sv_RRunBlock')"
-		   desc="R: Send marked block" label="Send marked block" accel="b" />
-	<command id="cmd_sv_RRunFunction"  key="key_cmd_sv_RRunFunction"  oncommand="ko.commands.doCommand('cmd_sv_RRunFunction')"
-		   desc="R: Send function under cursor" label="Send function under cursor" accel="c" />
-	<command id="cmd_sv_RRunLine"  key="key_cmd_sv_RRunLine"  oncommand="ko.commands.doCommand('cmd_sv_RRunLine')"
-		   desc="R: Send active line" label="Send active line" accel="l" />
-	<command id="cmd_sv_RRunPara"  key="key_cmd_sv_RRunPara"  oncommand="ko.commands.doCommand('cmd_sv_RRunPara')"
-		   desc="R: Send current paragraph" label="Send current paragraph" accel="p" />
+		   desc="R: &rSendBlock;" label="&rSendBlock;" accesskey="&rSendBlock.key;" />
+	<command id="cmd_sv_RRunFunction"  key="key_cmd_sv_RRunFunction" oncommand="ko.commands.doCommand('cmd_sv_RRunFunction')"
+		   desc="R: &rSendFun;" label="&rSendFun;" accesskey="&rSendFun.key;" />
+	<command id="cmd_sv_RRunLine"  key="key_cmd_sv_RRunLine" oncommand="ko.commands.doCommand('cmd_sv_RRunLine')"
+		   desc="R: &rSendLine;" label="&rSendLine;" accesskey="&rSendLine.key;" />
+	<command id="cmd_sv_RRunPara"  key="key_cmd_sv_RRunPara" oncommand="ko.commands.doCommand('cmd_sv_RRunPara')"
+		   desc="R: &rSendPara;" label="&rSendPara;" accesskey="&rSendPara.key;" />
 
-	<command id="cmd_sv_RSourceBlock"  key="key_cmd_sv_RSourceBlock"  oncommand="ko.commands.doCommand('cmd_sv_RSourceBlock')"
-		   desc="R: Source marked block" label="Source marked block" accel="m" />
-	<command id="cmd_sv_RSourceFunction"  key="key_cmd_sv_RSourceFunction"  oncommand="ko.commands.doCommand('cmd_sv_RSourceFunction')"
-		   desc="R: Source function under cursor" label="Source function under cursor" accel="s" />
+	<command id="cmd_sv_RSourceBlock"  key="key_cmd_sv_RSourceBlock" oncommand="ko.commands.doCommand('cmd_sv_RSourceBlock')"
+		   desc="R: &rSrcBlock;" label="&rSrcBlock;" accesskey="&rSrcBlock.key;" />
+	<command id="cmd_sv_RSourceFunction"  key="key_cmd_sv_RSourceFunction" oncommand="ko.commands.doCommand('cmd_sv_RSourceFunction')"
+		   desc="R: &rSrcFun;" label="&rSrcFun;" accesskey="&rSrcFun.key;" />
 
-	<command id="cmd_sv_RSourcePara"  key="key_cmd_sv_RSourcePara"  oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
-		   desc="R: Source current paragraph" label="Source current paragraph" accel="r" />
+	<command id="cmd_sv_RSourcePara"  key="key_cmd_sv_RSourcePara" oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
+		   desc="R: &rSrcPara;" label="&rSrcPara;" accesskey="&rSrcPara.key;" />
 
 	<commandset id="cmdset_r_control" commandupdater="true"
 		    events="select"
 		    oncommandupdate="ko.commands.updateCommandset(this);" >
-	  <command id="cmd_sv_RRunSelection"  key="key_cmd_sv_RRunSelection"  oncommand="ko.commands.doCommand('cmd_sv_RRunSelection')"
-	     desc="R: Send selection" label="Send selection" accel="i" />
-	  <command id="cmd_sv_RSourceSelection"  key="key_cmd_sv_RSourceSelection"  oncommand="ko.commands.doCommand('cmd_sv_RSourceSelection')"
-		   desc="R: Source selection" label="Source selection" accel="u" />
+	  <command id="cmd_sv_RRunSelection"  key="key_cmd_sv_RRunSelection" oncommand="ko.commands.doCommand('cmd_sv_RRunSelection')"
+	     desc="R: &rSendSel;" label="&rSendSel;" accesskey="&rSendSel.key;" />
+	  <command id="cmd_sv_RSourceSelection"  key="key_cmd_sv_RSourceSelection" oncommand="ko.commands.doCommand('cmd_sv_RSourceSelection')"
+		   desc="R: &rSrcSel;" label="&rSrcSel;" accesskey="&rSrcSel.key;" />
 	</commandset>
-
-
     </commandset>
   </commandset>
 
@@ -123,6 +130,9 @@
    <menu id="sciviews_menu" label="R Control" accesskey="R" insertbefore="menu_window,help_menu">
     <menupopup id="popup_sciviews_main">
 	<menuitem id="r_start_console_menu" observes="cmd_svStartR" class="menuitem-iconic r-run-command-icon" />
+	<menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager" class="menuitem" />
+	<menuitem id="r_browse_wd" observes="cmd_svBrowseWD" class="menuitem-iconic r-working-dir-icon" />
+
 	<menuseparator/>
 	<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine" class="menuitem-iconic r-run-line-icon" />
 	<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll" class="menuitem-iconic r-run-all-icon" />
