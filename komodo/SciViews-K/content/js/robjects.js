@@ -134,7 +134,7 @@ var filterBy = 0; // filter by name by default
 var isInitialized = false;
 
 
-this.debug = true;
+this.debug = false;
 this.visibleData = [];
 this.treeData = [];
 
