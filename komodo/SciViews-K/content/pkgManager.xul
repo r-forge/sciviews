@@ -285,7 +285,8 @@ function pkgFindUpdates() {
 			//var uItem = el.appendChild(getUpdateItem(pkg));
 			theUpdatesList.appendChild(getUpdateItem(pkg));
 		}
-		document.getElementById("myTabList").selectedIndex = 2;
+		//document.getElementById("pkgPanels").selectedIndex = 2;
+		document.getElementById("pkgPanelButtons").childNodes[2].click();
 
 		//ade4;;1.4-9;;2.8.0;;1.4-10;;http://r.meteo.uni.wroc.pl/bin/windows/contrib/2.8
 
@@ -340,11 +341,11 @@ self.onload = function() {
 
 
   <hbox>
-<radiogroup orient="horizontal">
+<radiogroup id="pkgPanelButtons" orient="horizontal">
     <radio label="Available"
 oncommand="document.getElementById('pkgPanels').selectedIndex = 0;"
 	/>
-    <radio label="Installed"
+    <radio label="Installed" selected="true"
 oncommand="document.getElementById('pkgPanels').selectedIndex = 1;"
 		 />
     <radio label="Updates"

@@ -426,7 +426,7 @@ sv.r.help = function(topic, pkg) {
 
 		if (topic == "") {
 			// let's not cry so much about an empty selection
-			ko.statusBar.AddMessage(SelectionEmpty, "R", 1000, false);
+			ko.statusBar.AddMessage(sv.translate("SelectionEmpty"), "R", 1000, false);
 			//alert("Nothing is selected!");
 		}
 
@@ -467,14 +467,14 @@ sv.r.search = function(topic, internal) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
 	// Ask for the search string
-	topic = ko.dialogs.prompt("Search R objects using a regular expression" +
-		" (e.g., '^log' for objects starting with 'log')",
-		"Pattern", topic, "Search R help", "okRsearchPattern");
+	topic = ko.dialogs.prompt(sv.translate("Search_R_objects_using_a_regular_expression"),
+							  sv.translate("Pattern"), topic,
+							  sv.translate("Search_R_help"), "okRsearchPattern");
 	if (topic != null & topic != "") {
 		// Get list of matching items and evaluate it with sv.r.search_select()
 		res = sv.r.evalCallback('cat(apropos("' + topic + '"), sep = "' + sv.r.sep + '")',
 			sv.r.search_select);
-		ko.statusBar.AddMessage("Searching R help for '" + topic + "'",
+		ko.statusBar.AddMessage(sv.translate("Searching_R_help_for", topic),
 			"R", 5000, true);
 	}
 	return(res);
@@ -485,7 +485,7 @@ sv.r.search_select = function(topics) {
 	ko.statusBar.AddMessage("", "R");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(topics) == "") {
-		alert("No item found in R help!");
+		sv.cmdout.message(sv.translate("No_item_found_in_R_help"));
 	} else {	// Something is returned
 		var items = topics.split(sv.r.sep);
 		if (items.length == 1) {
@@ -586,8 +586,8 @@ sv.r.saveWorkspace = function(file, title) {
 sv.r.loadWorkspace = function(file, attach) {
   // Ask for the filename if not provided
 	if (!file) {
-		file = sv.fileOpen("", ".RData", "Browse for workspace",
-		      ["R workspace (*.RData)|*.RData"], true);
+		file = sv.fileOpen("", ".RData", sv.translate("Browse_for_workspace"),
+		      [sv.translate("R_workspace") + " (*.RData)|*.RData"], true);
 	} else if (typeof files == "string") {
 		file = file.split(/[;,]/);
 	}
