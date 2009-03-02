@@ -71,8 +71,11 @@
 <!ENTITY rSrcPara.key "A">
 <!ENTITY rSrcSel "Source selection">
 <!ENTITY rSrcSel.key "E">
-<!ENTITY startRConsole "Start R Console">
-<!ENTITY startRConsole.key "C">
+<!ENTITY startR "Start R">
+<!ENTITY startR.key "R">
 
 <!ENTITY svBrowseWD "Browse for working directory">
 <!ENTITY svBrowseWD.key "D">
+
+<!ENTITY svSelectRApp "Preferred R application">
+<!ENTITY svSelectRApp.key "E">

@@ -64,7 +64,7 @@
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
 
-<stringbundleset>
+<stringbundleset id="svStringBundles">
 <stringbundle id="svBundle" src="chrome://sciviewsk/locale/main.properties" />
 </stringbundleset>
 
@@ -74,7 +74,7 @@
 
     <command id="cmd_svStartR" key="key_cmd_svStartR"
 		     oncommand="ko.commands.doCommand('cmd_svStartR');"
-		 desc="R: &startRConsole; (windows)" label="&startRConsole; (windows)" accesskey="&startRConsole.key;" />
+		 desc="R: &startR;" label="&startR;" accesskey="&startR.key;" />
 
 	<command id="cmd_svOpenPkgManager" key="key_cmd_svOpenPkgManager"
 		    oncommand="sv.command.openPkgManager();"
@@ -129,8 +129,22 @@
   <menubar id="menubar_main">
    <menu id="sciviews_menu" label="R Control" accesskey="R" insertbefore="menu_window,help_menu">
     <menupopup id="popup_sciviews_main">
+
 	<menuitem id="r_start_console_menu" observes="cmd_svStartR" class="menuitem-iconic r-run-command-icon" />
-	<menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager" class="menuitem" />
+	<menu label="&svSelectRApp;" accesskey="&svSelectRApp.key;">
+	  <menupopup id="sciviews_menu_select_r_application" oncommand="sv.command.getRApp(event);"
+				 selected="r-terminal" persist="selected"
+				 onpopupshowing="sv.command.setMenuRApp(this);" >
+		<menuitem id="r-app" type="checkbox" checked="false" label="R app" platform="Mac" />
+		<menuitem id="r-gnome-term" type="checkbox" checked="false" label="R Gnome terminal" platform="Linux" />
+		<menuitem id="r-kde-term" type="checkbox" checked="false" label="R KDE terminal" platform="Linux" />
+		<menuitem id="r-xfce4-term" type="checkbox" checked="false" label="R XFCE terminal" platform="Linux" />
+		<menuitem id="r-gui" type="checkbox" checked="false" label="R GUI" platform="Win" />
+		<menuitem id="r-terminal" type="checkbox" checked="false" label="R terminal" platform="Linux,Mac,Win" />
+		<menuitem id="r-tk" type="checkbox" checked="false" label="R tk" platform="Linux,Mac" />
+	  </menupopup>
+	</menu>
+	<!--<menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager" class="menuitem" />-->
 	<menuitem id="r_browse_wd" observes="cmd_svBrowseWD" class="menuitem-iconic r-working-dir-icon" />
 
 	<menuseparator/>
