@@ -18,6 +18,13 @@ title="Manage R Packages"
 <script type="text/javascript">
 <![CDATA[
 
+//TODO: 	use xbl bindings
+// 		list of available packages at CRAN
+// 		repository selection + custom repositories
+// 		installing packages - to be finished
+// 		add pkgManager() common function for svMisc - wrap commands into it
+
+
 var sv;
 
 var packages = {};

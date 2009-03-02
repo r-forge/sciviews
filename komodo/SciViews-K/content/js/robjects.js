@@ -899,11 +899,10 @@ this.init = function() {
 	// so, replace it with "onclick". This causes issue with selection by key-press
 	var listBox = document.getElementById("sciviews_robjects_searchpath_listbox");
 
-	listBox.oncommand = this.packageSelectedEvent;
+	//listBox.oncommand = this.packageSelectedEvent;
 
-	if ((typeof listBox.oncommand == "undefined")
-		&& (typeof listBox.getAttribute("oncommand") == "string")) {
-		listBox.setAttribute("onclick", listBox.getAttribute("oncommand"));
+	if ((typeof listBox.oncommand == "undefined")) {
+		listBox.onclick = this.packageSelectedEvent;
 		listBox.removeAttribute("oncommand");
 	}
 	isInitialized = true;

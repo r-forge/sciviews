@@ -152,30 +152,30 @@ function (x, sep = NA, eol = "\n", header = !attr(x, "all.info"),
 {
 	if (!inherits(x, "objList"))
 		stop("x must be an 'objList' object")
-	if (NROW(x) > 0) {
 
-		if (!raw.output)
-			cat("Objects list:\n")
-		if (header) {
-			header.fmt <- if (raw.output) "Env=%s\nObj=%s\n" else
-				"\tEnvironment: %s\n\tObject: %s\n"
+	empty <- NROW(x) == 0
 
-			objname <- if (is.null(attr(x, "object"))) {
-				if (raw.output) "" else "<All>"
-				} else attr(x, "object")
+	if (!raw.output)
+		cat(if (empty) "An empty objects list\n" else "Objects list:\n")
 
-			cat(sprintf(header.fmt,  attr(x, "envir"), objname))
+	if (header) {
+		header.fmt <- if (raw.output) "Env=%s\nObj=%s\n" else
+			"\tEnvironment: %s\n\tObject: %s\n"
 
-		}
+		objname <- if (is.null(attr(x, "object"))) {
+			if (raw.output) "" else "<All>"
+			} else attr(x, "object")
 
+		cat(sprintf(header.fmt,  attr(x, "envir"), objname))
+	}
+
+	if (!empty) {
 		if (is.na(sep)) {
 			print(as.data.frame(x))
 		} else if (!is.null(nrow(x)) && nrow(x) > 0) {
 			write.table(x, row.names = FALSE, col.names = FALSE, sep = sep,
 				eol = eol, quote = FALSE)
 		}
-	} else if (!raw.output) {
-		cat("An empty objects list\n")
 	}
 	return(invisible(x))
 }

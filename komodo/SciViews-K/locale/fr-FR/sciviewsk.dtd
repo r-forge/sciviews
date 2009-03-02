@@ -76,3 +76,6 @@
 
 <!ENTITY svBrowseWD "Browse for working directory">
 <!ENTITY svBrowseWD.key "D">
+
+<!ENTITY svSelectRApp "Preferred R application">
+<!ENTITY svSelectRApp.key "E">

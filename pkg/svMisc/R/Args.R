@@ -1,5 +1,5 @@
 "Args" <-
-function (name, only.args = FALSE
+function (name, only.args = FALSE)
 {
 	#### TODO: handle primitives and S3/S4 methods for generic functions
 	ret <- try(res <- eval(parse(text = paste("argsAnywhere(", name, ")",

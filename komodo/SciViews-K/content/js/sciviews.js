@@ -516,9 +516,21 @@ sv.prefs.setString("R-help", "", true);
 // Help page on the R Wiki
 sv.prefs.setString("RWiki-help", "", true);
 
+
 // translate messages using data from chrome://sciviewsk/locale/main.properties
 sv.translate = function(textId) {
 	var strbundle = document.getElementById("svBundle");
+	if (strbundle == null) {
+		// bug on Komodo 4 and/or Linux: cannot get stringbundle by id:
+		var strbundles = document.getElementsByTagName("stringbundle");
+		for (var i = 0; i < strbundles.length; i++) {
+			if (strbundles[i].id == "svBundle") {
+				strbundle = strbundles[i];
+				break;
+			}
+		}
+	}
+
 	try {
 		if (arguments.length > 1) {
 			var param = [];
@@ -532,6 +544,7 @@ sv.translate = function(textId) {
 		return "<" + textId + ">";
 	}
 }
+
 
 // Control the command output tab //////////////////////////////////////////////
 if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
