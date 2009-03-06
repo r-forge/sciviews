@@ -16,7 +16,14 @@
 #' cat( "jitter <- " , deparse( jitter ), sep = "\n", file = tf )
 #' sidekick( tf )
 #' unlink( tf )
-sidekick <- function( file, encoding = "unknown" ){
+#' TODO :make this S3 instead of dispatching
+sidekick <- function( file, encoding = getOption("encoding") ){
+	
+	if( file %of% "function" ){
+		tf <- tempfile( ); on.exit( unlink( tf ) )
+		dump( "file" , tf )
+		file <- tf
+	}
 	
 	if( is.character(file) ){
 		if( file %~% '^rwd:' ){
@@ -26,8 +33,8 @@ sidekick <- function( file, encoding = "unknown" ){
 		filename <- file
 		file <- file( filename, encoding = encoding )
 		on.exit( close( file ) )
-	} else{
-		filename <- summary(f)$description
+	} else {
+		filename <- summary(file)$description
 	}
 	
 	### try to parse and return an error if failed
