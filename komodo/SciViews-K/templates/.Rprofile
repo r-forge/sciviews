@@ -266,31 +266,43 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 
 		# Look if and where komodo is installed
 		if (.Platform$OS.type == "unix") {
-			Komodo <- "/usr/local/bin/komodo"	# Link should be created!
+			if (Sys.getenv("koAppFile") != "") {
+				Komodo <- Sys.getenv("koAppFile")
+			} else {
+				Komodo <- "/usr/local/bin/komodo"	# Link should be created!
+			}
 			# Check that this file exists
 			if (!file.exists(Komodo)) {
 				# File not found, display a message with missing link
 				Komodo <- NULL
-				cat("Komodo is not found by R. Please, follow instructions at\n",
-					"http://www.sciviews.org/SciViews-K to install it correctly.\n",
-					"In particular, you must create a symbolic link in /user/local/bin:\n",
-					"sudo ln -s <KomodoBinLocation>/komodo /usr/local/bin/komodo\n",
-					"otherwise, R cannot find it!\n")
+				cat("Komodo is not found by R. Please, follow instructions at",
+					"http://www.sciviews.org/SciViews-K to install it correctly.",
+					"In particular, you must create a symbolic link in /user/local/bin:",
+					"sudo ln -s <KomodoBinLocation>/komodo /usr/local/bin/komodo",
+					"otherwise, R cannot find it!", sep="\n")
 			} else {
 				# Change the editor and the pager to Komodo
 				options(editor = Komodo)
 				options(pager = svPager)
 			}
 		} else {
-			Komodo <- "komodo"	# On Windows, 'komodo' should be enough
-			# But for reasons that escape me, komodo seems to stip off its own
-			# directory from the path variable. So, I have to restore it from
-			# the Windows registry :-(
-			Ret <- tclRequire("registry", warn = TRUE)
-			Path <- tclvalue(.Tcl("registry get {HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment} {Path}"))
-			if (!is.null(Path) && !is.na(Path) && Path != "")
-				Sys.setenv(path = Path)
-			rm(Ret, Path)
+
+		    # if komodo path was passed in environment
+			if (file.exists(Sys.getenv("koAppFile"))) {
+				Komodo <-  paste("\"", Sys.getenv("koAppFile"), "\"", sep="")
+			} else {
+				Komodo <- "komodo"	# On Windows, 'komodo' should be enough
+				# But for reasons that escape me, komodo seems to stip off its own
+				# directory from the path variable. So, I have to restore it from
+				# the Windows registry :-(
+				Ret <- tclRequire("registry", warn = TRUE)
+				Path <- tclvalue(.Tcl("registry get {HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment} {Path}"))
+				if (!is.null(Path) && !is.na(Path) && Path != "")
+					Sys.setenv(path = Path)
+				rm(Ret, Path)
+			}
+
+
 			owarn <- getOption("warn")
 			options(warn = -1)
 			# Try to run Komodo now
