@@ -100,6 +100,7 @@ this.openPkgManager = function() {
 	  sv);
 }
 
+
 this.setControllers = function() {
 	// make these commands active only when current document language is R
 	var cmdNames = ["RunAll", "SourceAll", "RunBlock", "RunFunction", "RunLine", "RunPara",
@@ -137,21 +138,24 @@ this.setControllers = function() {
 	viewManager.prototype.do_cmd_sv_RSourceFunction = function()	{ sv.r.source("function"); };
 
 
-	// TODO: submenu with checkboxes to select preferred way to start R
 	viewManager.prototype.do_cmd_svStartR = function()	{
 		// runIn = "command-output-window", "new-console",
 		//env strings: "ENV1=fooJ\nENV2=bar"
 		//gPrefSvc.prefs.getStringPref("runEnv");
 
+		var isWin = navigator.platform == "Win32";
 		var preferredRApp = sv.prefs.getString("sciviews.preferredRApp", "r-terminal");
 
+		var env = ["koId=" + sv.prefs.getString("sciviews.client.id", "SciViewsK"),
+				   "koHost=localhost",
+				   "koActivate=FALSE",
+				   "Rinitdir=" + sv.io.makePath(isWin? "Pers" : "Home"),
+				   "koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
+				   "koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
+				   "koAppFile=" + sv.io.makePath("resource:app", ["komodo" + (isWin? ".exe" : "")])
+		   ];
 
-		var env = ["koPort=%(pref:sciviews.server.socket)", "koId=%(pref:sciviews.client.id)", "koHost=localhost",
-			 "koActivate=FALSE", "Rinitdir=~", "koServe=%(pref:sciviews.client.socket)"];
-
-		var cwd = "%(path:hostUserDataDir)/XRE/extensions/sciviewsk@sciviews.org/templates";
-		cwd = ko.interpolate.interpolateStrings(cwd);
-
+		var cwd = sv.io.makePath("ProfD", ["extensions", "sciviewsk@sciviews.org", "templates"]);
 
 		var command, mode = "no-console";
 
@@ -188,14 +192,14 @@ this.setControllers = function() {
 				  mode = "new-console";
 
 		}
-		for (i in env) {
-			try {
-				env[i] = ko.interpolate.interpolateStrings(env[i]);
-			} catch (e) {
-				alert(e + "\n" + env[i]);
-				return;
-			}
-		}
+		//for (i in env) {
+		//	try {
+		//		env[i] = ko.interpolate.interpolateStrings(env[i]);
+		//	} catch (e) {
+		//		alert(e + "\n" + env[i]);
+		//		return;
+		//	}
+		//}
 		ko.run.runCommand(window, command, cwd, env.join("\n"), false,
 						  false, false, mode, false, false, false);
 	};
@@ -204,7 +208,7 @@ this.setControllers = function() {
 }).apply(sv.command);
 
 
-//sv.cmdsSetControllers();
+//sv.command.setControllers();
 addEventListener("load", sv.command.setControllers, false);
 
 /*

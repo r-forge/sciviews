@@ -64,7 +64,7 @@
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
 
-<stringbundleset id="svStringBundles">
+<stringbundleset>
 <stringbundle id="svBundle" src="chrome://sciviewsk/locale/main.properties" />
 </stringbundleset>
 
@@ -144,7 +144,7 @@
 		<menuitem id="r-tk" type="checkbox" checked="false" label="R tk" platform="Linux,Mac" />
 	  </menupopup>
 	</menu>
-	<!--<menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager" class="menuitem" />-->
+	<menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager" class="menuitem" />
 	<menuitem id="r_browse_wd" observes="cmd_svBrowseWD" class="menuitem-iconic r-working-dir-icon" />
 
 	<menuseparator/>

@@ -12,6 +12,8 @@
 
 //sv.io.tempFile(prefix)			// creates unique temporary file, accessible
 						// by all users, and returns its name
+//sv.io.makePath([specialDir], [pathComponents]) create path from array, and/or special directory name
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.io' namespace
@@ -129,6 +131,37 @@ sv.io.tempFile = function(prefix) {
 
 	return tmpfile.path;
 }
+
+
+//specialDir - [optional] name for special directory, see special directory reference at
+//https://developer.mozilla.org/En/Code_snippets:File_I/O
+// eg. ProfD, TmpD, Home, Desk, Progs
+// pathComponents - [optional] array of directiory/file names to append
+function sv.io.makePath(specialDir, pathComponents) {
+	  var file;
+	  if (specialDir) {
+			file = Components.classes["@mozilla.org/file/directory_service;1"].
+				getService(Components.interfaces.nsIProperties).
+					get(specialDir, Components.interfaces.nsIFile);
+	  } else {
+			file = Components.classes["@mozilla.org/file/local;1"].
+			   createInstance(Components.interfaces.nsILocalFile);
+			try {
+				  if (pathComponents) {
+						file.initWithPath(pathComponents[0]);
+						pathComponents.shift();
+				  }
+			} catch (e) {}
+	  }
+	  if (pathComponents && pathComponents.length) {
+		   for (i in pathComponents)
+				file.append(pathComponents[i]);
+	  }
+	  return file.path;
+}
+
+
+
 
 /*
 Stuff:
