@@ -3,7 +3,7 @@ Title: SciViews GUI API - Dialog boxes
 Depends: R (>= 2.6.0), tcltk
 Imports: svMisc
 Description: Rapidly construct dialog boxes for your GUI, including an automatic function assistant
-Version: 0.9-20
+Version: 0.9-40
 Date: 2009-03-28
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
