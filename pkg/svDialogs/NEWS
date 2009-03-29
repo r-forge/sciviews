@@ -1,6 +1,6 @@
 = svDialogs News
 
-== Changes in svDialogs 0.9-20
+== Changes in svDialogs 0.9-40
 
 This is the first version distributed on R-forge. It is completely refactored
 from older versions (on CRAN since 2003) to make it run with SciViews-K and
