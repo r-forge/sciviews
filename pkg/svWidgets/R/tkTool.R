@@ -70,22 +70,28 @@ function (toolbar, item, action, image = "", options = "")
 	Tl <- .guiTools[[toolbar]]
 	if (is.null(Tl))
 		stop("toolbar does not exist!")
-	# Look if the toolbar already has tools
+	
+	# is this item a separator
+	isSeparator <- regexpr("^-+$", item) > 0
+	
 	Items <- Tl$Items
+	# Look if the toolbar already has this tool
 	if (is.null(Items)) n <- 0 else {
-		if (item %in% Items$name)
+		if (!isSeparator && item %in% Items$name)
 			stop("the tool ", item, " already exists!")
 		n <- max(Items$pos) + 1
 	}
+		
 	# Add the entry at the end of the Tk toolbar (### TODO: allow other positions)
 	# First look if it is a tool button or a separator
-	if (regexpr("^-+$", item) > 0) { #This must be a separator
+	if ( isSeparator ) { #This must be a separator
 		### TODO: choose correct orientation
 		but <- ttkseparator(Tl, orient = "vertical")
 		tkgrid(but, row = 0, column = n, sticky = "nsew")
 		action <- "[separator]"
 		options <- 'orient = "vertical"'
 	} else { # This is a tool button
+		
 		# Rework options
 		### TODO: I need to deal with options!
 		#if (options == "") opts <- "" else opts <- paste(",", options)
