@@ -10,7 +10,8 @@ function (x, ...)
 function (toolbar, side = "top")
 {
 	res <- switch(ToolType(toolbar),
-		tkTool = tkToolAdd(toolbar = toolbar, side = side))
+		tkTool = tkToolAdd(toolbar = toolbar, side = side)
+	)
 	return(invisible(res))
 }
 
@@ -158,15 +159,16 @@ function (file = "Tools.txt")
 		# add it to the data.frame
 		L[i, ] <- Litem
 	}
-#	# The [toolbar] entries are not needed
-#	L <- L[L$action != "[toolbar]", ]
+	
+	# The [toolbar] entries are not needed
+	L <- subset( L, action != "[toolbar]" )
 
-	# Execute this line-by-line to create the various tools
+	# Execute this line-by-line to create the various tools 
 	N <- nrow(L)
 	for (i in 1:N) {
 		action <- L$action[i]
-        if (action == "[toolbar]") { 	# Create a toolbar
-            ToolAdd(toolbar = L$menu[i])
+		if (action == "[tool]") { 	# Create a toolbar
+            ToolAdd(toolbar = L$tool[i])
 #		} else if (action == "[tool]") { 	# Create a tool button
 #			### TODO: determine which type of tool button it is!
 #			ToolAddItem(toolbar = L$menu[i])
