@@ -153,7 +153,7 @@ function (file = "Tools.txt")
 			options <- T[[i]][3]
             if (is.na(options)) options <- ""
 		}
-        Litem <- data.frame(tool = I(menu), item = I(item), image = I(image),
+        Litem <- data.frame(tool = I(tool), item = I(item), image = I(image),
 			action = I(action), options = I(options))
 		# add it to the data.frame
 		L[i, ] <- Litem
