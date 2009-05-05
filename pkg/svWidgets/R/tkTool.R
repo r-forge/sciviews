@@ -100,11 +100,13 @@ function (toolbar, item, action, image = "", options = "")
 			Img <- ImgGet(image)
 			but <- ttkbutton(Tl, text = item, image = as.character(Img),
 				compound = "image", style = "Toolbutton",
-				command = eval(parse(text = paste("function()",  action))))
+				command = actionWrapper( action ) )
+				# command = eval(parse(text = paste("function()",  action))))
 		} else {
 			but <- ttkbutton(Tl, text = item,
 				compound = "left", style = "Toolbutton",
-				command = eval(parse(text = paste("function()",  action))))
+				command = actionWrapper( action ) ) 
+				# command = eval(parse(text = paste("function()",  action))))
 		}
 		tkgrid(but, row = 0, column = n, sticky = "nsew")
 		### TODO: This needs tcltk2 => how to get rid of this dependency?
@@ -125,6 +127,14 @@ function (toolbar, item, action, image = "", options = "")
 	assignTemp(".guiTools", .guiTools)
 	return(invisible(itempath))
 }
+
+actionWrapper <- function( action ){
+	function(){
+		.Internal( addhistory( action ) )
+		eval( parse( text = action ) )
+	}
+}
+
 
 "tkToolDelItem" <-
 function (toolbar, item)

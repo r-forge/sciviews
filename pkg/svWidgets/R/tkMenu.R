@@ -145,7 +145,7 @@ function (menu, item, action, image = "", accel = "", options = "")
 		# Rework options
 		if (options == "") opts <- "" else opts <- paste(",", options)
 		cmd <- paste('tkadd(M, "command", label = "', lbl,
-			'", command = function() ', action, ', compound = "left"',
+			'", command = function() tkMenuItemCall( { ', action, ' } ) , compound = "left"',
 			Iopt, Aopt, Uopt, opts, ')', sep = "")
 		eval(parse(text = cmd))
 	}
@@ -160,6 +160,14 @@ function (menu, item, action, image = "", accel = "", options = "")
 	# Update the TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
 	return(invisible(item))
+}
+
+tkMenuItemCall <- function( expr ){
+	if( TRUE ){
+		text <- head(deparse( substitute( expr ) )[-1], -1)
+		.Internal( addhistory( text ) )
+	}
+	eval( expr, envir = parent.frame() )
 }
 
 "tkMenuDelItem" <-
