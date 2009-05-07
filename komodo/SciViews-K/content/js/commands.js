@@ -152,7 +152,7 @@ this.setControllers = function() {
 				   "Rinitdir=" + sv.io.makePath(isWin? "Pers" : "Home"),
 				   "koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
 				   "koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
-				   "koAppFile=" + sv.io.makePath("resource:app", ["komodo" + (isWin? ".exe" : "")])
+				   "koAppFile=" + sv.io.makePath("CurProcD", ["komodo" + (isWin? ".exe" : "")])
 		   ];
 
 		var cwd = sv.io.makePath("ProfD", ["extensions", "sciviewsk@sciviews.org", "templates"]);
@@ -192,14 +192,7 @@ this.setControllers = function() {
 				  mode = "new-console";
 
 		}
-		//for (i in env) {
-		//	try {
-		//		env[i] = ko.interpolate.interpolateStrings(env[i]);
-		//	} catch (e) {
-		//		alert(e + "\n" + env[i]);
-		//		return;
-		//	}
-		//}
+
 		ko.run.runCommand(window, command, cwd, env.join("\n"), false,
 						  false, false, mode, false, false, false);
 	};

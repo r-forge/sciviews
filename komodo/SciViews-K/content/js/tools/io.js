@@ -137,7 +137,7 @@ sv.io.tempFile = function(prefix) {
 //https://developer.mozilla.org/En/Code_snippets:File_I/O
 // eg. ProfD, TmpD, Home, Desk, Progs
 // pathComponents - [optional] array of directiory/file names to append
-function sv.io.makePath(specialDir, pathComponents) {
+sv.io.makePath = function (specialDir, pathComponents) {
 	  var file;
 	  if (specialDir) {
 			file = Components.classes["@mozilla.org/file/directory_service;1"].
