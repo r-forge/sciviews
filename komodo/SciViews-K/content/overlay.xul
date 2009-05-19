@@ -91,8 +91,9 @@
         <menuseparator keep="false" intoplevel="true" />
         <menuitem id="menu_robjects_cmd_help" command="robjects_cmd_help" />
   </menupopup>
-
 </popupset>
+
+
   <commandset id="allcommands">
     <broadcasterset id="broadcasterset_global">
       <broadcaster
@@ -106,7 +107,22 @@
         state="open"
       />
    </broadcasterset>
-      <command id="Tasks:svAbout" oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
+    <command id="Tasks:svAbout" oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
+
+    <broadcasterset id="broadcasterset_global">
+	<broadcaster id="cmd_sv_RRunAll" key="keycmd_sv_RRunAll" keycode="VK_F5" modifiers="" oncommand="sv.r.send(&quot;all&quot;);" desc="R: Send file content" />
+	<broadcaster id="cmd_sv_RSourceAll" key="keycmd_sv_RSourceAll" modifiers="shift" keycode="VK_F5" oncommand="sv.r.source(&quot;all&quot;);" desc="R: Source file" />
+	<broadcaster id="cmd_sv_RRunBlock" key="keycmd_sv_RRunBlock" oncommand="sv.r.send(&quot;block&quot;);" desc="R: Send marked block" />
+	<broadcaster id="cmd_sv_RRunFunction" key="keycmd_sv_RRunFunction" oncommand="sv.r.send(&quot;function&quot;);" desc="R: Send function under cursor" />
+	<broadcaster id="cmd_sv_RRunLine" key="keycmd_sv_RRunLine" oncommand="sv.r.send(&quot;line&quot;);" desc="R: Send active line" />
+	<broadcaster id="cmd_sv_RRunPara" key="keycmd_sv_RRunPara" oncommand="sv.r.send(&quot;para&quot;);" desc="R: Send current paragraph" />
+	<broadcaster id="cmd_sv_RRunSelection" key="keycmd_sv_RRunSelection" oncommand="sv.r.send(&quot;sel&quot;);" desc="R: Send selection" />
+	<broadcaster id="cmd_sv_RSourceBlock" key="keycmd_sv_RSourceBlock" oncommand="sv.r.source(&quot;block&quot;);" desc="R: Source marked block" />
+	<broadcaster id="cmd_sv_RSourceFunction" key="keycmd_sv_RSourceFunction" oncommand="sv.r.source(&quot;function&quot;);" desc="R: Source function under cursor" />
+	<broadcaster id="cmd_sv_RSourcePara" key="keycmd_sv_RSourcePara" oncommand="sv.r.source(&quot;para&quot;);" desc="R: Source current paragraph" />
+	<broadcaster id="cmd_sv_RSourceSelection" key="keycmd_sv_RSourceSelection" oncommand="sv.r.source(&quot;sel&quot;);" desc="R: Source selection" />
+    </broadcasterset>
+
     <commandset id="r-objects-commands">
       <command id="robjects_cmd_insertname"
               label="&sciviews.robjects.insName;"
@@ -119,7 +135,7 @@
       <command id="robjects_cmd_removeobj"
               label="&sciviews.robjects.rmObj;"
               accesskey="R"
-              oncommand="rObjectsTree.removeSelected();" />
+              oncommand="rObjectsTree.removeSelected(event.shiftKey);" />
       <command id="robjects_cmd_attach"
               label="&sciviews.robjects.loadPkg;"
               accesskey="L"
@@ -280,8 +296,8 @@
           <tree flex="1" id="sciviews_robjects_objects_tree"
               persist="sortDirection sortResource"
               sortDirection="ascending" sortResource="r-name"
-		  enableColumnDrag="true"
-		  onkeypress = "rObjectsTree.onEvent(event);"
+			  enableColumnDrag="true"
+			  onkeyup="rObjectsTree.onEvent(event);"
               >
             <treecols>
               <treecol
@@ -323,6 +339,7 @@
             <treechildren id="sciviews_robjects_objects_tree_main"
               ondraggesture="nsDragAndDrop.startDrag(event, rObjectsTree.listObserver);"
               ondblclick="rObjectsTree.onEvent(event);"
+              onclick="rObjectsTree.onEvent(event);"
               context="rObjectsContext"
               >
             </treechildren>

@@ -297,8 +297,8 @@
           <tree flex="1" id="sciviews_robjects_objects_tree"
               persist="sortDirection sortResource"
               sortDirection="ascending" sortResource="r-name"
-		  enableColumnDrag="true"
-		  onkeypress = "rObjectsTree.onEvent(event);"
+			  enableColumnDrag="true"
+			  onkeyup = "rObjectsTree.onEvent(event);"
               >
             <treecols>
               <treecol
@@ -339,6 +339,7 @@
             </treecols>
             <treechildren id="sciviews_robjects_objects_tree_main"
               ondraggesture="nsDragAndDrop.startDrag(event, rObjectsTree.listObserver);"
+              onclick="rObjectsTree.onEvent(event);"
               ondblclick="rObjectsTree.onEvent(event);"
               context="rObjectsContext"
               >

@@ -60,6 +60,17 @@ if (typeof(sv) == 'undefined') {
 		}
 	};
 }
+
+//DEBUG:
+// global debugging flag:
+sv.debug = false;
+
+sv.debugMsg = function(msg) {
+	if (sv.debug)
+		sv.cmdout.append("debug: " + msg);
+}
+
+
 // Create the 'sv.tools' namespace
 if (typeof(sv.tools) == 'undefined') sv.tools = new Object();
 
