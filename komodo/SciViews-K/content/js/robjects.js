@@ -8,7 +8,7 @@
 //TODO: context menu for search-paths list
 //TODO: renaming objects on the list - editable names
 //TODO: add context menu item for environments: remove all objects
-//TODO: tollbar: dropdown menu for packages maintenance (add, install, etc)
+//TODO: toolbar: dropdown menu for packages maintenance (add, install, etc)
 //TODO: solve problems with selection, when removing objects
 
 //DONE: "remove" command: Shift + Command - removes immediatelly (confirmation box first), Command - adds R code to the current document
@@ -109,6 +109,58 @@ searchPaths
 
 */
 
+// Compute the intersection of n arrays
+//Array.prototype.intersect = function() {
+//    if (!arguments.length)
+//      return [];
+//    var a1 = this;
+//    var a = a2 = null;
+//    var n = 0;
+//    while(n < arguments.length) {
+//      a = [];
+//      a2 = arguments[n];
+//      var l = a1.length;
+//      var l2 = a2.length;
+//      for(var i=0; i<l; i++) {
+//        for(var j=0; j<l2; j++) {
+//          if (a1[i] === a2[j])
+//            a.push(a1[i]);
+//        }
+//      }
+//      a1 = a;
+//      n++;
+//    }
+//    return a.unique();
+//};
+//
+//// Get the union of n arrays
+//Array.prototype.union =  function() {
+//    var a = [].concat(this);
+//    var l = arguments.length;
+//    for(var i=0; i<l; i++) {
+//      a = a.concat(arguments[i]);
+//    }
+//    return a.unique();
+//};
+//
+//// Return new array with duplicate values removed
+//Array.prototype.unique =  function() {
+//    var a = [];
+//    var l = this.length;
+//    for(var i=0; i<l; i++) {
+//      for(var j=i+1; j<l; j++) {
+//        // If this[i] is found later in the array
+//        if (this[i] === this[j])
+//          j = ++i;
+//      }
+//      a.push(this[i]);
+//    }
+//    return a;
+//};
+//
+
+
+
 
 var rObjectsTree = {};
 
@@ -133,8 +185,9 @@ var _this = this;
 var filterBy = 0; // filter by name by default
 var isInitialized = false;
 
+// set debug mode:
+this.debug = typeof(sv.debug) != "undefined"? sv.debug : false;
 
-this.debug = false;
 this.visibleData = [];
 this.treeData = [];
 
@@ -177,8 +230,7 @@ function _addObjectList(pack) {
 	var cmd = 'print(objList(id = "' + id + '_' + pack + '", envir = "' + pack +
 		'", all.info = FALSE, compare = FALSE), sep = "' + sep + '", eol = "\\n", raw.output = TRUE, header = TRUE)';
 
-	if (_this.debug)
-		sv.cmdout.append(cmd);
+	sv.debugMsg(cmd);
 	sv.r.evalCallback(cmd, _parseObjectList, pack);
 };
 
@@ -314,9 +366,7 @@ function _addSubObject(obj) {
 	var cmd = 'print(objList(id = "' + id + '_' + env + '_' + objName + '", envir = "' + env +
 		'", object = "' + objName + '", all.info = FALSE, compare = FALSE), sep = "' + sep + '", eol = "\\n")';
 
-
-	if (_this.debug)
-		sv.cmdout.append(cmd);
+	sv.debugMsg(cmd);
 
 	sv.r.evalCallback(cmd, _parseSubObjectList, obj);
 };
@@ -999,8 +1049,7 @@ this.refreshAll = function () {
 	var cmd = 'invisible(sapply(c("' + selectedPackages.join('","')	+ '"), function(x) '
 		+ 'print(objList(envir = x, all.info = FALSE, compare = FALSE), sep = "' + sep + '", raw.output = TRUE, header = TRUE)))';
 
-	if (_this.debug)
-		sv.cmdout.append(cmd);
+	sv.debugMsg(cmd);
 
 	sv.r.evalCallback(cmd, _parseObjectList);
 }
@@ -1093,7 +1142,6 @@ this.removeSelected = function(doRemove) {
 	if(doRemove) {
 		// remove immediately
 		sv.r.evalCallback(cmd.join("\n"), sv.cmdout.append);
-		//sv.cmdout.append(cmd);
 	} else {
 		// insert commands to current document
 		var view = ko.views.manager.currentView;
@@ -1107,6 +1155,8 @@ this.removeSelected = function(doRemove) {
 		scimoz.insertText(scimoz.currentPos, cmd.join(nl));
 	}
 
+	//_this.selection.select(rows[0]);
+	_this.selection.clearSelection();
 
 	return true;
 }
@@ -1116,20 +1166,19 @@ this.getSelectedNames = function(fullNames) {
 	var namesArr = new Array();
 	var cellText, item;
 	var name = fullNames? "fullName" : "name";
-
-	for (i in rows) {
-		item = this.visibleData[rows[i]];
-		cellText = item.origItem[name];
+	var selectedItemsOrd = _this.selectedItemsOrd;
+	for (i in selectedItemsOrd) {
+		item = selectedItemsOrd[i];
+		cellText = item[name];
 		if (cellText != "") {
-			if (item.level == 1 &&
+			if (item.type == 'object' &&
 				cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
 				cellText = "`" + cellText + "`";
-
-			cellText = item.origItem[name];
-			if (item.origItem.type == "args")
-				cellText += "=";
+			else if (item.type == "args" && name == "name")
+				cellText += "="; // attach '=' to function args, but not to full names
 			namesArr.push(cellText);
 		}
+
 	}
 	return (namesArr);
 }
@@ -1252,27 +1301,83 @@ this.do = function(action) {
 	//scimoz.insertText(scimoz.currentPos, res.join(";" + ["\r\n", "\n", "\r"][scimoz.eOLMode]));
 }
 
-this.onEvent = function(event) {
-	if (event.type == "keypress") {
-		var keyCode = event.keyCode;
 
-		if (this.debug)
-			sv.cmdout.append("keyCode: " + keyCode);
+
+
+this.selectedItemsOrd = [];
+/*
+this.getClickedRow(event) {
+	var row = {}, column = {}, part = {};
+
+	var boxobject = _this.treeBox;
+	boxobject.QueryInterface(Components.interfaces.nsITreeBoxObject);
+	boxobject.getCellAt(event.clientX, event.clientY, row, column, part);
+
+	//if (typeof column.value != "string") column.value = column.value.id;
+	return row.value;
+	//document.getElementById("row").value = row.value;
+	//document.getElementById("column").value = column.value;
+	//document.getElementById("part").value = part.value;
+}
+*/
+
+//rObjectsTree
+
+this.onEvent = function(event) {
+	var selectedRows = _this.getSelectedRows();
+	var selectedItems = [];
+	for (var i = 0; i < selectedRows.length; i++)
+		selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
+	var curRowIdx = selectedRows.indexOf(_this.selection.currentIndex);
+
+
+
+	// this maintains array of selected items in order they were added to selection
+	var prevItems = _this.selectedItemsOrd;
+	var newItems = [];
+	for (var i = 0; i < prevItems.length; i++) {
+		var j = selectedItems.indexOf(prevItems[i]);
+		if (j != -1) // present in Prev, but not in Cur
+			newItems.push(prevItems[i])
+	}
+	for (var i = 0; i < selectedItems.length; i++) {
+		if (prevItems.indexOf(selectedItems[i]) == -1) { // present in Cur, but not in Prev
+			newItems.push(selectedItems[i]);
+		}
+	}
+	_this.selectedItemsOrd = newItems;
+
+	sv.debugMsg(newItems);
+
+	//sv.debugMsg(event.type)
+	//sv.debugMsg("keyCode: " + event.keyCode + "; charCode: " + event.charCode +
+					 //"; which: " + event.which + "; .ctrlKey: " + event.ctrlKey);
+
+	if (event.type == "keyup" || event.type == "keypress") {
+		var keyCode = event.keyCode;
+		if (typeof(keyCode) == "undefined")
+			keyCode = 0;
 
 		switch (keyCode) {
+			//case 38: // up
+			//case 40: // down
+			//	if (event.shiftKey) {
+			//		sv.debugMsg("Select: " + _this.visibleData[_this.selection.currentIndex].origItem.name);
+			//	}
+			//	return;
+
 			case 46: // Delete key
 				_this.removeSelected(event.shiftKey);
 				event.originalTarget.focus();
 				return;
 			case 45: //insert
-				sv.cmdout.append("Insert");
+				sv.debugMsg("Insert");
 				break;
-			case 0:
-				// Ctrt + A
-				if (event.ctrlKey && event.charCode == 97 || event.charCode == 65){
+			case 65: // Ctrt + A
+				if (event.ctrlKey){
 					_this.selection.selectAll();
-
 				}
+			case 0:
 				return;
 			case 93:
 				//windows context menu key
@@ -1289,8 +1394,8 @@ this.onEvent = function(event) {
 
 			// TODO: Escape key stops retrieval of r objects
 			default:
-				//sv.cmdout.append(String.fromCharCode(event.charCode));
-				//sv.cmdout.append("keyCode: " + keyCode);
+				//sv.debugMsg(String.fromCharCode(event.charCode));
+				//sv.debugMsg("keyCode: " + keyCode);
 				return;
 		}
 
@@ -1301,6 +1406,8 @@ this.onEvent = function(event) {
 		if (_this.selection && (_this.selection.currentIndex == -1
 			|| _this.isContainer(_this.selection.currentIndex)))
 			return;
+	} else if (event.type == "click") {
+		return;
 	}
 
 	// default action: insert selected names:
@@ -1356,7 +1463,7 @@ this.packageListKeyEvent = function(event) {
 
 			sv.r.evalCallback(
 				'tryCatch(detach("' + pkg + '"), error = function(e) cat("<error>"));', function(data) {
-				sv.cmdout.append(data);
+				sv.debugMsg(data);
 				if (data.trim() != "<error>") {
 					_removeObjectList(pkg);
 					listbox.removeChild(listItem);

@@ -215,7 +215,7 @@ sv.r.setwd = function (dir, ask, type) {
 			if (navigator.platform.search(/^Win/) == 0) {
 				curDir = curDir.replace(/\//g, '\\');
 			}
-			//sv.cmdout.append("curDir:"+curDir);
+			//sv.debugMsg("curDir:"+curDir);
 			sv.r.setwd(curDir, ask, "this");
 		});
 		return;

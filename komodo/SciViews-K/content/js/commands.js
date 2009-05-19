@@ -13,6 +13,8 @@ if (typeof(sv.command) == 'undefined') {
 // sv.cmd object constructor:
 (function() {
 
+var isRRunning = false;
+
 // private methods:
 function _RControl_supported() {
 	var currentView = ko.views.manager.currentView;
@@ -20,6 +22,12 @@ function _RControl_supported() {
 		return false;
 
 	return(currentView.document.language == "R");
+}
+
+
+function _isRRunning() {
+	//sv.cmdout.append("is R Running? " + isRRunning);
+	return isRRunning;
 }
 
 function _RControlSelection_supported() {
@@ -30,7 +38,6 @@ function _RControlSelection_supported() {
 	var anythingSelected = (currentView.scimoz.selectionEnd - currentView.scimoz.selectionStart) != 0;
 	return(currentView.document.language == "R" && anythingSelected);
 }
-
 
 // selects the checkbox on selected element, while deselecting others
 this.getRApp = function(event) {
@@ -51,7 +58,6 @@ this.getRApp = function(event) {
 
 }
 
-
 // Selects checkbox on the 'preferred R application' menu on its first display
 // and hides unsupported commands
 // It is triggered on popupshowing event, onload would be better,
@@ -60,22 +66,42 @@ this.setMenuRApp = function (el) {
 	  var selected = el.getAttribute('selected');
 	  var siblings =  el.childNodes;
 
+	  var isLinux = navigator.platform.toLowerCase().indexOf("linux") > -1;
+
+		// this will tell whether an app is present on the *nix system
+	  if (isLinux) {
+	    function whereis(app) {
+			var runSvc = Components.classes["@activestate.com/koRunService;1"]
+				.getService(Components.interfaces.koIRunService);
+			var err = {}, out = {};
+			var res = runSvc.RunAndCaptureOutput("whereis -b " + app, null, null, null, out, err);
+			var path = out.value.substr(app.length + 2);
+			if (!path) return false;
+			return out.value.substr(app.length + 2).split(" ");
+	    }
+	  }
+
 	  var validPlatforms, showItem;
 	  var platform = navigator.platform;
 	  for (var i = 0; i < siblings.length; i++) {
 			try {
-				  validPlatforms = siblings[i].getAttribute("platform").split(/\s*[,\s]\s*/);
-				  showItem = false;
-				  for (var j in validPlatforms) {
-						if (platform.indexOf(validPlatforms[j]) == 0) {
-							  showItem = true;
-							  break;
-				  }}
+			    validPlatforms = siblings[i].getAttribute("platform").split(/\s*[,\s]\s*/);
+			    showItem = false;
+			    for (var j in validPlatforms) {
+				if (platform.indexOf(validPlatforms[j]) == 0) {
+					// on linux, try to determine which terminals are not available
+					// and remove these items from menu
+				    if (!isLinux || whereis(siblings[i].getAttribute("app"))) {
+						showItem = true;
+						break;
+				    }
+				}
+			    }
 
 				  if  (!showItem) {
 						siblings[i].style.display = "none";
 				  } else {
-						siblings[i].setAttribute("checked",  siblings[i].id == selected);
+						siblings[i].setAttribute("checked", siblings[i].id == selected);
 				  }
 
 			} catch(e) {}
@@ -100,8 +126,69 @@ this.openPkgManager = function() {
 	  sv);
 }
 
+// this will observe status message notification. This is to get informed about
+// application being terminated. A more straightforward way would be to use runService.RunAndNotify
+// but, this woldn't allow to start app in a console window. So we have to do this trick here.
+
+
+function AppTerminateObserver(command) {
+	this.register(command);
+}
+
+
+AppTerminateObserver.prototype = {
+	command: "",
+	// this is launched when status message is set, we then check if it was about
+	// terminated application :
+	observe: function(subject, topic, data) {
+		var matches;
+
+		if ((subject.category == "run_command") &&
+			(matches = subject.msg.match(/^(['`"])(.+)\1 returned ([0-9]+).$/)) != null &&
+			matches[2] == this.command
+			) {
+			// seems like this is a 'R quit' msg
+			this.unregister();
+			// do something here... activate/deactivate commands, stuff like that...
+		}
+	},
+	register: function(command) {
+	  var observerSvc = Components.classes["@mozilla.org/observer-service;1"]
+		 .getService(Components.interfaces.nsIObserverService);
+	  this.command = command;
+	  observerSvc.addObserver(this, 'status_message', false);
+	  sv.debugMsg("R has been started with command: " + command);
+	  isRRunning = true;
+
+	  xtk.domutils.fireEvent(window, 'r_app_started_closed');
+	  window.updateCommands('r_app_started_closed');
+	},
+	unregister: function() {
+	  var observerSvc = Components.classes["@mozilla.org/observer-service;1"]
+		 .getService(Components.interfaces.nsIObserverService);
+	  observerSvc.removeObserver(this, 'status_message');
+
+	  //sv.cmdout.append("debug: R process observer successfully unregistered.");
+	  sv.debugMsg("R has been closed. Command was: " + this.command);
+
+	  isRRunning = false;
+	  xtk.domutils.fireEvent(window, 'r_app_started_closed');
+	  window.updateCommands('r_app_started_closed');
+	}
+}
+
+
 
 this.setControllers = function() {
+	//alert("this.setControllers");
+	// allow some commands only whan R is running...
+	// using this needs solving an issue of running R in some terminals on linux (mac?)
+    // that send terminate signal right after start.
+	//viewManager.prototype.is_cmd_svOpenPkgManager_enabled = _isRRunning;
+	//viewManager.prototype.is_cmd_svOpenPkgManager_supported = _isRRunning;
+	//viewManager.prototype.is_cmd_svBrowseWD_enabled = _isRRunning;
+	//viewManager.prototype.is_cmd_svBrowseWD_supported = _isRRunning;
+
 	// make these commands active only when current document language is R
 	var cmdNames = ["RunAll", "SourceAll", "RunBlock", "RunFunction", "RunLine", "RunPara",
 	 "SourceBlock", "SourceFunction", "SourcePara"];
@@ -155,9 +242,10 @@ this.setControllers = function() {
 				   "koAppFile=" + sv.io.makePath("CurProcD", ["komodo" + (isWin? ".exe" : "")])
 		   ];
 
-		var cwd = sv.io.makePath("ProfD", ["extensions", "sciviewsk@sciviews.org", "templates"]);
+		var cwd = sv.io.makePath("ProfD",
+					["extensions", "sciviewsk@sciviews.org", "templates"]);
 
-		var command, mode = "no-console";
+		var command, runIn = "no-console";
 
 		switch (preferredRApp) {
 			case "r-gui":
@@ -166,21 +254,26 @@ this.setControllers = function() {
 				  break;
 			case "r-xfce4-term":
 				  env.push("Rid=R-xfce4-term");
-				  command = "xfce4-terminal --title \"R\" -x R --quiet";
+				  command = "xfce4-terminal --title \"SciViews-R\" -x R --quiet";
 				  break;
 			case "r-gnome-term":
 				  env.push("Rid=R-gnome-term");
 				  command = "gnome-terminal --hide-menubar --title=SciViews-R -x R --quiet";
 				  break;
 			case "r-kde-term":
-				  env.push("Rid=R-kde-term");
-				  command = "konsole --nomenubar --notabbar --noframe -T SciViews-R -e R --quiet";
-				  break;
+				env.push("Rid=R-kde-term");
+				command = "konsole --nomenubar --notabbar --noframe -T SciViews-R -e R --quiet";
+				break;
 			case "r-tk":
 				  env.push("Rid=R-tk");
-				  env.push("DISPLAY=:0");
-				  command = "R --quiet --gui=Tk";
-				  mode = "new-console";
+				  // set DISPLAY only when not set:
+				  var XEnv = Components.classes["@activestate.com/koEnviron;1"]
+				    .createInstance(Components.interfaces.koIEnviron);
+				  if (!XEnv.has("DISPLAY"))
+				    env.push("DISPLAY=:0");
+				  delete XEnv;
+				  command = "R --quiet --save --gui=Tk";
+				  //runIn = "no-console";
 				  break;
 			case "r-app":
 				  env.push("Rid=R.app");
@@ -189,12 +282,24 @@ this.setControllers = function() {
 			default:
 				  env.push("Rid=R");
 				  command = "R --quiet";
-				  mode = "new-console";
+				  runIn = "new-console";
 
 		}
 
+		// debugging garbage...
+		//var command = "CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt";
+
+		//ko.run.runCommand(window,  "CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt", cwd, {});
+		//var runSvc = Components.classes["@activestate.com/koRunService;1"]
+			//.getService(Components.interfaces.koIRunService);
+		//var Rapp = runSvc.RunAndNotify(command, cwd, env.join("\n"), null);
+		//ko.run.runCommand(window, command, cwd, env.join("\n"), false,
+
 		ko.run.runCommand(window, command, cwd, env.join("\n"), false,
-						  false, false, mode, false, false, false);
+						  false, false, runIn, false, false, false);
+
+		// register observer of application termination.
+		this.rObserver = new AppTerminateObserver(command);
 	};
 }
 
