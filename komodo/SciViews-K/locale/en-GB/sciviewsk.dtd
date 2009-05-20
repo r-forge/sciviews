@@ -21,12 +21,14 @@
 <!ENTITY sciviews.robjects.refresh.tip "Refresh R objects">
 <!ENTITY sciviews.robjects.showHide "Search path">
 <!ENTITY sciviews.robjects.showHide.tip "Show/hide search path">
-<!ENTITY sciviews.robjects.filter.tip "Filter objects">
+<!ENTITY sciviews.robjects.filter.tip "Filter by regular expression">
 <!ENTITY sciviews.robjects.Name "Name">
 <!ENTITY sciviews.robjects.Dims "Dims">
 <!ENTITY sciviews.robjects.Group "Group">
 <!ENTITY sciviews.robjects.Class "Class">
 <!ENTITY sciviews.robjects.FullName "Full name">
+<!ENTITY sciviews.robjects.foldAll "Fold all objects of current branch">
+<!ENTITY sciviews.robjects.unfoldAll "Unfold all objects of current branch">
 
 <!ENTITY sciviews.robjects.insName "Insert name into text">
 <!ENTITY sciviews.robjects.insFullName "Insert full name into text">

@@ -220,9 +220,9 @@ sv.getTextRange = function(what, gotoend, select, range) {
 	case "block":
 		// Select all content between two bookmarks
 		var Mark1, Mark2;
-		Mark1 = ke.markerPrevious(curLine, -1);
+		Mark1 = ke.markerPrevious(curLine, 64);
 		if (Mark1 == -1)	Mark1 = 0;
-		Mark2 = ke.markerNext(curLine, -1);
+		Mark2 = ke.markerNext(curLine, 64);
 		if (Mark2 == -1)	Mark2 = ke.lineCount - 1;
 
 		pStart = ke.positionFromLine(Mark1);

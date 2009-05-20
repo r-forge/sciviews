@@ -1054,7 +1054,6 @@ this.refreshAll = function () {
 	sv.r.evalCallback(cmd, _parseObjectList);
 }
 
-
 //TODO: on package deletion -> remove it also from the search path
 this.removeSelected = function(doRemove) {
 	var item, type, name, vItem, cmd = [];
@@ -1161,7 +1160,9 @@ this.removeSelected = function(doRemove) {
 	return true;
 }
 
-this.getSelectedNames = function(fullNames) {
+this.getSelectedNames = function(fullNames, dblQuoteSubObjects) {
+	if (typeof dblQuoteSubObjects == 'undefined')
+		dblQuoteSubObjects = false;
 	var rows = this.getSelectedRows();
 	var namesArr = new Array();
 	var cellText, item;
@@ -1170,14 +1171,35 @@ this.getSelectedNames = function(fullNames) {
 	for (i in selectedItemsOrd) {
 		item = selectedItemsOrd[i];
 		cellText = item[name];
-		if (cellText != "") {
-			if (item.type == 'object' &&
-				cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
-				cellText = "`" + cellText + "`";
-			else if (item.type == "args" && name == "name")
-				cellText += "="; // attach '=' to function args, but not to full names
-			namesArr.push(cellText);
+
+		// optimize this later...
+		if (cellText) {
+			if (name == "name" || item.type == 'object') {
+				if (dblQuoteSubObjects && item.type == "sub-object") {
+					cellText = "\"" + cellText + "\"";
+				} else if (cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
+					cellText = "`" + cellText + "`";
+				if (item.type == "args" && name == "name")
+					cellText += "="; // attach '=' to function args, but not to full names
+			}
 		}
+
+		/*if (cellText && (name == "name" || item.type == 'object')) {
+			if (cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
+				cellText = "`" + cellText + "`";
+		}*/
+
+		namesArr.push(cellText);
+
+
+		//if (cellText != "") {
+		//	if (item.type == 'object' &&
+		//		cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
+		//		cellText = "`" + cellText + "`";
+		//	else if (item.type == "args" && name == "name")
+		//		cellText += "="; // attach '=' to function args, but not to full names
+		//	namesArr.push(cellText);
+		//}
 
 	}
 	return (namesArr);
@@ -1330,8 +1352,6 @@ this.onEvent = function(event) {
 		selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
 	var curRowIdx = selectedRows.indexOf(_this.selection.currentIndex);
 
-
-
 	// this maintains array of selected items in order they were added to selection
 	var prevItems = _this.selectedItemsOrd;
 	var newItems = [];
@@ -1346,8 +1366,6 @@ this.onEvent = function(event) {
 		}
 	}
 	_this.selectedItemsOrd = newItems;
-
-	sv.debugMsg(newItems);
 
 	//sv.debugMsg(event.type)
 	//sv.debugMsg("keyCode: " + event.keyCode + "; charCode: " + event.charCode +
@@ -1365,7 +1383,6 @@ this.onEvent = function(event) {
 			//		sv.debugMsg("Select: " + _this.visibleData[_this.selection.currentIndex].origItem.name);
 			//	}
 			//	return;
-
 			case 46: // Delete key
 				_this.removeSelected(event.shiftKey);
 				event.originalTarget.focus();
