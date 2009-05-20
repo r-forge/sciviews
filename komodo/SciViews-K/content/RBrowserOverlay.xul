@@ -163,7 +163,7 @@
            label="&sciviews.robjects.tab;"
            insertafter="project_tab,codebrowser_tab"
            tooltiptext="&sciviews.robjects.tip;"
-           onclick="rObjectsTree.getPackageList(false)"
+           onclick="rObjectsTree.getPackageList(false);"
            />
     </tabs>
     <tabpanels id="project_toolbox_tabpanels">
@@ -352,15 +352,17 @@
           id="sciviews_robjects_foldAll_button"
           label="Fold All"
           buttonstyle="pictures"
-	    class="robjects-fold-all-icon"
+		  class="robjects-fold-all-icon"
           oncommand="rObjectsTree.foldAll(true);"
+		  tooltiptext="&sciviews.robjects.foldAll;"
         />
         <toolbarbutton
           id="sciviews_robjects_ExpandAll_button"
           label="Expand All"
           buttonstyle="pictures"
-	    class="robjects-expand-all-icon"
+		  class="robjects-expand-all-icon"
           oncommand="rObjectsTree.foldAll(false);"
+		  tooltiptext="&sciviews.robjects.unfoldAll;"
         />
         <!--<toolbarbutton
           id="sciviews_robjects_tmpInitialize_button"
