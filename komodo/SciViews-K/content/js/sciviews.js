@@ -30,7 +30,7 @@
 // sv.prefs.askString(pref, defvalue): // Ask for the value of a preference
 //
 // OpenKore Command Output management ('sv.cmdout' namespace)
-// sv.cmdout.append(str, newline); // Append text to the Command Output pane
+// sv.cmdout.append(str, newline, scrollToStart); // Append text to the Command Output pane
 // sv.cmdout.clear(); // Clear the Command Output pane
 // sv.cmdout.message(msg, timeout); // // Display message on the Command Output pane's bar
 
@@ -561,7 +561,7 @@ sv.translate = function(textId) {
 if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 
 // Append text to the Command Output pane
-sv.cmdout.append = function(str, newline) {
+sv.cmdout.append = function(str, newline, scrollToStart) {
 	try {
 		var runout = ko.run.output;
 		// Make sure the command output window is visible
@@ -583,8 +583,13 @@ sv.cmdout.append = function(str, newline) {
 			scimoz.readOnly = false;
 			scimoz.appendText(str_byte_length, str);
 		} finally { scimoz.readOnly = ro; }
-		// Bring the new text into view
-		scimoz.gotoPos(prevLength + 1);
+
+		if (scrollToStart) {
+			// Bring the new text into view
+			scimoz.gotoPos(prevLength + 1);
+		} else {
+			scimoz.gotoLine(scimoz.lineCount);
+		}
 	} catch(e) { alert("Problems printing [" + str + "]:" + e + "\n"); }
 };
 
@@ -614,18 +619,12 @@ sv.cmdout.clear = function() {
 sv.cmdout.message = function(msg, timeout) {
 	document.getElementById('output_tabpanels').selectedIndex = 0;
 	var runoutputDesc = document.getElementById('runoutput-desc');
-	if (msg == null)
-		msg = "";
-
+	if (msg == null) msg = "";
 	runoutputDesc.style.color = "rgb(0, 0, 0)";
-
 	runoutputDesc.setAttribute("value", msg);
-
 	window.clearTimeout(runoutputDesc.timeout);
-
-	if (timeout > 0) {
-		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message()", timeout);
-	}
+	if (timeout > 0)
+		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message();", timeout);
 }
 
 sv.checkToolbox = function() {

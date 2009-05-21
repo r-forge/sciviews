@@ -207,7 +207,6 @@
 						accesskey="a"
 						class="menuitem-iconic r-data-attach"
 						oncommand="sv.r.loadWorkspace(null, true);" />
-
 			  <menuitem id="r_objects_pkg_install"
 						label="Install..."
 						accesskey="i"
@@ -277,11 +276,11 @@
 		  flex="1"
           >
           <listbox flex="1" id="sciviews_robjects_searchpath_listbox"
-	    ondragdrop="nsDragAndDrop.drop(event,window.rObjectsTree.packageListObserver);"
-	    ondragover="nsDragAndDrop.dragOver(event,rObjectsTree.packageListObserver);"
-	    onkeypress="rObjectsTree.packageListKeyEvent(event);"
-	    oncommand="rObjectsTree.packageSelectedEvent(event);"
-	    />
+			ondragdrop="nsDragAndDrop.drop(event, window.rObjectsTree.packageListObserver);"
+			ondragover="nsDragAndDrop.dragOver(event, rObjectsTree.packageListObserver);"
+			onkeypress="rObjectsTree.packageListKeyEvent(event);"
+			oncommand="rObjectsTree.packageSelectedEvent(event);"
+			/>
         </vbox>
         <splitter
           id="sciviews_robjects_splitter"
@@ -298,7 +297,8 @@
               persist="sortDirection sortResource"
               sortDirection="ascending" sortResource="r-name"
 			  enableColumnDrag="true"
-			  onkeyup = "rObjectsTree.onEvent(event);"
+			  onselect="rObjectsTree.onEvent(event);"
+			  onkeypress="rObjectsTree.onEvent(event);"
               >
             <treecols>
               <treecol

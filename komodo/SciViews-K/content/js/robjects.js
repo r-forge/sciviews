@@ -589,24 +589,26 @@ function _getVItem(obj, index, level, first, last, parentIndex, parentUid) {
 
 
 this.sort =  function(column) {
-	var columnName;
-	var tree = document.getElementById("sciviews_robjects_objects_tree");
-	var sortDirection = tree.getAttribute("sortDirection");
-	var order = sortDirection == "ascending" ? 1 : (sortDirection == "descending" ? -1 : 0);
-	if (++order > 1) order = -1;
+	var columnName, currentElement, tree, sortDirection, realOrder, order, sortDirs;
+	tree = document.getElementById("sciviews_robjects_objects_tree");
+	sortDirection = tree.getAttribute("sortDirection");
+
+	sortDirs = ["descending", "natural", "ascending", "descending"];
+	realOrder = sortDirs.indexOf(sortDirection) - 1;
 
 	try {
-		var currentElement = this.visibleData[this.selection.currentIndex].origItem;
+		currentElement = this.visibleData[this.selection.currentIndex].origItem;
 	} catch (e) {
-		var currentElement = null;
+		currentElement = null;
 	}
 
 	//if the column is passed and it's already sorted by that column, reverse sort
 	if (column) {
 		columnName = column.id;
-		if (tree.getAttribute("sortResource") == columnName) {
-			order *= -1;
-		}
+		if (tree.getAttribute("sortResource") == columnName)
+			realOrder = ((realOrder + 2) % 3) - 1;
+		else
+			realOrder = 1;
 	} else {
 		columnName = tree.getAttribute("sortResource");
 	}
@@ -618,13 +620,12 @@ this.sort =  function(column) {
 	if (typeof(sCol) == "undefined")
 		sCol = 0;
 
-	if (typeof(order) == "undefined")
-		order = 1;
-
 	// sort using original element order:
-	if (order == 0) {
+	if (realOrder == 0) {
 		sCol = 4;
 		order = 1;
+	} else {
+		order = realOrder;
 	}
 
 	function _sortCompare(a, b) {
@@ -654,20 +655,10 @@ this.sort =  function(column) {
 		}
 	}
 
-	switch(sortDirection){
-		case "descending":
-			sortDirection = "";
-			break;
-		case "ascending":
-			sortDirection = "descending";
-			break;
-		default:
-			sortDirection = "ascending"
-	}
+	sortDirection = sortDirs[realOrder + 1];
+
 	//setting these will make the sort option persist
 	tree.setAttribute("sortDirection", sortDirection);
-	//tree.setAttribute("sortDirection", order == 1 ? "ascending" : "descending");
-
 	tree.setAttribute("sortResource", columnName);
 
 	var cols = tree.getElementsByTagName("treecol");
@@ -675,7 +666,6 @@ this.sort =  function(column) {
 		cols[i].removeAttribute("sortDirection");
 	}
 
-	//document.getElementById(columnName).setAttribute("sortDirection", order == 1 ? "ascending" : "descending");
 	document.getElementById(columnName).setAttribute("sortDirection", sortDirection);
 
 	// sort packages always by name:
@@ -930,6 +920,7 @@ this.getSelectedRows =  function() {
 // Drag'n'drop support
 this.listObserver = {
 	onDragStart: function (event, transferData, action) {
+		_this.onEvent(event);
 		var namesArr = _this.getSelectedNames(event.ctrlKey);
 		transferData.data = new TransferData();
 		transferData.data.addDataForFlavour("text/unicode", namesArr.join(', '));
@@ -1045,7 +1036,6 @@ this.refreshAll = function () {
 	if (selectedPackages.length == 0)
 		selectedPackages.push('.GlobalEnv');
 
-	// for use with modified objList
 	var cmd = 'invisible(sapply(c("' + selectedPackages.join('","')	+ '"), function(x) '
 		+ 'print(objList(envir = x, all.info = FALSE, compare = FALSE), sep = "' + sep + '", raw.output = TRUE, header = TRUE)))';
 
@@ -1160,9 +1150,9 @@ this.removeSelected = function(doRemove) {
 	return true;
 }
 
-this.getSelectedNames = function(fullNames, dblQuoteSubObjects) {
-	if (typeof dblQuoteSubObjects == 'undefined')
-		dblQuoteSubObjects = false;
+this.getSelectedNames = function(fullNames, extended) {
+	if (typeof extended == 'undefined')
+		extended = false;
 	var rows = this.getSelectedRows();
 	var namesArr = new Array();
 	var cellText, item;
@@ -1172,47 +1162,42 @@ this.getSelectedNames = function(fullNames, dblQuoteSubObjects) {
 		item = selectedItemsOrd[i];
 		cellText = item[name];
 
-		// optimize this later...
 		if (cellText) {
-			if (name == "name" || item.type == 'object') {
-				if (dblQuoteSubObjects && item.type == "sub-object") {
-					cellText = "\"" + cellText + "\"";
-				} else if (cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
-					cellText = "`" + cellText + "`";
-				if (item.type == "args" && name == "name")
-					cellText += "="; // attach '=' to function args, but not to full names
+			if ((!fullNames || item.type == "object")
+				&& cellText.search(/^[a-z\.][\w\._]*$/i) == -1) {
+				cellText = "`" + cellText + "`";
+			}
+			if (!fullNames && extended) {
+				if (item.type == "sub-object")
+					cellText = '"' + cellText + '"';
+				else if (item.group == "function")
+					cellText += "()";
+				else if (item.type == "args")
+					cellText += "="; // attach '=' to function args
 			}
 		}
-
-		/*if (cellText && (name == "name" || item.type == 'object')) {
-			if (cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
-				cellText = "`" + cellText + "`";
-		}*/
-
 		namesArr.push(cellText);
-
-
-		//if (cellText != "") {
-		//	if (item.type == 'object' &&
-		//		cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
-		//		cellText = "`" + cellText + "`";
-		//	else if (item.type == "args" && name == "name")
-		//		cellText += "="; // attach '=' to function args, but not to full names
-		//	namesArr.push(cellText);
-		//}
-
 	}
 	return (namesArr);
 }
 
-this.insertName = function(fullNames) {
+this.insertName = function(fullNames, extended) {
 	var view = ko.views.manager.currentView;
 	if (!view)
 		return;
-	var namesArr = _this.getSelectedNames(fullNames);
-	view.setFocus();
+	var text = _this.getSelectedNames(fullNames, extended).join(', ');
+	//view.setFocus();
 	var scimoz = view.scimoz;
-	scimoz.insertText(scimoz.currentPos, namesArr.join(', '));
+	var length = scimoz.length;
+
+	if (scimoz.getWCharAt(scimoz.selectionStart - 1).search(/^[\w\.\u0100-\uFFFF"'`,\.;:=]$/) != -1)
+		text = " " + text;
+	if (scimoz.getWCharAt(scimoz.selectionEnd).search(/^[\w\.\u0100-\uFFFF"'`]$/) != -1)
+		text += " ";
+
+	scimoz.insertText(scimoz.currentPos, text);
+	scimoz.currentPos += scimoz.length - length;
+	scimoz.charRight();
 }
 
 
@@ -1324,119 +1309,97 @@ this.do = function(action) {
 }
 
 
-
-
 this.selectedItemsOrd = [];
-/*
-this.getClickedRow(event) {
-	var row = {}, column = {}, part = {};
-
-	var boxobject = _this.treeBox;
-	boxobject.QueryInterface(Components.interfaces.nsITreeBoxObject);
-	boxobject.getCellAt(event.clientX, event.clientY, row, column, part);
-
-	//if (typeof column.value != "string") column.value = column.value.id;
-	return row.value;
-	//document.getElementById("row").value = row.value;
-	//document.getElementById("column").value = column.value;
-	//document.getElementById("part").value = part.value;
-}
-*/
-
-//rObjectsTree
 
 this.onEvent = function(event) {
-	var selectedRows = _this.getSelectedRows();
-	var selectedItems = [];
-	for (var i = 0; i < selectedRows.length; i++)
-		selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
-	var curRowIdx = selectedRows.indexOf(_this.selection.currentIndex);
+	switch (event.type) {
+		case "select":
+			var selectedRows = _this.getSelectedRows();
+			var selectedItems = [];
+			for (var i = 0; i < selectedRows.length; i++)
+				selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
+			var curRowIdx = selectedRows.indexOf(_this.selection.currentIndex);
 
-	// this maintains array of selected items in order they were added to selection
-	var prevItems = _this.selectedItemsOrd;
-	var newItems = [];
-	for (var i = 0; i < prevItems.length; i++) {
-		var j = selectedItems.indexOf(prevItems[i]);
-		if (j != -1) // present in Prev, but not in Cur
-			newItems.push(prevItems[i])
-	}
-	for (var i = 0; i < selectedItems.length; i++) {
-		if (prevItems.indexOf(selectedItems[i]) == -1) { // present in Cur, but not in Prev
-			newItems.push(selectedItems[i]);
-		}
-	}
-	_this.selectedItemsOrd = newItems;
-
-	//sv.debugMsg(event.type)
-	//sv.debugMsg("keyCode: " + event.keyCode + "; charCode: " + event.charCode +
-					 //"; which: " + event.which + "; .ctrlKey: " + event.ctrlKey);
-
-	if (event.type == "keyup" || event.type == "keypress") {
-		var keyCode = event.keyCode;
-		if (typeof(keyCode) == "undefined")
-			keyCode = 0;
-
-		switch (keyCode) {
-			//case 38: // up
-			//case 40: // down
-			//	if (event.shiftKey) {
-			//		sv.debugMsg("Select: " + _this.visibleData[_this.selection.currentIndex].origItem.name);
-			//	}
-			//	return;
-			case 46: // Delete key
-				_this.removeSelected(event.shiftKey);
-				event.originalTarget.focus();
-				return;
-			case 45: //insert
-				sv.debugMsg("Insert");
-				break;
-			case 65: // Ctrt + A
-				if (event.ctrlKey){
-					_this.selection.selectAll();
+			// this maintains array of selected items in order they were added to selection
+			var prevItems = _this.selectedItemsOrd;
+			var newItems = [];
+			for (var i = 0; i < prevItems.length; i++) {
+				var j = selectedItems.indexOf(prevItems[i]);
+				if (j != -1) // present in Prev, but not in Cur
+					newItems.push(prevItems[i])
+			}
+			for (var i = 0; i < selectedItems.length; i++) {
+				if (prevItems.indexOf(selectedItems[i]) == -1) { // present in Cur, but not in Prev
+					newItems.push(selectedItems[i]);
 				}
-			case 0:
-				return;
-			case 93:
-				//windows context menu key
-				var contextMenu =  document.getElementById("rObjectsContext");
-				//event.initMouseEvent()
-
-				_this.treeBox.ensureRowIsVisible(_this.selection.currentIndex);
-
-				var y = ((2 + _this.selection.currentIndex - _this.treeBox.getFirstVisibleRow())
-					* _this.treeBox.rowHeight)	+ _this.treeBox.y;
-				var x = _this.treeBox.x;
-
-				contextMenu.openPopup(null, "after_pointer", x, y, true);
-
-			// TODO: Escape key stops retrieval of r objects
-			default:
-				//sv.debugMsg(String.fromCharCode(event.charCode));
-				//sv.debugMsg("keyCode: " + keyCode);
-				return;
-		}
-
-	} else if (event.type == "dblclick") {
-		if (event.button != 0)
+			}
+			_this.selectedItemsOrd = newItems;
 			return;
+		case "keyup":
+		case "keypress":
+			var key = event.keyCode? event.keyCode : event.charCode;
+			switch (key) {
+				//case 38: // up
+				//case 40: // down
+				//	if (event.shiftKey) {
+				//		sv.debugMsg("Select: " + _this.visibleData[_this.selection.currentIndex].origItem.name);
+				//	}
+				//	return;
+				case 46: // Delete key
+					_this.removeSelected(event.shiftKey);
+					event.originalTarget.focus();
+					return;
+				case 45: //insert
+				case 32: //space
+					sv.debugMsg("Insert");
+					break;
+				case 65: // Ctrt + A
+					if (event.ctrlKey){
+						_this.selection.selectAll();
+					}
+				case 0:
+					return;
+				case 93:
+					//windows context menu key
+					var contextMenu = document.getElementById("rObjectsContext");
+					_this.treeBox.ensureRowIsVisible(_this.selection.currentIndex);
+					var y = ((2 + _this.selection.currentIndex - _this.treeBox.getFirstVisibleRow())
+						* _this.treeBox.rowHeight)	+ _this.treeBox.y;
+					var x = _this.treeBox.x;
+					contextMenu.openPopup(null, "after_pointer", x, y, true);
 
-		if (_this.selection && (_this.selection.currentIndex == -1
-			|| _this.isContainer(_this.selection.currentIndex)))
+				// TODO: Escape key stops retrieval of r objects
+				default:
+					return;
+			}
+			break;
+		case "dblclick":
+			if (event.button != 0)	return;
+			if (_this.selection && (_this.selection.currentIndex == -1
+				|| _this.isContainer(_this.selection.currentIndex)))
+				return;
+			break;
+		case "click":
+		case "draggesture":
 			return;
-	} else if (event.type == "click") {
-		return;
+		default:
 	}
-
+	sv.debugMsg("event.type = " + event.type);
 	// default action: insert selected names:
-	_this.insertName(event.ctrlKey);
+	_this.insertName(event.ctrlKey, event.shiftKey);
+
+	// this does not have any effect:
+	//document.getElementById("sciviews_robjects_objects_tree").focus();
 	event.originalTarget.focus();
 }
+//fsplitbodymass.mosdyday
+
 
 // drag & drop handling for search paths list
 this.packageListObserver = {
 	onDrop : function (event, transferData, session) {
 		var data = transferData;
-		alert(transferData.flavour.contentType);
+		sv.debugMsg("dropped object was " + transferData.flavour.contentType);
 		var path;
 		if (transferData.flavour.contentType == "application/x-moz-file") {
 			path = transferData.data.path;
@@ -1455,8 +1418,8 @@ this.packageListObserver = {
 	},
 
 	onDragOver : function(event, flavour, session) {
-		sv.cmdout.append(flavour.contentType);
-		session.canDrop = flavour.contentType == 'text/unicode'	|| flavour.contentType == 'application/x-moz-file';
+		session.canDrop = flavour.contentType == 'text/unicode'
+						   || flavour.contentType == 'application/x-moz-file';
 	},
 
 	getSupportedFlavours : function () {
@@ -1499,24 +1462,3 @@ this.packageListKeyEvent = function(event) {
 
 } ).apply(rObjectsTree);
 
-//ondragover="nsDragAndDrop.dragOver(event,rObjectsTree.packageListObserver);"
-//ondragenter="nsDragAndDrop.dragEnter(event,rObjectsTree.packageListObserver);"
-
-
-/*
-how to get the clicked cell in treeBox:
-
-  var row = {}, column = {}, part = {};
-  var tree = document.getElementById("thetree");
-
-  var boxobject = tree.boxObject;
-  boxobject.QueryInterface(Components.interfaces.nsITreeBoxObject);
-  boxobject.getCellAt(event.clientX, event.clientY, row, column, part);
-
-  if (typeof column.value != "string") column.value = column.value.id;
-
-  document.getElementById("row").value = row.value;
-  document.getElementById("column").value = column.value;
-  document.getElementById("part").value = part.value;
-
-*/
