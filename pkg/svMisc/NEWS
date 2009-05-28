@@ -1,5 +1,10 @@
 = svMisc News
 
+== Changes in svMisc 0.9-48
+
+* Parse() does not detect incomplete R code any more, fixed (PhG)
+
+
 == Changes in svMisc 0.9-47
 
 * objList(), print.objectList() and write.objList() reworked (PhG)

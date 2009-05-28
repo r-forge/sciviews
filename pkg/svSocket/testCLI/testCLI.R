@@ -39,7 +39,7 @@ for (i in 1:length(cmd)) {
     cat(cmd[i], "\n", sep = "", file = out)
     if (cmd0 == "") cmd0 <- cmd[i] else
         cmd0 <- paste(cmd0, cmd[i], sep = "<<<n>>>")
-    res <- processSocket(cmd0)
+    res <- processSocket(cmd0, "", "")
     if (res != "+ ") cmd0 <- "" # Not a multipline command
     cat(res, file = out)
 }
