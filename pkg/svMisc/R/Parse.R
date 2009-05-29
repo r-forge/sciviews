@@ -12,8 +12,14 @@ function (text)
     # Determine if this code is correctly parsed
 	if (inherits(expr, "try-error")) {
 		# Determine if it is incorrect code, or incomplete line!
-		toSearch <- paste(": ", length(strsplit(text, "\n")[[1]]) +
-            1, ":0:", sep = "")
+		# Code is different before and after R 2.9.0
+		if (compareRVersion("2.9.0") < 0) {
+			toSearch <- paste("\n", length(strsplit(text, "\n")[[1]]) +
+			    1, ":", sep = "")
+		} else {
+			toSearch <- paste(": ", length(strsplit(text, "\n")[[1]]) +
+			    1, ":0:", sep = "")
+		}
         if (length(grep(toSearch, expr)) == 1) return(NA) else return(expr)
     }
     # There is still a case of incomplete code not catch: incomplete strings

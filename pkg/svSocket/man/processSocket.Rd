@@ -82,7 +82,7 @@ processSocket(msg, socket, serverport, ...)
 repl <- function ()
 {
 	pars <- parSocket("repl", "", bare = FALSE)  # Parameterize the loop
-	cat("Enter R code, hit <ESC> to exit\n> ")   # First prompt
+	cat("Enter R code, hit <CTRL-C> or <ESC> to exit\n> ")   # First prompt
 	repeat {
 		entry <- readLines(n = 1) 				 # Read a line of entry
 		if (entry == "") entry <- "<<<esc>>>"    # Exit from multiline mode
