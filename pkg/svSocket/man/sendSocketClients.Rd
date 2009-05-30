@@ -20,6 +20,7 @@ sendSocketClients(text, sockets = "all", serverport = 8888)
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
 
-\seealso{ \code{\link{closeSocketClients}}, \code{\link{processSocket}} }
+\seealso{ \code{\link{closeSocketClients}}, \code{\link{processSocket}},
+  \code{\link{sendSocketServer}} }
 
 \keyword{ IO }

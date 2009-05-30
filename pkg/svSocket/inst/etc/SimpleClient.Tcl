@@ -10,7 +10,7 @@ set rsHost "localhost"	;# localhost only (take care of security otherwise!)
 set rsPort 8888		;# port is arbitrarily fixed at 8888 for the R server
 
 # Read data from a channel (the R socket server) and put it into stdout
-# this implements receiving and handling (viewing) a server reply 
+# this implements receiving and handling (viewing) a server reply
 proc read_sock {sock} {
   if {[eof $sock] == 1 || [catch {gets $sock l}] || $l == "\f"} {
     fileevent $sock readable {}
@@ -19,7 +19,7 @@ proc read_sock {sock} {
     global eventLoop
     set eventLoop "done"
   } else {
-    foreach {out in} [split $l "\n"] {  	  
+    foreach {out in} [split $l "\n"] {
       if {$out == "> " || $out == "+ "} {
         puts -nonewline stdout $out
         flush stdout
@@ -48,7 +48,7 @@ proc read_stdin {wsock} {
 
 # Open the connection to the R socket server...
 # this is a synchronous connection:
-# The command does not return until the server responds to the 
+# The command does not return until the server responds to the
 # connection request
 set rsSock [socket $rsHost $rsPort]
 
@@ -78,11 +78,10 @@ if {[eof $rsSock] == 1} {
 	puts "Connected to R socket server"
 	puts "...what you type should be send to R."
         puts "Paste only one line of code at a time."
-	puts "   hit ctlr-c to close the connection."
+	puts "   hit <CTRL-C> to close the connection."
 
 	# wait for and handle either socket or stdin events...
 	vwait eventLoop
 
 	puts "\nConnection with R is closed!"
 }
-
