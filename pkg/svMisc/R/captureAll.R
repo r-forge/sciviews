@@ -109,8 +109,8 @@ function (expr)
 					cat(msg)
 
 				}
-			},
-			interrupt = function (i) cat(.gettext("<INTERRUPTED!>\n"))
+			}
+			, interrupt = function (i) cat(.gettext("<INTERRUPTED!>\n"))
 			# this is modified code from base::try
 			, error = function(e) {
 				call <- conditionCall(e)
@@ -124,11 +124,11 @@ function (expr)
 					call <- NULL
 				if (!is.null(call)) {
 					dcall <- deparse(call)[1]
-					prefix <- paste(.gettext("Error in"), dcall, ": ")
+					prefix <- paste(.gettext("Error in "), dcall, ": ")
 					sm <- strsplit(msg, "\n")[[1]]
 					if (nchar(dcall, type="w") + nchar(sm[1], type="w") > 61) # to match value in errors.c
 						prefix <- paste(prefix, "\n  ", sep = "")
-				} else prefix <- .gettext("Error : ")
+				} else prefix <- .gettext("Error: ")
 
 				msg <- paste(prefix, msg, "\n", sep="")
 				## Store the error message for legacy uses of try() with
@@ -137,6 +137,10 @@ function (expr)
 				if (identical(getOption("show.error.messages"), TRUE)) {
 					cat(msg)
 				}
+			}
+			, message = function(e) {
+				signalCondition(e)
+				cat(conditionMessage(e))
 			}
 		), silent = TRUE)
 		# Possibly add 'last.warning' as attribute to res
@@ -171,24 +175,9 @@ function (expr)
 		return(invisible(n.warn))
 	}
 
-
 	for (i in 1:length(expr)) {
 		tmp <- evalVis(expr[[i]])
 		if (inherits(tmp, "try-error")) {
-
-	# This is not necessary any more, since errors are printed by error handler:
-	#{{
-	#
-	#   		# Rework the error message if occurring in calling env
-	#		mess <- unclass(tmp)
-	#		# if (regexpr("eval\\.with\\.vis[(]Expr, myEvalEnv\\.\\., baseenv[(][)][)]", # strange regexp?
-	#		# this is simplier
-	#		if (regexpr(callFromEvalEnv, mess, fixed = TRUE) > 0)
-	#			mess <- sub("^[^:]+: *(\n *\t*| *\t*)", .gettext("Error: "), mess)
-	#		cat(mess)
-	#}}
-
-
 			last.warning <- attr(tmp, "last.warning")
 			if (!is.null(last.warning)) {
 				cat(.gettext("In addition: "))
