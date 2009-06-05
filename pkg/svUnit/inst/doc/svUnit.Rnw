@@ -1,4 +1,4 @@
-%% LyX 1.5.6 created this file.  For more info, see http://www.lyx.org/.
+%% LyX 1.6.3 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 \documentclass[a4paper,english]{article}
 \usepackage{lmodern}
@@ -6,11 +6,37 @@
 \renewcommand{\ttdefault}{lmtt}
 \usepackage[T1]{fontenc}
 \usepackage[latin9]{inputenc}
+\usepackage{color}
+\usepackage{babel}
+
 \usepackage{framed}
 \usepackage{url}
 \usepackage{graphicx}
+\definecolor{shadecolor}{rgb}{0.7,0.7,0.7}
+\usepackage[unicode=true, pdfusetitle,
+ bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+ breaklinks=true,pdfborder={0 0 1},backref=false,colorlinks=true]
+ {hyperref}
 
 \makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+
+\providecommand{\proglang}[1]{\textsf{#1}}
+
+\providecommand{\file}[1]{`\textsf{#1}'}
+
+\providecommand{\command}[1]{\texttt{#1}}
+
+\providecommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
+
+\providecommand{\code}[1]{\texttt{#1}}
+
+\providecommand{\var}[1]{{\normalfont\textsl{#1}}}
+
+\providecommand{\kbd}[1]{\textsf{\textsc{#1}}}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
 \newenvironment{lyxSchunk}{}{}
 \newenvironment{lyxlist}[1]
@@ -21,7 +47,7 @@
  \renewcommand{\makelabel}[1]{##1\hfil}}}
 {\end{list}}
 \newenvironment{lyxcode}
-{\begin{list}{}{
+{\par\begin{list}{}{
 \setlength{\rightmargin}{\leftmargin}
 \setlength{\listparindent}{0pt}% needed for AMS classes
 \raggedright
@@ -30,20 +56,11 @@
 \normalfont\ttfamily}%
  \item[]}
 {\end{list}}
-\providecommand{\proglang}[1]{\textsf{#1}}
-\providecommand{\code}[1]{\texttt{#1}}
-\providecommand{\command}[1]{\texttt{#1}}
-\providecommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
-\providecommand{\var}[1]{{\normalfont\textsl{#1}}}
-\providecommand{\kbd}[1]{\textsf{\textsc{#1}}}
-\providecommand{\file}[1]{`\textsf{#1}'}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 % \VignetteIndexEntry{svUnit - A framework for unit testing in R}
 
 \makeatother
-
-\usepackage{babel}
 
 \begin{document}
 
@@ -71,7 +88,6 @@ are run during the checking of a package (\command{R CMD check <Pkg>}).
 However, the \proglang{R} approach lacks a certain number of features
 to allow optimal use of unit tests as in extreme programming (test
 first \textendash{} code second): 
-
 \begin{itemize}
 \item Tests are related to package compilation and cannot easily be run
 independently (for instance, for functions developed separately).
@@ -94,12 +110,12 @@ of analyses.
 
 \subsection{Unit testing in R without svUnit}
 
-Besides the \char`\"{}regular\char`\"{} testing mechanism of \proglang{R}
-packages, one can find the \pkg{RUnit} package on CRAN (\url{http://cran.r-project.org}).
-Another package used to provide test unit, \pkg{butler}, but it is
-not maintained any more and seems to have given up in favor of \pkg{RUnit}.
-\pkg{RUnit} implements the following features: 
-
+Besides the \textquotedbl{}regular\textquotedbl{} testing mechanism
+of \proglang{R} packages, one can find the \pkg{RUnit} package on
+CRAN (\url{http://cran.r-project.org}). Another package used to provide
+test unit, \pkg{butler}, but it is not maintained any more and seems
+to have given up in favor of \pkg{RUnit}. \pkg{RUnit} implements
+the following features: 
 \begin{itemize}
 \item \textbf{Assertions} for tests (\code{checkEquals()}, \code{checkEqualsNumeric()},
 \code{checkIdentical()} and \code{checkTrue()}) and negative tests
@@ -141,7 +157,7 @@ suggests that the authors of \pkg{RUnit} mainly target batch execution
 of the tests (for instance, nightly check of code in a server), rather
 that real-time interaction with the tests.
 
-There is also no integration with the \char`\"{}regular\char`\"{}
+There is also no integration with the \textquotedbl{}regular\textquotedbl{}
 \command{R CMD check} mechanism of \proglang{R} in \pkg{RUnit}.
 There is an embryo of organization of these tests units to make them
 compatible with the \command{R CMD check} mechanism of \proglang{R}
@@ -201,7 +217,6 @@ and the various ways you can use it to test your \proglang{R} code.
 The \pkg{svUnit} package is not available on CRAN (\url{http://cran.r-project.org})
 yet, but it is available from R-Forge (\url{http://r-forge.r-project.org}).
 You can download it from \proglang{R} by:
-
 \begin{lyxSchunk}
 <<eval = FALSE>>=
 
@@ -216,7 +231,6 @@ at \url{http://www.sciviews.org/SciViews-K}.
 
 Once the svUnit package is installed, you can check it is working
 well with the following example code:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -245,12 +259,10 @@ clearLog()
 @
 \end{lyxSchunk}
 %
-\begin{framed}
+\begin{framed}%
 Although test unit code is compatible with both \pkg{svUnit} and
 \pkg{RUnit}, do not load both packages in \proglang{R} memory at
-the same time, or you will badly mix incompatible code between them!
-\end{framed}
-
+the same time, or you will badly mix incompatible code between them!\end{framed}
 
 
 \section{Overview of svUnit}
@@ -266,7 +278,6 @@ or even, datasets. %
 }. Of course, you can also define batteries of tests that are independent
 of any \proglang{R} object, or that check several of them together
 (integration tests). Here is a couple of examples:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -327,7 +338,6 @@ accessible by \code{Log()}, and a summary of its containt is displayed
 using \code{summary(Log())}. So, to run test for your \code{Square()}
 function as well as your \code{test\_Integrate} integration test,
 you simply do the following:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -350,12 +360,12 @@ also that the function \code{checkException()} is designed to explicitly
 test code that should stop() in R. So, if that test does not raises
 an exception, it is considered to have failed. This is useful to check
 that your functions correctly trap wrong arguments, for instance,
-like in \code{checkException(Square(\char`\"{}xx\char`\"{}))} here
-above (a character string is provided where a numerical value is expected).
+like in \code{checkException(Square(\textquotedbl{}xx\textquotedbl{}))}
+here above (a character string is provided where a numerical value
+is expected).
 
 Now, let's look what happen if we test the \code{Cube()} function
 without clearing the logger:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -366,7 +376,6 @@ Log()
 @
 \end{lyxSchunk}
 We note two things:
-
 \begin{enumerate}
 \item The results of the tests on \code{Cube()} are added to the previous
 report. So, it is possible to build rather easily reports that summarize
@@ -386,7 +395,6 @@ failures.
 The most basic item is an \textbf{assertion} represented by a \code{checkxxx()}
 function in \pkg{svUnit}/\pkg{RUnit}. Five such functions are currently
 defined:
-
 \begin{lyxlist}{00.00.0000}
 \item [{\code{checkEquals(current, target)}}] determines if data in \var{target}
 is the same as data in \var{current}.
@@ -424,7 +432,6 @@ called \code{.Log} and located in the user\textquoteright{}s workspace.
 So, executing a series of assertions and getting a report is simply
 done as (in its simplest form, you can use the checkxxx() functions
 directly at the command line):
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -478,13 +485,13 @@ can access wiki pages on the command line).
 \includegraphics{svUnit_wikiReport}
 
 \caption{\label{fig:wikireport}a svUnit test report as it appears when inserted
-in a wiki page (DokuWiki engine with the \code{creole} plugin installed).
-Note the summary of results at the top lef of the page, and the clickable
-table of contents with exhaustive and detailed entries to easily navigate
-to the test results you want to consult). Timing of the test is also
-clearly indicated, since it is a complementary but important information
-(if a test succeeds, but calculation is way too long, it is good to
-know it)!}
+in a wiki page (DokuWiki engine with the \protect\code{creole} plugin
+installed). Note the summary of results at the top lef of the page,
+and the clickable table of contents with exhaustive and detailed entries
+to easily navigate to the test results you want to consult). Timing
+of the test is also clearly indicated, since it is a complementary
+but important information (if a test succeeds, but calculation is
+way too long, it is good to know it)!}
 
 \end{figure}
 
@@ -497,7 +504,6 @@ know it)!}
 \pkg{svUnit} provides a series of methods and tools to manipulate
 the log file from the command line, in particular, \code{stats()},
 \code{summary()}, \code{metadata()}, \code{ls()}:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -537,7 +543,6 @@ from \var{data.frame}, and it can be easily accessed through the
 \code{\$} operator. There are, of course similar methods defined
 for those \var{svTestData} objects, like \code{print()}, \code{summary()},
 and \code{stats()}:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -557,7 +562,6 @@ As the logger inherits from \var{environment}, you can manage individual
 test data the same way as objects in any other environment. For instance,
 if you want to delete a particular test data without touching to the
 rest, you can use:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -585,7 +589,6 @@ whose name must start with \var{test}. It typically contains a series
 of assertions applied to one object, method, or function to be checked
 (this is not obligatory, assertions are not restricted to one object,
 but good practices strongly suggest it). Here is an example:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -615,7 +618,6 @@ in \pkg{RUnit}, it must be located in a unit test). In \pkg{svUnit}
 (not \pkg{RUnit}), you run this test simply by using \code{runTest()},
 which returns the results invisibly (and you are supposed to access
 results from the logger):
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -633,7 +635,6 @@ function to the object to be tested. Hence, the test cases and the
 tested object conveniently form a single entity that one can manipulate,
 copy, save, reload, etc. with all the usual tools in \proglang{R}.
 This association is simply made using \code{test(myobj) <-}:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -660,7 +661,6 @@ is.test(Square) # Does this object contain tests?
 @
 \end{lyxSchunk}
 One can retrieve the test associated with the object by using:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -670,7 +670,6 @@ test(Square)
 \end{lyxSchunk}
 And of course, running the test associated with an object is as easy
 as:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -706,12 +705,11 @@ A test unit a a sourceable text file that contains one or more test
 functions, plus possibly \code{.setUp()} and \code{.tearDown()}
 functions (see the online help for further information on these special
 functions). In \pkg{RUnit}, you must write such test unit files from
-scratch. With \pkg{svUnit}, you can \char`\"{}promote\char`\"{} one
-or several test functions (associated to other objects, or \char`\"{}living\char`\"{}
+scratch. With \pkg{svUnit}, you can \textquotedbl{}promote\textquotedbl{}
+one or several test functions (associated to other objects, or \textquotedbl{}living\textquotedbl{}
 alone as separate \var{svTest} objects) by using the \code{makeUnit()}
 method. Here is how you promote the test associated with our \code{Square()}
 function to a simple unit test containing only one function:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -731,7 +729,6 @@ test unit file. Note also that \code{.setUp()} and \code{.tearDown()}
 functions are constructed automatically for you. They specify the
 context of these tests. This context is used by the GUI in Komodo
 to locate the test function and the code being tested.
-
 \begin{lyxcode}
 \#\#~Test~unit~'Square'
 
@@ -743,19 +740,19 @@ function~()~\{
 
 ~~~~\#\#~Specific~actions~for~svUnit:~prepare~context
 
-~~~~if~(\char`\"{}package:svUnit\char`\"{}~\%in\%~search())~\{
+~~~~if~(\textquotedbl{}package:svUnit\textquotedbl{}~\%in\%~search())~\{
 
 ~~~~~~~~.Log~<-~Log()~\#\#~Make~sure~.Log~is~created
 
-~~~~~~~~.Log\$..Unit~<-~\char`\"{}/tmp/RtmpBoZnId/runitSquare.R\char`\"{}
+~~~~~~~~.Log\$..Unit~<-~\textquotedbl{}/tmp/RtmpBoZnId/runitSquare.R\textquotedbl{}
 
-~~~~~~~~.Log\$..File~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..File~<-~\textquotedbl{}\textquotedbl{}
 
-~~~~~~~~.Log\$..Obj~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..Obj~<-~\textquotedbl{}\textquotedbl{}
 
-~~~~~~~~.Log\$..Tag~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..Tag~<-~\textquotedbl{}\textquotedbl{}
 
-~~~~~~~~.Log\$..Msg~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..Msg~<-~\textquotedbl{}\textquotedbl{}
 
 ~~~~~~~~rm(..Test,~envir~=~.Log)
 
@@ -771,17 +768,17 @@ function~()~\{
 
 ~~~~\#\#~Specific~actions~for~svUnit:~clean~up~context
 
-~~~~if~(\char`\"{}package:svUnit\char`\"{}~\%in\%~search())~\{
+~~~~if~(\textquotedbl{}package:svUnit\textquotedbl{}~\%in\%~search())~\{
 
-~~~~~~~~.Log\$..Unit~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..Unit~<-~\textquotedbl{}\textquotedbl{}
 
-~~~~~~~~.Log\$..File~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..File~<-~\textquotedbl{}\textquotedbl{}
 
-~~~~~~~~.Log\$..Obj~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..Obj~<-~\textquotedbl{}\textquotedbl{}
 
-~~~~~~~~.Log\$..Tag~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..Tag~<-~\textquotedbl{}\textquotedbl{}
 
-~~~~~~~~.Log\$..Msg~<-~\char`\"{}\char`\"{}
+~~~~~~~~.Log\$..Msg~<-~\textquotedbl{}\textquotedbl{}
 
 ~~~~~~~~rm(..Test,~envir~=~.Log)
 
@@ -791,7 +788,7 @@ function~()~\{
 
 
 
-\char`\"{}testSquare\char`\"{}~<-
+\textquotedbl{}testSquare\textquotedbl{}~<-
 
 function()~\{
 
@@ -799,14 +796,14 @@ function()~\{
 
 ~~~~checkEquals(c(1,~4,~9),~Square(1:3))
 
-~~~~checkException(Square(\char`\"{}xx\char`\"{}))
+~~~~checkException(Square(\textquotedbl{}xx\textquotedbl{}))
 
 \}
 \end{lyxcode}
 Compatibility of these test unit files between \pkg{RUnit} and \pkg{svUnit}
 was a major concern in the design of \pkg{svUnit}. Consequently,
 code specific to \pkg{svUnit} (for managing the context of the test)
-is embedded in a \code{if (\char`\"{}package:svUnit\char`\"{} \%in\% search())}.
+is embedded in a \code{if (\textquotedbl{}package:svUnit\textquotedbl{} \%in\% search())}.
 That way, if \pkg{svUnit} is not loaded in memory, this code is not
 executed. \emph{Note that you should avoid loading in memory both
 \pkg{svUnit} and \pkg{RUnit} at the same time. If you do so, you
@@ -819,7 +816,6 @@ bit how such test units should be organized in \proglang{R} package.
 
 If you intend to associate test units to \proglang{R} package, you
 should respect the following conventions:
-
 \begin{itemize}
 \item Name your test units \file{runit{*}.R}.
 \item Place them in the \file{/inst/unitTests} subdirectory of the package
@@ -847,7 +843,6 @@ them in interactive sessions through the \code{example()} function,
 which is not the case for \file{/tests}). Here is what you do to
 associate some or all of your unit tests to \command{R CMD check}
 (illustrated with the \pkg{svUnit} example):
-
 \begin{itemize}
 \item Define a \file{.Rd} file in \file{/man} called \file{unitTests.Rd}
 (or whatever name you prefer).
@@ -865,8 +860,7 @@ your test units will be included nicely in the checking process of
 your packages, that is, they will run silently each time you test
 your package if no error occurs, but will produce a detailed report
 in case of problems.
-\item Here is how your \file{.Rd} file should looks like:
-\end{itemize}
+\item Here is how your \file{.Rd} file should looks like:\end{itemize}
 \begin{lyxcode}
 \textbackslash{}name\{unitTests\}
 
@@ -912,7 +906,7 @@ clearLog()
 
 \#~Run~all~test~units~defined~in~'svUnit'~package
 
-(runTest(svSuite(\char`\"{}package:svUnit\char`\"{}),~\char`\"{}svUnit\char`\"{}))~
+(runTest(svSuite(\textquotedbl{}package:svUnit\textquotedbl{}),~\textquotedbl{}svUnit\textquotedbl{}))~
 
 
 
@@ -928,9 +922,9 @@ clearLog()
 
 \#~the~/unitTests/VirtualClass~subdir
 
-(runTest(svSuite(\char`\"{}package:svUnit~(VirtualClass)\char`\"{}),
+(runTest(svSuite(\textquotedbl{}package:svUnit~(VirtualClass)\textquotedbl{}),
 
-~~\char`\"{}VirtualClass\char`\"{}))
+~~\textquotedbl{}VirtualClass\textquotedbl{}))
 
 \}
 
@@ -950,7 +944,6 @@ errorLog()
 \end{lyxcode}
 Also, you provide a very convenient and easy way to test a package
 from the command line in an interactive session by running:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -1005,7 +998,6 @@ expression that will exclude them from your list)! As the default
 argument suggests it, the regular expression for list exclusion should
 be kept in the \var{svUnit.excludeList} \proglang{R} option. Here
 is how it works:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -1022,7 +1014,6 @@ and \code{package:RUnit} are currently excluded. The entries \code{package:svUni
 and \code{package:svUnit (VirtualClass)} match first pattern and
 are thus excluded. Now, let's clear the exclusion list to see what
 happens:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -1038,7 +1029,6 @@ These are test groups of test units associated with the package \pkg{svUnit}.
 Now, you have noticed that svSuiteList() can also find \var{svTest}
 objects, as well as tests attached to objects in the user's workspace.
 You can create a suite by collecting all these items like this:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -1048,7 +1038,6 @@ You can create a suite by collecting all these items like this:
 \end{lyxSchunk}
 Now let\textquoteright{}s make a more complex test unit using test
 functions collected in this suite:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -1065,7 +1054,6 @@ objects, or as tests attached to other objects), plus tests suites
 in packages that are \textbf{not} in the exclusion list. Running tests
 in your suite is also very simple. Always remember the \code{runTest()}
 method, and the management of the logger:
-
 \begin{lyxSchunk}
 <<>>=
 
@@ -1101,17 +1089,16 @@ straightforward:
 \includegraphics{svUnit_KomodoRUnit}
 
 \caption{\label{fig:KomodoRUnit}Komodo Edit with SciViews-K and SciViews-K
-Unit after running tests. At right: the \kbd{R Unit} panel that display
-(at the top) the list of available tests, and test units where you
-can select the one to run, and at the bottom, a tree with the results
-from last tests run. The stripe at the very top is green if all tests
-succeed, and red (as here), if at least one tests failed or raised
-an error.}
+Unit after running tests. At right: the \protect\kbd{R Unit} panel
+that display (at the top) the list of available tests, and test units
+where you can select the one to run, and at the bottom, a tree with
+the results from last tests run. The stripe at the very top is green
+if all tests succeed, and red (as here), if at least one tests failed
+or raised an error.}
 
 
 
 \end{figure}
-
 
 \begin{itemize}
 \item Select the tests you want to run in the top part,
@@ -1131,17 +1118,14 @@ the test report tree. This mode allows you to run automatically your
 tests on the background while you type your code!
 
 %
-\begin{framed}
+\begin{framed}%
 Make sure also to look at the \code{koUnit\_xxx()} functions in the
 \pkg{svUnit} package. These functions allow to control the GUI in
-Komodo remotely from within \proglang{R} and \proglang{R} code.
-\end{framed}
-
-
-\begin{thebibliography}{1}
+Komodo remotely from within \proglang{R} and \proglang{R} code.\end{framed}
+\begin{thebibliography}{6}
 \bibitem{Grosjean}Grosjean, Ph., 2003. SciViews: an object-oriented
 abstraction layer to design GUIs on top of various calculation kernels
-{[}online: \url{http://www.ci.tuwien.ac.at/Conferences/DSC-2003}]
+{[}online: \url{http://www.ci.tuwien.ac.at/Conferences/DSC-2003}{]}
 
 \bibitem{IEEE}IEEE Standards Boards, 1993. IEEE standard for software
 unit testing. ANSI/IEEE Std 1008-1987. 24 pp.
@@ -1157,7 +1141,7 @@ A unit test framework for R. Vignette of the package RUnit available
 on CRAN. 11 pp.
 
 \bibitem{Rcore}R Development Core Team, 2008. R: A language and environment
-for statistical computing. {[}online: \url{http://www.R-project.org}].
+for statistical computing. {[}online: \url{http://www.R-project.org}{]}.
 \end{thebibliography}
 
 \end{document}
