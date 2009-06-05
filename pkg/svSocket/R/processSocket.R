@@ -53,13 +53,20 @@ function (msg, socket, serverport, ...)
         #timestamp("my R command", "", "", quiet = TRUE)
     } else if (startmsg == "<<<h>>>") {
 		msg <- substr(msg, 8, 1000000)
+		# Do not echo command on the server (silent execution)
 		hiddenMode <- TRUE
 		parSocket(client, serverport, bare = TRUE, last = "\n\f")
     } else if (startmsg == "<<<H>>>") {
 		msg <- substr(msg, 8, 1000000)
-		# Indicate to the client that he can disconnect now
+		# Do not echo command on the server (silent execution with no return)
         closeSocketClients(sockets = socket, serverport = serverport)
 		hiddenMode <- TRUE
+		returnResults <- FALSE
+		parSocket(client, serverport, bare = TRUE)
+	} else if (startmsg == "<<<u>>>") {
+		msg <- substr(msg, 8, 1000000)
+		# Silent execution, nothing is returned to the client (but still echoed to the server)
+		hiddenMode <- FALSE
 		returnResults <- FALSE
 		parSocket(client, serverport, bare = TRUE)
 	}
