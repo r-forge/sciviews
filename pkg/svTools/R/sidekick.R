@@ -47,7 +47,7 @@ sidekick <- function( file, encoding = getOption("encoding") ){
 	out$srcref3 <- as.integer( out$srcref3 )
 	out$srcref4 <- as.integer( out$srcref4 )
 	out$parent  <- as.integer( out$parent )
-	out
+	list( type = "ok", data = out )
 }
 
 
