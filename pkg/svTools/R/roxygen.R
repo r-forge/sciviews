@@ -180,7 +180,7 @@ generateRoxygenTemplate <- function( file, row, col,
 		template <- paste( template, paste( "#' @author ${",index,":", author, "}", sep = "" ), sep = "\n" ) 
 	}
 	index <- index + 1
-	template <- paste( template, paste( "#' @callGraph\n#' @examples\n#' ${",index,":# executable code for `",funname,"`}", sep = "" ), sep = "\n" ) 
+	template <- paste( template, paste( "#' @callGraph\n#' @examples\n#' ${",index,":# executable code for `",funname,"`}\n", sep = "" ), sep = "\n" ) 
 	
 	type <- match.arg( type )
 	

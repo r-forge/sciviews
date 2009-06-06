@@ -38,7 +38,7 @@ sidekick <- function( file, encoding = getOption("encoding") ){
 	}
 	
 	### try to parse and return an error if failed
-	p <- try( parse( file, srcfile=filename ), silent = TRUE )
+	p <- try( parse( file ), silent = TRUE )
 	if( p %of% "try-error" ){
 		return( list( type = "error", data = parseError( p ) ) )
 	}
