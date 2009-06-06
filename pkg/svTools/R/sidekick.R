@@ -29,16 +29,10 @@ sidekick <- function( file, encoding = getOption("encoding") ){
 		if( file %~% '^rwd:' ){
 			file <- sub( 'rwd:', getwd(), file ) 
 		}
-		
-		filename <- file
-		file <- file( filename, encoding = encoding )
-		on.exit( close( file ) )
-	} else {
-		filename <- summary(file)$description
 	}
 	
 	### try to parse and return an error if failed
-	p <- try( parse( file ), silent = TRUE )
+	p <- try( parse( file, encoding = encoding ), silent = TRUE )
 	if( p %of% "try-error" ){
 		return( list( type = "error", data = parseError( p ) ) )
 	}
