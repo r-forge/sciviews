@@ -6,12 +6,16 @@
 #' @return A data.frame with the following columns : file, line, message and type
 #' @author Romain Francois \email{francoisromain@@free.fr}
 parseError <- function( err ){
-  msg <- err %/~% "\\\n"
-  rx   <- "^.*?: (.*?):(.*?):(.*?):(.*)$"
-  file <- sub( rx, "\\1", msg[1], perl = TRUE )
-  line <- sub( rx, "\\2", msg[1], perl = TRUE )
-  col  <- sub( rx, "\\3", msg[1], perl = TRUE )
-  message <- sub( rx, "\\4", msg[1], perl = TRUE )
+  msg     <- err %/~% "\\\n"
+  line.nb <- msg %~% "^\\d+"
+  msg     <- msg[ 1:( min( which( line.nb) ) - 1) ]
+  msg     <- paste( msg, collapse = "" )
+  
+  rx      <- "^.*?: (.*?):(.*?):(.*?):(.*)$"
+  file    <- sub( rx, "\\1", msg, perl = TRUE )
+  line    <- sub( rx, "\\2", msg, perl = TRUE )
+  col     <- sub( rx, "\\3", msg, perl = TRUE )
+  message <- sub( rx, "\\4", msg, perl = TRUE )
   
   data.frame( file = file, 
     line = line, message = message, 
