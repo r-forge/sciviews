@@ -5,6 +5,7 @@
 \textclass literate-article-sweave
 \begin_preamble
 % \VignetteIndexEntry{svUnit - A framework for unit testing in R}
+%\VignettePackage{svUnit}
 \end_preamble
 \use_default_options false
 \language english
@@ -1291,7 +1292,7 @@ test_Integrate <- svTest(function() {
 \end_layout
 
 \begin_layout R-Chunk
-})  
+})
 \end_layout
 
 \begin_layout R-Chunk
@@ -1359,7 +1360,7 @@ Square()
 status collapsed
 
 \begin_layout Plain Layout
-test_Integrate
+test_integrate
 \end_layout
 
 \end_inset
