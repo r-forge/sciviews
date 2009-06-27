@@ -289,7 +289,7 @@ sv.getTextRange = function(what, gotoend, select, range) {
 }
 
 
-// file open dialog, more custimizable replacement for ko.filepicker.open
+// file open dialog, more customizable replacement for ko.filepicker.open
 sv.fileOpen = function(directory, filename, title, filter, multiple) {
 	const nsIFilePicker = Components.interfaces.nsIFilePicker;
 

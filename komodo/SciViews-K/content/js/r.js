@@ -38,7 +38,7 @@
 //                         // Save the current R graph in different formats
 // sv.r.quit(save);        // Quit R (ask to save in save in not defined)
 //
-// sv.r.pck namespace: /////////////////////////////////////////////////////////
+// sv.r.pkg namespace: /////////////////////////////////////////////////////////
 // sv.r.pkg.repositories(); // Select repositories for installing R packages
 // sv.r.pkg.CRANmirror(); // Select preferred CRAN mirror
 // sv.r.pkg.available(); // List available R packages on selected repositories

@@ -115,6 +115,7 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check <Pkg>
 \end_layout
 
@@ -584,6 +585,7 @@ There is also no integration with the "regular"
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
@@ -616,6 +618,7 @@ RUnit
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
@@ -670,6 +673,7 @@ RUnit
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
@@ -2892,6 +2896,7 @@ R
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
@@ -3495,6 +3500,7 @@ R Unit
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
@@ -3520,6 +3526,7 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
@@ -3552,6 +3559,7 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
@@ -3661,6 +3669,7 @@ errorLog()
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
@@ -3682,6 +3691,7 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
+
 R CMD check
 \end_layout
 
