@@ -8,13 +8,17 @@
 parseError <- function( err ){
   msg     <- err %/~% "\\\n"
   line.nb <- msg %~% "^\\d+"
-  msg     <- msg[ 1:( min( which( line.nb) ) - 1) ]
-  msg     <- paste( msg, collapse = "" )
+  if( any( line.nb ) ){
+  	msg     <- msg[ 1:( min( which( line.nb) ) - 1) ]
+  	msg     <- paste( msg, collapse = "" )
+  } else{
+	msg <- ""
+  }
   
-  rx      <- "^.*?: (.*?):(.*?):(.*?):(.*)$"
+  rx      <- "^.*?:\\s*(.*?):(.*?):(.*?):(.*)$"
   file    <- sub( rx, "\\1", msg, perl = TRUE )
-  line    <- sub( rx, "\\2", msg, perl = TRUE )
-  col     <- sub( rx, "\\3", msg, perl = TRUE )
+  line    <- as.integer( sub( rx, "\\2", msg, perl = TRUE )  )
+  col     <- as.integer( sub( rx, "\\3", msg, perl = TRUE )  )
   message <- sub( rx, "\\4", msg, perl = TRUE )
   
   data.frame( file = file, 

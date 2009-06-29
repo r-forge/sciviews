@@ -24,6 +24,9 @@ checkUsageFile <- function( file, encoding = "unknown" ){
 	if( p.out %of% "data.frame" ){
 		return( getErrors( file = file ) ) 
 	}
+	if( length( p.out ) == 0){
+		return( emptyError() )
+	}
 	resetErrors( file = file )
 	
 	# silly hack to retrieve information from codetools
@@ -121,7 +124,6 @@ checkUsageFile <- function( file, encoding = "unknown" ){
 		}
 	}
 	getErrors( file = file )
-	
 }
 
 as_character_srcref <- function (x, useSource = TRUE, encoding = "unknown"){
