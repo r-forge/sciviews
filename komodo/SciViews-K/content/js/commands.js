@@ -10,7 +10,7 @@ if (typeof(sv.command) == 'undefined') {
 }
 
 
-// sv.cmd object constructor:
+// sv.command object constructor:
 (function() {
 
 var isRRunning = false;
@@ -128,7 +128,7 @@ this.openPkgManager = function() {
 
 // this will observe status message notification. This is to get informed about
 // application being terminated. A more straightforward way would be to use runService.RunAndNotify
-// but, this woldn't allow to start app in a console window. So we have to do this trick here.
+// but, this wouldn't allow to start app in a console window. So we have to do this trick here.
 
 
 function AppTerminateObserver(command) {

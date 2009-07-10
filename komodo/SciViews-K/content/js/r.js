@@ -18,6 +18,8 @@
 // sv.r.source(what); // Source various part of current buffer to R
 // sv.r.send(what); // Send various part of current buffer to R
 // sv.r.addHistory(data, cmd); // Add current command to R's history, used as a procfun in sv.socket.rCommand call
+// sv.r.calltip(code); // Get a calltip for a piece of code
+// sv.r.calltip_show(tip); sv.r.calltip_trigget(event); // Companion functions for sv.r.calltip
 // sv.r.display(topic, what); // Display 'topic' according to 'what' type
 // sv.r.helpStart(); // Start R help in the default browser
 // sv.r.help(topic, package); // Get help in R for 'topic', 'topic' is facultative
@@ -44,7 +46,7 @@
 // sv.r.pkg.available(); // List available R packages on selected repositories
 // sv.r.pkg.installed(); // List installed R packages
 // sv.r.pkg.install(); // Install R package(s) from the repositories
-//sv.r.pkg.chooseCRANMirror(andInstall); // replacement for .CRANmirror, optionally calls .install after execution
+// sv.r.pkg.chooseCRANMirror(andInstall); // replacement for .CRANmirror, optionally calls .install after execution
 
 // sv.r.pkg.installLocal(); // Install one or more R packages from local files
 // sv.r.pkg.installSV(); // Install the Sciviews bundle from CRAN
@@ -409,6 +411,33 @@ sv.r.display = function(topic, what) {
 	}
 	return(res);
 }
+
+// Get a calltip for a R function
+sv.r.calltip = function(codestrip) {
+	res = sv.r.evalCallback('cat(CallTip("' + codestrip + '", location = TRUE))', sv.r.calltip_show);
+	return(res);
+}
+
+// The callback for sv.r.calltip
+sv.r.calltip_show = function(tip) {
+	if (tip != "") {
+		//ko.statusBar.AddMessage(tip, "R", 2000, true);
+		var ke = ko.views.manager.currentView.scimoz;
+		ke.callTipCancel();
+		ke.callTipShow(ke.anchor, tip);
+	}
+}
+
+// The trigger for sv.r.calltip (when '(' is entered)
+sv.r.callTip_trigger = function(event) {
+	try {
+		if (event.keyCode == 53) { // 53 is code for '('
+			var codestrip = sv.getPart("linetobegin", true);
+			var res = sv.r.calltip(codestrip);
+		}
+	} catch(e) { log.exception(e); }
+}
+window.addEventListener("keyup", sv.r.callTip_trigger, true);
 
 // Start R help in the default browser
 sv.r.helpStart = function() {
