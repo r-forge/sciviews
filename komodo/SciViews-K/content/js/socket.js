@@ -205,6 +205,9 @@ sv.socket.serverStart = function() {
 
 				// Is there data send?
 				if (inputString == "") {
+					if (sv.socket.debug) {
+						sv.cmdout.append("#--# SciViews-K socket client: nothing send!\n");
+					}
 					outputString += "Error: no command send!\n"
 				} else {
 					// Process the command

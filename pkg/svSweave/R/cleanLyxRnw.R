@@ -1,5 +1,4 @@
-"cleanLyxRnw" <-
-function (RnwCon, RnwCon2 = RnwCon)
+"cleanLyxRnw" <- function (RnwCon, RnwCon2 = RnwCon)
 {
 	# Read the data in the Rnw file
 	Rnw <- readLines(RnwCon)

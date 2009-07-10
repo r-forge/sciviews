@@ -252,7 +252,7 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 			if (!all(file.exists(files)))
 				warning("One or more files are not found on the disk!")
 			# We display those files using options(editor) settings
-			cmds <- paste(getOption("editor"), files)
+			cmds <- paste('"', getOption("editor"), '" ', files, sep = "")
 			for (cmd in cmds) {
 				res <- try(system(cmd), silent = TRUE)
 				if (inherits(res, "try-error"))
