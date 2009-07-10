@@ -5,7 +5,7 @@
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	.SciViewsReady <- FALSE
-	minVersion <- c(R = "2.6.0", svMisc = "0.9-47", svSocket = "0.9-43", svGUI = "0.9-44")
+	minVersion <- c(R = "2.6.0", svMisc = "0.9-48", svSocket = "0.9-44", svGUI = "0.9-44")
 
 	# First of all, check R version... redefine compareVersion() because it is
 	# not defined in very old R versions... and thus we don't get an explicit
