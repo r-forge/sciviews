@@ -55,6 +55,12 @@
     <script src="chrome://komodo/content/library/windowManager.js" type="application/x-javascript"/>
     <script src="chrome://sciviewsk/content/js/prefs-R.js" type="application/x-javascript"/>
 
+	<box class="kobox-smallheader" title="R configuration"/>
+
+    <description>
+		For these changes to take effect, you have to close and restart R.
+	</description>
+
     <groupbox orient="vertical">
         <caption label="Default R Interpreter"/>
         <text value="Use this interpreter:" style="padding: 2px 6px 2px 6px"/>
