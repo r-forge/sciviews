@@ -38,19 +38,19 @@
 <!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/bindings/widgets.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/bindings/listbox.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
 
 <overlay id="SciViewsPrefsOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <treechildren container="false" id="languagesChildren">
-    <treeitem container="false" id="RItem">
-      <treerow>
-	<treecell class="treecell-indent"
-		  url="chrome://sciviewsk/content/pref-R.xul"
-		  label="R"/>
-      </treerow>
-    </treeitem>
-  </treechildren>
+  <treeitem id="uiSettingsItem" container="true">
+	<treechildren container="false" id="languagesChildren">
+	  <treeitem container="false" id="RItem">
+		<treerow>
+	  <treecell class="treecell-indent"
+			url="chrome://sciviewsk/content/pref-R.xul"
+			label="R"/>
+		</treerow>
+	  </treeitem>
+	</treechildren>
+  </treeitem>
 </overlay>

@@ -1,9 +1,9 @@
 \name{cleanLyxRnw}
 \alias{cleanLyxRnw}
 
-\title{ Clean up R noweb files produced by LyX with SciViews Sweave extension }
+\title{ Clean up R noweb files produced by LyX with SciViews Sweave module }
 \description{
-  The SciViews-LyX extension defines \code{Rchunk} commands to contain
+  The SciViews-LyX extension defines \code{rchunk} commands to contain
   R chunks (embedded R code processed by Sweave). Unfortunately, LyX use to
   write two line feed for each line of code, introducing extra lines in the R
   chunks. Moreover, tabulations are interpreted as 8 spaces, while R code use
