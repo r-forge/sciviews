@@ -1,6 +1,7 @@
 import(tcltk)
 
-export(getSocketClients,
+export(evalServer,
+	   getSocketClients,
        getSocketClientsNames,
        getSocketServerName,
        getSocketServers,

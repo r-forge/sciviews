@@ -1,7 +1,13 @@
 = svSocket News
 
+== Changes in svSocket 0.9-44
+* Added function evalServer() for R interprocess communication using this R
+  socket server mechanism
+
+
 == Changes in svSocket 0.9-43
 * Example added in processSocket(), implementing a simple REPL
+
 * A new function, sendSocketServer() is added to send and evaluate commands from
   one R instance (client) to another one (a R socket server)
 
