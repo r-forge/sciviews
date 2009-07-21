@@ -1,41 +1,51 @@
-evalServer <- function (con, expr, send = NULL) {
-	# Evaluate expr on the server, and return its value
-	# expr may be quoted or not e.g. can pass a quoted "x=2" to send an assignment
-	# send is optional. If supplied, expr must be a single object name (unquoted).
-	# Then send is evaluated on the client and the result is assigned to that
-	# object name on the server.
-	x <- substitute(expr)
-	if (!missing(send) && (!length(x) == 1 || mode(x) != "name"))
-		stop("When send is supplied, expr must be an target variable name (unquoted) on the server to assign the result of the send expr to.")
-	if (!is.character(x)) x <- deparse(x)
-	# Flush the input stream just in case previous calls failed to clean up
-	scan(con, "", quiet = TRUE)
-	if (missing(send)) {
-		writeLines(paste('.Last.value = try(eval(parse(text = "', x, '"))); dump(".Last.value", file = ""); cat("<<<endflag>>>")', sep = ""), con)
-	} else {
-		.Last.value <- send
-		sendtxtcon <- textConnection("tmptxt", open = "w", local = TRUE)
-		dump(".Last.value", sendtxtcon)
-		on.exit(close(sendtxtcon))
-		writeLines(paste(paste(tmptxt, collapse = ""), ';', x, ' = .Last.value; cat("<<<endflag>>>")', sep = ""), con)
-	}
-	# The explicit .Last.value is required to suppress the output of the value
-	# of expression back to the client e.g. "[1] 2" being sent back
-	# We use .Last.value as its a safe temporary variable to overwrite.
-	# The evaluate and dump must be sent as a single string
-	# using a single call to writeLines, to ensure multiple clients
-	# do not get mixed up results.
-	objdump <- ""
-	while (regexpr("<<<endflag>>>", objdump) < 0)
-		objdump <- paste(objdump, readLines(con), sep = "", collapse = "\n")
-	objdump <- sub("<<<endflag>>>", "", objdump)
-	if (!missing(send)) {
-		if (!identical(objdump, "")) stop(objdump)
-		return(TRUE)
-	}
-	# Source the content of objdump, locally in this frame
-	objcon <- textConnection(objdump)
-	on.exit(close(objcon))
-	source(objcon, local = TRUE, echo = FALSE, verbose = FALSE)
-	.Last.value
+evalServer = function(con,expr,send=NULL) {
+   # Evaluate expr on the R server, and return its value
+   # con as returned by socketConnection(port=8888)
+   # send is optional. If supplied, expr must be a single unquoted object name. Then send is evaluated on the client and the result is assigned
+   # to that object on the server.
+   # robust flushing and dumping is just for windows. linux is probably fine without but no harm to leave in for now since binary mode will moot this.
+   x=substitute(expr)
+   if (!missing(send) && (!length(x)==1 || mode(x)!="name")) stop("When send is supplied, expr must be a target variable name (unquoted) on the server to assign the result of the send expr to.")
+   if (!is.character(x)) x= deparse(x)
+   readLines(con)  # flush input stream just incase previous call failed to clean up.
+   if (missing(send)) {
+      cat('..Last.value=try(eval(parse(text="',x,'")));.f=file();dump("..Last.value",file=.f);flush(.f);seek(.f,0);cat("\\n<<<startflag>>>",readLines(.f),"<<<endflag>>>\\n",sep="\\n");close(.f);rm(.f,..Last.value);flush.console()\n',file=con,sep="")
+      # its important that one line only is written, so that other clients don't mix in with these lines.
+   } else {
+      .f=file()
+      on.exit(close(.f))    
+      ..Last.value=send
+      dump("..Last.value",file=.f)   # dump can stop prematurely if file=con, but also good to remove the /n from dump's output before sending (to avoid possible conflicts with other clients)
+      flush(.f)
+      seek(.f,0)
+      cat(readLines(.f),';',x,'=..Last.value;rm(..Last.value);cat("\\n<<<endflag>>>\\n");flush.console()\n',file=con,sep="")
+   }
+   objdump=""
+   endloc=NULL
+   while(!length(endloc)) {
+      obj=readLines(con,n=1000,warn=FALSE)
+      if (!length(obj)) {Sys.sleep(0.01);next}  # wait for data to come back. Without this sleep, you get 20-30 calls to readLines before data arrives.
+      endloc=grep("<<<endflag>>>",obj)
+      if (length(endloc)) obj=obj[0:(endloc-1)]
+      objdump<-c(objdump,obj)  # this is more robust than paste'ing together a potentially very large single string.
+   }
+   if (!missing(send)) {
+      if (!all(objdump=="")) stop(objdump)
+      return(TRUE)
+   }
+   start = grep("<<<startflag>>>",objdump)
+   if (length(start)!=1) stop("Unable to find <<<startflag>>>")
+   objdump = objdump[-(1:start)]        # the startflag is because sometimes (strangely rarely) seek, flush and dump can write return value to stdout which do not source.
+   # Fix any output buffer wrap issues. There are line breaks mid number sometimes which don't source.
+   # This is why warn=FALSE appears above in the call to readLines since it warns about these noncomplete lines otherwise.
+   nospace=grep("[^ ]$",objdump)
+   nospace=nospace[nospace<length(objdump)]
+   for (i in rev(nospace)) { #robust to consecutive lines to be joined
+      objdump[i] = paste(objdump[i],objdump[i+1],sep="")
+      objdump[i+1] = ""
+   }
+   objcon = textConnection(objdump)
+   on.exit(close(objcon))
+   source(objcon,local=TRUE,echo=FALSE,verbose=FALSE)
+   ..Last.value
 }
