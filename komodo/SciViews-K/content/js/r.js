@@ -67,8 +67,6 @@
 
 // TODO: in overlay: add "source file" context menu item in the project tab
 
-
-
 // Define the 'sv.r' namespace
 if (typeof(sv.r) == 'undefined')
 	sv.r = {
@@ -80,10 +78,28 @@ if (typeof(sv.r) == 'undefined')
 //sv.r.init = function(cmd) {
 //}
 
+sv.r.running = false;
+
+sv.r.test = function sv_RTest() {
+	function sv_RTest_callback (response) {
+		var wasRRunning = sv.r.running;
+		var isRRunning = response == "ok!";
+
+		sv.r.running = isRRunning;
+		if (wasRRunning != isRRunning) {
+			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
+			window.updateCommands('r_app_started_closed');
+			sv.debugMsg("R state changed: " + wasRRunning + "->" + isRRunning);
+		}
+	}
+	var res = sv.r.evalCallback("cat('ok!');", sv_RTest_callback);
+	return res;
+}
+
 // Evaluate code in R
 sv.r.eval = function(cmd) {
 
-	cmd = cmd.trim();
+	cmd = (new String(cmd)).trim();
 	// Store the current R command
 	if (sv.socket.prompt == ":> ") {
 		// Special case for q() and quit() => use sv.r.quit() instead
@@ -103,7 +119,8 @@ sv.r.eval = function(cmd) {
 			sv.cmdout.append(cmd);
 		}
 	}
-	var res = sv.socket.rCommand('<<<e>>>' + cmd, sv.socket.cmdout, null, sv.r.addHistory, sv.socket.cmd);
+	var res = sv.socket.rCommand('<<<e>>>' + cmd, sv.socket.cmdout, null,
+								 sv.r.addHistory, sv.socket.cmd);
 
 	return(res);
 }
@@ -210,28 +227,33 @@ sv.r.setwd = function (dir, ask, type) {
 		}
 	}
 
+	var res;
 	if (getDirFromR) {
 		var cmd = "cat(path.expand(" + getDirFromR + "))";
+		sv.cmdout.message(sv.translate("Asking R for directory..."));
 
-		sv.r.evalCallback(cmd, function(curDir) {
+		res = sv.r.evalCallback(cmd, function(curDir) {
+			sv.cmdout.message();
+			if (!curDir) {
+				ko.dialogs.alert(sv.translate("Cannot retrieve directory from R. Make sure R is running."));
+				return null;
+			}
 			if (navigator.platform.search(/^Win/) == 0) {
 				curDir = curDir.replace(/\//g, '\\');
 			}
-			//sv.debugMsg("curDir:"+curDir);
-			sv.r.setwd(curDir, ask, "this");
+			return sv.r.setwd(curDir, ask, "this");
 		});
-		return;
+		return res;
 	}
 
-	if (ask || !dir) {
-		dir = ko.filepicker.getFolder(dir, sv.translate("ChooseWorkingDir"));
-	}
+	if (ask || !dir)
+		dir = ko.filepicker.getFolder(dir, sv.translate("Choose working directory"));
 
 	if (dir != null) {
-		sv.r.evalHidden(".odir <- setwd(\"" + dir.addslashes() + "\")");
-		sv.cmdout.message(sv.translate("WorkingDirSetTo", dir), 10000);
+		res = sv.r.evalHidden(".odir <- setwd(\"" + dir.addslashes() + "\")");
+		sv.cmdout.message(sv.translate("Current R's working directory is: \"%S\"", dir), 10000);
 	}
-    return;
+    return res;
 }
 
 // Run current selection or line buffer in R
@@ -414,7 +436,9 @@ sv.r.display = function(topic, what) {
 
 // Get a calltip for a R function
 sv.r.calltip = function(codestrip) {
-	res = sv.r.evalCallback('cat(CallTip("' + codestrip + '", location = TRUE))', sv.r.calltip_show);
+	var cmd = 'cat(CallTip("' + codestrip.replace(/(")/g, "\\$1") + '", location = TRUE))';
+	sv.cmdout.append(cmd);
+	var res = sv.r.evalCallback(cmd, sv.r.calltip_show);
 	return(res);
 }
 
@@ -424,25 +448,77 @@ sv.r.calltip_show = function(tip) {
 		//ko.statusBar.AddMessage(tip, "R", 2000, true);
 		var ke = ko.views.manager.currentView.scimoz;
 		ke.callTipCancel();
-		ke.callTipShow(ke.anchor, tip);
+		ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
 	}
 }
 
+//
+sv.r.autoComplete = function() {
+	if (ko.views.manager.currentView.languageObj.name != "R")
+		return false;
+
+	var text = sv.getTextRange("linetobegin").replace(/(")/g, "\\$1");
+	var scimoz = ko.views.manager.currentView.scimoz;
+	//var cmd = 'cat(Complete("' + text + '"))';
+	//var cmd = 'scintillaCompletions("' + text + '", printit=TRUE, )';
+	var cmd = 'Complete2("' + text + '", print = TRUE, types = svMisc:::.scintilla.completion.types)';
+
+	//Complete2("' + text + '", print=TRUE)';
+	//sv.cmdout.append(cmd)
+
+	var res = sv.r.evalCallback(cmd, function(autoCstring) {
+		// these should be set only once?:
+		scimoz.autoCSeparator = 9;
+		scimoz.autoCSetFillUps(" []{}<>/():;%+-*@!\t\n\r=$`");
+
+		var autoCSeparatorChar = String.fromCharCode(scimoz.autoCSeparator);
+		autoCstring = autoCstring.replace(/^(.*)[\r\n]+/, "");
+
+		var trigPos = RegExp.$1;
+		//var trigPos = RegExp.$1.split(/;/g)[1];
+
+		autoCstring = autoCstring.replace(/\r?\n/g, autoCSeparatorChar);
+
+		// code below taken from "CodeIntelCompletionUIHandler"
+		var iface = Components.interfaces.koICodeIntelCompletionUIHandler;
+		scimoz.registerImage(iface.ACIID_FUNCTION,
+							 ko.markers.getPixmap("chrome://komodo/skin/images/ac_function.xpm"));
+		scimoz.registerImage(iface.ACIID_VARIABLE,
+							 ko.markers.getPixmap("chrome://komodo/skin/images/ac_variable.xpm"));
+		scimoz.registerImage(iface.ACIID_XML_ATTRIBUTE,
+							 ko.markers.getPixmap("chrome://komodo/skin/images/ac_xml_attribute.xpm"));
+		scimoz.registerImage(iface.ACIID_NAMESPACE,
+							 ko.markers.getPixmap("chrome://komodo/skin/images/ac_namespace.xpm"));
+		scimoz.registerImage(iface.ACIID_KEYWORD,
+							 ko.markers.getPixmap("chrome://komodo/skin/images/ac_interface.xpm"));
+		scimoz.autoCChooseSingle = true;
+		scimoz.autoCShow(trigPos, autoCstring);
+	});
+	return res;
+}
+
+
 // The trigger for sv.r.calltip (when '(' is entered)
 sv.r.callTip_trigger = function(event) {
+	//sv.cmdout.append("keyCode " + event.keyCode);
+	if (ko.views.manager.currentView.languageObj.name != "R")
+		return;
+
 	try {
-		if (event.keyCode == 53) { // 53 is code for '('
-			var codestrip = sv.getPart("linetobegin", true);
+		if (event.keyCode == 57) { // 57 is code for '('
+			var codestrip = sv.getTextRange("linetobegin");
 			var res = sv.r.calltip(codestrip);
 		}
 	} catch(e) { log.exception(e); }
 }
-window.addEventListener("keyup", sv.r.callTip_trigger, true);
+// TODO: better way to trigger calltips - with the same mechanism as
+// for other languages
+//window.addEventListener("keyup", sv.r.callTip_trigger, true);
 
 // Start R help in the default browser
 sv.r.helpStart = function() {
 	var res = sv.r.eval("help.start()");
-	ko.statusBar.AddMessage(sv.translate("RHelpStarted"), "R", 5000, true);
+	ko.statusBar.AddMessage(sv.translate("R help started... should display in browser soon"), "R", 5000, true);
 	return(res);
 }
 
@@ -455,7 +531,7 @@ sv.r.help = function(topic, pkg) {
 
 		if (topic == "") {
 			// let's not cry so much about an empty selection
-			ko.statusBar.AddMessage(sv.translate("SelectionEmpty"), "R", 1000, false);
+			ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R", 1000, false);
 			//alert("Nothing is selected!");
 		}
 
@@ -470,7 +546,7 @@ sv.r.help = function(topic, pkg) {
 		// TODO: error handling when package does not exists
 		res = sv.r.evalCallback(cmd, sv.browseURI);
 
-		ko.statusBar.AddMessage(sv.translate("RHelpAskedFor", topic),
+		ko.statusBar.AddMessage(sv.translate("R help asked for \"%S\"", topic),
 			"R", 5000, true);
 
 	}
@@ -485,7 +561,7 @@ sv.r.example = function(topic) {
 		//alert("Nothing is selected!");
 	} else {
 		res = sv.r.eval("example(" + topic + ")");
-		ko.statusBar.AddMessage(sv.translate("RExampleFor", topic),
+		ko.statusBar.AddMessage(sv.translate("R example run for \"%S\"", topic),
 			"R", 5000, true);
 	}
 	return(res);
@@ -496,9 +572,9 @@ sv.r.search = function(topic, internal) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
 	// Ask for the search string
-	topic = ko.dialogs.prompt(sv.translate("Search_R_objects_using_a_regular_expression"),
+	topic = ko.dialogs.prompt(sv.translate("Search R objects using a regular expression (e.g. '^log' for objects starting with 'log')"),
 							  sv.translate("Pattern"), topic,
-							  sv.translate("Search_R_help"), "okRsearchPattern");
+							  sv.translate("Search R help"), "okRsearchPattern");
 	if (topic != null & topic != "") {
 		// Get list of matching items and evaluate it with sv.r.search_select()
 		res = sv.r.evalCallback('cat(apropos("' + topic + '"), sep = "' + sv.r.sep + '")',
@@ -514,7 +590,7 @@ sv.r.search_select = function(topics) {
 	ko.statusBar.AddMessage("", "R");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(topics) == "") {
-		sv.cmdout.message(sv.translate("No_item_found_in_R_help"));
+		sv.cmdout.message(sv.translate("R help for %S not found.", topics));
 	} else {	// Something is returned
 		var items = topics.split(sv.r.sep);
 		if (items.length == 1) {
@@ -612,12 +688,12 @@ sv.r.saveWorkspace = function(file, title) {
 
 
 // Load the content of a .RData file into the workspace, or attach it
-sv.r.loadWorkspace = function(file, attach) {
+sv.r.loadWorkspace = function(file, attach, callback, param) {
   // Ask for the filename if not provided
 	if (!file) {
-		file = sv.fileOpen("", ".RData", sv.translate("Browse_for_workspace"),
-		      [sv.translate("R_workspace") + " (*.RData)|*.RData"], true);
-	} else if (typeof files == "string") {
+		file = sv.fileOpen("", ".RData", sv.translate("Browse for R workspace file"),
+		      [sv.translate("R workspace") + " (*.RData)|*.RData"], true);
+	} else if (typeof file == "string") {
 		file = file.split(/[;,]/);
 	}
 	if (!file || !file.length)
@@ -626,9 +702,16 @@ sv.r.loadWorkspace = function(file, attach) {
 	var load = attach?  "attach" : "load";
 
 	var cmd = [];
-	for (var i in file)
-		cmd[i] = load + "(\"" + file[i].addslashes() + "\")";
-	sv.r.eval(cmd.join("\n"));
+	for (var i in file) {
+		cmd[i] = load + "(\"" + (new String(file[i])).addslashes() + "\")";
+	}
+
+	cmd = cmd.join("\n");
+	if (callback)
+		sv.r.evalCallback(cmd, callback, param);
+	else
+		sv.r.eval(cmd);
+
 }
 
 // Save the history in a file
@@ -766,8 +849,8 @@ sv.r.pkg.load = function() {
 			} else {	// Something is returned
 				var items = pkgs.split(sv.r.sep);
 				// Select the item you want in the list
-				var topic = ko.dialogs.selectFromList(sv.translate("titleLoadPackage"),
-					sv.translate("SelectPkgToLoad") + ":", items);
+				var topic = ko.dialogs.selectFromList(sv.translate("Load R package"),
+					sv.translate("Select R package(s) to load") + ":", items);
 				if (topic != null) {
 					res = sv.r.evalCallback('cat(paste(lapply(c("' + topic.join('", "') + '"), function(pkg) {	res <- try(library(package = pkg, character.only = TRUE)); 	paste ("Package", sQuote(pkg), if (inherits(res, "try-error")) "could not be loaded"  else "loaded")	}), collapse = "\\n"), "\\n")',
 									sv.cmdout.append);
@@ -886,16 +969,14 @@ sv.r.pkg.install = function(isCRANMirrorSet) {
 				function(pkgs) {
 					ko.statusBar.AddMessage("", "R");
 					var res = false;
-					if (pkgs.trim() == "") {
-						alert("Error?"); // TODO: remove this later
-					} else {
+					if (pkgs.trim() != "") {
 						var items = pkgs.split(sv.r.sep);
-						items = ko.dialogs.selectFromList(sv.translate("titleInstallPackage"),
-							sv.translate("SelectPkgsToInstall") + ":", items);
+						items = ko.dialogs.selectFromList(sv.translate("Install R package"),
+							sv.translate("Select package(s) to install") + ":", items);
 
 						if (items != null) {
 							items = '"' + items.join('", "') + '"';
-							ko.statusBar.AddMessage(sv.translate("InstallingPkgs"), "R");
+							ko.statusBar.AddMessage(sv.translate("Installing packages... please wait"), "R");
 							sv.socket.rCommand("install.packages(c(" + items + "))",
 								true, null, function(data) {
 									ko.statusBar.AddMessage("", "R");
@@ -910,7 +991,6 @@ sv.r.pkg.install = function(isCRANMirrorSet) {
 	return(res);
 }
 
-
 // replacement for .CRANmirror, optionally calls .install after execution
 sv.r.pkg.chooseCRANMirror = function(andInstall) {
 	var res = false;
@@ -924,13 +1004,13 @@ sv.r.pkg.chooseCRANMirror = function(andInstall) {
 				alert("Error getting CRAN Mirrors list.");
 			} else {
 				var items = repos.split(sv.r.sep);
-				items = ko.dialogs.selectFromList(sv.translate("CRANMirrors"),
-					sv.translate("SelectCRANMirror"), items, "one");
+				items = ko.dialogs.selectFromList(sv.translate("CRAN mirrors"),
+					sv.translate("Select CRAN mirror to use:"), items, "one");
 
 				if (items != null) {
 					res = sv.r.evalCallback(".sv.tmp <- getCRANmirrors(all = FALSE, local.only = FALSE); .sv.repos <- getOption(\"repos\"); .sv.repos[\"CRAN\"] <- gsub(\"/$\", \"\", .sv.tmp$URL[.sv.tmp$Name == \"" + items[0] + "\"]); options(repos =.sv.repos); rm(.sv.repos, .sv.tmp); cat(getOption(\"repos\")['CRAN']);",
 						function(url) {
-							ko.statusBar.AddMessage(sv.translate("CRANMirrorSetTo", url), "R", 5000, false);
+							ko.statusBar.AddMessage(sv.translate("Current CRAN mirror is set to %S", url), "R", 5000, false);
 							if (andInstall)
 								sv.r.pkg.install(true);
 						},
@@ -940,7 +1020,7 @@ sv.r.pkg.chooseCRANMirror = function(andInstall) {
 			return(res);
 		}
 	);
-	ko.statusBar.AddMessage(sv.translate("RetrievingCRANMirrors"),
+	ko.statusBar.AddMessage(sv.translate("Retrieving CRAN mirrors list... please wait."),
 		"R", 20000, true);
 	return(res);
 }
@@ -954,7 +1034,7 @@ sv.r.pkg.installLocal = function() {
 	//var files = ko.filepicker.openFiles(null, null,
 	//	"Select R package(s) to install (.tar.gz, .zip or .tgz)");
 
-	var files = sv.fileOpen(null, null, sv.translate("SelectPkgsToInstall"),
+	var files = sv.fileOpen(null, null, sv.translate("Select package(s) to install"),
 		['Zip archive (*.zip)|*.zip', 'Gzip archive (*.tgz;*.tar.gz)|*.tgz;*.tar.gz'], true);
 
 

@@ -30,18 +30,69 @@
 
 // Define the 'sv.socket' namespace
 /////// Socket client //////////////////////////////////////////////////////////
-sv.socket = {
-	svSocketMinVersion: "0.9-40", // Will be used later for compatibility checking between R and Komodo tools
-	host: "127.0.0.1", // Host to connect to (local host only, currently)
-	cmdout: true,     // Do we write to 'Command Output'?
-	prompt: ":> ",     // The prompt, could be changed to continue prompt
-	cmd: "",           // The command to send to R
-	charsetUpdated: false,
-	charset: "latin1"
-};
+if (typeof(sv.socket) == 'undefined')
+	sv.socket = {};
+
+// way to update charset from within R:
+// koCmd(paste("sv.socket.charset = '", localeToCharset()[1], "';", sep=""));
+// this will return charset value if properly set
+// koCmd(paste("sv.socket.serverWrite(sv.socket.charset = '", localeToCharset()[1], "');", sep=""));
+
+
+(function () {
+	this.svSocketMinVersion = "0.9-40";	// Will be used later for compatibility checking between R and Komodo tools
+	this.host = "127.0.0.1";				// Host to connect to (local host only, currently)
+	this.cmdout = true;					// Do we write to 'Command Output'?
+	this.prompt = ":> ";					// The prompt, could be changed to continue prompt
+	this.cmd = "";						// The command to send to R
+
+
+	var millis = 500; // ms to wait for input, with synchroneous com only
+	var _charsetUpdated = false;
+	var _this = this;
+	var converter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
+				.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
+
+
+	/////// Socket server //////////////////////////////////////////////////////////
+	this.debug = sv.debug; // Set to true for debugging mode
+	this.serverIsLocal = true; // Is the socket servicing only localhost?
+
+	const nsITransport = Components.interfaces.nsITransport;
+
+	var _serverSocket;			// The SviViews-K socket server object
+	var _serverStarted = false;	// Is the socket server started?
+	var _inputString;			// The string with the command send by the client
+	var _outputString;			// The string with the result to send to the client
+	var _output = [];
+	//debug only:
+	this.serverSocket = _serverSocket;
+
+this.__defineGetter__ ('charset', function() {	return converter.charset; });
+this.__defineSetter__ ('charset', function(x) {
+	try {
+		converter.charset = x;
+	} catch (e) {
+		_charsetUpdated = false;
+	}
+	return converter.charset;
+});
+
+this.updateCharset = function(force) {
+	if (!force && _charsetUpdated)
+		return;
+	//sv.debugMsg("charsetUpdate");
+	_charsetUpdated = true;
+	_this.rCommand("<<<h>>>cat(localeToCharset()[1])", false, null,
+		function(s) {
+			_this.charset = s;
+			sv.debugMsg(s);
+		});
+}
+
 
 // The main socket client function to connect to R socket server
-sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
+this.rClient = function(host, port, outputData, listener, echo, echofun) {
 
 	try {
 		var transportService = Components.
@@ -50,11 +101,12 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 		var transport = transportService.createTransport(null, 0,
 			host, port, null);
 
-		// Convert output string from unicode to R's charset (Bug #240)
-//		var converter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
-//			.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
-//		converter.charset = sv.socket.charset;
-//		outputData = converter.ConvertFromUnicode(outputData);
+		if (converter.charset) try {
+			// Convert output string from unicode to R's charset (Bug #240)
+			outputData = converter.ConvertFromUnicode(outputData);
+		} catch(e) {
+			sv.debugMsg(e);
+		}
 
 		var outstream = transport.openOutputStream(0, 0, 0);
 		outstream.write(outputData, outputData.length);
@@ -79,16 +131,19 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 				// TODO: limit the total amount of data send through the socket!
 				var chunk = instream.read(count);
 
-				// Convert read string to unicode (Bug #240)
-//				chunk = converter.ConvertToUnicode(chunk);
+				if (converter.charset) try { // Convert read string to unicode (Bug #240)
+					chunk = converter.ConvertToUnicode(chunk);
+				} catch(e) {
+					sv.debugMsg(e);
+				}
 
 				// Determine if we have a prompt at the end
 				if (chunk.search(/\+\s+$/) > -1) {
-					sv.socket.prompt = ":+ ";
+					this.prompt = ":+ ";
 					// remove endline from prompt if it is a continuation
 					chunk = chunk.rtrim() + " ";
 				} else if (chunk.search(/>\s+$/) > -1) {
-					sv.socket.prompt = ":> ";
+					this.prompt = ":> ";
 				}
 
 				// Do we need to close the connection
@@ -122,61 +177,57 @@ sv.socket.rClient = function(host, port, outputData, listener, echo, echofun) {
 	return(null);
 }
 
-
 // Send an R command through the socket
-sv.socket.rCommand = function(cmd, echo, echofun, procfun, context) {
-
-	// Get R's character set before first request and store in sv.socket.charset (Bug #240)
-	// TODO: 	sv.socket.charset does not change until next R command, update charset at server init
-	//		will return wrong charset with non-windows encodings other than utf-8 and latin1
-	if (!sv.socket.charsetUpdated) {
-		sv.socket.charsetUpdated = true;
-		sv.r.evalCallback(".tmp <- l10n_info(); cat(if (.tmp$`UTF-8`) \"UTF-8\" else if (.tmp$`Latin-1`) \"LATIN1\" else paste(\"CP\", .tmp$codepage, sep=\"\")); rm(.tmp);", function(s) {
-			sv.socket.charset = s;
-		});
-	}
+this.rCommand = function(cmd, echo, echofun, procfun, context) {
+	// Get R's character set before first request and set converter.charset (Bug #240)
+	// TODO: 	charset does not change until next R command, update charset at server init
+	//this.updateCharset();
 
 	cmd = sv.tools.strings.replaceCRLF(cmd, "<<<n>>>");
+
+	var listener;
 	if (procfun == null) {	// Do nothing at the end
-		var listener = { finished: function(data) {} }
+		listener = { finished: function(data) {} }
 	} else {	// Call procfun at the end
-		var listener = { finished: function(data) { procfun(data, context); } }
+		listener = { finished: function(data) { procfun(data, context); } }
 	}
 	// TODO: deal with error checking for this command
 	var port = sv.prefs.getString("sciviews.client.socket", "8888");
 	var id = "<<<id=" + sv.prefs.getString("sciviews.client.id", "SciViewsK") +
 		">>>";
-	var res = sv.socket.rClient(sv.socket.host, port, id + cmd + "\n",
+	var res = this.rClient(this.host, port, id + cmd + "\n",
 		listener, echo, echofun);
+
+	// if exception was returned:
+	if (res.name && res.name == "NS_ERROR_OFFLINE") {
+		sv.cmdout.message(sv.translate("Error: offline"), 5000);
+	}
+
 	return(res);
 }
 //sv.socket.rCommand("<<<q>>>cat('library = '); str(library)");
 
+// Core function for the SciViews-K socket server: create the _serverSocket object
+this.serverStart = function() {
+	sv.debugMsg("serverStart!");
 
-/////// Socket server //////////////////////////////////////////////////////////
-sv.socket.debug = false; // Set to true for debugging mode
-sv.socket.serverIsLocal = true; // Is the socket servicing only localhost?
+	if (_serverStarted) try {
+		this.serverStop();
+	} catch(e) {
+		sv.cmdout.append(e);
+	}
 
-const nsITransport = Components.interfaces.nsITransport;
-
-var serverSocket;			// The SviViews-K socket server object
-var serverStarted = false;	// Is the socket server started?
-var inputString;			// The string with the command send by the client
-var outputString;			// The string with the result to send to the client
-
-// Core function for the SciViews-K socket server: create the serverSocket object
-sv.socket.serverStart = function() {
 	var listener = {
 		onSocketAccepted : function(socket, transport) {
 			try {
+				sv.debugMsg("onSocketAccepted!");
+
 				// Make sure to clean input and output strings before use
-				inputString = "";
-				outputString = "";
-				if (sv.socket.debug) {
-					sv.cmdout.clear();
-					sv.cmdout.append("#--# SciViews-K socket client: " +
+				_inputString = "";
+				_outputString = "";
+				_output = [];
+				sv.debugMsg("SciViews-K socket client: " +
 						transport.host + " on port " + transport.port + "\n");
-				}
 
 				// Then, read data from the client
 				var inputStream = transport.openInputStream(nsITransport.
@@ -187,88 +238,94 @@ sv.socket.serverStart = function() {
 					nsIScriptableInputStream);
 				sin.init(inputStream);
 
-				// Wait for input up to 10 sec max, with synchroneous com only)
-				var millis = 10000;
 				var date = new Date();
-				var curDate = null;
 				do {
-					curDate = new Date();
-					inputString = sin.read(512);
-				} while(inputString == "" & curDate - date < millis)
+					_inputString = sin.read(512);
+				} while(_inputString == "" && ((new Date()) - date < millis))
 
 				// Read the complete data
 				while (sin.available() > 0)
-					inputString += sin.read(512);
+					_inputString += sin.read(512);
 
-				// INTL
-//				inputString = converter.ConvertToUnicode(inputString);
+				if (converter.charset) try {
+					_inputString = converter.ConvertToUnicode(_inputString);
+				} catch (e) {
+					sv.debugMsg(e);
+				}
 
 				// Is there data send?
-				if (inputString == "") {
-					if (sv.socket.debug) {
-						sv.cmdout.append("#--# SciViews-K socket client: nothing send!\n");
-					}
-					outputString += "Error: no command send!\n"
+				if (_inputString == "") {
+					//_outputString += "Error: no command send!\n"
+					_output.push("Error: no command send!");
 				} else {
 					// Process the command
-					if (sv.socket.debug) sv.cmdout.append("#--# Command send" +
-						" by the client:\n" + inputString);
+					sv.debugMsg("!Command send by the client:\n" + _inputString);
 					try {
-						ko.commands.doCode(1, inputString);
-					} catch(cmderr) {
-						if (cmderr) outputString += "\nError: " + cmderr;
+						eval(_inputString);
+					} catch(e) {
+						//_outputString += e.toString() ;
+						_output.push(e.toString());
 					}
 				}
-				if (sv.socket.debug) {
-					if (outputString == "") {
-						sv.cmdout.append("#--# Nothing to return" +
-							" to the socket client");
-					} else {
-						sv.cmdout.append("#--# Result:\n" + outputString);
-					}
-				}
+				sv.debugMsg(_output.length?
+							("Result:\n" + _output.join("\n")) :
+							("Nothing to return to the socket client")
+				);
 
 				// And finally, return the result to the socket client
 				// (append \n at the end)
-				outputString += "\n";
+				_outputString = _output.join("\n") + "\n";
+
+				if (converter.charset) try {
+					_outputString = converter.ConvertFromUnicode(_outputString);
+				} catch(e) {
+					sv.debugMsg(e);
+				}
+
 				var outputStream = transport.openOutputStream(nsITransport.
 					OPEN_BLOCKING, 0, 0);
-				outputStream.write(outputString, outputString.length);
+				outputStream.write(_outputString, _outputString.length);
 			} catch(e) {
-				dump(e);
+				alert(e);
 			} finally {
 				// Make sure that streams are closed
 				outputStream.close();
 				inputStream.close();
+				sv.debugMsg("SocketAccepted: end");
 			}
 		},
 
 		onStopListening : function(socket, status) {
 			// The connection is closed by the client
-			if (sv.socket.debug)
-				sv.cmdout.append("#--# SciViews-K socket closed");
+			sv.debugMsg("SciViews-K socket closed");
 		}
 	};
 
 	try {
-		serverSocket = Components.
+		_serverSocket = Components.
 			classes["@mozilla.org/network/server-socket;1"]
 			.createInstance(Components.interfaces.nsIServerSocket);
 		var port = sv.prefs.getString("sciviews.server.socket", "7052");
-		serverSocket.init(port, sv.socket.serverIsLocal, -1);
-		serverSocket.asyncListen(listener);
-	} catch(ex) { dump(ex); }
-	serverStarted = true;
-	if (sv.socket.debug)
-		ko.statusBar.AddMessage("SciViews-K socket server started", "svSock",
-			2000, true);
-}
+		_serverSocket.init(port, sv.socket.serverIsLocal, -1);
+		_serverSocket.asyncListen(listener);
+		_serverStarted = true;
+	} catch(ex) {
+		alert(ex);
+	}
+	sv.debugMsg("SciViews-K socket server started");
+};
+
 
 // Stop the SciViews-K socket server
-sv.socket.serverStop = function() {
-	if (serverStarted) {
-		serverSocket.close();
-		serverStarted = false;
+this.serverStop = function() {
+	if (_serverStarted) {
+		try {
+			_serverSocket.close();
+		} catch(e) {
+			alert(e);
+		}
+
+		_serverStarted = false;
 		ko.statusBar.AddMessage("SciViews-K socket server stopped",
 			"svSock", 2000, true);
 	} else {
@@ -278,16 +335,16 @@ sv.socket.serverStop = function() {
 }
 
 // Is the SciViews-K socket server started?
-sv.socket.serverIsStarted = function() {
-	return(serverStarted);
+this.serverIsStarted = function() {
+	return(_serverStarted);
 }
 
 // What is the current SciViews-K socket server config?
-sv.socket.serverConfig = function() {
+this.serverConfig = function() {
 	var serverStatus = " (stopped)"
-	if (serverStarted) serverStatus = " (started)"
+	if (_serverStarted) serverStatus = " (started)"
 	var port = sv.prefs.getString("sciviews.server.socket", "7052");
-	if (sv.socket.serverIsLocal) {
+	if (this.serverIsLocal) {
 		return("Local socket server on port " + port + serverStatus);
 	} else {
 		return("Global socket server on port " + port + serverStatus);
@@ -295,11 +352,18 @@ sv.socket.serverConfig = function() {
 }
 
 // Write to the socket server, use this to return something to the client
-sv.socket.serverWrite = function(data) {
-	if (serverStarted) {
-		outputString += data;
+this.serverWrite = function(data) {
+	if (_serverStarted) {
+		_output.push(data);
 	} else {
 		alert("Trying to write data though the SciViews-K socket server" +
-			" that is not started!")
+			" that is not started!");
 	}
 }
+
+window.setTimeout(this.serverStart, 500);
+window.setTimeout(this.updateCharset, 1000);
+
+//this.charset = 'cp1250';
+
+}).apply(sv.socket);
