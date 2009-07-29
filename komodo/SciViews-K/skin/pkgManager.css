@@ -33,7 +33,7 @@ richlistitem[selected="true"] {
 	color: HighlightText;
 	background-attachment: scroll;
 	background-color: Highlight;
-	background-image: url(itemEnabledFader.png);
+	background-image: url("chrome://sciviewsk/skin/images/itemEnabledFader.png");
 	background-position: 0% 0%;
 	background-repeat: repeat;
 }

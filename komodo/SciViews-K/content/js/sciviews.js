@@ -120,7 +120,6 @@ sv.getPart = function(what, resel, clipboard) {
 };
 
 
-
 // Select a part of text in the current buffer and return it
 // differs from sv.getPart that it does not touch the selection
 sv.getTextRange = function(what, gotoend, select, range) {
@@ -148,11 +147,11 @@ sv.getTextRange = function(what, gotoend, select, range) {
 	   // tricky one: select an entire R function
 	   // this should work even with extremely messy coded ones.
 
-	   // function declaration pattern:
-	   var funcRegExStr = "\\S+\\s*(<-|=)\\s*function\\s*\\(";
+		// function declaration pattern:
+		var funcRegExStr = "\\S+\\s*(<-|=)\\s*function\\s*\\(";
 
 		var findSvc = Components.classes['@activestate.com/koFindService;1']
-			.getService(Components.interfaces.koIFindService);
+			 .getService(Components.interfaces.koIFindService);
 
 		// save previous find settings
 		var oldFindPref = {searchBackward: true, matchWord: false, patternType: 0};
@@ -161,8 +160,8 @@ sv.getTextRange = function(what, gotoend, select, range) {
 		findSvc.options.matchWord = false;
 		findSvc.options.patternType = 2;
 
-		var line0, line1, pos1, pos2, pos3;
-		var lineArgsStart, lineBodyStart, lineBodyEnd, firstLine; //lineArgsEnd
+		var line0, line1, pos1, pos2, pos3, pos4;
+		var lineArgsStart, lineBodyStart, firstLine; //lineArgsEnd lineBodyEnd,
 		var pos0 = ke.getLineEndPosition(curLine);
 		var findRes;
 
@@ -193,7 +192,6 @@ sv.getTextRange = function(what, gotoend, select, range) {
 			pos3 = ke.positionAtChar(0, findRes.end);
 
 			lineArgsStart = ke.lineFromPosition(pos1);
-			//lineArgsEnd = ke.lineFromPosition(pos2);
 			lineBodyStart = ke.lineFromPosition(pos3);
 
 			// get first line of the folding block:
@@ -201,20 +199,23 @@ sv.getTextRange = function(what, gotoend, select, range) {
 				lineBodyStart : lineArgsStart;
 
 			// get end of the function body
-			lineBodyEnd = ke.getLastChild(firstLine, ke.getFoldLevel(firstLine));
+			if (ke.getWCharAt(pos3 - 1) == "{") {
+				pos4 = ke.braceMatch(pos3 - 1) + 1;
+			} else {
+				pos4 = ke.getLineEndPosition(lineBodyStart);
+			}
 
 		// repeat if selected function does not embrace cursor position and if
 		// there are possibly any functions enclosing it:
-		} while (lineBodyEnd < curLine && ke.getFoldParent(lineArgsStart) != -1);
+		} while (pos4 < curPos && ke.getFoldParent(lineArgsStart) != -1);
 
-		if (lineBodyEnd >= curLine) {
+		if (pos4 >= curPos) {
 			pStart = pos0;
-			pEnd =  ke.getLineEndPosition(lineBodyEnd);
+			pEnd = pos4;
 		}
 
 		// restore previous find settings
 		for (var i in oldFindPref) findSvc.options[i] = oldFindPref[i];
-
 
 	   break;
 	case "block":
@@ -297,7 +298,7 @@ sv.fileOpen = function(directory, filename, title, filter, multiple) {
 	  .createInstance(nsIFilePicker);
 
 	if (!title)
-	  title = sv.translate("titleOpenFile");
+	  title = sv.translate("Open file");
 
 	var mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
 
@@ -352,7 +353,7 @@ sv.fileOpen = function(directory, filename, title, filter, multiple) {
 // Browse for the URI, either in an internal, or external (default) browser
 sv.browseURI = function(URI, internal) {
 	if (URI == "") {
-		alert(sv.translate("ItemNotFound"));	// Because we call this from other
+		alert(sv.translate("Item not found!"));	// Because we call this from other
 		// functions that returns "" in case it doesn't find it (see sv.r.help)
 	} else {
 		if (internal == null)
@@ -370,7 +371,7 @@ sv.browseURI = function(URI, internal) {
 // Show a text file in a buffer, possibly in read-only mode
 sv.showFile = function(path, readonly) {
 	if (path == "") {
-		alert(sv.translate("ItemNotFound")); // Same remark as for sv.browseURI()
+		alert(sv.translate("Item not found!")); // Same remark as for sv.browseURI()
 	} else {
 		ko.open.URI(path, "editor");
 		if (readonly == true) {
@@ -396,7 +397,7 @@ sv.helpURL = function(URL) {
 		if (sel == "") {
 			// Try to get the URL-escaped word under the cursor
 			if (ko.interpolate.getWordUnderCursor(ke) == "") {
-				alert(sv.translate("NothingSelected"));
+				alert(sv.translate("Nothing is selected!"));
 				return(false);
 			} else {
 				sel = ko.interpolate.interpolateStrings('%W');
@@ -458,7 +459,7 @@ sv.helpContext = function() {
 				}
 
 				// No help data found
-				var msg = sv.translate("NoHelpFoundForTool");
+				var msg = sv.translate("No help found for this tool!");
 				StatusBar_AddMessage(msg, "debugger", 5000, true);
 				return(false);
 			}
@@ -466,7 +467,7 @@ sv.helpContext = function() {
 			// Try to get R help for current word
 			topic = sv.getText();
 			if (topic == "") {
-				alert(sv.translate("NothingSelected"));
+				alert(sv.translate("Nothing is selected!"));
 			} else sv.r.help(topic);
 		}
 		return(true);
@@ -530,29 +531,35 @@ sv.prefs.setString("RWiki-help", "", true);
 
 // translate messages using data from chrome://sciviewsk/locale/main.properties
 sv.translate = function(textId) {
-	var strbundle = document.getElementById("svBundle");
-	if (strbundle == null) {
-		// bug on Komodo 4 and/or Linux: cannot get stringbundle by id:
-		var strbundles = document.getElementsByTagName("stringbundle");
-		for (var i = 0; i < strbundles.length; i++) {
-			if (strbundles[i].id == "svBundle") {
-				strbundle = strbundles[i];
-				break;
-			}
-		}
-	}
+
+	var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
+		.getService(Components.interfaces.nsIStringBundleService)
+		.createBundle("chrome://sciviewsk/locale/main.properties");
+	var param;
 
 	try {
 		if (arguments.length > 1) {
-			var param = [];
+			param = [];
+
 			for (var i = 1; i < arguments.length; i++)
 				param = param.concat(arguments[i]);
-			return strbundle.getFormattedString(textId, param);
+			//return strbundle.getFormattedString(textId, param);
+			return bundle.formatStringFromName(textId, param, param.length);
+
 		} else {
-			return strbundle.getString(textId);
+			//return strbundle.getString(textId);
+			return bundle.GetStringFromName(textId);
 		}
 	} catch (e) {
-		return "<" + textId + ">";
+		// fallback if no translation found
+		if (param) { // a wannabe sprintf, just substitute %S and %nS patterns:
+			var rx;
+			for (var i = 0; i < param.length; i++) {
+				rx = new RegExp("%("+ (i + 1) +")?S");
+				textId = textId.replace(rx, param[i]);
+			}
+		}
+		return textId;
 	}
 }
 

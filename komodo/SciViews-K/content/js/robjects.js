@@ -887,21 +887,6 @@ this.getCellProperties =  function(idx, column, props) {
 
 this.getColumnProperties =  function(column, element, prop) {};
 
-/*// used for debugging
-this.toString =  function() {
-	var vd = this.visibleData;
-	var ret = "", indent;
-	ret = "length: " + vd.length + "\n";
-	for (var i = 0; i < vd.length; i++) {
-		indent = ""; for (var j = 0; j < vd[i].level; j++) { indent += "+ "; }
-
-		ret += vd[i].origItem.index + indent + " ^"+  vd[i].parentIndex +  "-> " + vd[i].uid + " (" +  vd[i].name + ")" +
-			(vd[i].isContainer? "*" : "" )
-			+ "\n";
-	}
-	return ret;
-};*/
-
 this.getSelectedRows =  function() {
 	var start = new Object();
 	var end = new Object();
@@ -921,10 +906,38 @@ this.getSelectedRows =  function() {
 this.listObserver = {
 	onDragStart: function (event, transferData, action) {
 		_this.onEvent(event);
-		var namesArr = _this.getSelectedNames(event.ctrlKey);
+		var namesArr = _this.getSelectedNames(event.ctrlKey, event.shiftKey);
 		transferData.data = new TransferData();
 		transferData.data.addDataForFlavour("text/unicode", namesArr.join(', '));
 		return true;
+	},
+
+	onDrop : function (event, transferData, session) {
+		var path, pos;
+		var data = transferData;
+		if (transferData.flavour.contentType == "text/unicode")
+			path = new String(transferData.data).trim();
+		else
+			return false;
+		pos = _this.searchPaths.indexOf(path);
+		if (pos == -1)			return false;
+
+		document.getElementById("sciviews_robjects_searchpath_listbox")
+			.getItemAtIndex(pos).checked = true;
+		_addObjectList(path);
+		return true;
+	},
+
+	onDragOver : function(event, flavour, session) {
+		session.canDrop = flavour.contentType == 'text/unicode'
+						   || flavour.contentType == 'text/x-r-package-name';
+	},
+
+	getSupportedFlavours : function () {
+		var flavours = new FlavourSet();
+		flavours.appendFlavour("text/x-r-package-name");
+		flavours.appendFlavour("text/unicode");
+		return flavours;
 	}
 };
 
@@ -1027,7 +1040,6 @@ this.packageSelectedEvent = function(event) {
 };
 
 
-
 this.refreshAll = function () {
 	var selectedPackages = new Array(_this.treeData.length);
 	for (var i = 0; i < selectedPackages.length; i++)
@@ -1048,8 +1060,8 @@ this.refreshAll = function () {
 this.removeSelected = function(doRemove) {
 	var item, type, name, vItem, cmd = [];
 	var rmItems = {}, ObjectsToRemove = {}, envToDetach = [], ObjectsToSetNull = {};
-
 	var rows = this.getSelectedRows();
+	if (rows.length == 0)	return false;
 
 	for (i in rows) {
 		vItem = this.visibleData[rows[i]];
@@ -1086,9 +1098,7 @@ this.removeSelected = function(doRemove) {
 					if (type == "sub-object") {
 						if (typeof ObjectsToSetNull[env] == "undefined")
 							ObjectsToSetNull[env] = [];
-
 						ObjectsToSetNull[env].push(name);
-
 					} else {
 						if (typeof ObjectsToRemove[env] == "undefined")
 							ObjectsToRemove[env] = [];
@@ -1116,7 +1126,6 @@ this.removeSelected = function(doRemove) {
 				break;
 			}
 		}
-
 	}
 
 	for (var env in ObjectsToRemove)
@@ -1128,25 +1137,24 @@ this.removeSelected = function(doRemove) {
 
 	_createVisibleData();
 
+	if (!cmd.length)	return false;
+
 	if(doRemove) {
 		// remove immediately
 		sv.r.evalCallback(cmd.join("\n"), sv.cmdout.append);
 	} else {
 		// insert commands to current document
 		var view = ko.views.manager.currentView;
-		if (!view)
-			return false;
-		view.setFocus();
-
+		if (!view)			return false;
+		//view.setFocus();
 		var scimoz = view.scimoz;
-
-		var nl = ["\r\n", "\n", "\r"][scimoz.eOLMode];
-		scimoz.insertText(scimoz.currentPos, cmd.join(nl));
+		var nl = ";" + ["\r\n", "\n", "\r"][scimoz.eOLMode];
+		scimoz.scrollCaret();
+		scimoz.insertText(scimoz.currentPos, cmd.join(nl) + nl);
 	}
 
-	//_this.selection.select(rows[0]);
-	_this.selection.clearSelection();
-
+	_this.selection.select(Math.min(rows[0], _this.rowCount - 1));
+	//_this.selection.clearSelection();
 	return true;
 }
 
@@ -1182,17 +1190,20 @@ this.getSelectedNames = function(fullNames, extended) {
 }
 
 this.insertName = function(fullNames, extended) {
+	//TODO: `quote` non-syntactic names of 1st level (.type = 'object')
+	// extended mode: object[c('sub1', 'sub2', 'sub3')]
 	var view = ko.views.manager.currentView;
-	if (!view)
-		return;
+	if (!view)		return;
 	var text = _this.getSelectedNames(fullNames, extended).join(', ');
 	//view.setFocus();
 	var scimoz = view.scimoz;
 	var length = scimoz.length;
 
-	if (scimoz.getWCharAt(scimoz.selectionStart - 1).search(/^[\w\.\u0100-\uFFFF"'`,\.;:=]$/) != -1)
+	if (scimoz.getWCharAt(scimoz.selectionStart - 1)
+		.search(/^[\w\.\u0100-\uFFFF"'`,\.;:=]$/) != -1)
 		text = " " + text;
-	if (scimoz.getWCharAt(scimoz.selectionEnd).search(/^[\w\.\u0100-\uFFFF"'`]$/) != -1)
+	if (scimoz.getWCharAt(scimoz.selectionEnd)
+		.search(/^[\w\.\u0100-\uFFFF"'`]$/) != -1)
 		text += " ";
 
 	scimoz.insertText(scimoz.currentPos, text);
@@ -1392,8 +1403,6 @@ this.onEvent = function(event) {
 	//document.getElementById("sciviews_robjects_objects_tree").focus();
 	event.originalTarget.focus();
 }
-//fsplitbodymass.mosdyday
-
 
 // drag & drop handling for search paths list
 this.packageListObserver = {
@@ -1406,15 +1415,51 @@ this.packageListObserver = {
 		} else if (transferData.flavour.contentType == "text/unicode") {
 			path = new String(transferData.data).trim();
 		}
-
 		// attach the file if it is an R workspace
 		if (path.search(/\.RData$/i) > 0) {
-			sv.r.loadWorkspace(path, true);
-			_this.getPackageList(); // TODO: run it as callback after workspace is attached
-		}
-	},
+			//alert("will attach: " + path);
+			sv.r.loadWorkspace(path, true, function(message) {
+				_this.getPackageList();
+				ko.dialogs.alert(sv.translate("R said:"), message,
+								 sv.translate("Attach workspace"));
+			});
+		} else {
+			path = path.replace(/^package:/, "");
 
-	onDragEnter : function(event, flavour, session) {
+			sv.r.evalCallback("tryCatch(library(\"" + path + "\"), error=function(e) {cat(\"<error>\"); message(e)})",
+				function(message) {
+					if (message.indexOf('<error>') > -1) {
+						message = message.replace('<error>', '');
+					} else {
+						_this.getPackageList();
+					}
+					if (message) {
+						ko.dialogs.alert(sv.translate("R said:"), message,
+										 sv.translate("Load library"));
+					}
+			});
+		}
+		return true;
+	},
+//	onDragEnter : function(event, flavour, session) {
+//		sv.debugMsg(event.type + ":" + session);
+////package:gpclibpackage:adehabitat
+//		//sv.xxx = session;
+//	},
+	//
+	//onDragExit : function (event, session) {
+	//	//sv.debugMsg(event.type + ":" + session);
+	//},
+	onDragStart : function(event, transferData, action) {
+		if (event.target.tagName != 'listitem')
+			return false;
+
+		var text = _this.searchPaths[document
+			.getElementById("sciviews_robjects_searchpath_listbox")
+			.selectedIndex];
+		transferData.data = new TransferData();
+		transferData.data.addDataForFlavour("text/unicode", text);
+		return true;
 	},
 
 	onDragOver : function(event, flavour, session) {
@@ -1430,6 +1475,7 @@ this.packageListObserver = {
 	}
 }
 
+
 this.packageListKeyEvent = function(event) {
 	var keyCode = event.keyCode;
 	switch(keyCode) {
@@ -1442,15 +1488,16 @@ this.packageListKeyEvent = function(event) {
 				return;
 
 			sv.r.evalCallback(
-				'tryCatch(detach("' + pkg + '"), error = function(e) cat("<error>"));', function(data) {
-				sv.debugMsg(data);
-				if (data.trim() != "<error>") {
-					_removeObjectList(pkg);
-					listbox.removeChild(listItem);
-					sv.cmdout.append("Namespace " + pkg + " detached.");
-				} else {
-					sv.cmdout.append("Namespace " + pkg + " could not be detached.");
-				}
+				'tryCatch(detach("' + pkg.addslashes() + '"), error = function(e) cat("<error>"));',
+				function(data) {
+					sv.debugMsg(data);
+					if (data.trim() != "<error>") {
+						_removeObjectList(pkg);
+						listbox.removeChild(listItem);
+						sv.cmdout.append(sv.translate("Namespace %S detached.", pkg));
+					} else {
+						sv.cmdout.append(sv.translate("Namespace %S could not be detached.", pkg));
+					}
 			});
 			return;
 		default:
@@ -1458,7 +1505,24 @@ this.packageListKeyEvent = function(event) {
 	}
 }
 
-
+//
+//_setOnEvent("sciviews_robjects_searchpath_listbox",	"ondragdrop",
+//			"nsDragAndDrop.drop(event, rObjectsTree.packageListObserver);"
+//			);
+//_setOnEvent("sciviews_robjects_searchpath_listbox",	"ondragover",
+//			"nsDragAndDrop.dragOver(event, rObjectsTree.packageListObserver);"
+//			);
+//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragexit",
+//			"nsDragAndDrop.dragExit(event, rObjectsTree.packageListObserver);"
+//			);
+//_setOnEvent("sciviews_robjects_searchpath_listbox",	"ondraggesture",
+//			"nsDragAndDrop.startDrag(event, rObjectsTree.packageListObserver);"
+//			);
+//_setOnEvent("sciviews_robjects_objects_tree_main",	"ondragover",
+//			"nsDragAndDrop.dragOver(event, rObjectsTree.listObserver);"
+//			);
+//_setOnEvent("sciviews_robjects_objects_tree_main",	"ondragdrop",
+//			"nsDragAndDrop.drop(event, rObjectsTree.listObserver);"
+//			);
 
 } ).apply(rObjectsTree);
-

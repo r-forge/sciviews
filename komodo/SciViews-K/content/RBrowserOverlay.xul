@@ -275,9 +275,10 @@
           persist="height collapsed"
 		  flex="1"
           >
-          <listbox flex="1" id="sciviews_robjects_searchpath_listbox"
-			ondragdrop="nsDragAndDrop.drop(event, window.rObjectsTree.packageListObserver);"
+		  <listbox flex="1" id="sciviews_robjects_searchpath_listbox"
+			ondragdrop="nsDragAndDrop.drop(event, rObjectsTree.packageListObserver);"
 			ondragover="nsDragAndDrop.dragOver(event, rObjectsTree.packageListObserver);"
+			ondraggesture="nsDragAndDrop.startDrag(event, rObjectsTree.packageListObserver);"
 			onkeypress="rObjectsTree.packageListKeyEvent(event);"
 			oncommand="rObjectsTree.packageSelectedEvent(event);"
 			/>
@@ -337,8 +338,10 @@
                 flex="1"
                 ordinal="9"/>
             </treecols>
-            <treechildren id="sciviews_robjects_objects_tree_main"
+			<treechildren id="sciviews_robjects_objects_tree_main"
               ondraggesture="nsDragAndDrop.startDrag(event, rObjectsTree.listObserver);"
+			  ondragdrop="nsDragAndDrop.drop(event, rObjectsTree.listObserver);"
+			  ondragover="nsDragAndDrop.dragOver(event, rObjectsTree.listObserver);"
               onclick="rObjectsTree.onEvent(event);"
               ondblclick="rObjectsTree.onEvent(event);"
               context="rObjectsContext"

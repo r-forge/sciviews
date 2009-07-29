@@ -73,8 +73,10 @@
 <!ENTITY rSrcPara.key "A">
 <!ENTITY rSrcSel "Source selection">
 <!ENTITY rSrcSel.key "E">
-<!ENTITY startR "Start R">
-<!ENTITY startR.key "R">
+<!ENTITY StartR "Start R">
+<!ENTITY StartR.key "R">
+<!ENTITY QuitR "Quit R">
+<!ENTITY QuitR.key "Q">
 
 <!ENTITY svBrowseWD "Browse for working directory">
 <!ENTITY svBrowseWD.key "D">

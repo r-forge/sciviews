@@ -22,21 +22,11 @@ ko.help.language = function () {
 
     var command = null, name = null;
     if (language) {
-		//////////////////////// R help mod:
-		if (language == "R") {
-			var topic;
-			try {
-				topic = ko.interpolate.interpolateStrings("%w").trim();
-				sv.r.help(topic);
-				return;
-			} catch (e) {}
-
-		} //////////////// end: R help mod
-
         if (gPrefs.hasStringPref(language + "HelpCommand")) {
             command = gPrefs.getStringPref(language + "HelpCommand");
         } else {
-            var langRegistrySvc = Components.classes['@activestate.com/koLanguageRegistryService;1'].getService(Components.interfaces.koILanguageRegistryService);
+            var langRegistrySvc = Components.classes['@activestate.com/koLanguageRegistryService;1']
+				.getService(Components.interfaces.koILanguageRegistryService);
             var languageObj = langRegistrySvc.getLanguage(language);
             if (languageObj.searchURL) {
                 command = "%(browser) " + languageObj.searchURL;
@@ -50,5 +40,12 @@ ko.help.language = function () {
         command = gPrefs.getStringPref("DefaultHelpCommand");
         name = "Help";
     }
-    ko.run.runCommand(window, command, null, null, false, false, true, "no-console", 0, "", 0, name);
+
+	if (command.search(/^\s*javascript:\s*(\S.*)\s*$/) != -1)  {
+		command = ko.interpolate.interpolateStrings(RegExp.$1);
+		eval(command);
+	} else {
+		ko.run.runCommand(window, command, null, null, false, false, true, "no-console", 0, "", 0, name);
+	}
+
 }

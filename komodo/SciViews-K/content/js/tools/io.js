@@ -91,6 +91,15 @@ sv.io.writefile = function(filename, content, encoding, append) {
 	}
 }
 
+sv.io.readURI = function(uri) {
+	var fileSvc = Components.classes["@activestate.com/koFileService;1"]
+		.getService(Components.interfaces.koIFileService);
+	var file = fileSvc.getFileFromURI(uri);
+	file.open(0);
+	var res = file.readfile();
+	file.close();
+	return res;
+}
 
 sv.io.fileExists = function(path) {
 	var file = Components.classes["@mozilla.org/file/local;1"].
@@ -111,7 +120,6 @@ sv.io.fileExists = function(path) {
 	}
 	return 0;
 }
-
 
 sv.io.tempFile = function(prefix) {
 	var nsIFile = Components.interfaces.nsIFile;

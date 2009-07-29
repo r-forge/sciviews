@@ -71,9 +71,10 @@ class KoRLanguage(KoUDLLanguage):
     # TODO: we probably have to rework and complete these lists!
     _dedenting_statements = ['return', 'break', 'else', 'next']
     _indenting_statements = ['switch', 'if', 'ifelse', 'while', 'for', 'repeat']
-    searchURL = "http://wiki.r-project.org/rwiki/rhelp.php?id=%W"
-    namedBlockDescription = 'R functions and classes'
-    
+    #searchURL = "http://wiki.r-project.org/rwiki/rhelp.php?id=%W"
+    searchURL = "javascript: sv.r.help('%w');"
+    namedBlockDescription = 'R functions'
+
     # TODO: I need to change this!
     # this matches R function now, but I cannot see any effect / KB
     namedBlockRE = r'^[ \t]*(?:[\.\w\x80-\xff][_\.\w\x80-\xff]+|(`).+\1)\s*<-\s*function\s*\(.*$'
