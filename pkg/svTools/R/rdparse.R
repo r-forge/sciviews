@@ -13,6 +13,6 @@ rdparse <- function( file ){
 	list( offset.start = offset.start, 
 	  offset.end = offset.end, 
 		chunks = chunks, names= names. )
+	
 }
-
 

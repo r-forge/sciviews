@@ -164,7 +164,9 @@ function (menu, item, action, image = "", accel = "", options = "")
 
 tkMenuItemCall <- function( expr ){
 	if( TRUE ){
+		# remove { and } from the deparsed expression
 		text <- head(deparse( substitute( expr ) )[-1], -1)
+		cat( ">> ", text , "\n" )
 		.Internal( addhistory( text ) )
 	}
 	eval( expr, envir = parent.frame() )
