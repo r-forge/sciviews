@@ -48,11 +48,9 @@ function _RControlSelection_supported() {
 	if (!currentView || !currentView.scimoz)
 		return false;
 
-	var anythingSelected = (currentView.scimoz.selectionEnd -
-							currentView.scimoz.selectionStart) != 0;
-	return(_isRRunning()
-		   && currentView.document.language == "R"
-		   && anythingSelected);
+	return _RControl_supported()
+		&&  ((currentView.scimoz.selectionEnd -
+							currentView.scimoz.selectionStart) != 0);
 }
 
 // selects the checkbox on selected element, while deselecting others
@@ -200,43 +198,38 @@ this.setControllers = function() {
 
 	var viewManager = ko.views.viewManager;
 
-	viewManager.prototype.is_cmd_sv_OpenPkgManager_enabled =
-	viewManager.prototype.is_cmd_sv_OpenPkgManager_supported =
-		_isRRunning;
-	viewManager.prototype.is_cmd_sv_BrowseWD_enabled =
-	viewManager.prototype.is_cmd_sv_BrowseWD_supported =
-		_isRRunning;
+	var cmdsIfRRunning = ['OpenPkgManager', 'BrowseWD', 'quit_R', 'update_charset'];
+	var cmdsIfRNotRunning = ['start_R'];
 
-	viewManager.prototype.is_cmd_sv_quit_R_supported =
-	viewManager.prototype.is_cmd_sv_quit_R_enabled =
-		_isRRunning;
+	// make these commands active only when current document language is R
+	var cmdsIfIsRView = ["RunAll", "SourceAll", "RunBlock", "RunFunction", "RunLine", "RunPara",
+	 "SourceBlock", "SourceFunction", "SourcePara", "TriggerCompletion"];
+	// ... and if some text is selected
+	var cmdsIfIsRViewAndSelection = [ "RunSelection", "SourceSelection"];
 
-	viewManager.prototype.do_cmd_sv_quit_R = function() { sv.r.quit(); };
 
-	viewManager.prototype.is_cmd_sv_start_R_enabled =
-	viewManager.prototype.is_cmd_sv_start_R_supported =
-		function() { return !_isRRunning();};
+	function _setCommandCtrl1 (arr, fun, pfx) {
+		pfx = "is_cmd_" + pfx;
+		for (var i in cmdsIfRRunning) {
+			viewManager.prototype[pfx + arr[i] + "_supported"] = fun;
+			viewManager.prototype[pfx + arr[i] + "_enabled"] = fun;
+		}
+	}
+
+	_setCommandCtrl1(cmdsIfRRunning, _isRRunning, "sv_");
+	_setCommandCtrl1(cmdsIfRNotRunning, function() { return !_isRRunning()}, "sv_");
+	_setCommandCtrl1(cmdsIfIsRView, _RControl_supported, "sv_R");
+	_setCommandCtrl1(cmdsIfIsRViewAndSelection, _RControlSelection_supported, "sv_R");
+
+	viewManager.prototype.do_cmd_sv_quit_R = function() {
+		sv.r.quit(); };
+
+	viewManager.prototype.do_cmd_sv_update_charset = function() {
+		sv.socket.updateCharset(true);
+		sv.cmdout.message(sv.translate("R uses \"%S\" encoding.", sv.socket.charset));
+		};
 
 	_keepCheckingR();
-
-	// make these commands active only when current document language is R
-	var cmdNames = ["RunAll", "SourceAll", "RunBlock", "RunFunction", "RunLine", "RunPara",
-	 "SourceBlock", "SourceFunction", "SourcePara", "TriggerCompletion"];
-
-
-
-	for (i in cmdNames) {
-		viewManager.prototype["is_cmd_sv_R" + cmdNames[i] + "_supported"] = _RControl_supported;
-		viewManager.prototype["is_cmd_sv_R" + cmdNames[i] + "_enabled"] = _RControl_supported;
-	}
-
-	// make these commands active only when current document language is R
-	// ... and if some text is selected
-	cmdNames = [ "RunSelection", "SourceSelection"];
-	for (i in cmdNames) {
-		viewManager.prototype["is_cmd_sv_R" + cmdNames[i] + "_supported"] = _RControlSelection_supported;
-		viewManager.prototype["is_cmd_sv_R" + cmdNames[i] + "_enabled"] = _RControlSelection_supported;
-	}
 
 	// to run it with the same key as autocompletion with other languages
 	// command "cmd_triggerPrecedingCompletion" is replaced in XUL
@@ -422,10 +415,11 @@ this.setKeybindings = function(clearOnly) {
 
 addEventListener("load", sv.command.setControllers, false);
 addEventListener("load", sv.command.setKeybindings, false);
+
+
 /*
 
 //Useful garbage. delete it later.
-
 // command controllers template:
 vm.prototype.is_cmd_Test_supported
 vm.prototype.do_cmd_Test = function() { alert("do_cmd_Test!"); }

@@ -199,7 +199,7 @@ this.rCommand = function(cmd, echo, echofun, procfun, context) {
 		listener, echo, echofun);
 
 	// if exception was returned:
-	if (res.name && res.name == "NS_ERROR_OFFLINE") {
+	if (res && res.name && res.name == "NS_ERROR_OFFLINE") {
 		sv.cmdout.message(sv.translate("Error: offline"), 5000);
 	}
 
