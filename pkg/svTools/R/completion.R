@@ -2,8 +2,13 @@
 CompletePlusWrap <- function( ... ){
 	out <- CompletePlus( ..., minlength = 1 )
 	if( is.null(out) ){
-		out <- matrix( "", nc = 4, nr = 0 ) 
-	}else{
+		out <- matrix( "", nc = 4, nr = 0 )
+		token <- utils:::.guessTokenFromLine( )
+	} else{
+		token <- attr( out, "token" )
+		if( is.null(token) ){
+			token <- utils:::.guessTokenFromLine( )
+		}
 		types <- rep( "function" , nrow(out ) )
 		completions <- out[,1]
 		types[ completions %~% "= *$" ] <- "argument"
@@ -11,14 +16,14 @@ CompletePlusWrap <- function( ... ){
 		# arguments first, then functions, then packages
 		out <- cbind( out, types )	[ order(types),, drop = FALSE ]
 	}
-	token <- utils:::.guessTokenFromLine( )
+	
 	fun <- utils:::inFunction()
-  if(length(fun) && !is.na(fun)){
-    tooltip <- CallTip( fun )
-  } else {
-    tooltip <- NULL
-    fun <- ""
-  }
+  	if(length(fun) && !is.na(fun)){
+  	  tooltip <- CallTip( fun )
+  	} else {
+  	  tooltip <- NULL
+  	  fun <- ""
+  	}
 	
 	list( data = out, token = token,  
 	  fun = fun, tooltip = tooltip )

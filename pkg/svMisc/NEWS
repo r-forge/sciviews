@@ -4,6 +4,8 @@
 
 * CompletePlus removes the weird object names ( .__M__, ...) which were 
   causing trouble
+  
+* CompletePlus handles completions like "a[m"
 
 
 == Changes in svMisc 0.9-48
