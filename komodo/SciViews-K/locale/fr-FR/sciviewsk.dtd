@@ -81,3 +81,6 @@
 
 <!ENTITY svSelectRApp "Preferred R application">
 <!ENTITY svSelectRApp.key "E">
+
+<!ENTITY RUpdateCharset "Update character set">
+<!ENTITY RUpdateCharset.key "C">

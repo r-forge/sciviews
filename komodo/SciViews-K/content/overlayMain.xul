@@ -80,7 +80,13 @@
 
     <command id="cmd_sv_quit_R" key="key_cmd_sv_quit_R"
 		     oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
-		 desc="R: &StartR;" label="&QuitR;" accesskey="&QuitR.key;" />
+		 desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;" />
+	
+	<command id="cmd_sv_update_charset" key="key_cmd_sv_update_charset"
+		     oncommand="ko.commands.doCommand('cmd_sv_update_charset');"
+		 desc="R: &RUpdateCharset;" label="&RUpdateCharset;"
+			 accesskey="&RUpdateCharset.key;" />
+
 
 	<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
 		    oncommand="sv.command.openPkgManager();" disabled="true"
@@ -171,6 +177,9 @@
 	</menu>
 
 	<menuitem id="r_quit_console_menu" observes="cmd_sv_quit_R" class="menuitem-iconic r-quit-command-icon" />
+
+	<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
+			  class="menuitem" />
 
 	<menuitem id="r_start_pkg_manager" observes="cmd_sv_OpenPkgManager" class="menuitem" />
 	<menuitem id="r_browse_wd" observes="cmd_sv_BrowseWD" class="menuitem-iconic r-working-dir-icon" />
