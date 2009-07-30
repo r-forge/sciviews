@@ -14,6 +14,11 @@ function (linebuffer, cursorPosition = nchar(linebuffer), minlength = 2,
     comps <- utils:::.retrieveCompletions()
     if (!length(comps)) return(invisible(NULL))
 
+    # remove weird object names ( useful when the token starts with "." ) 
+    comps <- comps[ !grepl( "^[.]__[[:alpha:]]__", comps ) ]
+    if (!length(comps))
+		return(invisible(NULL))
+
     # restrict the completion for which information is gathered (speed things up)
     if (!"arguments" %in% types)
 		comps <- comps[regexpr("=$", comps) < 0]
@@ -53,7 +58,7 @@ function (linebuffer, cursorPosition = nchar(linebuffer), minlength = 2,
     }
 
 		# deal with completions with "$"
-		if (length(test.dollar <- grep("\\$", comps))) {
+		if (length(test.dollar <- grep("\\$", comps)) ) {
 			elements <- comps[test.dollar]
 			object <- gsub("\\$.*$", "", comps)[1]
 			after <- gsub("^.*\\$", "", comps)

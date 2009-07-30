@@ -131,6 +131,7 @@ function (toolbar, item, action, image = "", options = "")
 actionWrapper <- function( action ){
 	function(){
 		.Internal( addhistory( action ) )
+		cat (">> ", action, "\n" ) 
 		eval( parse( text = action ) )
 	}
 }

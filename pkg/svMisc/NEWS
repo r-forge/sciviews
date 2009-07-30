@@ -1,5 +1,11 @@
 = svMisc News
 
+== Changes in svMisc 0.9-50
+
+* CompletePlus removes the weird object names ( .__M__, ...) which were 
+  causing trouble
+
+
 == Changes in svMisc 0.9-48
 
 * Parse() does not detect incomplete R code any more, fixed (PhG)
