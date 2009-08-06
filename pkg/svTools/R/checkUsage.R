@@ -30,8 +30,10 @@ checkUsageFile <- function( file, encoding = "unknown" ){
 	resetErrors( file = file )
 	
 	# silly hack to retrieve information from codetools
+	here <- environment()
+	findings <- NULL
 	report <- function( x ){
-		findings <<- c( findings, x )
+		assign( "findings", c( findings, x ), envir = here ) 
 	}
 	
 	..addError <- function( line, msg ){
