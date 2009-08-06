@@ -10,7 +10,7 @@ two additional columns indicating if the package is
 loaded and default
 }
 \usage{
-installedPackages(pattern = NULL)
+installedPackages(pattern = NULL, ...)
 }
 \arguments{
   \item{pattern}{filter on the name or the title of the packages}
