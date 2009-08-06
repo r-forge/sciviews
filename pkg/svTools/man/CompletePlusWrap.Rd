@@ -11,7 +11,7 @@ completion
 CompletePlusWrap(...)
 }
 \arguments{
-\item{\dots}{arguments for \code{\link[svMisc]{CompletePlus}}
+	\item{\dots}{arguments for \code{\link[svMisc]{CompletePlus}}}
 }
 \value{
 A list with these items

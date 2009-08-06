@@ -29,13 +29,13 @@ export( check_description )
 export( completeDescription )
 
 # completion.R
-export( ltyComplete     )
-export( colComplete     )
-export( pchComplete     )
+# export( ltyComplete     )
+# export( colComplete     )
+# export( pchComplete     )
 export( CompletePlusWrap)
 
 # complete_namespace.R
-export( namespaceComplete )
+# export( namespaceComplete )
 
 # check_namespace.R
 # export( namespaceParser )
