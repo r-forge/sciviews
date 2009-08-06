@@ -1,8 +1,8 @@
 Package: svTools
 Type: Package
 Title: SciViews GUI API - Tools (wrapper for packages tools and codetools)
-Version: 0.0-8
-Date: 2009-06-29
+Version: 0.0-9
+Date: 2009-08-06
 Author: Romain Francois <francoisromain@free.fr>
 Maintainer: Romain Francois <francoisromain@free.fr>
 Description: Set of tools aimed at wrapping some of the functionalities

@@ -103,7 +103,7 @@ checkUsageFile <- function( file, encoding = "unknown" ){
 			fname <- ls( env ) 
 			if( length(fname) == 1){
 				findings <- NULL
-				codetools:::checkUsage( env[[fname]], all = TRUE, report = report, name = "" )
+				checkUsage( env[[fname]], all = TRUE, report = report, name = "" )
 				if( length(findings) ){
 					
 					searchAndReport( "changed by assignment"                , find.parameter_changed_by_assignment) 
@@ -113,7 +113,7 @@ checkUsageFile <- function( file, encoding = "unknown" ){
 					searchAndReport( "multiple local function definitions"  , find.multiple_local_def )  
 					
 					# TODO :this needs to be improved to deal with nested functions
-					if( length( test.assign <- grep( "’ may not be used", findings ) ) ){
+					if( length( test.assign <- grep( " may not be used", findings ) ) ){
 						for( j in test.assign ){
 							..addError( attr(p.out, "srcref")[[i]][1]  , findings[j] )
 						}
@@ -125,6 +125,7 @@ checkUsageFile <- function( file, encoding = "unknown" ){
 	}
 	getErrors( file = file )
 }
+
 
 as_character_srcref <- function (x, useSource = TRUE, encoding = "unknown"){
     srcfile <- attr(x, "srcfile")
@@ -149,6 +150,4 @@ getSrcLines_ <- function (srcfile, first, last, encoding = "unknown" ){
     lines <- tail( readLines(srcfile, n = last, warn = FALSE, encoding = encoding), -(first-1) )
 		return(lines)
 }
-
-
 
