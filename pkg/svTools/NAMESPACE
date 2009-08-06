@@ -41,8 +41,8 @@ export( namespaceComplete )
 export( namespaceParser )
    
 # packages.R
-export( packwebdesc       )
-export( packdesc          )
+# export( packwebdesc       )
+# export( packdesc          )
 export( installedPackages ) 
 export( loadedPackages    )
 
