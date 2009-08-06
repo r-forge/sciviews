@@ -4,8 +4,8 @@ loadedPackages <- function(){
   sub("^package:", "", s )
 }
 
-installedPackages <- function( pattern = NULL){
- ip <- installed.packages( fields = "Title" )
+installedPackages <- function( pattern = NULL, ... ){
+ ip <- installed.packages( fields = "Title", ... )
  if( !is.null(pattern) ){
 	 keep <- suppressWarnings( union( 
 	 	grep( pattern , ip [,"Package"], ignore.case = TRUE ), 
@@ -15,8 +15,8 @@ installedPackages <- function( pattern = NULL){
  lp <- loadedPackages() 
  def <- c( getOption("defaultPackages"), "base")
  ip <- cbind( ip, 
-   "Loaded"  = ifelse( ip[,'Package'] %in% lp , 1, 0 ), 
-   "Default" = ifelse( ip[,'Package'] %in% def, 1, 0 )
+   "Loaded"  = ip[,'Package'] %in% lp , 
+   "Default" = ip[,'Package'] %in% def
  )
  ip 
 }
@@ -61,7 +61,7 @@ packdesc  <- function (pkg, lib.loc = NULL, fields = NULL, drop = TRUE, encoding
     readLines(file)
 }
 
-packwebdesc <- function(pack, repos, width = 60){
+packwebdesc <- function(pack, repos){
   temp <- tempfile(); on.exit(unlink(temp))
   txt <- suppressWarnings( try({
     download.file( sprintf("%s/Descriptions/%s.DESCRIPTION",repos,pack), destfile=temp, quiet = TRUE)
