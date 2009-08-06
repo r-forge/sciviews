@@ -44,18 +44,18 @@ completeDescription <- function( file, row, col, text = readLines(file),
 				c( "AGPL-3",        'The "GNU Affero General Public License" version 3   ' ),
 				c( "Artistic-1.0",  'The "Artistic License" version 1.0                  ' ),
 				c( "Artistic-2.0",  'The "Artistic License" version 2.0                  ' ) )
-			return( list( ok = 1, data = possibleLicenses, token = lastLine %-~% ".*: *", type = "other"  ) )
+			return( list( ok = TRUE, data = possibleLicenses, token = lastLine %-~% ".*: *", type = "other"  ) )
 		}        
 		
 		### propose today's date
 		if( field == "Date"){
 			data <- cbind( format( Sys.time( ) , "%Y-%m-%d" ), "Today" )
-			return( list( ok = 1, data = data, token = lastLine %-~% ".*: *" , type = "other" ) )
+			return( list( ok = TRUE, data = data, token = lastLine %-~% ".*: *" , type = "other" ) )
 		}
 		
 		if( field %in% c("LazyLoad", "LazyData", "ZipData") ){
 			data <- rbind( c("yes", ""), c("no", "" ) )
-			return( list( ok = 1, data = data, token = lastLine %-~% ".*: *" , type = "other" ) )
+			return( list( ok = TRUE, data = data, token = lastLine %-~% ".*: *" , type = "other" ) )
 		}
 		
 		if( field == "Encoding" ){
@@ -63,7 +63,7 @@ completeDescription <- function( file, row, col, text = readLines(file),
 			    c("latin1" , "" ), 
 					c("latin2" , "" ), 
 					c("UTF-8"  , "" ) )
-			return( list( ok = 1, data = data, token = lastLine %-~% ".*: *" , type = "other" ) )
+			return( list( ok = TRUE, data = data, token = lastLine %-~% ".*: *" , type = "other" ) )
 		}
 		
 		if( field == "Type" ){
@@ -71,21 +71,21 @@ completeDescription <- function( file, row, col, text = readLines(file),
 			    c("Package"     , "Usual package" ), 
 					c("Translation" , "Translation package" ), 
 					c("Frontend"    , "Frontend package" ) )
-			return( list( ok = 1, data = data, token = lastLine %-~% ".*: *" , type = "other" ) )
+			return( list( ok = TRUE, data = data, token = lastLine %-~% ".*: *" , type = "other" ) )
 		}
 		
 		### give up
-		return( list( ok = 0 ) )
+		return( list( ok = FALSE ) )
 		
  	} else{
 		if( lastLine %~% "[^[:alpha:]]" ){
-			return( list( ok = 0 ) )
+			return( list( ok = FALSE ) )
 		} else{
 			keep <- descriptionFields[,1] %~% lastLine | descriptionFields[,3] %~% lastLine
 			data <- as.matrix( descriptionFields[ keep, c(1, 3), drop = FALSE ] )
 			
 			data[,1] <- paste( data[,1], ": ", sep = "")
-			return( list( data = data, ok = 1, token = lastLine, type = "fields" ) )
+			return( list( data = data, ok = TRUE, token = lastLine, type = "fields" ) )
 		}
 	}
 	
