@@ -8,10 +8,10 @@ export( checkUsageFile )
 export( sidekick )
 
 # errorlist.R
-export( getErrors )
-export( addError )
-export( resetErrors )
-export( emptyError )
+# export( getErrors )
+# export( addError )
+# export( resetErrors )
+# export( emptyError )
 
 # parseError.R
 export( parseError )
@@ -49,10 +49,10 @@ export( loadedPackages    )
 # rdparse.R
 export( rdparse )
 
-S3method( print, rsitesearch )
-S3method( head, rsitesearch )
-S3method( tail, rsitesearch )
-S3method( summary, rsitesearch )
-S3method( "[", rsitesearch )
+# S3method( print, rsitesearch )
+# S3method( head, rsitesearch )
+# S3method( tail, rsitesearch )
+# S3method( summary, rsitesearch )
+# S3method( "[", rsitesearch )
 
 
