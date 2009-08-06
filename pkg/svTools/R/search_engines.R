@@ -134,7 +134,7 @@ gmane <- function( query, groups = "*", prefix = "gmane.comp.lang.r" ) {
     } , begin+1, end-1 )
   uNames <- unique( unlist( sapply( articles, names )) )
   articles <- sapply( articles, function(x){
-    x[ uNames %wo% names(x) ] <- NA
+    x[ uNames %without% names(x) ] <- NA
     x[ uNames ]
   })
   

@@ -37,6 +37,7 @@ namespaceParser <- function( NAMESPACE, checkPackages = TRUE ){
 	      
 	 
 	nS3 <- 0
+	here <- environment()
             
 	### parse the directives and look  for the unexpected
 	parseDirective <- function(e, srcref, p, i) {   
@@ -54,8 +55,8 @@ namespaceParser <- function( NAMESPACE, checkPackages = TRUE ){
 					"{" = for (ee in as.list(e[-1])) parseDirective(ee, srcref), 
           "=", "<-" = {
                 parseDirective(e[[3]], srcref)
-                if (as.character(e[[3]][[1]]) == "useDynLib") 
-                  names(dynlibs)[length(dynlibs)] <<- asChar(e[[2]])
+                # if (as.character(e[[3]][[1]]) == "useDynLib") 
+                #   names(dynlibs)[length(dynlibs)] <<- asChar(e[[2]])
             }, export = {
 								exp <- e[-1]
                exp <- structure(asChar(exp), names = names(exp))
@@ -145,7 +146,7 @@ namespaceParser <- function( NAMESPACE, checkPackages = TRUE ){
 								 if (length(spec) != 2 && length(spec) != 3) 
                   addError( message = gettextf("bad 'S3method' directive: %s", deparse(e)), 
 									   file = NAMESPACE, line = srcref[1], type = "error" )
-                nS3 <<- nS3 + 1
+                assign( "nS3", get("nS3", envir = here) + 1, envir = here ) 
                 if (nS3 > 500) 
                   addError( message= "too many 'S3method' directives", 
 									  file = NAMESPACE, line = srcref[1], type = "error" )
