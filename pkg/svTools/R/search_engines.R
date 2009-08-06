@@ -147,13 +147,13 @@ gmane <- function( query, groups = "*", prefix = "gmane.comp.lang.r" ) {
   out
 }
 
-rnewssearch <- function( query, ... ){
-  matches <- agrep( query, rnews$title, ignore.case = TRUE,...)
-  subs <- rnews[ matches, ]
-  by( subs, subs$issue, function(x){
-    x$title
-  })
-}
+# rnewssearch <- function( query, ... ){
+#   matches <- agrep( query, rnews$title, ignore.case = TRUE,...)
+#   subs <- rnews[ matches, ]
+#   by( subs, subs$issue, function(x){
+#     x$title
+#   })
+# }
 
 rwiki <- function( query ){
   tmp <- tempfile() 
