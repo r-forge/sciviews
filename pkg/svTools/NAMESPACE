@@ -14,13 +14,13 @@ export( sidekick )
 # export( emptyError )
 
 # parseError.R
-export( parseError )
+# export( parseError )
 
 # tryParse.R
-export( tryParse )
+# export( tryParse )
 
 # trySource.R
-export( trySource )
+# export( trySource )
 
 # check_description.R
 export( check_description )
@@ -38,7 +38,7 @@ export( CompletePlusWrap)
 export( namespaceComplete )
 
 # check_namespace.R
-export( namespaceParser )
+# export( namespaceParser )
    
 # packages.R
 # export( packwebdesc       )
@@ -47,7 +47,7 @@ export( installedPackages )
 export( loadedPackages    )
 
 # rdparse.R
-export( rdparse )
+# export( rdparse )
 
 # S3method( print, rsitesearch )
 # S3method( head, rsitesearch )
