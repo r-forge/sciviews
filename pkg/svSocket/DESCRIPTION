@@ -2,11 +2,11 @@ Package: svSocket
 Type: Package
 Title: SciViews GUI API - R Socket Server
 Depends: R (>= 2.6.0)
-Imports: tcltk
+Imports: tcltk, svMisc
 Description: Implements a simple socket server allowing to connect GUI clients to R
-Version: 0.9-45
-Date: 2009-07-15
-Author: Philippe Grosjean
+Version: 0.9-46
+Date: 2009-08-10
+Author: Philippe Grosjean, Matthew Dowle
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL (>= 2)
 LazyLoad: yes
