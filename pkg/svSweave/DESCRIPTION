@@ -1,11 +1,13 @@
 Package: svSweave
+Type: Package
 Title: SciViews GUI API - Sweave functions
-Imports: utils
 Depends: R (>= 2.6.0)
+Imports: utils
 Description: Supporting functions for the GUI API (Sweave functions)
 Version: 0.9-1
 Date: 2009-07-14
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL (>= 2)
+LazyLoad: yes
 URL: http://www.sciviews.org/SciViews-R

@@ -1,11 +1,18 @@
 = svSocket News
 
+== Changes in svSocket 0.9-45
+
+* Bug correction in evalServer()
+
+
 == Changes in svSocket 0.9-44
+
 * Added function evalServer() for R interprocess communication using this R
   socket server mechanism
 
 
 == Changes in svSocket 0.9-43
+
 * Example added in processSocket(), implementing a simple REPL
 
 * A new function, sendSocketServer() is added to send and evaluate commands from
@@ -13,10 +20,12 @@
 
 
 == Changes in svSocket 0.9-43
+
 * Polishing package for CRAN submission
 
 
 == Changes in svSocket 0.9-42
+
 * Made compatible with R 2.6.x (previous package was R >= 2.7.0).
 
 

@@ -1,21 +1,22 @@
-svWidgets TODO:
----------------
-- Make all these S3 objects and use methods add, addItem, del, delItem, ...
+= svWidgets To Do list
 
-- In the list of windows (.guiWin), include also RGui windows (console, graphs,
+* Make all these S3 objects and use methods add, addItem, del, delItem, ...
+
+* In the list of windows (.guiWin), include also RGui windows (console, graphs,
   etc...)
 
-- Make a guiReadPackage() that reads images, icons, menus, toolbars & windows
+* Make a guiReadPackage() that reads images, icons, menus, toolbars & windows
   in row!
 
-- Allow different styles for images depending on platform and style, and use
+* Allow different styles for images depending on platform and style, and use
   them automatically.
 
-- Internationalize this package
+* Internationalize this package
 
-Bugs:
------
-- in winMenuXXX (old stuff, recheck this with current R version):
+
+== Bugs
+
+* in winMenuXXX (old stuff, recheck this with current R version):
   1) Error while changing action of a menu
   2) Defining the underline works, but the corresponding shortcut does not
   3) GPF when trying to allocate items to '$Graph1Main'

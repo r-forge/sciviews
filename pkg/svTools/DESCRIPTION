@@ -1,14 +1,16 @@
 Package: svTools
 Type: Package
 Title: SciViews GUI API - Tools (wrapper for packages tools and codetools)
-Version: 0.0-10
-Date: 2009-08-07
-Author: Romain Francois <francoisromain@free.fr>
-Maintainer: Romain Francois <francoisromain@free.fr>
+Depends: R (>= 2.6.0)
+Imports: utils, tools, codetools, svMisc, operators
 Description: Set of tools aimed at wrapping some of the functionalities
-	of the packages tools, utils and codetools into a nicer format so
-	that an IDE can use them
+  of the packages tools, utils and codetools into a nicer format so
+  that an IDE can use them
+Version: 0.0-11
+Date: 2009-08-10
+Author: Romain Francois
+Maintainer: Romain Francois <francoisromain@free.fr>
 License: GPL (>= 2)
 LazyLoad: yes
 LazyData: yes
-Depends: operators, codetools, svMisc, tools, utils
+URL: http://www.sciviews.org/SciViews-R

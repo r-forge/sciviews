@@ -1,7 +1,6 @@
-
 svTools.env <- new.env()
 
-.onAttach <- function( libname, pkgname){ 
-	addError( emptyError( ) ) 
+.onAttach <- function (libname, pkgname)
+{
+	addError(emptyError())
 }
-
