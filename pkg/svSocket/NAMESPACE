@@ -1,4 +1,4 @@
-import(tcltk)
+import(tcltk, svMisc)
 
 export(evalServer,
 	   getSocketClients,

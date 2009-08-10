@@ -45,7 +45,7 @@ secure = FALSE, local = !secure)
 		# Create the callback when a client sends data
 		"SocketServerProc" <- function ()
 		{
-			require(tcltk)
+			#require(tcltk)
 			# Note: I don't know how to pass arguments here.
 			# So, I use Tcl global variables instead:
 			# - the server port from $::sockPort,

@@ -1,7 +1,7 @@
 \name{evalServer}
 \alias{evalServer}
 
-\title{ Evaluate R code in a server process. }
+\title{ Evaluate R code in a server process }
 \description{
   This function is designed to connect two R processes together using
   the socket server. This function allows for piloting the server R process from
@@ -66,8 +66,8 @@ X  # Generates an error, X is not here in the client, only on the server
 evalServer(con, X)
 evalServer(con, "Z <- X + 3")  # send an assignment to execute remotely
 evalServer(con, X + Z)
-evalServer(con,"Z <- X + 1:1000; NULL")   # same but prevents Y being returned
-evalServer(con,length(Z))
+evalServer(con, "Z <- X + 1:1000; NULL")   # same but prevents Y being returned
+evalServer(con, length(Z))
 Z <- evalServer(con, Z)           # bring it back to client
 Z
 
