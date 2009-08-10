@@ -13,19 +13,19 @@ function (linebuffer, cursorPosition = nchar(linebuffer), minlength = 2,
     utils:::.completeToken()
     comps <- utils:::.retrieveCompletions()
     if (!length(comps)) return(invisible(NULL))
-    
-    # For tokens like "a[m", the actual yoken should be "m"
+
+    # For tokens like "a[m", the actual token should be "m"
     # completions are modified accordingly
-    rx <- regexpr( "[[]+", token )
-    if( rx > 0 ){
+    rx <- regexpr("[[]+", token)
+    if (rx > 0) {
     	# then we need to trim out whatever is before the [ in the completion
     	# and the token
-    	start <- rx + attr( rx, "match.length" )
-    	token <- substring( token, start )
-    	comps <- substring( comps, start )
+    	start <- rx + attr(rx, "match.length")
+    	token <- substring(token, start)
+    	comps <- substring(comps, start)
     }
-    
-    # remove weird object names ( useful when the token starts with "." ) 
+
+    # remove weird object names (useful when the token starts with ".")
     comps <- comps[ !grepl( "^[.]__[[:alpha:]]__", comps ) ]
     if (!length(comps))
 		return(invisible(NULL))
@@ -120,7 +120,7 @@ function (linebuffer, cursorPosition = nchar(linebuffer), minlength = 2,
 
 	# Make sure that arguments are witten 'arg = ', and not 'arg='
 	out[, 1] <- sub("=$", " = ", out[, 1])
-	
+
 	attr( out, "token" ) <- token
 
 	if (simplify) {

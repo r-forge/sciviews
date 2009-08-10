@@ -1,9 +1,5 @@
 = svMisc To Do list
 
-* CompletePlus() accelerate treatment (return completion and calculate desc
-later? limit the list to n entries?). Also, make sure that options for
-completion are correct for the given types
-
 * The svMisc-package.Rd man page
 
 * Write the code in objList() to list content inside objects

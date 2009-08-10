@@ -1,4 +1,4 @@
-# These are all hidden functions for the moment!
+# These are all hidden functions for the moment, except desArgs() and descFun()!
 "descFun" <-
 function (fun, package, lib.loc = NULL)
 {
