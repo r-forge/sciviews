@@ -1,25 +1,30 @@
 = svIDE News
 
 == Changes in svIDE 0.9-46
+
 * the trXXX() functions for Tinn-R are eliminated (they are now in their own
   tinnr package).
-  
+
 
 == Changes in svIDE 0.9-45
+
 * svIDE is no longer linker to Tinn-R (there is now a separate tinn-r package).
   The trXXX() functions are left here in case someone still uses them.
 
 
 == Changes in svIDE 0.9-44
+
 * Made compatible with R 2.6.x (was R 2.7.0 in previous version).
 
 
 == Changes in svIDE 0.9-43
+
 * trObjSearch() and trObjList() andre reworked in order to return results
   similar to the old functions of the same name in svIDE < 0.9-40.
 
 
 == Changes in svIDE 0.9-42
+
 * getKeywords() is simplified by using lsf.str().
 
 * guiDDEInstall now uses .Tcl.args() instead of .Tcl.callback to install
@@ -33,6 +38,7 @@
 
 
 == Changes in svIDE 0.9-41
+
 * One bug corrected in trObjSearch(): incorrect output of the results in a
   character vector.
 
@@ -40,6 +46,7 @@
 
 
 == Changes in svIDE 0.9-40
+
 This is the first version distributed on R-forge. It is completely refactored
 from older versions (on CRAN since 2003) to make it run with SciViews-K and
 Komodo Edit (Tinn-R is also supported, but not SciViews-R Console any more).

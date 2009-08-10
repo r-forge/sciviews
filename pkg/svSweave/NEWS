@@ -1,7 +1,9 @@
 = svSweave News
 
 == Changes in svSweave 0.9-1
+
 * The LaTeX command for our chunks is renamed from \Rchunk{} to \rchunk{}
+
 
 == Changes in svSweave 0.9-0
 

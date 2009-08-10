@@ -1,5 +1,5 @@
 getServerObj <-
-function (x, envir = parent.frame(), server.envir = .GlobalEnv, con = NULL,
+function (x, local = TRUE, server.envir = .GlobalEnv, con = NULL,
 host = "localhost", port = 8888, ...)
 {
 	# Copy an R object from the server to the client
@@ -25,18 +25,18 @@ host = "localhost", port = 8888, ...)
 	# Source the content of objdump, locally, or in .GlobalEnv on the client R
 	objcon <- textConnection(objdump)
 	on.exit(close(objcon))
-	res <- eval(source(objcon, local = TRUE, echo = FALSE,
+	res <- eval(source(objcon, local = local, echo = FALSE,
 		verbose = FALSE), envir = envir)
 }
 
 setServerObj <-
-function (x, envir = .GlobalEnv, server.envir = .GlobalEnv, con = NULL,
+function (x, envir = .GlobalEnv, con = NULL,
 host = "localhost", port = 8888, ...)
 {
 	# Copy an R object from the client to the server
 	objname <- as.character(substitute(x))
 	# Get a dump of the local object
-	objdump <- suppressWarnings(dump(objname, file = "", envir = server.envir))
+	objdump <- suppressWarnings(dump(objname, file = "", envir = envir))
 
 	servenv <- deparse(substitute(server.envir))
 	if (is.null(con)) {
@@ -59,5 +59,5 @@ host = "localhost", port = 8888, ...)
 	# Source the content of objdump, locally, or in .GlobalEnv on the client R
 	objcon <- textConnection(objdump)
 	on.exit(close(objcon))
-	source(objcon, local = local, echo = FALSE, verbose = FALSE)
+	source(objcon, local = FALSE, echo = FALSE, verbose = FALSE)
 }
