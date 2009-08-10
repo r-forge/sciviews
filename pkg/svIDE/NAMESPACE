@@ -7,6 +7,4 @@ export(createCallTipFile,
        guiCallTip,
 	   guiComplete,
        guiDDEInstall,
-	   Source,
-       trObjList,
-       trObjSearch)
+	   Source)

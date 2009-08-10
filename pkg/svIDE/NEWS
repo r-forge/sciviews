@@ -1,5 +1,10 @@
 = svIDE News
 
+== Changes in svIDE 0.9-46
+* the trXXX() functions for Tinn-R are eliminated (they are now in their own
+  tinnr package).
+  
+
 == Changes in svIDE 0.9-45
 * svIDE is no longer linker to Tinn-R (there is now a separate tinn-r package).
   The trXXX() functions are left here in case someone still uses them.
