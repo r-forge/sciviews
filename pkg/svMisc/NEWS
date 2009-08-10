@@ -1,11 +1,28 @@
 = svMisc News
 
+== Changes in svMisc 0.9-52
+
+* Complete() now manages cases where code is like "iris[", "iris[[", or where
+  last parsed token is empty (in this case, it returns the list of objects
+  loaded in .GlobalEnv).
+
+
+== Changes in svMisc 0.9-51
+
+* Complete() now includes additions from Complete2() and CompletePlus()
+
+
 == Changes in svMisc 0.9-50
 
-* CompletePlus removes the weird object names ( .__M__, ...) which were 
+* CompletePlus removes the weird object names ( .__M__, ...) which were
   causing trouble
-  
+
 * CompletePlus handles completions like "a[m"
+
+
+== Changes in svMisc 0.9-49
+
+* Complete2() is a temporary new version of Complete()
 
 
 == Changes in svMisc 0.9-48
