@@ -4,6 +4,8 @@
 
 * evalServer() slightly reworked
 
+* sendSocketServer() eliminated (superseeded by evalServer())
+
 
 == Changes in svSocket 0.9-45
 
