@@ -25,7 +25,7 @@ evalServer(con, expr, send = NULL)
 
 \author{Matthew Dowle (\email{m.dowle@wintoncapital.com})}
 
-\seealso{ \code{\link{sendSocketServer}} }
+\seealso{ \code{\link{sendSocketClients}} }
 
 \examples{
 \dontrun{
