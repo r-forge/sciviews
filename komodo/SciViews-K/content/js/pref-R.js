@@ -34,13 +34,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+// TODO: use 'R' simply as default R interpreter (terminal on Win/Mac, or ? on Linux)
+
 //---- globals
 
 var RPrefLog = getLoggingMgr().getLogger("R");
 RPrefLog.setLevel(LOG_DEBUG);
 
-function OnPreferencePageOK(prefset)
-{
+function OnPreferencePageOK(prefset) {
     var ok = true;
 
     // ensure that the interpreter is valid
@@ -48,24 +49,24 @@ function OnPreferencePageOK(prefset)
     if (defaultInterp != "") {
         var koSysUtils = Components.classes["@activestate.com/koSysUtils;1"].
             getService(Components.interfaces.koISysUtils);
-        if (! koSysUtils.IsFile(defaultInterp)) {
+        // If the interpreter's name ends with '.app', it is a Mac application
+        // meaning it is a directory instead of a file!
+        if (! koSysUtils.IsFile(defaultInterp) & ! koSysUtils.IsDir(defaultInterp)) {
             dialog_alert("No R interpreter could be found at '" + defaultInterp +
                   "'. You must make another selection for the default " +
                   "R interpreter.\n");
             ok = false;
-            document.getElementById("RDefaultInterpreter").focus();
+            document.getElementById("R_interpreterPath").focus();
         }
     }
     return ok;
 }
 
-function PrefR_OnLoad()
-{
+function PrefR_OnLoad() {
     var prefExecutable;
     var prefName = 'RDefaultInterpreter';
-    // If there is no pref, create it
-    // Otherwise trying to save a new pref will fail, because
-    // it tries to get an existing one to see if the
+    // If there is no pref, create it, otherwise trying to save a new pref
+    // will fail, because it tries to get an existing one to see if the
     // pref needs updating.
     if (!parent.hPrefWindow.prefset.hasStringPref(prefName)) {
         parent.hPrefWindow.prefset.setStringPref(prefName, "");
@@ -79,8 +80,7 @@ function PrefR_OnLoad()
     _finishSpecifyingExecutable(prefExecutable);
 }
 
-function loadRExecutable()
-{
+function loadRExecutable() {
     _finishSpecifyingExecutable(filepicker_openExeFile());
 }
 

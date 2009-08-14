@@ -70,7 +70,6 @@
     <command id="Tasks:svAbout"
 			 oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
 
-
 	<commandset id="cmdset_rApp" commandupdater="true"
 			oncommandupdate="ko.commands.updateCommandset(this);"
 			events="r_app_started_closed">
@@ -86,7 +85,6 @@
 		     oncommand="ko.commands.doCommand('cmd_sv_update_charset');"
 		 desc="R: &RUpdateCharset;" label="&RUpdateCharset;"
 			 accesskey="&RUpdateCharset.key;" />
-
 
 	<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
 		    oncommand="sv.command.openPkgManager();" disabled="true"

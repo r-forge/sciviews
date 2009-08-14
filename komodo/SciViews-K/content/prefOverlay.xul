@@ -38,19 +38,27 @@
 <!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
 
-<overlay id="SciViewsPrefsOverlay"
-         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <treeitem id="uiSettingsItem" container="true">
-	<treechildren container="false" id="languagesChildren">
-	  <treeitem container="false" id="RItem">
-		<treerow>
-	  <treecell class="treecell-indent"
-			url="chrome://sciviewsk/content/pref-R.xul"
-			label="R"/>
-		</treerow>
-	  </treeitem>
-	</treechildren>
-  </treeitem>
+<overlay id="SciViewsPrefOverlay"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<hbox id="prefsTree">
+		<treechildren id="panelChildren">
+			<treeitem container="true" id="svPrefMainItem">
+				<treerow>
+					<treecell class="treecell-indent"
+						url="chrome://sciviewsk/content/pref-Main.xul"
+						label="SciViews-K"/>
+				</treerow>
+				<treechildren id="svPrefChildren">
+                    <treeitem container="false" id="svPrefRItem">
+                        <treerow>
+                            <treecell class="treecell-indent"
+                                url="chrome://sciviewsk/content/pref-R.xul"
+                                label="R Interpreter"/>
+                        </treerow>
+                    </treeitem>
+                </treechildren>
+			</treeitem>
+		</treechildren>
+	</hbox>
 </overlay>
