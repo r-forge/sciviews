@@ -11,13 +11,14 @@
 # License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
+# The Original Code is SciViews-K by Philippe Grosjean et al.
 #
 # Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
 # ActiveState Software Inc. All Rights Reserved.
 #
 # Contributor(s):
 #   Philippe Grosjean
+#   Kamil Barton
 #   ActiveState Software Inc (code inspired from)
 #
 # Alternatively, the contents of this file may be used under the terms of

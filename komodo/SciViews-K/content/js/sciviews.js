@@ -6,8 +6,10 @@
 // sv.version; // Get current SciViews-K version (major.minor)
 // sv.release; // The release (bug fixes). Full version is "version.release"
 // sv.showVersion; // Do we display version in an alert() box or just set it?
-// sv.checkVersion(version); // Check if the OpenKore extension version is fine
-// sv.checkToolbox(); // Check that the correct SciViews-K toolbox is installed
+// sv.checkVersion(version); // Check the SciViews-K extension version is fine
+//
+// sv.debug = true/false; // Set to true for enabling SciViews-K debugging
+// sv.debugMsg(msg); // Use this function to write a SciViews-K debug message
 //
 // Various functions defined in the 'sv' namespace directly
 // sv.getText(); // Get current selection, or word under the cursor
@@ -23,24 +25,30 @@
 // sv.helpURL(URL); // Display URL help in the default browser
 // sv.helpContext(); // Get contextual help for selected word in buffer in R or
                      // for active snippet in toolbox/project (see Help context)
+// sv.translate(textId); // translate messages using data from
+						 // chrome://sciviewsk/locale/main.properties
 //
 // SciViews-K preferences management ('sv.prefs' namespace)
 // sv.prefs.getString(pref, def); // Get a preference, use 'def' is not found
 // sv.prefs.setString(pref, value, overwrite); // Set a preference string
-// sv.prefs.askString(pref, defvalue): // Ask for the value of a preference
+// sv.prefs.askString(pref, defvalue); // Ask for the value of a preference
+// sv.prefs.mru(mru, reset, items, sep); //Simplify update of MRU lists
 //
-// OpenKore Command Output management ('sv.cmdout' namespace)
+// SciViews-K Command Output management ('sv.cmdout' namespace)
 // sv.cmdout.append(str, newline, scrollToStart); // Append text to the Command Output pane
 // sv.cmdout.clear(); // Clear the Command Output pane
 // sv.cmdout.message(msg, timeout); // // Display message on the Command Output pane's bar
-
+//
+// Not used any more?
+// sv.checkToolbox(); // Check that the correct SciViews-K toolbox is installed
+//
 ////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') {
 	var sv = {
 		// TODO: set this automatically according to the plugin version
 		version: 0.8,
-		release: 0,
+		release: 1,
 		showVersion: true,
 		checkVersion: function(version) {
 			if (this.version < version) {
@@ -477,6 +485,40 @@ sv.helpContext = function() {
 	}
 };
 
+// translate messages using data from chrome://sciviewsk/locale/main.properties
+sv.translate = function(textId) {
+
+	var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
+		.getService(Components.interfaces.nsIStringBundleService)
+		.createBundle("chrome://sciviewsk/locale/main.properties");
+	var param;
+
+	try {
+		if (arguments.length > 1) {
+			param = [];
+
+			for (var i = 1; i < arguments.length; i++)
+				param = param.concat(arguments[i]);
+			//return strbundle.getFormattedString(textId, param);
+			return bundle.formatStringFromName(textId, param, param.length);
+
+		} else {
+			//return strbundle.getString(textId);
+			return bundle.GetStringFromName(textId);
+		}
+	} catch (e) {
+		// fallback if no translation found
+		if (param) { // a wannabe sprintf, just substitute %S and %nS patterns:
+			var rx;
+			for (var i = 0; i < param.length; i++) {
+				rx = new RegExp("%("+ (i + 1) +")?S");
+				textId = textId.replace(rx, param[i]);
+			}
+		}
+		return textId;
+	}
+}
+
 
 // Preferences management //////////////////////////////////////////////////////
 if (typeof(sv.prefs) == 'undefined') sv.prefs = new Object();
@@ -515,6 +557,22 @@ sv.prefs.askString = function(pref, defvalue) {
 	if (newvalue != null) prefs.setStringPref(pref, newvalue);
 }
 
+// Simplify update of MRU lists
+sv.prefs.mru = function(mru, reset, items, sep) {
+	var mruList = "dialog-interpolationquery-" + mru + "Mru";
+	// Do we reset the MRU list?
+	if (typeof(reset) == "undefined") reset = false;
+	if (reset == true) ko.mru.reset(mruList);
+
+	// Do we need to split items (when sep is defined)?
+	if (typeof(sep) != "undefined") items = items.split(sep);
+
+	// Add each item in items in inverse order
+	for (i = items.length - 1; i >= 0; i--) {
+		ko.mru.add(mruList, items[i], true);
+	}
+}
+
 
 // This is required by sv.helpContext() for attaching help to snippets (hack!)
 // Create empty preference sets to be used with snippet help system hack
@@ -527,41 +585,6 @@ sv.prefs.setString("URL-help", "", true);
 sv.prefs.setString("R-help", "", true);
 // Help page on the R Wiki
 sv.prefs.setString("RWiki-help", "", true);
-
-
-// translate messages using data from chrome://sciviewsk/locale/main.properties
-sv.translate = function(textId) {
-
-	var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
-		.getService(Components.interfaces.nsIStringBundleService)
-		.createBundle("chrome://sciviewsk/locale/main.properties");
-	var param;
-
-	try {
-		if (arguments.length > 1) {
-			param = [];
-
-			for (var i = 1; i < arguments.length; i++)
-				param = param.concat(arguments[i]);
-			//return strbundle.getFormattedString(textId, param);
-			return bundle.formatStringFromName(textId, param, param.length);
-
-		} else {
-			//return strbundle.getString(textId);
-			return bundle.GetStringFromName(textId);
-		}
-	} catch (e) {
-		// fallback if no translation found
-		if (param) { // a wannabe sprintf, just substitute %S and %nS patterns:
-			var rx;
-			for (var i = 0; i < param.length; i++) {
-				rx = new RegExp("%("+ (i + 1) +")?S");
-				textId = textId.replace(rx, param[i]);
-			}
-		}
-		return textId;
-	}
-}
 
 
 // Control the command output tab //////////////////////////////////////////////
@@ -634,6 +657,8 @@ sv.cmdout.message = function(msg, timeout) {
 		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message();", timeout);
 }
 
+
+// Not used any more? //////////////////////////////////////////////////////////
 sv.checkToolbox = function() {
     try {
 		var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
@@ -683,9 +708,6 @@ sv.checkToolbox = function() {
 	finally { sv.showVersion = true; }
 }
 
-
 // Ensure we check the toolbox is installed once the extension is loaded
-
-
 //addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
 //addEventListener("load", sv.checkToolbox, false);

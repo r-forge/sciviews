@@ -1,4 +1,4 @@
-//TODO: identify packages by pos rather then name (allow for non-unique names)
+//TODO: identify packages by pos rather than name (allow for non-unique names)
 
 //TODO: sort inserted child nodes (3-state sorting), restoring natural order of sub-elements
 	//(add orderIndex property to inserted elements)

@@ -5,19 +5,12 @@ R.
 
 * Start from the R server port configuration and make it a multi-session system.
 
-* Web site: place SciViews-K in position 1 and indicate minimal and maximal
-versions of R and Komodo we need.
-
 * There is a bug with the abbrev expansion that prevents correct detection of
 abbrev when the file is not saved or saved with a different extension than .R
-
-* Files with .R extension are recognized as REBOL files!
 
 * Pager currently display the file in a buffer and does not use title or
 delete.file (file not deleted!). Try using a web browser instead, with
 correct title and look for a method to allow deleting the file
-
-* Object explorer: refresh content, tooltip, menu, changer fonction refresh
 
 * svIO and svViews in relation to objects explorer
 
@@ -47,13 +40,7 @@ correct title and look for a method to allow deleting the file
 
 * R reference cards
 
-* R completion
-
 * All the Tinn-R function that are still missing
-
-* Make a Tinn-R GUI with simili-Tinn-R menus
-
-* Make ESS functions + the ESS GUI
 
 * Make Rd syntax highlighting; sweave later on
 
@@ -64,9 +51,4 @@ correct title and look for a method to allow deleting the file
 * Make the User's and Developer's manuals
 
 * Update the web site
-
-
-= Experimentation TODO
-
-* All data operations on ~/svData do not work if the directory is not created!
 

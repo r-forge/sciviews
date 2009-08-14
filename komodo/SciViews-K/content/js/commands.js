@@ -192,7 +192,7 @@ AppTerminateObserver.prototype = {
 
 this.setControllers = function() {
 	//alert("this.setControllers");
-	// allow some commands only whan R is running...
+	// allow some commands only when R is running...
 	// using this needs solving an issue of running R in some terminals on linux (mac?)
     // that send terminate signal right after start.
 
@@ -429,7 +429,7 @@ vm.prototype.is_cmd_Test_supported = function() {
 }
 vm.prototype.is_cmd_Test_enabled = function() { alert("is_cmd_Test_enabled?"); return false; }
 
-//commands sohuld be put in a commandset, so they can be enabled only if lang = R
+//commands should be put in a commandset, so they can be enabled only if lang = R
 document.getElementById("cmdset_view_or_language_changed")
 
 select,current_view_changed,language_changed

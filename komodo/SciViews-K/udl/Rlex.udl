@@ -13,13 +13,14 @@
 # License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
+# The Original Code is SciViews-K by Philippe Grosjean et al.
 #
 # Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
 # ActiveState Software Inc. All Rights Reserved.
 #
 # Contributor(s):
 #   Philippe Grosjean
+#   Kamil Barton
 #   ActiveState Software Inc (code inspired from)
 #
 # Alternatively, the contents of this file may be used under the terms of
@@ -2643,7 +2644,7 @@ state IN_SSL_DEFAULT:
 /$NAMESEQ/ : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER)
 
 # any name is alowed to be a list element/slot, and these should not be styled as keywords
-# TODO: allow for spases after $ or @, eg. object $ non.keyword.element
+# TODO: allow for spaces after $ or @, eg. object $ non.keyword.element
 /[\$@](?=[a-z])/ : paint(upto, SSL_DEFAULT), \
     paint(include, SSL_OPERATOR), => IN_SSL_NON_KEYWORD_IDENTIFIER_1
 

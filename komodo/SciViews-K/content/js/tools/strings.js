@@ -1,39 +1,18 @@
 // SciViews-K functions
 // Various functions to manipulate strings
-// by Philippe Grosjean and Romain Francois
+// by Philippe Grosjean, Romain Francois and Kamil Barton
 
 ////////////////////////////////////////////////////////////////////////////////
-// sv.tools.strings.replaceCRLF(str, code); // Replace LF and CR by 'code'
-// sv.tools.strings.removeLastCRLF(str);    // Remove last CR and or LF
-// sv.tools.strings.toRegex;                // changes a string to a regular expression
+// sv.tools.strings.replaceCRLF(str, code);	// Replace LF and CR by 'code'
+// sv.tools.strings.removeLastCRLF(str);    // Remove last CR and/or LF
+// sv.tools.strings.toRegex(str);			// changes a string to a regex
+//
+// Additional methods to String objects ////////////////////////////////////////
+// String.prototype.trim();					// Trim function for String
+// String.prototype.rtrim();				// Right trim
+// String.prototype.ltrim();				// Left trim
+// String.prototype.addslashes();			// Add slashes
 ////////////////////////////////////////////////////////////////////////////////
-
-//Addidtional methods to String object:
-
-// trim function for the String object
-String.prototype.trim = function() {
-	return this.replace(/^\s+|\s+$/g, '');
-}
-// right trim
-String.prototype.rtrim = function() {
-	return this.replace(/\s+$/, '');
-}
-
-// left trim
-String.prototype.ltrim = function() {
-	return this.replace(/^\s+/, '');
-}
-
-String.prototype.addslashes = function () {
-	// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	return this.replace(/([\\"'])/g, "\\$1").replace(/\x00/g, "\\0");
-}
-
-//uncomment in case it is needed
-//sv.tools.addslashes = function stripslashes( str ) {
-//    // original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-//    return new String(str).replace(/\x00/g, String.fromCharCode(0)).replace(/\\([\\'"])/g, '$1');
-//}
 
 
 // Define the 'sv.tools.strings' namespace
@@ -59,4 +38,27 @@ sv.tools.strings.toRegex = function(str){
 
 	// TODO: anything else
 	return( str ) ;
+}
+
+
+// Additional methods to String objects ////////////////////////////////////////
+
+// Trim function for String
+String.prototype.trim = function() {
+	return this.replace(/^\s+|\s+$/g, '');
+}
+// Right trim
+String.prototype.rtrim = function() {
+	return this.replace(/\s+$/, '');
+}
+
+// Left trim
+String.prototype.ltrim = function() {
+	return this.replace(/^\s+/, '');
+}
+
+// Add slashes
+String.prototype.addslashes = function() {
+	// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+	return this.replace(/([\\"'])/g, "\\$1").replace(/\x00/g, "\\0");
 }
