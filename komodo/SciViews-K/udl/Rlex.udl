@@ -1,5 +1,3 @@
-# R UDL definition
-#
 # ***** BEGIN LICENSE BLOCK *****
 # Version: MPL 1.1/GPL 2.0/LGPL 2.1
 #
@@ -38,10 +36,12 @@
 # ***** END LICENSE BLOCK *****
 
 # Lexer description for R
-family ssl # server-side language... not really, but what's best?
+family csl # client-side language
 sublanguage R
 
 # Define keywords
+# TODO: should we use keywords only for reserved keywords, then use regexp
+# to identify function names?
 keywords [
 
 #{{
@@ -2597,14 +2597,13 @@ keywords [
 "yinch"
 "zapsmall"
 "zip.file.extract"
-
 #}}
 ]
 
-start_style SSL_DEFAULT
-end_style SSL_OPERATOR
+start_style CSL_DEFAULT
+end_style CSL_OPERATOR
 
-keyword_style SSL_IDENTIFIER => SSL_WORD
+keyword_style CSL_IDENTIFIER => CSL_WORD
 
 pattern NMSTART = '\w\.\x80-\xff'  # inside cset
 pattern CS = '$NMSTART\d_'   		# inside cset
@@ -2612,160 +2611,145 @@ pattern WS = '\s\t\r\n'           	# inside cset
 pattern OP = '!\%&\(\)\*\+,-\/:;<=>\?@\[\]\^\{\}~|\$'
 pattern NAMESEQ = '[$NMSTART][$CS]*'
 
-initial IN_SSL_DEFAULT
+initial IN_CSL_DEFAULT
 
-state IN_SSL_DEFAULT:
+state IN_CSL_DEFAULT:
 
 # The #! is used in R Wiki to denote R output... colorize it differently!
-'#!' : paint(upto, SSL_DEFAULT), => IN_SSL_COMMENT_1
+#'#!' : paint(upto, CSL_DEFAULT), => IN_CSL_COMMENT_1
 
-'#' : paint(upto, SSL_DEFAULT), => IN_SSL_COMMENT_LINE_1
+'#' : paint(upto, CSL_DEFAULT), => IN_CSL_COMMENT_LINE_1
 
 /[$WS]+/  : #stay
 
 # We have to lex numbers in states in case we reach EOF right after the
 # "e" in a floating pt constant, for example
 # TODO: check this against the way to specify numbers in R!
-/0[Xx][\da-fA-F]+L?/ : paint(upto, SSL_DEFAULT), paint(include, SSL_NUMBER)
-/(?<![$CS])[-+]?\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_INT
+/0[Xx][\da-fA-F]+L?/ : paint(upto, CSL_DEFAULT), paint(include, CSL_NUMBER)
+/(?<![$CS])[-+]?\d/ : paint(upto, CSL_DEFAULT), => IN_CSL_NUMBER_INT
 
 # A "." can start a number only if it doesn't follow a
 # name, many keywords, string, regex, number, or a few
 # closing operators.
-/[-+]?\.\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_FLOAT
+/[-+]?\.\d/ : paint(upto, CSL_DEFAULT), => IN_CSL_NUMBER_FLOAT
 
-'"'  : paint(upto, SSL_DEFAULT), => IN_SSL_DSTRING
-'\'' : paint(upto, SSL_DEFAULT), => IN_SSL_SSTRING
-'`'  : paint(upto, SSL_DEFAULT), => IN_SSL_BSTRING
+'"'  : paint(upto, CSL_DEFAULT), => IN_CSL_DSTRING
+'\'' : paint(upto, CSL_DEFAULT), => IN_CSL_SSTRING
+'`'  : paint(upto, CSL_DEFAULT), => IN_CSL_BSTRING
 
+#/(?<[,\(])\s*[a-zA_Z\.]+\s*(?=\=)/ :  paint(upto, CSL_DEFAULT), paint(include, CSL_VARIABLE)
 
-#/(?<[,\(])\s*[a-zA_Z\.]+\s*(?=\=)/ :  paint(upto, SSL_DEFAULT), paint(include, SSL_VARIABLE)
-
-/$NAMESEQ/ : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER)
+/$NAMESEQ/ : paint(upto, CSL_DEFAULT), paint(include, CSL_IDENTIFIER)
 
 # any name is alowed to be a list element/slot, and these should not be styled as keywords
 # TODO: allow for spaces after $ or @, eg. object $ non.keyword.element
-/[\$@](?=[a-z])/ : paint(upto, SSL_DEFAULT), \
-    paint(include, SSL_OPERATOR), => IN_SSL_NON_KEYWORD_IDENTIFIER_1
+/[\$@](?=[a-z])/ : paint(upto, CSL_DEFAULT), \
+    paint(include, CSL_OPERATOR), => IN_CSL_NON_KEYWORD_IDENTIFIER_1
 
-
-# TODO: SSL_VARIABLE could be used for styling function argument names
+# TODO: CSL_VARIABLE could be used for styling function argument names
 # eg. ( name = ..., name2 = ...)
 # something like this:
-#/(?<=[,\(])\s*[a-z]+(?=\s*=)/ :  paint(upto, SSL_DEFAULT), paint(include, SSL_VARIABLE)
-
+#/(?<=[,\(])\s*[a-z]+(?=\s*=)/ :  paint(upto, CSL_DEFAULT), paint(include, CSL_VARIABLE)
 
 # Now a bunch of operators
 # Multi-char operators first
 
-/%[$CS$OP]*%/ : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-/[$OP]/ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_OP1
+/%[$CS$OP]*%/ : paint(upto, CSL_DEFAULT), paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+/[$OP]/ : paint(upto, CSL_DEFAULT), redo, => IN_CSL_OP1
 
 
 ###### Slot names and list elements ######
-state IN_SSL_NON_KEYWORD_IDENTIFIER_1:
-/[^$CS]/ : paint(upto, SSL_IDENTIFIER), redo, no_keyword, \
-    => IN_SSL_DEFAULT
+state IN_CSL_NON_KEYWORD_IDENTIFIER_1:
+/[^$CS]/ : paint(upto, CSL_IDENTIFIER), redo, no_keyword, \
+    => IN_CSL_DEFAULT
 
 ################ Comments ################
 # We have only line comments in R => return to default on next line
-state IN_SSL_COMMENT_1 :
-/[\r\n]/ : paint(include, SSL_COMMENTBLOCK), => IN_SSL_DEFAULT
+#state IN_CSL_COMMENT_1 :
+#/[\r\n]/ : paint(include, CSL_COMMENTBLOCK), => IN_CSL_DEFAULT
 
-state IN_SSL_COMMENT_LINE_1:
-/[\r\n]/ : paint(upto, SSL_COMMENT), => IN_SSL_DEFAULT
+state IN_CSL_COMMENT_LINE_1:
+/[\r\n]/ : paint(upto, CSL_COMMENT), => IN_CSL_DEFAULT
 
 ################ Strings ################
-
-state IN_SSL_DSTRING:
-'"' : paint(include, SSL_STRING), => IN_SSL_DEFAULT
-/[\r\n]/ : paint(include, SSL_STRING), => IN_SSL_DSTRING_LINECONT
+state IN_CSL_DSTRING:
+'"' : paint(include, CSL_STRING), => IN_CSL_DEFAULT
+/[\r\n]/ : paint(include, CSL_STRING), => IN_CSL_DSTRING_LINECONT
 /\\./ : #stay, Don't miscount backslash at end
 
 # Work around the single-line match limit.
-state IN_SSL_DSTRING_LINECONT:
+state IN_CSL_DSTRING_LINECONT:
 /[\r\n]/ : #stay
-/\\./ : => IN_SSL_DSTRING
-'"' : paint(include, SSL_STRING), => IN_SSL_DEFAULT
-/./ : => IN_SSL_DSTRING
+/\\./ : => IN_CSL_DSTRING
+'"' : paint(include, CSL_STRING), => IN_CSL_DEFAULT
+/./ : => IN_CSL_DSTRING
 
-state IN_SSL_SSTRING:
-'\'' : paint(include, SSL_STRING), => IN_SSL_DEFAULT
-/[\r\n]/ : paint(include, SSL_STRING), => IN_SSL_SSTRING_LINECONT
+state IN_CSL_SSTRING:
+'\'' : paint(include, CSL_STRING), => IN_CSL_DEFAULT
+/[\r\n]/ : paint(include, CSL_STRING), => IN_CSL_SSTRING_LINECONT
 /\\./ : #stay
 
-state IN_SSL_SSTRING_LINECONT:
+state IN_CSL_SSTRING_LINECONT:
 /[\r\n]/ : #stay
-/\\./ : => IN_SSL_SSTRING
-"'" : paint(include, SSL_STRING), => IN_SSL_DEFAULT
-/./ : => IN_SSL_SSTRING
+/\\./ : => IN_CSL_SSTRING
+"'" : paint(include, CSL_STRING), => IN_CSL_DEFAULT
+/./ : => IN_CSL_SSTRING
 
-state IN_SSL_BSTRING:
+state IN_CSL_BSTRING:
 /[\r\n]/ : #stay
-'`' : paint(include, SSL_IDENTIFIER), => IN_SSL_DEFAULT
-
-
-#/[\r\n]/ : paint(include, SSL_IDENTIFIER), => IN_SSL_BSTRING_LINECONT
-#
-## Work around the single-line match limit.
-#state IN_SSL_BSTRING_LINECONT:
-#/[\r\n]/ : #stay
-#'`' : paint(include, SSL_IDENTIFIER), => IN_SSL_DEFAULT
-#/./ : => IN_SSL_BSTRING
+'`' : paint(include, CSL_IDENTIFIER), => IN_CSL_DEFAULT
 
 ################ Numbers ################
 # TODO: check against all number styles in R!
-state IN_SSL_NUMBER_INT :
+state IN_CSL_NUMBER_INT :
 /\d/ : #stay
-'.' : => IN_SSL_NUMBER_FLOAT
-'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT
-/[Ee][-+]?/ : => IN_SSL_NUMBER_EXP
-/./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
+'.' : => IN_CSL_NUMBER_FLOAT
+'L' : paint(include, CSL_NUMBER) => IN_CSL_DEFAULT
+/[Ee][-+]?/ : => IN_CSL_NUMBER_EXP
+/./ : paint(upto, CSL_NUMBER), redo, => IN_CSL_DEFAULT
 
-state IN_SSL_NUMBER_FLOAT:
+state IN_CSL_NUMBER_FLOAT:
 /[\d]/ : #stay
-/[Ee][-+]?/ : => IN_SSL_NUMBER_EXP
-#'.' : paint(upto, SSL_NUMBER), paint(include, SSL_OPERATOR),  => IN_SSL_DEFAULT
-/./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
+/[Ee][-+]?/ : => IN_CSL_NUMBER_EXP
+#'.' : paint(upto, CSL_NUMBER), paint(include, CSL_OPERATOR),  => IN_CSL_DEFAULT
+/./ : paint(upto, CSL_NUMBER), redo, => IN_CSL_DEFAULT
 
-state IN_SSL_NUMBER_EXP:
+state IN_CSL_NUMBER_EXP:
 /\d/ : #stay
-'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT
-/[^\d]/ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
-
+'L' : paint(include, CSL_NUMBER) => IN_CSL_DEFAULT
+/[^\d]/ : paint(upto, CSL_NUMBER), redo, => IN_CSL_DEFAULT
 
 # If we're here, we've painted the previous part, and
 # just need to figure out which operator we have, doing
 # greedy left-to-right matching ('+++' parses as /++/, /+/)
 
-state IN_SSL_OP1:
+state IN_CSL_OP1:
 # Single-char operator -- all ops work as standalone chars
 
-/[$OP](?:(?![$OP])|$)/ : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
+/[$OP](?:(?![$OP])|$)/ : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
 
 # Otherwise look from longest to smallest
-#/%.+%/   : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%in%'   : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%*%'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%/%'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%o%'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%x%'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-':::'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'<<-'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'->>'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'%%'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'::'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'<-'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'<='     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'=='     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'!='     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'->'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'>='     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'&&'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-'||'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
+#/%.+%/   : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+#'%in%'   : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+#'%*%'    : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+#'%/%'    : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+#'%o%'    : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+#'%x%'    : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+':::'    : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'<<-'    : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'->>'    : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'%%'     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'::'     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'<-'     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'<='     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'=='     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'!='     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'->'     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'>='     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'&&'     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
+'||'     : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
 # The fallback
-/[$OP]/ : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-
+/[$OP]/ : paint(include, CSL_OPERATOR), => IN_CSL_DEFAULT
 ################ End States ################
 
 # We might want to generalize this... by allowing named tokens.
@@ -2783,28 +2767,20 @@ state IN_SSL_OP1:
 # If a style has all three lists, anything else is rejected
 
 token_check:
-SSL_OPERATOR: reject [")", "]", "}"]
+CSL_OPERATOR: reject [")", "]", "}"]
 
-# Should we use this???
-SSL_WORD: reject [FALSE TRUE NA NaN Inf NULL function return]
+CSL_WORD: reject [FALSE TRUE NA NaN Inf NULL function return]
 
-# All other keywords prefer an RE
-
-SSL_DEFAULT: skip all
-SSL_COMMENT: skip all
-SSL_COMMENTBLOCK: skip all
+CSL_DEFAULT: skip all
+CSL_COMMENT: skip all
+CSL_COMMENTBLOCK: skip all
 
 # Fold info tokens
+fold "{" CSL_OPERATOR +
+fold "}" CSL_OPERATOR -
 
-# Sometimes this should line up, when we're initializing an object.
-# Hard to get this right without doing the same thing we do with
-# Perl's notion of "variable indexer" vs. "operator".
+fold "(" CSL_OPERATOR +
+fold ")" CSL_OPERATOR -
 
-fold "{" SSL_OPERATOR +
-fold "}" SSL_OPERATOR -
-
-fold "#{{" SSL_COMMENT +
-fold "#}}" SSL_COMMENT -
-
-fold "(" SSL_OPERATOR +
-fold ")" SSL_OPERATOR -
+fold "#{{" CSL_COMMENT +
+fold "#}}" CSL_COMMENT -

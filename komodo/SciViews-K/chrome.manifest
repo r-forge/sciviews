@@ -2,8 +2,9 @@ content sciviewsk jar:sciviewsk.jar!/content/ xpcnativewrappers=yes
 overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/overlayMain.xul
 overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/RBrowserOverlay.xul
 
-# Those two items are not finished yet, and are thus commented out
-overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/rconsole.xul
+# The following items is not finished yet, and is thus commented out
+#overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/rconsole.xul
+
 overlay chrome://komodo/content/pref/pref.xul chrome://sciviewsk/content/prefOverlay.xul
 
 locale  sciviewsk     en-GB     jar:sciviewsk.jar!/locale/en-GB/

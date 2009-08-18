@@ -51,7 +51,6 @@
             SciViews-K is a Komodo extension providing tools to interact with R (an Open Source data analysis software).
         </description>
 		<separator class="thin"/>
-        <separator class="thin"/>
         <button label="Visit the SciViews web site"
                 class="button-link"
                 style="margin: -10px; color: #0000FF;

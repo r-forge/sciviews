@@ -1,11 +1,26 @@
-// SciViews-K functions
-// Define default preferences values for SciViews-K
-// Copyright (c) 2008, Ph. Grosjean (phgrosjean@sciviews.org)
+// SciViews-K preference code
+// Define default preferences values for SciViews-K and MRU lists
+// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
+// License: MPL 1.1/GPL 2.0/LGPL 2.1
+////////////////////////////////////////////////////////////////////////////////
 
+//// Preferences (default values, or values reset on each start) ///////////////
 // Define default socket ports for the client and server, and other parameters
 sv.prefs.setString("sciviews.server.socket", "7052", false);
 sv.prefs.setString("sciviews.client.socket", "8888", false);
 sv.prefs.setString("sciviews.client.id", "SciViewsK", false);
+
+// This is required by sv.helpContext() for attaching help to snippets (hack!)
+// Create empty preference sets to be used with snippet help system hack
+// [[%pref:R-help:value]] which displays nothing when the snippet is used
+// but can be used to retrieve value to display a particular help page
+// for this snippet
+// Help page triggered by a given URL
+sv.prefs.setString("URL-help", "", true);
+// R HTML help pages triggered with '?topic'
+sv.prefs.setString("R-help", "", true);
+// Help page on the R Wiki
+sv.prefs.setString("RWiki-help", "", true);
 
 // Default working directory for R
 sv.prefs.setString("sciviews.session.dir", "~", false);
@@ -13,7 +28,7 @@ sv.prefs.setString("sciviews.session.dir", "~", false);
 // Where do we want to display R help? In internal browser or not?
 sv.prefs.setString("sciviews.r.help", "internal", false);
 
-// This is the base path for the R Wiki context help feature of sv.helpContext()
+// This is the base path for the R Wiki context help feature sv.helpContext()
 sv.prefs.setString("sciviews.rwiki.help.base",
 	"http:/wiki.r-project.org/rwiki/doku.php?id=", false);
 
@@ -33,87 +48,76 @@ sv.prefs.setString("r.csv.dec.arg", '"' + sv.prefs.getString("r.csv.dec", '.') +
 // Should be reset to a more useful value during first use of R
 sv.prefs.setString("R.active.data.frame", "df", false);
 
-// (re)initialize a series of MRU for snippets' %ask constructs
-//// TODO: ts, data, table
 
-//// dec argument, like in read.table()
-sv.prefs.mru("dec", reset = true, '"."|","', sep = "|");
+//// (re)initialize a series of MRU for snippets' %ask constructs //////////////
+// TODO: defaultMRU for ts, data, table, ...
 
-//// sep argument, like in read.table()
-sv.prefs.mru("sep", reset = true, '" "|";"|","|"\\t"', sep = "|");
+// dec argument, like in read.table()
+sv.prefs.mru("dec", true, '"."|","', "|");
 
-//// header argument, like in read.table()
-sv.prefs.mru("header", reset = true, 'TRUE|FALSE', sep = "|");
+// sep argument, like in read.table()
+sv.prefs.mru("sep", true, '" "|";"|","|"\\t"', "|");
 
-//// Various examples of pkgdata (indeed, data frames in datatasets 2.9.1)
-sv.prefs.mru("pkgdata", reset = false, 
+// header argument, like in read.table()
+sv.prefs.mru("header", true, 'TRUE|FALSE', "|");
+
+// Various examples of pkgdata (indeed, data frames in datatasets 2.9.1) /////
+sv.prefs.mru("pkgdata", false, 
 	'airquality|anscombe|attenu|attitude|beaver1|beaver2|BOD|cars|' +
 	'ChickWeight|chickwts|CO2|DNase|esoph|faithful|Formaldehyde|freeny|' +
 	'Indometh|infert|InsectSprays|iris|LifeCycleSavings|Loblolly|longley|' +
 	'morley|mtcars|Orange|OrchardSprays|PlantGrowth|pressure|Puromycin|' +
 	'quakes|randu|rock|sleep|stackloss|swiss|Theoph|ToothGrowth|trees|' +
-	'USArrests|USJudgeRatings|warpbreaks|women', sep = "|");
+	'USArrests|USJudgeRatings|warpbreaks|women', "|");
 
 // TODO... Various examples of itemIndex, subset and expression
 // TODO... List of function, descfun and transfun
 
-//// Various examples of formulas
-sv.prefs.mru("formula", reset = false,
+//// Various examples of formulas //////////////////////////////////////////////
+sv.prefs.mru("formula", false,
 	'y ~ x,y ~ x + x2,y ~ x + I(x^2),y ~ x - 1,' +
-	'y ~ factor,y ~ x | factor,y ~ factor + factor2,y ~ factor * factor2',
-	sep = ",");
+	'y ~ factor,y ~ x | factor,y ~ factor + factor2,y ~ factor * factor2', ",");
 
-//// Various examples of quantiles and probs
-sv.prefs.mru("quantiles", reset = false, '1|c(1, 3)', sep = "|");
-sv.prefs.mru("probs", reset = false, '0.5|c(0.01, 0.25, 0.5, 0.75, 0.99)', sep = "|");
-sv.prefs.mru("lower.tail", reset = true, 'TRUE|FALSE', sep = "|");
-sv.prefs.mru("na.rm", reset = true, 'TRUE|FALSE', sep = "|");
-sv.prefs.mru("var.equal", reset = true, 'TRUE|FALSE', sep = "|");
-sv.prefs.mru("conf.level", reset = true, '0.90|0.95|0.99|0.999', sep = "|");
-sv.prefs.mru("alternative", reset = true, '"two.sided"|"less"|"greater"', sep = "|");
-sv.prefs.mru("breaks", reset = true, '"Sturges"|"Scott"|"Freedman-Diaconis"|10', sep = "|");
-sv.prefs.mru("corMethod", reset = true, '"pearson"|"kendall"|"spearman"', sep = "|");
+//// Various examples of quantiles and probs ///////////////////////////////////
+sv.prefs.mru("quantiles", false, '1|c(1, 3)', "|");
+sv.prefs.mru("probs", false, '0.5|c(0.01, 0.25, 0.5, 0.75, 0.99)', "|");
+sv.prefs.mru("lower.tail", true, 'TRUE|FALSE', "|");
+sv.prefs.mru("na.rm", true, 'TRUE|FALSE', "|");
+sv.prefs.mru("var.equal", true, 'TRUE|FALSE', "|");
+sv.prefs.mru("conf.level", true, '0.90|0.95|0.99|0.999', "|");
+sv.prefs.mru("alternative", true, '"two.sided"|"less"|"greater"', "|");
+sv.prefs.mru("breaks", true, '"Sturges"|"Scott"|"Freedman-Diaconis"|10', "|");
+sv.prefs.mru("corMethod", true, '"pearson"|"kendall"|"spearman"', "|");
 
-//// Various graph parameters
+//// Various graph parameters //////////////////////////////////////////////////
 // Colors
-sv.prefs.mru("col", reset = true,
+sv.prefs.mru("col", true,
     '"black"|"red"|"blue"|"green"|"gray"|"darkred"|"darkblue"|"darkgreen"|' +
 	'"darkgray"|"lightblue"|"lightgreen"|"lightgray"|"gray10"|"gray20"|' +
     '"gray30"|"gray40"|"gray50"|"gray60"|"gray70"|"gray80"|"gray90"|"white|"' +
     '"transparent"|"wheat"|"cornsilk"|"yellow"|"orange"|"tan"|"tomato"|' +
     '"firebrick"|"magenta"|"pink"|"salmon"|"violet"|"purple"|"plum"|"cyan"|' +
     '"lavender"|"navy"|"azure"|"aquamarine"|"turquoise"|"khaki"|"gold"|' +
-    '"bisque"|"beige"|"brown"|"chocolate"', sep = "|");
+    '"bisque"|"beige"|"brown"|"chocolate"', "|");
 
 // Type
-sv.prefs.mru("type", reset = true, '"p"|"l"|"b"|"c"|"o"|"h"|"s"|"S"|"n"', sep = "|");
-ko.mru.reset("dialog-interpolationquery-typeMru");
-ko.mru.add("dialog-interpolationquery-typeMru", '"n"', true);
-ko.mru.add("dialog-interpolationquery-typeMru", '"S"', true);
-ko.mru.add("dialog-interpolationquery-typeMru", '"s"', true);
-ko.mru.add("dialog-interpolationquery-typeMru", '"h"', true);
-ko.mru.add("dialog-interpolationquery-typeMru", '"o"', true);
-ko.mru.add("dialog-interpolationquery-typeMru", '"c"', true);
-ko.mru.add("dialog-interpolationquery-typeMru", '"b"', true);
-ko.mru.add("dialog-interpolationquery-typeMru", '"l"', true);
-ko.mru.add("dialog-interpolationquery-typeMru", '"p"', true);
+sv.prefs.mru("type", true, '"p"|"l"|"b"|"c"|"o"|"h"|"s"|"S"|"n"', "|");
 
 // Pch
-sv.prefs.mru("type", reset = true,
+sv.prefs.mru("type", true,
     '0|1|2|3|3|4|5|6|7|8|9|10|11|12|13|14|15|15|17|18|19|20|21|22|23|24|25|' +
-    '"."|"+"|"-"|"*"', sep = "|");
+    '"."|"+"|"-"|"*"', "|");
 
 // Lty
-sv.prefs.mru("lty", reset = true,
-    '"solid"|"dashed"|"dotted"|"dotdash"|"longdash"|"twodash"|"blank"', sep = "|");
+sv.prefs.mru("lty", true,
+    '"solid"|"dashed"|"dotted"|"dotdash"|"longdash"|"twodash"|"blank"', "|");
 
 // Lwd
-sv.prefs.mru("lwd", reset = true, '1|2|3', sep = "|");
+sv.prefs.mru("lwd", true, '1|2|3', "|");
 
-
-//// various mrus for 'car' graphs
-sv.prefs.mru("reg.line", reset = true, 'FALSE|lm', sep = "|");
-sv.prefs.mru("smooth", reset = true, 'TRUE|FALSE', sep = "|");
-sv.prefs.mru("diagonal", reset = true,
-    '"density"|"histogram"|"boxplot"|"qqplot"|"none"', sep = "|");
-sv.prefs.mru("envelope", reset = true, '0.90|0.95|0.99|0.999', sep = "|");
+//// various mrus for 'car' graphs /////////////////////////////////////////////
+sv.prefs.mru("reg.line", true, 'FALSE|lm', "|");
+sv.prefs.mru("smooth", true, 'TRUE|FALSE', "|");
+sv.prefs.mru("diagonal", true,
+    '"density"|"histogram"|"boxplot"|"qqplot"|"none"', "|");
+sv.prefs.mru("envelope", true, '0.90|0.95|0.99|0.999', "|");

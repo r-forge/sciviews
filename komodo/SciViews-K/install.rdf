@@ -10,7 +10,6 @@
         <em:homepageURL>http://sciviews.org/SciViews-K</em:homepageURL>
         <em:iconURL>chrome://sciviewsk/skin/images/appicon.png</em:iconURL>
         <em:type>2</em:type> <!-- type=extension -->
-
         <em:targetApplication>
             <Description>
                 <!-- Komodo IDE's uuid -->

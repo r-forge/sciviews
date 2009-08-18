@@ -49,4 +49,4 @@ sublanguage HTML #not used
 initial IN_M_DEFAULT
 
 state IN_M_DEFAULT:
-/./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
+/./ : paint(upto, CSL_DEFAULT), redo => IN_CSL_DEFAULT

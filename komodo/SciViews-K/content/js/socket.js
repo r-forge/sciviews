@@ -1,10 +1,10 @@
 // SciViews-K socket client/server functions
 // Socket client and server functions to connect to R kernels
-// Copyright (c) 2008, Ph. Grosjean (phgrosjean@sciviews.org)
-
+// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
+// License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // To cope with versions incompatibilities, we define this:
-// sv.socket.svSocketMinVersion  // minimal svSocket version required
+// sv.socket.svSocketMinVersion  // minimal svSocket R package version required
 //
 /////// Socket client //////
 // Parameters:
@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TODO: use svSocketMinVersion to check svSocket R package is not too old!
+// TODO: start the socket server automatically when Komodo is launched
 
 
 // Define the 'sv.socket' namespace
@@ -49,11 +50,12 @@ if (typeof(sv.socket) == 'undefined')
 	var millis = 500; // ms to wait for input, with synchroneous com only
 	var _charsetUpdated = false;
 	var _this = this;
-	var converter = Components.classes["@mozilla.org/intl/scriptableunicodeconverter"]
+	var converter = Components
+		.classes["@mozilla.org/intl/scriptableunicodeconverter"]
 		.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
 				
 	// The main socket client function to connect to R socket server
-	this.rClient = function(host, port, outputData, listener, echo, echofun) {
+	this.rClient = function (host, port, outputData, listener, echo, echofun) {
 		try {
 			var transportService = Components.
 				classes["@mozilla.org/network/socket-transport-service;1"]
@@ -65,7 +67,8 @@ if (typeof(sv.socket) == 'undefined')
 				// Convert output string from unicode to R's charset (Bug #240)
 				outputData = converter.ConvertFromUnicode(outputData);
 			} catch(e) {
-				sv.debugMsg(e);
+				sv.log.exception(e, "sv.socket.rClient() is unable to convert" +
+					" from Unicode");
 			}
 	
 			var outstream = transport.openOutputStream(0, 0, 0);
@@ -88,14 +91,16 @@ if (typeof(sv.socket) == 'undefined')
 				},
 				onDataAvailable: function(request, context,
 					inputStream, offset, count) {
-					// TODO: limit the total amount of data send through the socket!
+					// TODO: limit the amount of data send through the socket!
 					var chunk = instream.read(count);
 	
-					if (converter.charset) try { // Convert read string to unicode (Bug #240)
-						chunk = converter.ConvertToUnicode(chunk);
-					} catch(e) {
-						sv.debugMsg(e);
-					}
+					if (converter.charset)
+						try { // Convert read string to unicode (Bug #240)
+							chunk = converter.ConvertToUnicode(chunk);
+						} catch(e) {
+							sv.log.exception(e, "sv.socket.rClient() is" +
+								" unable to convert to Unicode");
+						}
 	
 					// Determine if we have a prompt at the end
 					if (chunk.search(/\+\s+$/) > -1) {
@@ -111,7 +116,7 @@ if (typeof(sv.socket) == 'undefined')
 					if (chunk.match("\n\f") == "\n\f") {
 						instream.close();
 						outstream.close();
-						// Eliminate the trailing (\r)\n\f chars before the prompt
+						// Eliminate trailing (\r)\n\f chars before the prompt
 						// Eliminate the last carriage return after the prompt
 						chunk = chunk.replace(/(\r?\n\f|\s+$)/, "");
 					}
@@ -132,6 +137,7 @@ if (typeof(sv.socket) == 'undefined')
 			pump.init(stream, -1, -1, 0, 0, false);
 			pump.asyncRead(dataListener, null);
 		} catch (e) {
+			sv.log.exception(e, "sv.socket.rClient() raises an unknown error");
 			return(e);
 		}
 		return(null);
@@ -139,8 +145,10 @@ if (typeof(sv.socket) == 'undefined')
 	
 	// Send an R command through the socket
 	this.rCommand = function(cmd, echo, echofun, procfun, context) {
-		// Get R's character set before first request and set converter.charset (Bug #240)
-		// TODO: 	charset does not change until next R command, update charset at server init
+		// Get R's character set before first request and set converter.charset
+		// (Bug #240)
+		// TODO: charset does not change until next R command, update charset
+		// at server init
 		//this.updateCharset();
 	
 		cmd = sv.tools.strings.replaceCRLF(cmd, "<<<n>>>");
@@ -153,57 +161,61 @@ if (typeof(sv.socket) == 'undefined')
 		}
 		// TODO: deal with error checking for this command
 		var port = sv.prefs.getString("sciviews.client.socket", "8888");
-		var id = "<<<id=" + sv.prefs.getString("sciviews.client.id", "SciViewsK") +
-			">>>";
+		var id = "<<<id=" +
+			sv.prefs.getString("sciviews.client.id", "SciViewsK") + ">>>";
 		var res = this.rClient(this.host, port, id + cmd + "\n",
 			listener, echo, echofun);
 	
 		// if exception was returned:
 		if (res && res.name && res.name == "NS_ERROR_OFFLINE") {
-			sv.cmdout.message(sv.translate("Error: offline"), 5000);
+			ko.statusBar.AddMessage("Error: R is unreachable (see log)", "R",
+				5000, true);
 		}
-	
 		return(res);
 	}
 	//Test: sv.socket.rCommand("<<<q>>>cat('library = '); str(library)");
 
 
 	/////// Socket server //////////////////////////////////////////////////////
-	this.debug = sv.debug; 		// Set to true for debugging mode
-	this.serverIsLocal = true; 	// Is the socket servicing only localhost?
+	this.debug = sv.log.isAll();	// Set to true for debugging mode
+	this.serverIsLocal = true;		// Is the socket servicing only localhost?
 
 	const nsITransport = Components.interfaces.nsITransport;
 
-	var _serverSocket;			// The SviViews-K socket server object
-	var _serverStarted = false;	// Is the socket server started?
-	var _inputString;			// The string with the command send by the client
-	var _outputString;			// The string with the result to send to the client
+	var _serverSocket;				// The SviViews-K socket server object
+	var _serverStarted = false;		// Is the socket server started?
+	var _inputString;				// The string with command send by R
+	var _outputString;				// The string with the result to send to R
 	var _output = [];
 	//debug only:
 	this.serverSocket = _serverSocket;
 
-	// Core function for the SciViews-K socket server: create the _serverSocket object
-	this.serverStart = function() {
-		sv.debugMsg("serverStart!");
+	// Core function for the SciViews-K socket server:
+	// create the _serverSocket object
+	this.serverStart = function () {
+		if (this.debug) sv.log.debug("Socket server: serverStart");
 	
 		if (_serverStarted) try {
 			_serverSocket.close();
 			_serverStarted = false;
 		} catch(e) {
-			alert(e);
+			sv.log.exception(e, "sv.socket.serverStart() failed to close the" +
+				" socket before reopening it");
 		}
 	
 		var listener = {
-			onSocketAccepted : function(socket, transport) {
+			onSocketAccepted : function (socket, transport) {
 				try {
-					sv.debugMsg("onSocketAccepted!");
+					if (this.debug)
+						sv.log.debug("Socket server: onSocketAccepted!");
 	
 					// Make sure to clean input and output strings before use
 					_inputString = "";
 					_outputString = "";
 					_output = [];
-					sv.debugMsg("SciViews-K socket client: " +
-							transport.host + " on port " + transport.port + "\n");
+					if (this.debug)
+						sv.log.debug("Socket server: " + transport.host +
+							" on port " + transport.port + "\n");
 	
 					// Then, read data from the client
 					var inputStream = transport.openInputStream(nsITransport.
@@ -226,7 +238,8 @@ if (typeof(sv.socket) == 'undefined')
 					if (converter.charset) try {
 						_inputString = converter.ConvertToUnicode(_inputString);
 					} catch (e) {
-						sv.debugMsg(e);
+						sv.log.exception(e, "Socket server: onSocketAccepted()" +
+							" is unable to convert to Unicode");
 					}
 	
 					// Is there data send?
@@ -235,17 +248,18 @@ if (typeof(sv.socket) == 'undefined')
 						_output.push("Error: no command send!");
 					} else {
 						// Process the command
-						sv.debugMsg("!Command send by the client:\n" + _inputString);
+						if (this.debug)
+							sv.log.debug("Command send by the client:\n" +
+								_inputString);
 						try {
 							eval(_inputString);
 						} catch(e) {
-							//_outputString += e.toString() ;
 							_output.push(e.toString());
 						}
 					}
-					sv.debugMsg(_output.length?
-								("Result:\n" + _output.join("\n")) :
-								("Nothing to return to the socket client")
+					if (this.debug) sv.log.debug(_output.length?
+						("Result:\n" + _output.join("\n")) :
+						("Nothing to return to the socket client")
 					);
 	
 					// And finally, return the result to the socket client
@@ -253,27 +267,30 @@ if (typeof(sv.socket) == 'undefined')
 					_outputString = _output.join("\n") + "\n";
 	
 					if (converter.charset) try {
-						_outputString = converter.ConvertFromUnicode(_outputString);
+						_outputString = converter.
+							ConvertFromUnicode(_outputString);
 					} catch(e) {
-						sv.debugMsg(e);
+						sv.log.exception(e, "Socket server: onSocketAccepted()" +
+							" is unable to convert from Unicode");
 					}
 	
 					var outputStream = transport.openOutputStream(nsITransport.
 						OPEN_BLOCKING, 0, 0);
 					outputStream.write(_outputString, _outputString.length);
 				} catch(e) {
-					alert(e);
+					sv.log.exception(e, "Socket server: onSocketAccepted()," +
+						" unmanaged error");
 				} finally {
 					// Make sure that streams are closed
 					outputStream.close();
 					inputStream.close();
-					sv.debugMsg("SocketAccepted: end");
+					if (this.debug) sv.log.debug("SocketAccepted: end");
 				}
 			},
 	
-			onStopListening : function(socket, status) {
+			onStopListening : function (socket, status) {
 				// The connection is closed by the client
-				sv.debugMsg("SciViews-K socket closed");
+				if (this.debug) sv.log.debug("Socket server closed");
 			}
 		};
 	
@@ -285,27 +302,32 @@ if (typeof(sv.socket) == 'undefined')
 			_serverSocket.init(port, sv.socket.serverIsLocal, -1);
 			_serverSocket.asyncListen(listener);
 			_serverStarted = true;
-		} catch(ex) {
-			alert(ex);
-			// 0x80004005 (NS_ERROR_FAILURE) [nsIServerSocket.init]"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame :: chrome://sciviewsk/content/js/socket.js :: anonymous :: line 285"  data: no]
+		} catch(e) {
+			sv.log.exception(e, "SciViews-K cannot open a server socket on port" +
+				port + ".\nMake sure the port is not already used by another" +
+					" Komodo instance" + "\nor choose another port in the" +
+					" preferences and restart Komdo", true);
+			// If the port is already used, I got:
+			// "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame ::
+			// chrome://sciviewsk/content/js/socket.js :: anonymous :: line 285
 		}
-		sv.debugMsg("SciViews-K socket server started");
-		ko.statusBar.AddMessage("SciViews-K socket server started",
-				"svSock", 2000, true);
-	};
-	
+		if (this.debug) sv.log.debug("Socket server started");
+		ko.statusBar.AddMessage("SciViews-K socket server started", "svSock",
+			2000, true);
+	}
 	
 	// Stop the SciViews-K socket server
-	this.serverStop = function() {
+	this.serverStop = function () {
 		if (_serverStarted) {
 			try {
 				_serverSocket.close();
 			} catch(e) {
-				alert(e);
+				sv.log.exception(e, "Socket server: serverStop() cannot" +
+					" close the socket", true);
 			}
 	
 			_serverStarted = false;
-			sv.debugMsg("SciViews-K socket server stopped");
+			if (this.debug) sv.log.debug("Socket server stopped");
 			ko.statusBar.AddMessage("SciViews-K socket server stopped",
 				"svSock", 2000, true);
 		} else {
@@ -315,12 +337,12 @@ if (typeof(sv.socket) == 'undefined')
 	}
 	
 	// Is the SciViews-K socket server started?
-	this.serverIsStarted = function() {
+	this.serverIsStarted = function () {
 		return(_serverStarted);
 	}
 	
 	// What is the current SciViews-K socket server config?
-	this.serverConfig = function() {
+	this.serverConfig = function () {
 		var serverStatus = " (stopped)"
 		if (_serverStarted) serverStatus = " (started)"
 		var port = sv.prefs.getString("sciviews.server.socket", "7052");
@@ -332,19 +354,20 @@ if (typeof(sv.socket) == 'undefined')
 	}
 	
 	// Write to the socket server, use this to return something to the client
-	this.serverWrite = function(data) {
+	this.serverWrite = function (data) {
 		if (_serverStarted) {
 			_output.push(data);
 		} else {
-			alert("Trying to write data though the SciViews-K socket server" +
+			sv.alert("The socket server in unavailable",
+				"Trying to write data though the SciViews-K socket server" +
 				" that is not started!");
 		}
 	}
 
-	this.__defineGetter__ ('charset', function() {
+	this.__defineGetter__ ('charset', function () {
 		return converter.charset;
 	});
-	this.__defineSetter__ ('charset', function(x) {
+	this.__defineSetter__ ('charset', function (x) {
 		try {
 			converter.charset = x;
 		} catch (e) {
@@ -353,14 +376,14 @@ if (typeof(sv.socket) == 'undefined')
 		return converter.charset;
 	});
 
-	this.updateCharset = function(force) {
+	this.updateCharset = function (force) {
 		if (!force && _charsetUpdated) return;
-		//sv.debugMsg("charsetUpdate");
+		//if (this.debug) sv.log.debug("charsetUpdate");
 		_charsetUpdated = true;
 		_this.rCommand("<<<h>>>cat(localeToCharset()[1])", false, null,
-			function(s) {
+			function (s) {
 				_this.charset = s;
-				sv.debugMsg(s);
+				if (this.debug) sv.log.debug(s);
 			});
 	}
 	
@@ -370,5 +393,5 @@ if (typeof(sv.socket) == 'undefined')
 	//this.charset = 'cp1250';
 }).apply(sv.socket);
 
-// Raises an error on Komodo 5.1 on Mac OS X
+// [PhG] This raises an error on Komodo 5.1 on Mac OS X
 //addEventListener("load", sv.socket.serverStart, false);

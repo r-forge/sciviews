@@ -1,24 +1,24 @@
 // SciViews-K general functions
-// Define the basic 'sv' namespace
+// Define the basic 'sv' namespace, plus 'sv.cmdout', 'sv.log' & 'sv.prefs'
 // Copyright (c) 2008, Ph. Grosjean (phgrosjean@sciviews.org)
-
+// License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.version; // Get current SciViews-K version (major.minor)
 // sv.release; // The release (bug fixes). Full version is "version.release"
 // sv.showVersion; // Do we display version in an alert() box or just set it?
 // sv.checkVersion(version); // Check the SciViews-K extension version is fine
 //
-// sv.debug = true/false; // Set to true for enabling SciViews-K debugging
-// sv.debugMsg(msg); // Use this function to write a SciViews-K debug message
-//
 // Various functions defined in the 'sv' namespace directly
+// sv.alert(header, text); // Own alert box; text is optional
 // sv.getText(); // Get current selection, or word under the cursor
 // sv.getLine(); // Get current line in the active buffer
 // sv.getPart(what, resel, clipboard); // Get a part of text in the buffer
             // or copy it to the clipboard (reset selection if resel == false)
 
-// sv.getTextRange(what, gotoend, select); // Get a part of text in the buffer, but do not operate on selection
-// sv.fileOpen(directory, filename, title, filter, multiple); // file open dialog, more custimizable replacement for ko.filepicker.open
+// sv.getTextRange(what, gotoend, select);  // Get a part of text in the buffer,
+                                            // but do not operate on selection
+// sv.fileOpen(directory, filename, title, filter, multiple); // file open dlg,
+            // more customizable replacement for ko.filepicker.open()
 
 // sv.browseURI(URI, internal); // Show URI in internal or external browser
 // sv.showFile(path, readonly); // Show a file in Komodo, possibly as read-only
@@ -28,16 +28,31 @@
 // sv.translate(textId); // translate messages using data from
 						 // chrome://sciviewsk/locale/main.properties
 //
-// SciViews-K preferences management ('sv.prefs' namespace)
+// SciViews-K preferences management ('sv.prefs' namespace) ////////////////////
 // sv.prefs.getString(pref, def); // Get a preference, use 'def' is not found
 // sv.prefs.setString(pref, value, overwrite); // Set a preference string
 // sv.prefs.askString(pref, defvalue); // Ask for the value of a preference
 // sv.prefs.mru(mru, reset, items, sep); //Simplify update of MRU lists
 //
-// SciViews-K Command Output management ('sv.cmdout' namespace)
-// sv.cmdout.append(str, newline, scrollToStart); // Append text to the Command Output pane
+// SciViews-K Command Output management ('sv.cmdout' namespace) ////////////////
+// sv.cmdout.append(str, newline, scrollToStart); // Append to Command Output
 // sv.cmdout.clear(); // Clear the Command Output pane
-// sv.cmdout.message(msg, timeout); // // Display message on the Command Output pane's bar
+// sv.cmdout.message(msg, timeout); // Display message in Command Output pane
+//
+// SciViews-K logging feature ('sv.log' namespace) /////////////////////////////
+// sv.log.logger;           // The SciViews-K Komodo logger object
+// sv.log.exception(e, msg, showMsg); // Log an exception with error message
+                            // and stack. If showMsg == true, also display the
+                            // msg in an alert box (optional)
+// sv.log.critical(msg);    // Log a critical error
+// sv.log.error(msg);       // Log an error
+// sv.log.warn(msg);        // Log a warning
+// sv.log.warnStack(msg);   // Log a warning and print the calling stack
+// sv.log.info(msg);        // Log an info message (if sv.log.isAll() == true)
+// sv.log.debug(msg);       // Log a debug message (if sv.log.isAll() == true) 
+// sv.log.all(debug);       // Toggle logging of debug/info messages on/off
+// sv.log.isAll();          // Do we currently log all messages?
+// sv.log.show();           // Show the Komodo log file 
 //
 // Not used any more?
 // sv.checkToolbox(); // Check that the correct SciViews-K toolbox is installed
@@ -50,11 +65,11 @@ if (typeof(sv) == 'undefined') {
 		version: 0.8,
 		release: 1,
 		showVersion: true,
-		checkVersion: function(version) {
+		checkVersion: function (version) {
 			if (this.version < version) {
 				var title = "SciViews-K"
 				var prompt = "Outdated SciViews-K extension..."
-				var text = "One or more macros require the SciViews-K extension "
+				var text = "One or more macros require the SciViews-K plugin "
 				text += version + ".x"
 				text += " but the currently installed version is "
 				text += this.version + "." + this.release
@@ -69,23 +84,31 @@ if (typeof(sv) == 'undefined') {
 	};
 }
 
-//DEBUG:
+//DEBUG: this is now obsolete, please, use sv.log.debug()!
 // global debugging flag:
-sv.debug = false;
-
-sv.debugMsg = function(msg) {
-	if (sv.debug)
-		sv.cmdout.append("debug: " + msg);
-}
+//sv.debug = false;
+//
+//sv.debugMsg = function (msg) {
+//	if (sv.debug)
+//		sv.cmdout.append("debug: " + msg);
+//}
 
 
 // Create the 'sv.tools' namespace
 if (typeof(sv.tools) == 'undefined') sv.tools = new Object();
 
-// Other functions directly defined in the 'sv' namespace //////////////////////
+
+//// Other functions directly defined in the 'sv' namespace ////////////////////
+// Our own alert box
+sv.alert = function (header, text) {
+    ko.dialogs.alert(header, text, "SciViews-K");
+}
+//sv.alert("Error:", "Some message");
+// -or-
+//sv.alert("Message");
 
 // Gets current selection, or word under the cursor in the active buffer
-sv.getText = function() {
+sv.getText = function () {
 	var kv = ko.views.manager.currentView;
 	if (!kv) return("");
 	kv.setFocus();
@@ -94,10 +117,10 @@ sv.getText = function() {
 	// If selection is empty, get the word under the cursor
 	if (txt == "") txt = ko.interpolate.getWordUnderCursor(ke);
 	return(txt);
-};
+}
 
 // Get current line of text in the active buffer
-sv.getLine = function() {
+sv.getLine = function () {
 	var kv = ko.views.manager.currentView;
 	if (!kv) return("");
 	kv.setFocus();
@@ -113,11 +136,10 @@ sv.getLine = function() {
 	ke.setSel(curAnchor, curPos);
 	// Return the content of the current line
 	return(currentLine);
-};
-
+}
 
 // Select a part of text in the current buffer and return it
-sv.getPart = function(what, resel, clipboard) {
+sv.getPart = function (what, resel, clipboard) {
 	var range;
 	var text = sv.getTextRange(what, false, !resel, range);
 	if (clipboard) {
@@ -125,12 +147,11 @@ sv.getPart = function(what, resel, clipboard) {
 		ke.copyRange(range.value.start, range.value.end);
 	}
 	return(text);
-};
-
+}
 
 // Select a part of text in the current buffer and return it
 // differs from sv.getPart that it does not touch the selection
-sv.getTextRange = function(what, gotoend, select, range) {
+sv.getTextRange = function (what, gotoend, select, range) {
 	var text = "";
 	var kv = ko.views.manager.currentView;
 	if (!kv) {
@@ -162,7 +183,8 @@ sv.getTextRange = function(what, gotoend, select, range) {
 			 .getService(Components.interfaces.koIFindService);
 
 		// save previous find settings
-		var oldFindPref = {searchBackward: true, matchWord: false, patternType: 0};
+		var oldFindPref = {searchBackward: true, matchWord: false,
+            patternType: 0};
 		for (var i in oldFindPref) oldFindPref[i] = findSvc.options[i];
 
 		findSvc.options.matchWord = false;
@@ -289,80 +311,69 @@ sv.getTextRange = function(what, gotoend, select, range) {
 			ke.setSel(pStart, pEnd);
 		}
 	}
-
 	if (typeof (range) == "object") {
 		range.value = {start: pStart, end: pEnd};
 	}
-
 	return(text);
 }
 
-
 // file open dialog, more customizable replacement for ko.filepicker.open
-sv.fileOpen = function(directory, filename, title, filter, multiple) {
+sv.fileOpen = function (directory, filename, title, filter, multiple) {
 	const nsIFilePicker = Components.interfaces.nsIFilePicker;
+    var fp = Components.classes["@mozilla.org/filepicker;1"]
+        .createInstance(nsIFilePicker);
+    if (!title) title = sv.translate("Open file");
+    var mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
 
-	var fp = Components.classes["@mozilla.org/filepicker;1"]
-	  .createInstance(nsIFilePicker);
-
-	if (!title)
-	  title = sv.translate("Open file");
-
-	var mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
-
-	fp.init(window, title, mode);
-
+    fp.init(window, title, mode);
 	if (filter) {
-	  if (typeof(filter) == "string") {
-		filter = filter.split(',');
-	  }
+        if (typeof(filter) == "string") {
+            filter = filter.split(',');
+        }
+        var fi;
+        for (var i = 0; i  < filter.length; i++) {
+            fi = filter[i].split("|");
+            if (fi.length == 1)
+                fi[1] = fi[0];
+            fp.appendFilter(fi[0], fi[1]);
+        }
+    }
+    fp.appendFilters(nsIFilePicker.filterAll);
 
-	  var fi;
-	  for (var i = 0; i  < filter.length; i++) {
-		fi = filter[i].split("|");
-		if (fi.length == 1)
-		  fi[1] = fi[0];
-		fp.appendFilter(fi[0], fi[1]);
-	  }
-	}
+    if (directory) {
+        var lf = Components.classes["@mozilla.org/file/local;1"].
+            createInstance(Components.interfaces.nsILocalFile);
+        lf.initWithPath(directory);
+        fp.displayDirectory = lf;
+    }
+    if (filename) {
+        fp.defaultString = filename;
+    }
 
-  fp.appendFilters(nsIFilePicker.filterAll);
-
-  if (directory) {
-	var lf = Components.classes["@mozilla.org/file/local;1"].
-			createInstance(Components.interfaces.nsILocalFile);
-	lf.initWithPath(directory);
-	fp.displayDirectory = lf;
-  }
-  if (filename) {
-	   fp.defaultString = filename;
-  }
-
-  var rv = fp.show();
-
-  if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
-	var path;
-	if (multiple) {
-		var files = fp.files;
-		path = new Array();
-		while (files.hasMoreElements()) {
-		  var file = files.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-		  path.push(file.path);
-		}
-
-	} else {
-		path = fp.file.path;
-	}
-	return(path);
-  }
-  return (null);
+    var rv = fp.show();
+    if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
+        var path;
+        if (multiple) {
+            var files = fp.files;
+            path = new Array();
+            while (files.hasMoreElements()) {
+                var file = files.getNext().
+                    QueryInterface(Components.interfaces.nsILocalFile);
+                path.push(file.path);
+            }
+        } else {
+            path = fp.file.path;
+        }
+        return(path);
+    }
+    return (null);
 }
 
 // Browse for the URI, either in an internal, or external (default) browser
-sv.browseURI = function(URI, internal) {
+sv.browseURI = function (URI, internal) {
 	if (URI == "") {
-		alert(sv.translate("Item not found!"));	// Because we call this from other
-		// functions that returns "" in case it doesn't find it (see sv.r.help)
+		sv.alert(sv.translate("Item not found!"));	// Because we call this from
+        // other functions that return "" when they don't find it, see sv.r.help
 	} else {
 		if (internal == null)
 			internal = (sv.prefs.getString("sciviews.r.help",
@@ -374,28 +385,29 @@ sv.browseURI = function(URI, internal) {
 			ko.browse.openUrlInDefaultBrowser(URI);
 		}
 	}
-};
+}
 
 // Show a text file in a buffer, possibly in read-only mode
-sv.showFile = function(path, readonly) {
+sv.showFile = function (path, readonly) {
 	if (path == "") {
-		alert(sv.translate("Item not found!")); // Same remark as for sv.browseURI()
+		sv.alert(sv.translate("Item not found!")); // Same as for sv.browseURI()
 	} else {
 		ko.open.URI(path, "editor");
 		if (readonly == true) {
 			var kv = ko.views.manager.currentView;
 			var ke = kv.scimoz;
 			ke.readOnly = true;
-			// Make the caret a block and hatch the fold margin as indicator
+			// TODO: use morekomodo approach
+            // Make the caret a block and hatch the fold margin as indicator
 			ke.caretStyle = 2;
 			ke.setFoldMarginColour(true, 100);
 			kv.setFocus();
 		}
 	}
-};
+}
 
 // Show URL in the default browser with current selection or <keyword>
-sv.helpURL = function(URL) {
+sv.helpURL = function (URL) {
 	try {
 		var kv = ko.views.manager.currentView;
 		if (!kv) return(false);
@@ -405,7 +417,7 @@ sv.helpURL = function(URL) {
 		if (sel == "") {
 			// Try to get the URL-escaped word under the cursor
 			if (ko.interpolate.getWordUnderCursor(ke) == "") {
-				alert(sv.translate("Nothing is selected!"));
+				sv.alert(sv.translate("Nothing is selected!"));
 				return(false);
 			} else {
 				sel = ko.interpolate.interpolateStrings('%W');
@@ -418,13 +430,13 @@ sv.helpURL = function(URL) {
 		ko.browse.openUrlInDefaultBrowser(helpURL);
 		return(true);
 	} catch(e) {
-		alert(e);
+		sv.log.exception(e, "Unable to show " + URL + " in the browser", true);
 	}
 	return(false);
-};
+}
 
 // Get contextual help for a word in the buffer, or for snippets
-sv.helpContext = function() {
+sv.helpContext = function () {
 	try {
 		if (ko.window.focusedView() == null) {
 			if (ko.projects.active) {
@@ -480,14 +492,13 @@ sv.helpContext = function() {
 		}
 		return(true);
 	} catch(e) {
-		alert("Error while trying to get contextual help");
+		sv.log.exception(e, "Error while trying to get contextual help", true);
 		return(false);
 	}
-};
+}
 
 // translate messages using data from chrome://sciviewsk/locale/main.properties
-sv.translate = function(textId) {
-
+sv.translate = function (textId) {
 	var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
 		.getService(Components.interfaces.nsIStringBundleService)
 		.createBundle("chrome://sciviewsk/locale/main.properties");
@@ -520,30 +531,30 @@ sv.translate = function(textId) {
 }
 
 
-// Preferences management //////////////////////////////////////////////////////
+//// Preferences management ////////////////////////////////////////////////////
 if (typeof(sv.prefs) == 'undefined') sv.prefs = new Object();
 
 // Get a string preference, or default value
-sv.prefs.getString = function(pref, def) {
+sv.prefs.getString = function (pref, def) {
 	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
 		getService(Components.interfaces.koIPrefService);
 	var prefs = prefsSvc.prefs;
 	if (prefs.hasStringPref(pref)) {
 		return(prefs.getStringPref(pref));
 	} else return(def);
-};
+}
 
 // Set a string preference
-sv.prefs.setString = function(pref, value, overwrite) {
+sv.prefs.setString = function (pref, value, overwrite) {
 	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
 		getService(Components.interfaces.koIPrefService);
 	var prefs = prefsSvc.prefs;
 	if (overwrite == false & prefs.hasStringPref(pref)) return;
 	prefs.setStringPref(pref, value);
-};
+}
 
 // Display a dialog box to change a preference string
-sv.prefs.askString = function(pref, defvalue) {
+sv.prefs.askString = function (pref, defvalue) {
 	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
 		getService(Components.interfaces.koIPrefService);
 	var prefs = prefsSvc.prefs;
@@ -558,7 +569,7 @@ sv.prefs.askString = function(pref, defvalue) {
 }
 
 // Simplify update of MRU lists
-sv.prefs.mru = function(mru, reset, items, sep) {
+sv.prefs.mru = function (mru, reset, items, sep) {
 	var mruList = "dialog-interpolationquery-" + mru + "Mru";
 	// Do we reset the MRU list?
 	if (typeof(reset) == "undefined") reset = false;
@@ -568,30 +579,17 @@ sv.prefs.mru = function(mru, reset, items, sep) {
 	if (typeof(sep) != "undefined") items = items.split(sep);
 
 	// Add each item in items in inverse order
-	for (i = items.length - 1; i >= 0; i--) {
+    for (var i = items.length - 1; i >= 0; i--) {
 		ko.mru.add(mruList, items[i], true);
 	}
 }
 
 
-// This is required by sv.helpContext() for attaching help to snippets (hack!)
-// Create empty preference sets to be used with snippet help system hack
-// [[%pref:R-help:value]] which displays nothing when the snippet is used
-// but can be used to retrieve value to display a particular help page
-// for this snippet
-// Help page triggered by a given URL
-sv.prefs.setString("URL-help", "", true);
-// R HTML help pages triggered with '?topic'
-sv.prefs.setString("R-help", "", true);
-// Help page on the R Wiki
-sv.prefs.setString("RWiki-help", "", true);
-
-
-// Control the command output tab //////////////////////////////////////////////
+//// Control the command output tab ////////////////////////////////////////////
 if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 
 // Append text to the Command Output pane
-sv.cmdout.append = function(str, newline, scrollToStart) {
+sv.cmdout.append = function (str, newline, scrollToStart) {
 	try {
 		var runout = ko.run.output;
 		// Make sure the command output window is visible
@@ -620,11 +618,13 @@ sv.cmdout.append = function(str, newline, scrollToStart) {
 		} else {
 			scimoz.gotoLine(scimoz.lineCount);
 		}
-	} catch(e) { alert("Problems printing [" + str + "]:" + e + "\n"); }
-};
+	} catch(e) {
+        sv.log.exception(e, "Problems printing [" + str + "]", true);
+    }
+}
 
 // Clear text in the Output Command pane
-sv.cmdout.clear = function() {
+sv.cmdout.clear = function () {
 	sv.cmdout.message();
 
 	try {
@@ -642,11 +642,13 @@ sv.cmdout.clear = function() {
 			scimoz.readOnly = false;
 			scimoz.clearAll();
 		} finally { scimoz.readOnly = ro; }
-	} catch(e) { alert("problems clearing the Command Output pane\n"); }
-};
+	} catch(e) {
+        sv.log.exception(e, "Problems clearing the Command Output pane", true);
+    }
+}
 
-// Display message on the command ouptut bar
-sv.cmdout.message = function(msg, timeout) {
+// Display message on the command output bar
+sv.cmdout.message = function (msg, timeout) {
 	document.getElementById('output_tabpanels').selectedIndex = 0;
 	var runoutputDesc = document.getElementById('runoutput-desc');
 	if (msg == null) msg = "";
@@ -654,12 +656,100 @@ sv.cmdout.message = function(msg, timeout) {
 	runoutputDesc.setAttribute("value", msg);
 	window.clearTimeout(runoutputDesc.timeout);
 	if (timeout > 0)
-		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message();", timeout);
+		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message();",
+            timeout);
 }
 
 
-// Not used any more? //////////////////////////////////////////////////////////
-sv.checkToolbox = function() {
+//// Logging management ////////////////////////////////////////////////////////
+if (typeof(sv.log) == 'undefined') sv.log = {
+	logger: ko.logging.getLogger("SciViews-K")
+}
+
+sv.log.exception = function (e, msg, showMsg) {
+    if (typeof(showMsg) != 'undefined' & showMsg == true) {
+        sv.alert("Error", msg);
+    }
+    this.logger.exception(e, msg);
+}
+
+sv.log.critical = function (msg) {
+    this.logger.critical(msg);
+}
+
+sv.log.error = function (msg) {
+    this.logger.error(msg);
+}
+
+sv.log.warn = function (msg) {
+    this.logger.warn(msg);
+}
+
+sv.log.warnStack = function (msg) {
+    this.logger.deprecated(msg);
+}
+
+sv.log.info = function (msg) {
+    this.logger.info(msg);
+}
+
+sv.log.debug = function (msg) { 
+    this.logger.debug(msg);
+}
+
+sv.log.all = function (debug) {
+    if (typeof(debug) == "undefined" || debug == false) {
+        this.logger.setLevel(false);
+    } else {
+        this.logger.setLevel(true); 
+    }
+}
+
+sv.log.isAll = function () {
+    return(this.logger.getEffectiveLevel() == 1);
+}
+
+sv.log.show = function () {
+    var os = Components.classes['@activestate.com/koOs;1'].
+        getService(Components.interfaces.koIOs);
+    try {
+        appdir = komodo.interpolate('%(path:hostUserDataDir)');
+        var logFile = os.path.join(appdir, 'pystderr.log');
+        var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
+        window.openDialog('chrome://komodo/content/tail/tail.xul',"_blank",
+            winOpts,logFile);
+    } catch(e) {
+        sv.log.exception(e, "Unable to display the Komodo error log!", true);
+    }
+}
+
+//// Tests... default level do not print debug and infos!
+//sv.log.all(false);
+//alert(sv.log.isAll());
+//try {
+//   test = nonexistingvar; 
+//} catch(e) {sv.log.exception(e, "Test it exception"); }
+//sv.log.critical("Test it critical");
+//sv.log.error("Test it error");
+//sv.log.warn("Test it warning");
+//sv.log.info("Test it info");
+//sv.log.debug("Test it debug");
+//sv.log.warnStack("Test it warn with stack");
+//// Set at debug/info level
+//sv.log.all(true);
+//alert(sv.log.isAll());
+//sv.log.critical("Test it critical 2");
+//sv.log.error("Test it error 2");
+//sv.log.warn("Test it warning 2");
+//sv.log.info("Test it info 2");
+//sv.log.debug("Test it debug 2");
+//sv.log.warnStack("Test it warn with stack 2");
+//// Show Komodo log
+//sv.log.show();
+
+
+//// Not used any more? ////////////////////////////////////////////////////////
+sv.checkToolbox = function () {
     try {
 		var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
 		pkg += "/XRE/extensions/sciviewsk@sciviews.org/templates/SciViews-K.kpz";
@@ -677,7 +767,8 @@ sv.checkToolbox = function() {
 			sv.showVersion = false;
 			for (var i = 0; i < SciViewsK_folders.length; i++) {
 				SciViewsK_folder = SciViewsK_folders[i];
-				VersionMacro = SciViewsK_folder.getChildWithTypeAndStringAttribute(
+				VersionMacro = SciViewsK_folder.
+                    getChildWithTypeAndStringAttribute(
 					"macro", "name", "Version", true);
 				if (VersionMacro) {
 					ko.projects.executeMacro(VersionMacro);
@@ -704,7 +795,9 @@ sv.checkToolbox = function() {
 				}
 			}
 		}
-	} catch(e) { alert(e); }
+	} catch(e) {
+        sv.log.exception(e, "Unable to install/update the SciViews-K toolbox");
+    }
 	finally { sv.showVersion = true; }
 }
 

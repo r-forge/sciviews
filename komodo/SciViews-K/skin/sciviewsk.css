@@ -2,11 +2,9 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/R.png");
 }
 
-
 .r-working-dir-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/folder_home.png");
 }
-
 
 .r-run-all-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/run_all.png");
@@ -24,7 +22,6 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/run_function.png");
 }
 
-
 .r-run-line-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/run_line.png");
 }
@@ -32,7 +29,6 @@
 .r-run-para-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/run_para.png");
 }
-
 
 .r-source-all-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/source_all.png");
@@ -50,7 +46,6 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/source_function.png");
 }
 
-
 .r-source-line-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/source_line.png");
 }
@@ -59,22 +54,17 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/source_para.png");
 }
 
-
-
 .robjects-pkg-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/package.png");
 }
-
 
 .r-pkg-load-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/package_go.png");
 }
 
-
 .r-pkg-install-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/package_install.png");
 }
-
 
 .r-pkg-install-local-icon{
 	list-style-image: url("chrome://sciviewsk/skin/images/package_add.png");
@@ -84,7 +74,6 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/package_green.png");
 }
 
-
 .r-pkg-remove-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/package_delete.png");
 }
@@ -93,10 +82,10 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/database_link.png");
 }
 
-
 .searchPath-icon{
 	list-style-image: url("chrome://komodo/skin/images/bulletlist.png");
 }
+
 .searchPath-icon:hover{
 	list-style-image : url("chrome://komodo/skin/images/bulletlist_hover.png");
 }
@@ -121,12 +110,10 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/toggle_open.png");
 }
 
-
 .r-objects-filter:hover,
 .r-objects-filter:hover:active {
 	list-style-image: url("chrome://sciviewsk/skin/images/filter-a.png");
 }
-
 
 .r-escape-icon[disabled="true"],
 .r-escape-icon[disabled="true"]:hover,
@@ -134,11 +121,9 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/r_escape_disable.png");
 }
 
-
 #sciviews_robjects_objects_tree treecol#r-dims {
 	text-align: right;
 }
-
 
 #sciviews_robjects_objects_tree treechildren::-moz-tree-indentation {
 	width: 15px;
@@ -191,12 +176,10 @@
 	color: #333399;
 }
 
-
 #sciviews_robjects_objects_tree treechildren::-moz-tree-line {
 	visibility: visible;
 	border: 1px dotted ButtonShadow;
 }
-
 
 #sciviews_robjects_objects_tree treechildren::-moz-tree-line(type-args) {
 	visibility: visible;
@@ -216,8 +199,6 @@
 	/*min-width: 40px;
 	max-width: 200px;*/
 }
-
-
 
 #sciviews_robjects_filterbox.badRegEx {
 	color: #ea0000;
