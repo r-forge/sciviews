@@ -1,3 +1,4 @@
+#!python
 # ***** BEGIN LICENSE BLOCK *****
 # Version: MPL 1.1/GPL 2.0/LGPL 2.1
 #
@@ -51,7 +52,6 @@ def registerLanguage(registry):
     log.debug("Registering language R")
     registry.registerLanguage(KoRLanguage())
 
-
 class KoRLanguage(KoUDLLanguage):
     name = "R"
     lexresLangName = "R"
@@ -61,7 +61,7 @@ class KoRLanguage(KoUDLLanguage):
     defaultExtension = '.R'
 
     # ??? I don't understand this... could someone explain me?
-    lang_from_udl_family = {'SSL': 'R' }    # R - might be - a server side language (yet all this works with CSL too), and can contain only R
+    lang_from_udl_family = {'CSL': 'R' }
 
     # Code from koJavaScriptLanguage.py
 
@@ -87,7 +87,9 @@ class KoRLanguage(KoUDLLanguage):
     get_linter = KoLanguageBase.get_linter
 
     sample = """`cube`<- function(x, na.rm = FALSE) {
-    if (na.rm) x <- x[!is.na(x)]
+    if (isTRUE(na.rm)) {
+        x <- x[!is.na(x)]
+    }
     return(x^3)
 } # A comment
 a <- data.frame(x = 1:10, y = rnorm(10))
@@ -95,14 +97,15 @@ cube(a$x)
 plot(y ~ x, data = a, col = 'blue', main = "Plot of \\"a\\"")
 a$y <- NULL; a"""
 
-from xpcom import components, nsError, ServerException
-from koLintResult import *
-from koLintResults import koLintResults
-import os, re, sys, string
-import os.path
-import tempfile
-import process
-import koprocessutils
+    # Inspired from koJavascriptLanguage.py (but not needed because we use UDL!?)
+    #def get_lexer(self):
+    #    if self._lexer is None:
+    #        self._lexer = KoLexerLanguageService()
+    #        self._lexer.setLexer(components.interfaces.ISciMoz.SCLEX_R)
+    #        #self._lexer.setKeywords(0, keywords)
+    #        self._lexer.supportsFolding = 1
+    #    return self._lexer
+
 
 # TODO: all this should be reworked when a R linter will be ready
 def RWarnsToLintResults(warns, filename, code, status):
@@ -169,7 +172,7 @@ class koRLinter:
         tmpFileName = None
         if cwd:
             tmpFileName = os.path.join(cwd,
-                                       "tmp_ko_Rlint_ko%s.R" % (self._koVer.replace(".","_").replace("-","_")))
+                "tmp_ko_Rlint_ko%s.R" % (self._koVer.replace(".","_").replace("-","_")))
             try:
                 fout = open(tmpFileName, 'wb')
                 fout.write(text)

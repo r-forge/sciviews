@@ -1,7 +1,9 @@
+//TODO: A better SciViews-K header
+
 //TODO: identify packages by pos rather than name (allow for non-unique names)
 
-//TODO: sort inserted child nodes (3-state sorting), restoring natural order of sub-elements
-	//(add orderIndex property to inserted elements)
+//TODO: sort inserted child nodes (3-state sorting), restoring natural order of
+//      sub-elements (add orderIndex property to inserted elements)
 //TODO: resolve filtering modes: should sub-object be filtered too?
 //TODO: quoting non-syntactic sub-names inserted into text
 //TODO: preserve opened sub-objects on refresh
@@ -11,8 +13,8 @@
 //TODO: toolbar: dropdown menu for packages maintenance (add, install, etc)
 //TODO: solve problems with selection, when removing objects
 
-//DONE: "remove" command: Shift + Command - removes immediatelly (confirmation box first), Command - adds R code to the current document
-
+//DONE: "remove" command: Shift + Command - removes immediately (confirmation
+//       box first), Command - adds R code to the current document
 
 //sv.r.objects = rObjectsTree;
 
@@ -160,33 +162,32 @@ searchPaths
 //
 
 
-
-
 var rObjectsTree = {};
 
 // rObjectsTree constructor:
 (function() {
 
-// item separator for objList
+// Item separator for objList
 var sep = ";;";
 
+var cmdPattern = 'print(objList(id = "$ID$_$ENV$_$OBJ$", envir = "$ENV$",' +
+	' object = "$ENV$", all.info = FALSE, compare = FALSE), sep = "' + sep +
+	'", eol = "\\n")';
 
-var cmdPattern = 'print(objList(id = "$ID$_$ENV$_$OBJ$", envir = "$ENV$", object = "$ENV$", all.info = FALSE, compare = FALSE), sep = "' + sep + '", eol = "\\n")';
-
-// this should be changed if new icons are added
+// This should be changed if new icons are added
 var iconTypes = ['array', 'character', 'data.frame', 'Date', 'dist', 'empty',
 	'factor', 'function', 'glm', 'integer', 'list', 'lm', 'lme',
 	'logical', 'matrix', 'numeric', 'object', 'objects', 'package',
 	'standardGeneric', 'S3', 'S4', 'ts', 'environment', 'formula'];
 
-// reference to parent object for private functions
+// Reference to parent object for private functions
 var _this = this;
 
 var filterBy = 0; // filter by name by default
 var isInitialized = false;
 
-// set debug mode:
-this.debug = typeof(sv.debug) != "undefined"? sv.debug : false;
+// Set debug mode:
+this.debug = sv.log.isAll();
 
 this.visibleData = [];
 this.treeData = [];
@@ -197,7 +198,9 @@ this.selection = null;
 var atomSvc = Components.classes["@mozilla.org/atom-service;1"]
 	.getService(Components.interfaces.nsIAtomService);
 
-this.__defineGetter__ ('rowCount', function() { return this.visibleData.length; });
+this.__defineGetter__ ('rowCount', function () {
+	return this.visibleData.length;
+});
 
 function _createVisibleData (){
 	if (!isInitialized) {
@@ -215,44 +218,38 @@ function _createVisibleData (){
 		_this.treeBox.rowCountChanged(0, rowsChanged);
 	}
 	_this.treeBox.invalidateRange(_this.treeBox.getFirstVisibleRow(),
-						_this.treeBox.getLastVisibleRow());
+		_this.treeBox.getLastVisibleRow());
 };
 
-
-
-function _addObjectList(pack) {
-	// need this for attached files on windows:
+function _addObjectList (pack) {
+	// Need this for attached files on windows:
 	pack = pack.addslashes();
 
 	var id = sv.prefs.getString("sciviews.client.id", "SciViewsK");
 
-	// for use with modified objList
+	// For use with modified objList
 	var cmd = 'print(objList(id = "' + id + '_' + pack + '", envir = "' + pack +
-		'", all.info = FALSE, compare = FALSE), sep = "' + sep + '", eol = "\\n", raw.output = TRUE, header = TRUE)';
+		'", all.info = FALSE, compare = FALSE), sep = "' + sep +
+		'", eol = "\\n", raw.output = TRUE, header = TRUE)';
 
-	sv.debugMsg(cmd);
+	sv.log.debug(cmd);
 	sv.r.evalCallback(cmd, _parseObjectList, pack);
 };
 
-
-
-function _parseObjectList(data, packSelected) {
-
-	// get position in the search path:
-	function getPos(pack) {
+function _parseObjectList (data, packSelected) {
+	// Get position in the search path:
+	function getPos (pack) {
 		var pos, searchPaths = _this.searchPaths;
-		for (pos = 0; pos < searchPaths.length
-		&& searchPaths[pos] != pack;
-		pos++) { }
+		for (pos = 0; pos < searchPaths.length &&
+			searchPaths[pos] != pack; pos++) { }
 		return pos;
 	}
-
 
 	var p, pos, packAdded = [];
 	if (data.trim() != "") {
 		var lines = data.split(/[\r\n]{1,2}/);
 
-		// get rid of the "Objects list:" line
+		// Get rid of the "Objects list:" line
 		if (lines[0].indexOf("Objects list:") != -1)
 			lines.shift();
 
@@ -265,11 +262,11 @@ function _parseObjectList(data, packSelected) {
 
 		for (var i = 0; i < lines.length; i++) {
 			if (lines[i].indexOf(sep) == -1) {
-				// parse header line: look for environment name:
+				// Parse header line: look for environment name:
 				if (lines[i].indexOf("Env=") == 0) {
 					pack = lines[i].substr(4);
 					p =  packIdx.indexOf(pack);
-					if (p == -1) { // create new top level branch
+					if (p == -1) { // Create new top level branch
 						p = packIdx.push(pack) - 1;
 						pos = getPos(pack);
 						_this.treeData.push({
@@ -291,7 +288,6 @@ function _parseObjectList(data, packSelected) {
 						packAdded.push(pack);
 					}
 				}
-
 			} else {
 				line = lines[i].split(sep);
 
@@ -328,17 +324,15 @@ function _parseObjectList(data, packSelected) {
 			}
 		}
 
-	} //
+	}
 
 	var currentElement = _this.treeData[p];
 	_this.sort();
 	if (packAdded.length == 1 && currentElement.index != -1)
 		_this.treeBox.ensureRowIsVisible(currentElement.index);
-
 };
 
-
-function _removeObjectList(pack) {
+function _removeObjectList (pack) {
 	for (var i = 0; i < _this.treeData.length; i++) {
 		if (_this.treeData[i].name == pack) {
 			_this.treeData.splice(i, 1);
@@ -348,7 +342,7 @@ function _removeObjectList(pack) {
 	_createVisibleData();
 };
 
-function _addSubObject(obj) {
+function _addSubObject (obj) {
 	var objName = obj.origItem.name;
 	// objList does not quote non syntactic names, so we do it here:
 	if (
@@ -362,17 +356,14 @@ function _addSubObject(obj) {
 
 	var id = sv.prefs.getString("sciviews.client.id", "SciViewsK");
 
-
-	var cmd = 'print(objList(id = "' + id + '_' + env + '_' + objName + '", envir = "' + env +
-		'", object = "' + objName + '", all.info = FALSE, compare = FALSE), sep = "' + sep + '", eol = "\\n")';
-
-	sv.debugMsg(cmd);
-
+	var cmd = 'print(objList(id = "' + id + '_' + env + '_' + objName +
+		'", envir = "' + env + '", object = "' + objName +
+		'", all.info = FALSE, compare = FALSE), sep = "' + sep + '", eol = "\\n")';
+	sv.log.debug(cmd);
 	sv.r.evalCallback(cmd, _parseSubObjectList, obj);
 };
 
-
-function _parseSubObjectList(data, obj) {
+function _parseSubObjectList (data, obj) {
 	var lines = data.split(/[\r\n]{1,2}/);
 
 	if (data == "" || (data.trim() == "An empty objects list")
@@ -390,15 +381,19 @@ function _parseSubObjectList(data, obj) {
 	if (!lines.length)
 		return;
 
-	var env = lines[0].substr(lines[0].lastIndexOf("=") + 1).trim(); // Environment - 1st line
-	var treeParent = lines[1].substr(lines[1].lastIndexOf("=") + 1).trim(); // parent object - 2ng line
+	// Environment - 1st line
+	var env = lines[0].substr(lines[0].lastIndexOf("=") + 1).trim();
+	// Parent object - 2ng line
+	var treeParent = lines[1].substr(lines[1].lastIndexOf("=") + 1).trim();
 
 	var vd = _this.visibleData;
-	if (!obj) { // reloading sub-lists without passing parent tree item - not used yet
+	if (!obj) {
+		// reloading sub-lists without passing parent tree item - not used yet
 		if (treeParent) {
 			// TODO: smarter way to do it than searching through all items
 			for (var i = 0; i < vd.length; i++) {
-				if (vd[i].origItem.env == env && vd[i].orgItem.fullName == treeParent) {
+				if (vd[i].origItem.env == env && vd[i]
+					.orgItem.fullName == treeParent) {
 					obj = vd[i];
 					break;
 				}
@@ -439,7 +434,8 @@ function _parseSubObjectList(data, obj) {
 				childrenLoaded: false,
 				isOpen: false,
 				env: env,
-				sortData: [line[0].toLowerCase(), dimNumeric, line[4].toLowerCase(), line[3].toLowerCase(), i],
+				sortData: [line[0].toLowerCase(), dimNumeric,
+						   line[4].toLowerCase(), line[3].toLowerCase(), i],
 				index: -1,
 				parentObject: origItem
 			});
@@ -450,23 +446,21 @@ function _parseSubObjectList(data, obj) {
 	_this.toggleOpenState(origItem.index);
 };
 
-
-function _getFilter() {
+function _getFilter () {
 	var tb = document.getElementById("sciviews_robjects_filterbox");
-
 	var obRx, filterRegExp, test;
 
 	if (!tb.value)
-		return function(x) {	return true;	}
+		return function (x) { return true; }
 
 	try {
 		obRx = new RegExp(tb.value, "i");
 		tb.className = "";
-		return function(x) {	return (obRx.test(x));	}
+		return function (x) { return(obRx.test(x));	}
 	} catch (e) {
 		obRx = tb.value;
 		tb.className = "badRegEx";
-		return function(x) {	return(x.indexOf(obRx) > -1);	}
+		return function(x) { return(x.indexOf(obRx) > -1); }
 	}
 };
 
@@ -476,10 +470,9 @@ this.applyFilter = function () {
 	_createVisibleData();
 };
 
+this.filter =  function (x) { return true; };
 
-this.filter =  function(x) { return true; };
-
-function _addVItems(item, parentIndex, level, parentUid) {
+function _addVItems (item, parentIndex, level, parentUid) {
 	if (typeof(item) == "undefined")
 		return(parentIndex);
 	if (typeof(level) == "undefined") level = -1;
@@ -491,10 +484,11 @@ function _addVItems(item, parentIndex, level, parentUid) {
 	var conditionalView;
 
 	for (var i = 0; i < len; i++) {
-		if (level == 1 && !_this.filter(item[i].sortData[filterBy])) { //item[i].class != "package" &&
+		//item[i].class != "package" &&
+		if (level == 1 && !_this.filter(item[i].sortData[filterBy])) { 
 			item[i].index = -1;
 			continue;
-			// set conditionalView = true if any child nodes pass fitering
+			// Set conditionalView = true if any child nodes pass fitering
 			//conditionalView = true;
 		} else {
 			//conditionalView = false;
@@ -512,7 +506,8 @@ function _addVItems(item, parentIndex, level, parentUid) {
 			// no children is visible:
 			if (idxBefore == idx) {
 				vItem.isContainerEmpty = true;
-				// if this item was to be viewed on condition any children is visible, remove this item:
+				// if this item was to be viewed on condition any children is
+				// visible, remove this item:
 				/*if (conditionalView) {
 					this.visibleData.pop();
 					idx--;
@@ -521,12 +516,11 @@ function _addVItems(item, parentIndex, level, parentUid) {
 			//print(idx + "<-" + idxBefore);
 		}
 	}
-
 	return idx;
 };
 
-// attaches one level list of child items to an item
-function _addVIChildren(vItem, parentIndex, isOpen) {
+// Attach one level list of child items to an item
+function _addVIChildren (vItem, parentIndex, isOpen) {
 	var children = vItem.origItem.children;
 
 	vItem.isOpen = isOpen;
@@ -546,15 +540,10 @@ function _addVIChildren(vItem, parentIndex, isOpen) {
 				isOpen? parentIndex : 0, // closed subtree elements have 0-based parentIndex
 				vItem.uid + "»"));
 	}
-
 	vItem.isContainerEmpty = vItem.children.length == 0;
-
 };
 
-
-
-
-function _getVItem(obj, index, level, first, last, parentIndex, parentUid) {
+function _getVItem (obj, index, level, first, last, parentIndex, parentUid) {
 	var vItem = {};
 
 	if (obj.group == "list" || obj.group == "function" || obj.list) {
@@ -584,12 +573,9 @@ function _getVItem(obj, index, level, first, last, parentIndex, parentUid) {
 	return vItem;
 };
 
-
-
-
-
-this.sort =  function(column) {
-	var columnName, currentElement, tree, sortDirection, realOrder, order, sortDirs;
+this.sort =  function (column) {
+	var columnName, currentElement, tree, sortDirection, realOrder, order,
+		sortDirs;
 	tree = document.getElementById("sciviews_robjects_objects_tree");
 	sortDirection = tree.getAttribute("sortDirection");
 
@@ -602,7 +588,7 @@ this.sort =  function(column) {
 		currentElement = null;
 	}
 
-	//if the column is passed and it's already sorted by that column, reverse sort
+	// If the column is passed and sort already done, reverse it
 	if (column) {
 		columnName = column.id;
 		if (tree.getAttribute("sortResource") == columnName)
@@ -613,14 +599,15 @@ this.sort =  function(column) {
 		columnName = tree.getAttribute("sortResource");
 	}
 
-	var colNames = ["r-name", "r-dims",  "r-class", "r-group", "r-fullName", "r-position"];
+	var colNames = ["r-name", "r-dims",  "r-class", "r-group", "r-fullName",
+					"r-position"];
 	var sCol = colNames.indexOf(columnName);
 
 	var defaultSortCol = 0;
 	if (typeof(sCol) == "undefined")
 		sCol = 0;
 
-	// sort using original element order:
+	// Sort using original element order:
 	if (realOrder == 0) {
 		sCol = 4;
 		order = 1;
@@ -628,25 +615,27 @@ this.sort =  function(column) {
 		order = realOrder;
 	}
 
-	function _sortCompare(a, b) {
+	function _sortCompare (a, b) {
 		if (a.sortData[sCol] > b.sortData[sCol]) return 1 * order;
 		if (a.sortData[sCol] < b.sortData[sCol]) return -1 * order;
 
 		if (sCol != defaultSortCol) {
-			if (a.sortData[defaultSortCol] > b.sortData[defaultSortCol]) return 1;
-			if (a.sortData[defaultSortCol] < b.sortData[defaultSortCol]) return -1;
+			if (a.sortData[defaultSortCol] > b.sortData[defaultSortCol])
+				return 1;
+			if (a.sortData[defaultSortCol] < b.sortData[defaultSortCol])
+				return -1;
 		}
 		return 0;
 	}
 
-	function _sortComparePkgs(a, b) {
-		// index 1 is the package's position in the search path
+	function _sortComparePkgs (a, b) {
+		// Index 1 is the package's position in the search path
 		if (a.sortData[1] > b.sortData[1]) return 1;
 		if (a.sortData[1] < b.sortData[1]) return -1;
 		return 0;
 	}
 
-	function _sortRecursive(arr) {
+	function _sortRecursive (arr) {
 		arr.sort(_sortCompare);
 		for (var i in arr) {
 			if (typeof (arr[i].children) == "object") {
@@ -657,7 +646,7 @@ this.sort =  function(column) {
 
 	sortDirection = sortDirs[realOrder + 1];
 
-	//setting these will make the sort option persist
+	// Setting these will make the sort option persist
 	tree.setAttribute("sortDirection", sortDirection);
 	tree.setAttribute("sortResource", columnName);
 
@@ -666,9 +655,10 @@ this.sort =  function(column) {
 		cols[i].removeAttribute("sortDirection");
 	}
 
-	document.getElementById(columnName).setAttribute("sortDirection", sortDirection);
+	document.getElementById(columnName)
+		.setAttribute("sortDirection", sortDirection);
 
-	// sort packages always by name:
+	// Sort packages always by name:
 	this.treeData.sort(_sortComparePkgs);
 	for (var i in this.treeData) {
 		if (typeof (this.treeData[i].children) == "object") {
@@ -685,7 +675,7 @@ this.sort =  function(column) {
 };
 
 
-this.foldAll = function(open) {
+this.foldAll = function (open) {
 	if (!this.rowCount)
 		return;
 	var idx = this.selection.currentIndex;
@@ -709,8 +699,7 @@ this.foldAll = function(open) {
 	}
 };
 
-
-this.toggleOpenState =  function(idx) {
+this.toggleOpenState = function (idx) {
 	var vd = this.visibleData;
 	var item = vd[idx];
 	if (!item) {
@@ -724,39 +713,35 @@ this.toggleOpenState =  function(idx) {
 	}
 
 	var rowsChanged;
-
 	var iLevel = item.level;
 
 	if (!item.childrenLength) {
 		return;
 	}
 
-	if (item.origItem.isOpen) { // closing subtree
+	if (item.origItem.isOpen) { // Closing subtree
 		var k;
 		for (k = idx + 1; k < vd.length && vd[k].level > iLevel; k++) { }
 		rowsChanged = k - idx - 1;
 		item.children = vd.splice(idx + 1, rowsChanged);
 
-		// make parentIndexes of child rows relative:
+		// Make parentIndexes of child rows relative:
 		for (var i = 0; i < item.children.length; i++) {
 			item.children[i].parentIndex -= idx;
 		}
 
-		// decrease parentIndexes of subsequent rows:
+		// Decrease parentIndexes of subsequent rows:
 		for (var i = idx + 1; i < vd.length; i++) {
 			if (vd[i].parentIndex > idx)
 				vd[i].parentIndex -= rowsChanged;
 			vd[i].origItem.index = i;
 		}
-
-
-	} else { // opening subtree
-
+	} else { // Opening subtree
 		if (typeof(item.children) == "undefined") {
 			_addVIChildren(item, idx, false);
 		}
 
-		// filter child items
+		// Filter child items
 		var insertItems = [];
 		for (var i = 0; i < item.children.length; i++) {
 			//if (this.filter(item.children[i].origItem.name)) {
@@ -765,14 +750,14 @@ this.toggleOpenState =  function(idx) {
 		}
 
 		rowsChanged = insertItems.length;
-		// change parentIndexes of child rows from relative to absolute
+		// Change parentIndexes of child rows from relative to absolute
 		for (var i = 0; i < insertItems.length; i++) {
 			insertItems[i].parentIndex += idx;
 			insertItems[i].origItem.index = i + idx + 1;
 		}
 
 		var vd2 = vd.slice(0, idx + 1).concat(insertItems, vd.slice(idx + 1));
-		// increase parentIndexes of subsequent rows:
+		// Increase parentIndexes of subsequent rows:
 		for (var i = idx + 1 + insertItems.length; i < vd2.length; i++) {
 			if (vd2[i].parentIndex > idx)
 				vd2[i].parentIndex += rowsChanged;
@@ -783,55 +768,63 @@ this.toggleOpenState =  function(idx) {
 	}
 	item.origItem.isOpen = !item.origItem.isOpen;
 	if (rowsChanged)
-		this.treeBox.rowCountChanged(idx + 1, (item.origItem.isOpen? 1 : -1) * rowsChanged);
-
+		this.treeBox.rowCountChanged(idx + 1, (item.origItem.isOpen? 1 : -1) *
+			rowsChanged);
 	this.treeBox.invalidateRow(idx);
 };
 
+this.setTree = function (treeBox) {
+	this.treeBox = treeBox;
+};
 
-
-this.setTree =  function(treeBox)         { this.treeBox = treeBox; };
-
-this.setCellText =  function(idx, col, value) {
+this.setCellText = function (idx, col, value) {
 	this.visibleData[idx].labels[col.index] = value;
 };
 
-
-this.setCellValue =  function(idx, col, value) {
+this.setCellValue = function (idx, col, value) {
 };
 
-this.getCellText =  function(idx, column) {
-		//if (column.index == 1)
-		//	return "*" + this.visibleData[idx].origItem.sortData[1];
-		return _this.visibleData[idx].labels[column.index];
-		//+":" + this.visibleData[idx].level;
+this.getCellText = function (idx, column) {
+	//if (column.index == 1)
+	//	return "*" + this.visibleData[idx].origItem.sortData[1];
+	return _this.visibleData[idx].labels[column.index];
+	//+":" + this.visibleData[idx].level;
 };
 
-this.isContainer =  function(idx)         {
+this.isContainer = function (idx) {
 	return this.visibleData[idx].isContainer;
 };
 
-this.isContainerOpen =  function(idx)     { return this.visibleData[idx].origItem.isOpen; };
+this.isContainerOpen = function (idx) {
+	return this.visibleData[idx].origItem.isOpen;
+};
 
-this.isContainerEmpty =  function(idx)    { return this.visibleData[idx].isContainerEmpty;  };
+this.isContainerEmpty = function (idx) {
+	return this.visibleData[idx].isContainerEmpty;
+};
 
-this.isSeparator =  function(idx)         { return false; };
+this.isSeparator = function (idx) { return false; };
 
-this.isSorted =  function()               { return false; };
+this.isSorted = function () { return false; };
 
-this.isEditable =  function(idx, column)  { return false; };
+this.isEditable = function (idx, column) { return false; };
 
-this.getParentIndex =  function(idx)		{ return this.visibleData[idx].parentIndex; };
+this.getParentIndex = function (idx) {
+	return this.visibleData[idx].parentIndex;
+};
 
-this.getLevel =  function(idx) 			{ return this.visibleData[idx].level; };
+this.getLevel = function (idx) { return this.visibleData[idx].level; };
 
-this.hasNextSibling =  function(idx, after){ return !this.visibleData[idx].last; };
+this.hasNextSibling = function (idx, after) {
+	return !this.visibleData[idx].last;
+};
 
-this.getImageSrc =  function(row, col) {
+this.getImageSrc = function (row, col) {
 	if (col.index == 0) {
 		var Class = this.visibleData[row].origItem.class;
-		if (Class == "package" && this.visibleData[row].origItem.name.indexOf("package") != 0) {
-				Class = "package_green";
+		if (Class == "package" && this.visibleData[row].origItem.name
+			.indexOf("package") != 0) {
+			Class = "package_green";
 		} else if (iconTypes.indexOf(Class) == -1) {
 			Class = this.visibleData[row].origItem.group;
 			if (iconTypes.indexOf(Class) == -1) {
@@ -843,19 +836,19 @@ this.getImageSrc =  function(row, col) {
 		return "";
 };
 
-this.getCellValue =  function(idx, column) {};
+this.getCellValue = function (idx, column) {};
 
-this.cycleHeader =  function(col, elem) {};
+this.cycleHeader = function (col, elem) {};
 
-this.selectionChanged =  function() {};
+this.selectionChanged = function () {};
 
-this.cycleCell =  function(idx, column) {};
+this.cycleCell = function (idx, column) {};
 
-this.performAction =  function(action) {};
+this.performAction = function (action) {};
 
-this.performActionOnCell =  function(action, index, column) {	};
+this.performActionOnCell = function (action, index, column) {};
 
-this.getRowProperties =  function(idx, props) {
+this.getRowProperties = function (idx, props) {
 	var item = this.visibleData[idx]
 	var origItem = item.origItem;
 
@@ -870,7 +863,7 @@ this.getRowProperties =  function(idx, props) {
 	}
 };
 
-this.getCellProperties =  function(idx, column, props) {
+this.getCellProperties = function (idx, column, props) {
 	if (column.id == "r-name") {
 		props.AppendElement(atomSvc.getAtom("icon"));
 		var item = this.visibleData[idx]
@@ -881,13 +874,12 @@ this.getCellProperties =  function(idx, column, props) {
 
 		if (item.isContainerEmpty && origItem.class == "package")
 			props.AppendElement(atomSvc.getAtom("empty_package"));
-
 	}
 };
 
-this.getColumnProperties =  function(column, element, prop) {};
+this.getColumnProperties = function (column, element, prop) {};
 
-this.getSelectedRows =  function() {
+this.getSelectedRows = function () {
 	var start = new Object();
 	var end = new Object();
 	var rows = new Array();
@@ -895,7 +887,7 @@ this.getSelectedRows =  function() {
 	var numRanges = this.selection.getRangeCount();
 	for (var t = 0; t < numRanges; t++){
 		this.selection.getRangeAt(t, start, end);
-		for (var v = start.value; v <= end.value; v++){
+		for (var v = start.value; v <= end.value; v++) {
 			rows.push(v);
 		}
 	}
@@ -928,7 +920,7 @@ this.listObserver = {
 		return true;
 	},
 
-	onDragOver : function(event, flavour, session) {
+	onDragOver : function (event, flavour, session) {
 		session.canDrop = flavour.contentType == 'text/unicode'
 						   || flavour.contentType == 'text/x-r-package-name';
 	},
@@ -941,17 +933,20 @@ this.listObserver = {
 	}
 };
 
+this.canDrop = function () { return false; };
 
-this.canDrop = function() { return false; };
-this.drop = function(idx, orientation) {};
-this.init = function() {
+this.drop = function (idx, orientation) {};
+
+this.init = function () {
 	this.visibleData = [];
 	_addObjectList(".GlobalEnv");
 	this.getPackageList();
 
-	// for compatibility with Komodo 4 where "listbox" apparently does not fire "oncommand" event.
-	// so, replace it with "onclick". This causes issue with selection by key-press
-	var listBox = document.getElementById("sciviews_robjects_searchpath_listbox");
+	// For compatibility with Komodo 4 where "listbox" apparently does not fire
+	// "oncommand" event. So, replace it with "onclick". This causes issue with
+	// selection by key-press
+	var listBox = document
+		.getElementById("sciviews_robjects_searchpath_listbox");
 
 	//listBox.oncommand = this.packageSelectedEvent;
 
@@ -966,19 +961,19 @@ this.init = function() {
 };
 
 // Callback to process the list of packages in the search path from R
-function _processPackageList(data, refreshObjects) {
+function _processPackageList (data, refreshObjects) {
 	if (data == "") { return; }	// No changes
 	_this.searchPaths = data.replace(/[\n\r]/g, "").split(sep);
 	_this.displayPackageList(refreshObjects);
 };
 
 // Get the list of packages on the search path from R
-this.getPackageList =  function(refreshObjects) {
+this.getPackageList =  function (refreshObjects) {
 	var cmd = 'cat(objSearch(sep = "' + sep + '", compare = FALSE))';
 	sv.r.evalCallback(cmd, _processPackageList, refreshObjects);
 };
 
-this.toggleViewSearchPath = function(event) {
+this.toggleViewSearchPath = function (event) {
 	var what = event.target.tagName;
 	var broadcaster = document.getElementById("cmd_robjects_viewSearchPath");
 	var box = document.getElementById(broadcaster.getAttribute("box"));
@@ -1001,7 +996,7 @@ this.toggleViewSearchPath = function(event) {
 }
 
 // Display the list of packages in the search path
-this.displayPackageList = function(refreshObjects) {
+this.displayPackageList = function (refreshObjects) {
 	var pack;
 	var node = document.getElementById("sciviews_robjects_searchpath_listbox");
 	while(node.firstChild)
@@ -1027,7 +1022,7 @@ this.displayPackageList = function(refreshObjects) {
 };
 
 // Change the display status of a package by clicking an item in the list
-this.packageSelectedEvent = function(event) {
+this.packageSelectedEvent = function (event) {
 	var el = event.target;
 	var pack = el.getAttribute("label");
 	if (!pack)
@@ -1039,7 +1034,6 @@ this.packageSelectedEvent = function(event) {
 	}
 };
 
-
 this.refreshAll = function () {
 	var selectedPackages = new Array(_this.treeData.length);
 	for (var i = 0; i < selectedPackages.length; i++)
@@ -1048,16 +1042,16 @@ this.refreshAll = function () {
 	if (selectedPackages.length == 0)
 		selectedPackages.push('.GlobalEnv');
 
-	var cmd = 'invisible(sapply(c("' + selectedPackages.join('","')	+ '"), function(x) '
-		+ 'print(objList(envir = x, all.info = FALSE, compare = FALSE), sep = "' + sep + '", raw.output = TRUE, header = TRUE)))';
+	var cmd = 'invisible(sapply(c("' + selectedPackages.join('","')	+
+		'"), function(x) ' + 'print(objList(envir = x, all.info = FALSE,' +
+		' compare = FALSE), sep = "' + sep + '", raw.output = TRUE, header = TRUE)))';
 
-	sv.debugMsg(cmd);
-
+	sv.log.debug(cmd);
 	sv.r.evalCallback(cmd, _parseObjectList);
 }
 
 //TODO: on package deletion -> remove it also from the search path
-this.removeSelected = function(doRemove) {
+this.removeSelected = function (doRemove) {
 	var item, type, name, vItem, cmd = [];
 	var rmItems = {}, ObjectsToRemove = {}, envToDetach = [], ObjectsToSetNull = {};
 	var rows = this.getSelectedRows();
@@ -1080,15 +1074,16 @@ this.removeSelected = function(doRemove) {
 				thisItem:
 				if (envToDetach.indexOf(env) == -1) {
 					var parent = vItem;
-					while (parent && parent.parentIndex && parent.parentIndex != -1) {
+					while (parent && parent.parentIndex &&
+						parent.parentIndex != -1) {
 						parent = this.visibleData[parent.parentIndex].origItem;
 
-						if (!parent
-							|| (rmItems[env] && (rmItems[env].indexOf(parent.fullName) != -1))
-							|| (parent.type == "environment" && (envToDetach.indexOf(parent.name) != -1))) {
+						if (!parent || (rmItems[env] &&
+							(rmItems[env].indexOf(parent.fullName) != -1))
+							|| (parent.type == "environment" &&
+							(envToDetach.indexOf(parent.name) != -1))) {
 							break thisItem;
 						}
-
 					}
 					if (typeof rmItems[env] == "undefined")
 						rmItems[env] = [];
@@ -1129,23 +1124,25 @@ this.removeSelected = function(doRemove) {
 	}
 
 	for (var env in ObjectsToRemove)
-		cmd.push('rm(list = c("' + ObjectsToRemove[env].join('", "') + '"), pos = "' + env + '")');
+		cmd.push('rm(list = c("' + ObjectsToRemove[env].join('", "') +
+			'"), pos = "' + env + '")');
 
 	for (var env in ObjectsToSetNull) {
-		cmd.push('eval(expression(' + ObjectsToSetNull[env].join(" <- NULL, ") + ' <- NULL), envir = as.environment("' + env + '"))');
+		cmd.push('eval(expression(' + ObjectsToSetNull[env].join(" <- NULL, ") +
+			' <- NULL), envir = as.environment("' + env + '"))');
 	}
 
 	_createVisibleData();
 
-	if (!cmd.length)	return false;
+	if (!cmd.length) return false;
 
 	if(doRemove) {
-		// remove immediately
+		// Remove immediately
 		sv.r.evalCallback(cmd.join("\n"), sv.cmdout.append);
 	} else {
 		// insert commands to current document
 		var view = ko.views.manager.currentView;
-		if (!view)			return false;
+		if (!view) return false;
 		//view.setFocus();
 		var scimoz = view.scimoz;
 		var nl = ";" + ["\r\n", "\n", "\r"][scimoz.eOLMode];
@@ -1158,7 +1155,7 @@ this.removeSelected = function(doRemove) {
 	return true;
 }
 
-this.getSelectedNames = function(fullNames, extended) {
+this.getSelectedNames = function (fullNames, extended) {
 	if (typeof extended == 'undefined')
 		extended = false;
 	var rows = this.getSelectedRows();
@@ -1181,7 +1178,7 @@ this.getSelectedNames = function(fullNames, extended) {
 				else if (item.group == "function")
 					cellText += "()";
 				else if (item.type == "args")
-					cellText += "="; // attach '=' to function args
+					cellText += "="; // Attach '=' to function args
 			}
 		}
 		namesArr.push(cellText);
@@ -1189,11 +1186,11 @@ this.getSelectedNames = function(fullNames, extended) {
 	return (namesArr);
 }
 
-this.insertName = function(fullNames, extended) {
-	//TODO: `quote` non-syntactic names of 1st level (.type = 'object')
+this.insertName = function (fullNames, extended) {
+	// TODO: `quote` non-syntactic names of 1st level (.type = 'object')
 	// extended mode: object[c('sub1', 'sub2', 'sub3')]
 	var view = ko.views.manager.currentView;
-	if (!view)		return;
+	if (!view) return;
 	var text = _this.getSelectedNames(fullNames, extended).join(', ');
 	//view.setFocus();
 	var scimoz = view.scimoz;
@@ -1211,9 +1208,9 @@ this.insertName = function(fullNames, extended) {
 	scimoz.charRight();
 }
 
-
-this.setFilterBy = function(menuItem, column) {
-	var newFilterBy = ['name', 'dims', 'class', 'group', 'fullName'].indexOf(column);
+this.setFilterBy = function (menuItem, column) {
+	var newFilterBy = ['name', 'dims', 'class', 'group', 'fullName']
+		.indexOf(column);
 	if (newFilterBy == -1)
 		return;
 
@@ -1233,12 +1230,14 @@ this.setFilterBy = function(menuItem, column) {
 	 filterBox.emptyText = menuItem.getAttribute("label") + "...";
 	 filterBox.focus();
 
-	//document.getElementById("sciviews_robjects_filterbox").setAttribute("emptytext", menuItem.getAttribute("label"));
-	//alert(document.getElementById("sciviews_robjects_filterbox").getAttribute("emptytext"));
+	//document.getElementById("sciviews_robjects_filterbox")
+	//    .setAttribute("emptytext", menuItem.getAttribute("label"));
+	//sv.alert(document.getElementById("sciviews_robjects_filterbox")
+	//    .getAttribute("emptytext"));
 	return;
 }
 
-this.contextOnShow = function() {
+this.contextOnShow = function () {
 	var currentIndex = _this.selection.currentIndex;
 	if (currentIndex != -1) {
 		var isPackage, noDetach, isFunction;
@@ -1246,7 +1245,6 @@ this.contextOnShow = function() {
 		item = this.visibleData[currentIndex].origItem;
 		type = item.class;
 		name = item.fullName;
-
 
 		isPackage = type == "package";
 		noDetach = isPackage && (name == ".GlobalEnv" || name == "TempEnv");
@@ -1257,19 +1255,26 @@ this.contextOnShow = function() {
 			inPackage = item.env && (item.env.indexOf("package:") == 0);
 		}
 
-		document.getElementById("robjects_cmd_removeobj").setAttribute("disabled", noDetach);
-		document.getElementById("robjects_cmd_attach").setAttribute("disabled", noDetach || !isPackage);
-		document.getElementById("robjects_cmd_summary").setAttribute("disabled", isFunction || isPackage);
-		document.getElementById("robjects_cmd_print").setAttribute("disabled", isPackage);
-		document.getElementById("robjects_cmd_plot").setAttribute("disabled", isFunction || isPackage);
-		document.getElementById("robjects_cmd_names").setAttribute("disabled", isFunction);
-		document.getElementById("robjects_cmd_str").setAttribute("disabled", isPackage);
-
-		document.getElementById("robjects_cmd_help").setAttribute("disabled", !isPackage && !inPackage);
+		document.getElementById("robjects_cmd_removeobj")
+			.setAttribute("disabled", noDetach);
+		document.getElementById("robjects_cmd_attach")
+			.setAttribute("disabled", noDetach || !isPackage);
+		document.getElementById("robjects_cmd_summary")
+			.setAttribute("disabled", isFunction || isPackage);
+		document.getElementById("robjects_cmd_print")
+			.setAttribute("disabled", isPackage);
+		document.getElementById("robjects_cmd_plot")
+			.setAttribute("disabled", isFunction || isPackage);
+		document.getElementById("robjects_cmd_names")
+			.setAttribute("disabled", isFunction);
+		document.getElementById("robjects_cmd_str")
+			.setAttribute("disabled", isPackage);
+		document.getElementById("robjects_cmd_help")
+			.setAttribute("disabled", !isPackage && !inPackage);
 	}
 }
 
-this.do = function(action) {
+this.do = function (action) {
 	var obj = [];
 	var rows = _this.getSelectedRows();
 	var item, pkg, type, name;
@@ -1285,10 +1290,10 @@ this.do = function(action) {
 	var command;
 
 	switch(action) {
-	// special handling for help:
+	// Special handling for help:
 	case 'help':
 		for (i in obj) {
-			// help only for packages and objects inside a package:
+			// Help only for packages and objects inside a package:
 			if (obj[i].pkg.indexOf("package:") == 0) {
 				sv.r.help(obj[i].name, obj[i].pkg.replace(/^package:/, ''));
 			} else if (obj[i].name.indexOf("package:") == 0) {
@@ -1296,7 +1301,7 @@ this.do = function(action) {
 			}
 		}
 	break;
-	// default is to just execute command and display results:
+	// Default is to just execute command and display results:
 	case 'summary':
 	case 'plot':
 	case 'str':
@@ -1305,24 +1310,23 @@ this.do = function(action) {
 		var cmd = [];
 		for (i in obj) {
 			cmd.push(action + "(eval(" + obj[i].name +
-				   ", envir = as.environment(\"" +
-				   obj[i].pkg.addslashes() + "\")))");
+				", envir = as.environment(\"" +
+				obj[i].pkg.addslashes() + "\")))");
 		}
-
 		sv.r.eval(cmd.join("\n"));
 	}
 
 	//var view = ko.views.manager.currentView;
-	//if (!view)		return;
+	//if (!view) return;
 	//var scimoz = view.scimoz;
 	//view.setFocus();
-	//scimoz.insertText(scimoz.currentPos, res.join(";" + ["\r\n", "\n", "\r"][scimoz.eOLMode]));
+	//scimoz.insertText(scimoz.currentPos, res.join(";" +
+	//    ["\r\n", "\n", "\r"][scimoz.eOLMode]));
 }
-
 
 this.selectedItemsOrd = [];
 
-this.onEvent = function(event) {
+this.onEvent = function (event) {
 	switch (event.type) {
 		case "select":
 			var selectedRows = _this.getSelectedRows();
@@ -1331,16 +1335,18 @@ this.onEvent = function(event) {
 				selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
 			var curRowIdx = selectedRows.indexOf(_this.selection.currentIndex);
 
-			// this maintains array of selected items in order they were added to selection
+			// This maintains array of selected items in order they were added
+			// to selection
 			var prevItems = _this.selectedItemsOrd;
 			var newItems = [];
 			for (var i = 0; i < prevItems.length; i++) {
 				var j = selectedItems.indexOf(prevItems[i]);
-				if (j != -1) // present in Prev, but not in Cur
+				if (j != -1) // Present in Prev, but not in Cur
 					newItems.push(prevItems[i])
 			}
 			for (var i = 0; i < selectedItems.length; i++) {
-				if (prevItems.indexOf(selectedItems[i]) == -1) { // present in Cur, but not in Prev
+				if (prevItems.indexOf(selectedItems[i]) == -1) {
+					// Present in Cur, but not in Prev
 					newItems.push(selectedItems[i]);
 				}
 			}
@@ -1353,28 +1359,31 @@ this.onEvent = function(event) {
 				//case 38: // up
 				//case 40: // down
 				//	if (event.shiftKey) {
-				//		sv.debugMsg("Select: " + _this.visibleData[_this.selection.currentIndex].origItem.name);
+				//		sv.log.debug("Select: " +
+				//          _this.visibleData[_this.selection.currentIndex]
+				//          .origItem.name);
 				//	}
 				//	return;
 				case 46: // Delete key
 					_this.removeSelected(event.shiftKey);
 					event.originalTarget.focus();
 					return;
-				case 45: //insert
-				case 32: //space
-					sv.debugMsg("Insert");
+				case 45: // Insert
+				case 32: // Space
+					sv.log.debug("Insert");
 					break;
-				case 65: // Ctrt + A
+				case 65: // Ctrl + A
 					if (event.ctrlKey){
 						_this.selection.selectAll();
 					}
 				case 0:
 					return;
 				case 93:
-					//windows context menu key
+					// Windows context menu key
 					var contextMenu = document.getElementById("rObjectsContext");
 					_this.treeBox.ensureRowIsVisible(_this.selection.currentIndex);
-					var y = ((2 + _this.selection.currentIndex - _this.treeBox.getFirstVisibleRow())
+					var y = ((2 + _this.selection.currentIndex -
+						_this.treeBox.getFirstVisibleRow())
 						* _this.treeBox.rowHeight)	+ _this.treeBox.y;
 					var x = _this.treeBox.x;
 					contextMenu.openPopup(null, "after_pointer", x, y, true);
@@ -1395,62 +1404,62 @@ this.onEvent = function(event) {
 			return;
 		default:
 	}
-	sv.debugMsg("event.type = " + event.type);
-	// default action: insert selected names:
+	sv.log.debug("event.type = " + event.type);
+	// Default action: insert selected names:
 	_this.insertName(event.ctrlKey, event.shiftKey);
 
-	// this does not have any effect:
+	// This does not have any effect:
 	//document.getElementById("sciviews_robjects_objects_tree").focus();
 	event.originalTarget.focus();
 }
 
-// drag & drop handling for search paths list
+// Drag & drop handling for search paths list
 this.packageListObserver = {
 	onDrop : function (event, transferData, session) {
 		var data = transferData;
-		sv.debugMsg("dropped object was " + transferData.flavour.contentType);
+		sv.log.debug("dropped object was " + transferData.flavour.contentType);
 		var path;
 		if (transferData.flavour.contentType == "application/x-moz-file") {
 			path = transferData.data.path;
 		} else if (transferData.flavour.contentType == "text/unicode") {
 			path = new String(transferData.data).trim();
 		}
-		// attach the file if it is an R workspace
+		// Attach the file if it is an R workspace
 		if (path.search(/\.RData$/i) > 0) {
-			//alert("will attach: " + path);
+			//sv.alert("will attach: " + path);
 			sv.r.loadWorkspace(path, true, function(message) {
 				_this.getPackageList();
-				ko.dialogs.alert(sv.translate("R said:"), message,
-								 sv.translate("Attach workspace"));
+				sv.alert(sv.translate("Attach workspace, R said:"), message);
 			});
 		} else {
 			path = path.replace(/^package:/, "");
 
-			sv.r.evalCallback("tryCatch(library(\"" + path + "\"), error=function(e) {cat(\"<error>\"); message(e)})",
-				function(message) {
+			sv.r.evalCallback("tryCatch(library(\"" + path +
+				"\"), error=function(e) {cat(\"<error>\"); message(e)})",
+				function (message) {
 					if (message.indexOf('<error>') > -1) {
 						message = message.replace('<error>', '');
 					} else {
 						_this.getPackageList();
 					}
 					if (message) {
-						ko.dialogs.alert(sv.translate("R said:"), message,
-										 sv.translate("Load library"));
+						sv.alert(sv.translate("Load library, R said:"), message);
 					}
-			});
+				}
+			);
 		}
 		return true;
 	},
-//	onDragEnter : function(event, flavour, session) {
-//		sv.debugMsg(event.type + ":" + session);
+//	onDragEnter : function (event, flavour, session) {
+//		sv.log.debug(event.type + ":" + session);
 ////package:gpclibpackage:adehabitat
 //		//sv.xxx = session;
 //	},
 	//
 	//onDragExit : function (event, session) {
-	//	//sv.debugMsg(event.type + ":" + session);
+	//	//sv.log.debug(event.type + ":" + session);
 	//},
-	onDragStart : function(event, transferData, action) {
+	onDragStart : function (event, transferData, action) {
 		if (event.target.tagName != 'listitem')
 			return false;
 
@@ -1462,7 +1471,7 @@ this.packageListObserver = {
 		return true;
 	},
 
-	onDragOver : function(event, flavour, session) {
+	onDragOver : function (event, flavour, session) {
 		session.canDrop = flavour.contentType == 'text/unicode'
 						   || flavour.contentType == 'application/x-moz-file';
 	},
@@ -1475,8 +1484,7 @@ this.packageListObserver = {
 	}
 }
 
-
-this.packageListKeyEvent = function(event) {
+this.packageListKeyEvent = function (event) {
 	var keyCode = event.keyCode;
 	switch(keyCode) {
 		case 46: // Delete key
@@ -1488,15 +1496,18 @@ this.packageListKeyEvent = function(event) {
 				return;
 
 			sv.r.evalCallback(
-				'tryCatch(detach("' + pkg.addslashes() + '"), error = function(e) cat("<error>"));',
-				function(data) {
-					sv.debugMsg(data);
+				'tryCatch(detach("' + pkg.addslashes() +
+				'"), error = function(e) cat("<error>"));',
+				function (data) {
+					sv.log.debug(data);
 					if (data.trim() != "<error>") {
 						_removeObjectList(pkg);
 						listbox.removeChild(listItem);
-						sv.cmdout.append(sv.translate("Namespace %S detached.", pkg));
+						sv.cmdout.append(sv.translate(
+							"Namespace %S detached.", pkg));
 					} else {
-						sv.cmdout.append(sv.translate("Namespace %S could not be detached.", pkg));
+						sv.cmdout.append(sv.translate(
+							"Namespace %S could not be detached.", pkg));
 					}
 			});
 			return;
@@ -1506,22 +1517,22 @@ this.packageListKeyEvent = function(event) {
 }
 
 //
-//_setOnEvent("sciviews_robjects_searchpath_listbox",	"ondragdrop",
+//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragdrop",
 //			"nsDragAndDrop.drop(event, rObjectsTree.packageListObserver);"
 //			);
-//_setOnEvent("sciviews_robjects_searchpath_listbox",	"ondragover",
+//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragover",
 //			"nsDragAndDrop.dragOver(event, rObjectsTree.packageListObserver);"
 //			);
 //_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragexit",
 //			"nsDragAndDrop.dragExit(event, rObjectsTree.packageListObserver);"
 //			);
-//_setOnEvent("sciviews_robjects_searchpath_listbox",	"ondraggesture",
+//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondraggesture",
 //			"nsDragAndDrop.startDrag(event, rObjectsTree.packageListObserver);"
 //			);
-//_setOnEvent("sciviews_robjects_objects_tree_main",	"ondragover",
+//_setOnEvent("sciviews_robjects_objects_tree_main", "ondragover",
 //			"nsDragAndDrop.dragOver(event, rObjectsTree.listObserver);"
 //			);
-//_setOnEvent("sciviews_robjects_objects_tree_main",	"ondragdrop",
+//_setOnEvent("sciviews_robjects_objects_tree_main", "ondragdrop",
 //			"nsDragAndDrop.drop(event, rObjectsTree.listObserver);"
 //			);
 

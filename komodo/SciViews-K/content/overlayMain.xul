@@ -129,7 +129,7 @@
 	</commandset>
     </commandset>
 
-	<commandset id="cmdset_view_dependent"
+<!-- 	<commandset id="cmdset_view_dependent"
 				removeelement="cmd_triggerPrecedingCompletion"
 	>
 	  <command id="cmd_triggerPrecedingCompletion"
@@ -137,7 +137,7 @@
 				oncommand="ko.commands.doCommandAsync('cmd_triggerPrecedingCompletion', event);
 						  ko.commands.doCommandAsync('cmd_sv_RTriggerCompletion', event);"
 				desc="&editorTriggerPrecedingAutoCompleteListOrCallTip.desc;"/>
-	</commandset>
+	</commandset>   -->
 
   </commandset>
   <menupopup id="popup_tools">

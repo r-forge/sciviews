@@ -1,7 +1,7 @@
-// SciViews-K functions
-// Various file related functions
-// by Kamil Barton
-
+// SciViews-K IO functions
+// Various file related functions in 'sv.io' namespace'
+// Copyright (c) 2008-2009, Kamil Barton
+// License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.io.defaultEncoding				// Default file encoding to use
 // sv.io.readfile(filename, encoding);	// Read a file with encoding
@@ -23,7 +23,7 @@ if (typeof(sv.io) == 'undefined') sv.io = new Object();
 
 sv.io.defaultEncoding = "latin1";
 
-sv.io.readfile = function(filename, encoding) {
+sv.io.readfile = function (filename, encoding) {
 	if (!encoding)
 		encoding = sv.io.defaultEncoding;
 
@@ -49,7 +49,8 @@ sv.io.readfile = function(filename, encoding) {
 			} while (cont);
 		}
 	} catch (e) {
-		alert (e)
+		sv.log.exception(e, "Error while trying to read in " + filename +
+			" (sv.io.readfile)", true);
 	}
 	finally {
 		is.close();
@@ -58,7 +59,7 @@ sv.io.readfile = function(filename, encoding) {
 	return ret;
 }
 
-sv.io.writefile = function(filename, content, encoding, append) {
+sv.io.writefile = function (filename, content, encoding, append) {
 	if (!encoding)
 		encoding = sv.io.defaultEncoding;
 
@@ -82,14 +83,15 @@ sv.io.writefile = function(filename, content, encoding, append) {
 		os.init(fos, encoding, 0, 0x0000);
 		os.writeString(content);
 	} catch (e) {
-		alert (e)
+		sv.log.exception(e, "Error while trying to write in " + filename +
+			" (sv.io.writefile)", true)
 	}
 	finally {
 		os.close();
 	}
 }
 
-sv.io.fileExists = function(path) {
+sv.io.fileExists = function (path) {
 	var file = Components.classes["@mozilla.org/file/local;1"].
 		createInstance(Components.interfaces.nsILocalFile);
 
@@ -108,7 +110,7 @@ sv.io.fileExists = function(path) {
 	return 0;
 }
 
-sv.io.tempFile = function(prefix) {
+sv.io.tempFile = function (prefix) {
 	var nsIFile = Components.interfaces.nsIFile;
 	var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"].
 		 getService(Components.interfaces.nsIProperties);
@@ -153,7 +155,7 @@ sv.io.makePath = function (specialDir, pathComponents) {
 	return file.path;
 }
 
-sv.io.readURI = function(uri) {
+sv.io.readURI = function (uri) {
 	var fileSvc = Components.classes["@activestate.com/koFileService;1"]
 		.getService(Components.interfaces.koIFileService);
 	var file = fileSvc.getFileFromURI(uri);

@@ -1,7 +1,7 @@
-// SciViews-K functions
+// SciViews-K E4X functions, 'sv.tools.e4xdom' namespace
 // From this post and modified by R. Francois so that it works with XUL:
 // http://ecmanaut.blogspot.com/2006/03/e4x-and-dom.html
-
+// License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.tools.e4x2dom.importNode(e4x, doc);     // Translate e4x node to DOM node
 // sv.tools.e4x2dom.appendTo(e4x, node, doc); // Append e4x node to a DOM node
@@ -15,7 +15,7 @@
 if (typeof(sv.tools.e4x2dom) == 'undefined') sv.tools.e4x2dom = new Object();
 
 // Translate e4x (JavaScript) node into a DOM node
-sv.tools.e4x2dom.importNode = function(e4x, doc) {
+sv.tools.e4x2dom.importNode = function (e4x, doc) {
 	var me = this.importNode, xhtml, domTree, importMe;
 	me.Const = me.Const || { mimeType: 'text/xml' };
 	me.Static = me.Static || {};
@@ -36,18 +36,18 @@ sv.tools.e4x2dom.importNode = function(e4x, doc) {
 }
 
 // Append an e4x node to a DOM node
-sv.tools.e4x2dom.appendTo = function(e4x, node, doc) {
+sv.tools.e4x2dom.appendTo = function (e4x, node, doc) {
 	return(node.appendChild(this.importNode(e4x, doc || node.ownerDocument)));
 }
 
 // Append an e4x node to a DOM node, clearing it first
-sv.tools.e4x2dom.setContent = function(e4x, node) {
+sv.tools.e4x2dom.setContent = function (e4x, node) {
 	this.clear(node);
 	this.appendTo(e4x, node);
 }
 
 // Append an e4x node to a DOM node, clear first or not depending on 'i'
-sv.tools.e4x2dom.append = function(e4x, node, i) {
+sv.tools.e4x2dom.append = function (e4x, node, i) {
 	if (i == 0) {
 		this.setContent(e4x, node);
 	} else {
@@ -56,13 +56,13 @@ sv.tools.e4x2dom.append = function(e4x, node, i) {
 }
 
 // Clear a DOM node
-sv.tools.e4x2dom.clear = function(node) {
+sv.tools.e4x2dom.clear = function (node) {
 	while(node.firstChild)
 		node.removeChild(node.firstChild);
 }
 
 // Translate a DOM node into an e4x (JavaScript) node
-sv.tools.e4x2dom.d4e = function(domNode) {
+sv.tools.e4x2dom.d4e = function (domNode) {
 	var xmls = new XMLSerializer();
 	return(new XML(xmls.serializeToString(domNode)));
 }

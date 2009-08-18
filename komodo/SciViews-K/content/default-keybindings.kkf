@@ -1,8 +1,11 @@
 version 15
 
-# Default keybindings for SciViews-K, will be applied if no other key has been
-# assigned by user, and if a key combination is not used.
-# Commands' ids must start with "cmd_sv_" and be defined in the XUL overlay.
+# SciViews-K default keybindings
+# will be applied if no other key has been assigned by user, and if a key
+# combination is not used. Commands' ids must start with "cmd_sv_" and be
+# defined in the XUL overlay.
+# Copyright (c) 2009, Ph. Grosjean & K. Barton
+# License: MPL 1.1/GPL 2.0/LGPL 2.1
 
 binding cmd_sv_RRunAll F5
 binding cmd_sv_RSourceAll Shift+F5
