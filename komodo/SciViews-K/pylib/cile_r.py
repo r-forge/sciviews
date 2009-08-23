@@ -1,4 +1,40 @@
 #!/usr/bin/env python
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1/GPL 2.0/LGPL 2.1
+#
+# The contents of this file are subject to the Mozilla Public License
+# Version 1.1 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+# License for the specific language governing rights and limitations
+# under the License.
+#
+# The Original Code is SciViews-K by Philippe Grosjean et al.
+#
+# Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
+# ActiveState Software Inc. All Rights Reserved.
+#
+# Contributor(s):
+#   Philippe Grosjean
+#   ActiveState Software Inc (code inspired from)
+#
+# Alternatively, the contents of this file may be used under the terms of
+# either the GNU General Public License Version 2 or later (the "GPL"), or
+# the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+# in which case the provisions of the GPL or the LGPL are applicable instead
+# of those above. If you wish to allow use of your version of this file only
+# under the terms of either the GPL or the LGPL, and not to allow others to
+# use your version of this file under the terms of the MPL, indicate your
+# decision by deleting the provisions above and replace them with the notice
+# and other provisions required by the GPL or the LGPL. If you do not delete
+# the provisions above, a recipient may use your version of this file under
+# the terms of any one of the MPL, the GPL or the LGPL.
+#
+# ***** END LICENSE BLOCK *****
+
 
 """A Code Intelligence Language Engine for the R language.
 
@@ -39,7 +75,7 @@ class RCILEError(CILEError):
 
 
 #---- global data
-log = logging.getLogger("cile.R")
+log = logging.getLogger("cile.r")
 #log.setLevel(logging.DEBUG)
 
 
@@ -48,7 +84,7 @@ def scan_buf(buf, mtime=None, lang="R"):
     """Scan the given RBuffer return an ElementTree (conforming
     to the CIX schema) giving a summary of its code elements.
     
-    @param buf {RBuffer} is the Mel buffer to scan
+    @param buf {RBuffer} is the R buffer to scan
     @param mtime {int} is a modified time for the file (in seconds since
         the "epoch"). If it is not specified the _current_ time is used.
         Note that the default is not to stat() the file and use that
@@ -79,16 +115,16 @@ def scan_buf(buf, mtime=None, lang="R"):
                          name=os.path.basename(path))
 
     # Dev Note:
-    # This is where you process the Mel content and add CIX elements
+    # This is where you process the R content and add CIX elements
     # to 'blob' as per the CIX schema (cix-2.0.rng). Use the
     # "buf.accessor" API (see class Accessor in codeintel2.accessor) to
     # analyze. For example:
     # - A token stream of the content is available via:
     #       buf.accessor.gen_tokens()
-    #   Use the "codeintel html -b <example-Mel-file>" command as
+    #   Use the "codeintel html -b <example-R-file>" command as
     #   a debugging tool.
     # - "buf.accessor.text" is the whole content of the file. If you have
-    #   a separate tokenizer/scanner tool for Mel content, you may
+    #   a separate tokenizer/scanner tool for R content, you may
     #   want to use it.
 
     return tree
