@@ -18,6 +18,7 @@
 #
 # Contributor(s):
 #   Philippe Grosjean
+#   Kamil Barton
 #   ActiveState Software Inc (code inspired from)
 #
 # Alternatively, the contents of this file may be used under the terms of
@@ -45,8 +46,9 @@ language R
 include "Rlex.udl"
 
 family markup
-sublanguage HTML #not used
+sublanguage HTML # Not used
 initial IN_M_DEFAULT
 
+# Need to get into a state with keywords -- use SSL
 state IN_M_DEFAULT:
-/./ : paint(upto, CSL_DEFAULT), redo => IN_CSL_DEFAULT
+/./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT

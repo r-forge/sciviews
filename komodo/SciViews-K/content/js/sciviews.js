@@ -294,8 +294,13 @@ sv.getTextRange = function (what, gotoend, select, range) {
 	   // take text from current line to the end
 	   pStart = ke.positionFromLine(curLine);
 	   pEnd = ke.textLength;
-
 	   break;
+    case "codefrag":
+        // This is used by calltip and completion. It takes 10 lines up from
+        // the current position (should be enough for this purpose)
+        var lineUp = curLine - 10;
+        if (lineUp < 0) lineUp = 0;
+        pStart = ke.positionFromLine(lineUp);
 	case "all":
 	default:
 	   // Take everything

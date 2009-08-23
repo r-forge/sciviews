@@ -19,10 +19,9 @@
 									 // and add a line feed
 // sv.r.source(what); // Source various part of current buffer to R
 // sv.r.send(what); // Send various part of current buffer to R
-// sv.r.calltip(code); // Get a calltip for a piece of code
+// sv.r.calltip(code); // Get a calltip for a piece of code (current code if "")
 // sv.r.calltip_show(tip);		// Companion functions for sv.r.calltip
-// sv.r.calltip_trigget(event); // Companion functions for sv.r.calltip
-// sv.r.autoComplete(); // AutoComplete mechanism for R
+// sv.r.complete(code); // AutoComplete mechanism for R
 // sv.r.display(topic, what); // Display 'topic' according to 'what' type
 // sv.r.helpStart(); // Start R help in the default browser
 // sv.r.help(topic, package); // Get help in R for 'topic', 'topic' is optional
@@ -399,8 +398,12 @@ sv.r.send = function (what) {
 }
 
 // Get a calltip for a R function
-sv.r.calltip = function (codestrip) {
-	var cmd = 'cat(CallTip("' + codestrip.replace(/(")/g, "\\$1") +
+sv.r.calltip = function (code) {
+	// If code is not defined, get currently edited code
+	if (typeof(code) == "undefined" | code == "") {
+		code = sv.getTextRange("codefrag");
+	}
+	var cmd = 'cat(CallTip("' + code.replace(/(")/g, "\\$1") +
 		'", location = TRUE))';
 	var res = sv.r.evalCallback(cmd, sv.r.calltip_show);
 	return(res);
@@ -416,36 +419,18 @@ sv.r.calltip_show = function (tip) {
 	}
 }
 
-// The trigger for sv.r.calltip (when '(' is entered)
-sv.r.callTip_trigger = function (event) {
-	//sv.cmdout.append("keyCode " + event.keyCode);
-	if (ko.views.manager.currentView.languageObj.name != "R")
-		return;
-
-	try {
-		if (event.keyCode == 57) { // 57 is code for '('
-			var codestrip = sv.getTextRange("linetobegin");
-			var res = sv.r.calltip(codestrip);
-		}
-	} catch(e) {
-		sv.log.exception(e, "sv.r.callTip_trigger problem");
-	}
-}
-// TODO: better way to trigger calltips - with the same mechanism as
-// for other languages
-//window.addEventListener("keyup", sv.r.callTip_trigger, true);
-
 // AutoComplete mechanism for R
-sv.r.autoComplete = function () {
-	if (ko.views.manager.currentView.languageObj.name != "R")
-		return false;
-
-	var text = sv.getTextRange("linetobegin").replace(/(")/g, "\\$1");
-	// If last character in '(', we look for a calltip
-	if (/\($/.test(text)) return(sv.r.calltip(text));
+sv.r.complete = function (code) {
+	//if (ko.views.manager.currentView.languageObj.name != "R")
+	//	return false;
+	// If code is not defined, get currently edited code
+	if (typeof(code) == "undefined" | code == "") {
+		code = sv.getTextRange("codefrag");
+	}
+	code = code.replace(/(")/g, "\\$1");
 	
 	var scimoz = ko.views.manager.currentView.scimoz;
-	var cmd = 'Complete("' + text + '", print = TRUE, types = "scintilla")';
+	var cmd = 'Complete("' + code + '", print = TRUE, types = "scintilla")';
 	//sv.log.debug(cmd);
 
 	var res = sv.r.evalCallback(cmd, function(autoCstring) {
@@ -1106,4 +1091,12 @@ sv.r.pkg.installSVrforge = function () {
 	ko.statusBar.AddMessage("Installing SciViews R packages from R-Forge..." +
 		" please wait", "R", 5000, true);
 	return(res);
+}
+
+sv.r.RinterpreterTrial = function (code) {
+	var R = Components
+		.classes["@sciviews.org/svRinterpreter;1"]
+		.getService(Components.interfaces.svIRinterpreter);
+
+	return R.calltip(code);
 }
