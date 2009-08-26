@@ -111,7 +111,12 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 	if (!length(completions)) return(invisible(""))
 
 	# remove weird object names (useful when the token starts with ".")
-    completions <- completions[!grepl("^[.]__[[:alpha:]]__", completions)]
+    # line below causes error on ubuntu: could not find function "grepl". older R version?
+	#completions <- completions[!grepl("^[.]__[[:alpha:]]__", completions)]
+    i <- grep("^[.]__[[:alpha:]]__", completions)
+	if (length(i) > 0)
+		completions <- completions[-i]
+
     if (!length(completions)) return(invisible(""))
 
 	fguess <- ComplEnv$fguess
@@ -120,9 +125,9 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 		completions <- completions[!(completions %in% ComplEnv$funargs)]
 	if (!length(completions)) return(invisible(""))
 
-	i <- -grep("<-.+$", completions)
+	i <- grep("<-.+$", completions)
 	if (length(i) > 0)
-		completions <- completions[-grep("<-.+$", completions)]
+		completions <- completions[-i]
 
 	if (addition && triggerPos > 0L)
 		completions <- substring(completions, triggerPos + 1)
@@ -188,17 +193,17 @@ cursor = utils:::.CompletionEnv[["start"]])
 
 			# This is the code added to utils:::inFunction()
 			wp2 <- rev(cumsum(temp$c[-(wp[1L]:nrow(temp))]))
+			suffix <- sub("^\\s+", "", suffix, perl = TRUE)
 			# TODO: simplify this:
 			if (length(wp2)) {
-				funargs <- strsplit(sub("^\\s+", "", suffix, perl = TRUE),
-					"\\s*[\\(\\)][\\s,]*", perl = TRUE)[[1]]
+				funargs <- strsplit(suffix,	"\\s*[\\(\\)][\\s,]*", perl = TRUE)[[1]]
 				funargs <- paste(funargs[wp2 == 0], collapse = ",")
 			} else {
 				funargs <- suffix
 			}
-			funargs <- strsplit(funargs, " *, *")[[1]]
-			funargs <- unname(sapply(funargs, sub, pattern = " *=.*$",
-				replacement = utils:::.CompletionEnv$options$funarg.suffix))
+			funargs <- strsplit(funargs, "\\s*,\\s*", perl=TRUE)[[1]]
+			funargs <- unname(sapply(funargs, sub, pattern = "\\s*=.*$",
+				replacement = utils:::.CompletionEnv$options$funarg.suffix, perl=TRUE))
 			assign("funargs", funargs, utils:::.CompletionEnv)
 			# ... addition ends here
 
