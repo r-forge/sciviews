@@ -49,10 +49,10 @@
 // sv.log.warn(msg);        // Log a warning
 // sv.log.warnStack(msg);   // Log a warning and print the calling stack
 // sv.log.info(msg);        // Log an info message (if sv.log.isAll() == true)
-// sv.log.debug(msg);       // Log a debug message (if sv.log.isAll() == true) 
+// sv.log.debug(msg);       // Log a debug message (if sv.log.isAll() == true)
 // sv.log.all(debug);       // Toggle logging of debug/info messages on/off
 // sv.log.isAll();          // Do we currently log all messages?
-// sv.log.show();           // Show the Komodo log file 
+// sv.log.show();           // Show the Komodo log file
 //
 // Not used any more?
 // sv.checkToolbox(); // Check that the correct SciViews-K toolbox is installed
@@ -296,11 +296,10 @@ sv.getTextRange = function (what, gotoend, select, range) {
 	   pEnd = ke.textLength;
 	   break;
     case "codefrag":
-        // This is used by calltip and completion. It takes 10 lines up from
-        // the current position (should be enough for this purpose)
-        var lineUp = curLine - 10;
-        if (lineUp < 0) lineUp = 0;
-        pStart = ke.positionFromLine(lineUp);
+        // This is used by calltip and completion. Returns all text backwards from current
+		// position to the beginning of the current folding level
+        pStart = ke.positionFromLine(ke.getFoldParent(curLine));
+
 	case "all":
 	default:
 	   // Take everything
@@ -698,7 +697,7 @@ sv.log.info = function (msg) {
     this.logger.info(msg);
 }
 
-sv.log.debug = function (msg) { 
+sv.log.debug = function (msg) {
     this.logger.debug(msg);
 }
 
@@ -706,7 +705,7 @@ sv.log.all = function (debug) {
     if (typeof(debug) == "undefined" || debug == false) {
         this.logger.setLevel(false);
     } else {
-        this.logger.setLevel(true); 
+        this.logger.setLevel(true);
     }
 }
 
@@ -732,7 +731,7 @@ sv.log.show = function () {
 //sv.log.all(false);
 //alert(sv.log.isAll());
 //try {
-//   test = nonexistingvar; 
+//   test = nonexistingvar;
 //} catch(e) {sv.log.exception(e, "Test it exception"); }
 //sv.log.critical("Test it critical");
 //sv.log.error("Test it error");

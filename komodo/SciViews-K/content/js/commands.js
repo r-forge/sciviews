@@ -34,8 +34,6 @@ function _keepCheckingR (stopMe) {
 	clearInterval(sv.r.testInterval);
 	if (!stopMe) {
 		sv.r.testInterval = window.setInterval(sv.r.test, 10000);
-	} else {
-		clearInterval(sv.r.testInterval);
 	}
 	setTimeout(window.updateCommands, 1000, 'r_app_started_closed');
 }
@@ -183,7 +181,7 @@ AppTerminateObserver.prototype = {
 		var observerSvc = Components.classes["@mozilla.org/observer-service;1"]
 			.getService(Components.interfaces.nsIObserverService);
 		observerSvc.removeObserver(this, 'status_message');
-		
+
 		sv.log.debug("R has been closed. Command was: " + this.command);
 
 		sv.r.running = false;
@@ -198,7 +196,7 @@ this.setControllers = function () {
 	// using this needs solving an issue of running R in some terminals on linux
 	// (mac?) that send terminate signal right after start.
 
-	var viewManager = ko.views.viewManager;
+	var vmProto = ko.views.viewManager.prototype;
 
 	var cmdsIfRRunning = ['OpenPkgManager', 'BrowseWD', 'quit_R', 'update_charset'];
 	var cmdsIfRNotRunning = ['start_R'];
@@ -212,9 +210,9 @@ this.setControllers = function () {
 
 	function _setCommandCtrl1 (arr, fun, pfx) {
 		pfx = "is_cmd_" + pfx;
-		for (var i in cmdsIfRRunning) {
-			viewManager.prototype[pfx + arr[i] + "_supported"] = fun;
-			viewManager.prototype[pfx + arr[i] + "_enabled"] = fun;
+		for (var i in arr) {
+			vmProto[pfx + arr[i] + "_supported"] = fun;
+			vmProto[pfx + arr[i] + "_enabled"] = fun;
 		}
 	}
 
@@ -225,70 +223,67 @@ this.setControllers = function () {
 	_setCommandCtrl1(cmdsIfIsRViewAndSelection, _RControlSelection_supported,
 		"sv_R");
 
-	viewManager.prototype.do_cmd_sv_quit_R = function () {
-		sv.r.quit();
-	};
+	vmProto.do_cmd_sv_quit_R = function () {
+		sv.r.quit(); };
 
-	viewManager.prototype.do_cmd_sv_update_charset = function () {
+	vmProto.do_cmd_sv_update_charset = function () {
 		sv.socket.updateCharset(true);
-		sv.log.info(sv.translate("R uses \"%S\" encoding.",
+		window.setTimeout(function() {
+			sv.log.info(sv.translate("R uses \"%S\" encoding.",
 			sv.socket.charset));
+		}, 100);
 	};
 
 	_keepCheckingR();
 
+	// This is no longer necessary:
 	// To run it with the same key as autocompletion with other languages
 	// command "cmd_triggerPrecedingCompletion" is replaced in XUL
 	// ko.commands.doCommandAsync('cmd_sv_RTriggerCompletion', event)
-	viewManager.prototype.do_cmd_sv_RTriggerCompletion = function () {
-		sv.r.autoComplete();
-	};
+	//vmProto.do_cmd_sv_RTriggerCompletion = function () {
+	//	sv.r.complete();
+	//};
 
-	viewManager.prototype.do_cmd_sv_RRunLine = function () {
+	vmProto.do_cmd_sv_RRunLine = function () 	{
 		sv.r.send("line");
 	};
-
-	viewManager.prototype.do_cmd_sv_RRunAll = function () {
+	vmProto.do_cmd_sv_RRunAll = function ()		{
 		sv.r.send("all");
 	};
-	
-	viewManager.prototype.do_cmd_sv_RSourceAll = function () {
+	vmProto.do_cmd_sv_RSourceAll = function () 	{
 		sv.r.source("all");
 	};
-
-	viewManager.prototype.do_cmd_sv_RSourcePara = function () {
+	vmProto.do_cmd_sv_RSourcePara = function () {
 		sv.r.source("para");
 	};
-	
-	viewManager.prototype.do_cmd_sv_RRunPara = function () {
+
+	vmProto.do_cmd_sv_RRunPara = function () {
 		sv.r.send("para");
 	};
 
-	viewManager.prototype.do_cmd_sv_RRunSelection = function ()	{
+	vmProto.do_cmd_sv_RRunSelection = function ()	{
 		sv.r.send("sel");
 	};
-	
-	viewManager.prototype.do_cmd_sv_RSourceSelection = function () {
+
+	vmProto.do_cmd_sv_RSourceSelection = function () {
 		sv.r.source("sel");
 	};
-
-	viewManager.prototype.do_cmd_sv_RRunBlock = function ()	{
+	vmProto.do_cmd_sv_RRunBlock = function ()	{
 		sv.r.send("block");
 	};
-	
-	viewManager.prototype.do_cmd_sv_RSourceBlock = function () {
+
+	vmProto.do_cmd_sv_RSourceBlock = function () {
 		sv.r.source("block");
 	};
-
-	viewManager.prototype.do_cmd_sv_RRunFunction = function () {
+	vmProto.do_cmd_sv_RRunFunction = function () {
 		sv.r.send("function");
 	};
-	
-	viewManager.prototype.do_cmd_sv_RSourceFunction = function () {
+
+	vmProto.do_cmd_sv_RSourceFunction = function () {
 		sv.r.source("function");
 	};
 
-	viewManager.prototype.do_cmd_sv_start_R = function () {
+	vmProto.do_cmd_sv_start_R = function () {
 		// runIn = "command-output-window", "new-console",
 		// env strings: "ENV1=fooJ\nENV2=bar"
 		// gPrefSvc.prefs.getStringPref("runEnv");
@@ -359,7 +354,7 @@ this.setControllers = function () {
 			//.getService(Components.interfaces.koIRunService);
 		//var Rapp = runSvc.RunAndNotify(command, cwd, env.join("\n"), null);
 		//ko.run.runCommand(window, command, cwd, env.join("\n"), false,
-		
+
 		ko.run.runCommand(window, command, cwd, env.join("\n"), false,
 			false, false, runIn, false, false, false);
 
@@ -387,6 +382,7 @@ this.setKeybindings = function (clearOnly) {
 	//schemeNames = schemeNames.value;
 	var sch = keybindingSvc.getScheme(currentSchemeName);
 
+	var bindingRx = /[\r\n]+(# *SciViews|binding cmd_sv_.*)/g;
 	if (clearOnly != true) {
 		function _getSvKeys (data, pattern) {
 			if (!pattern) pattern = "";
@@ -404,7 +400,7 @@ this.setKeybindings = function (clearOnly) {
 		var svKeysCurrent = _getSvKeys (sch.data, svCmdPattern);
 
 		// Temporarily delete sciviews keybindings
-		sch.data = sch.data.replace(/[\r\n]+(# *SciViews|binding cmd_sv_.*)/g, "");
+		sch.data = sch.data.replace(bindingRx, "");
 
 		// Check for key conflicts:
 		var svKeysCurrentOther = _getSvKeys (sch.data, "");
@@ -434,47 +430,23 @@ this.setKeybindings = function (clearOnly) {
 			"SciViews keybindings have been updated in \"" +
 			currentSchemeName + "\" scheme.");
 	} else {
-		sch.data = sch.data.replace(/[\r\n]+(# *SciViews|binding cmd_sv_.*)/g, "");
+		sch.data = sch.data.replace(bindingRx, "");
 		sv.log.debug("SciViews keybindings have been cleared in \"" +
 			currentSchemeName + "\" scheme.");
 
 	}
 	sch.save();
 	sv.log.debug("You may need to restart Komodo.");
+
+	// A (temporary) hack to allow for R autocompletion/calltips to be triggered with the same key-shortcut
+	// as for other languages. cmd_sv_RTriggerCompletion will exit for files other than R
+	//var tpc_cmd = document.getElementById("cmd_triggerPrecedingCompletion");
+	//tpc_cmd.setAttribute("oncommand", [tpc_cmd.getAttribute("oncommand"),
+	//	"ko.commands.doCommandAsync('cmd_sv_RTriggerCompletion', event);"].join(";"));
+
 }
 
 }).apply(sv.command);
 
 addEventListener("load", sv.command.setControllers, false);
 addEventListener("load", sv.command.setKeybindings, false);
-
-/*
-
-//Useful garbage. delete it later.
-// command controllers template:
-vm.prototype.is_cmd_Test_supported
-vm.prototype.do_cmd_Test = function () { sv.alert("do_cmd_Test!"); }
-vm.prototype.is_cmd_Test_supported = function () {
-	sv.alert("is_cmd_Test_supported?:" +
-		ko.views.manager.currentView.document.language);
-	return(ko.views.manager.currentView.document.language == "R");
-}
-vm.prototype.is_cmd_Test_enabled = function () {
-	sv.alert("is_cmd_Test_enabled?");
-	return false;
-}
-
-// Commands should be put in a commandset, so they can be enabled only if lang = R
-document.getElementById("cmdset_view_or_language_changed")
-
-select,current_view_changed,language_changed
-var x = document.getElementById("cmdset_r_control")
-x.oncommandupdate = function oncommandupdate (event) {
-	ko.commands.updateCommandset(this);
-	sv.cmdout.append(ko.views.manager.currentView.document.language)
-}
-
-id="cmdset_r_control"
-current_view_language_changed
-
-*/
