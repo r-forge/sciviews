@@ -12,7 +12,7 @@ function (name, only.args = FALSE)
 		res <- sub("^function *[(]", "", res)
 		res <- sub(" *[)] *$", "", res)
 	} else {
-		res <- sub("^function", name, res)
+		res <- sub("^function *", name, res)
 		res <- sub(" *$", "", res)
 	}
 	return(res)

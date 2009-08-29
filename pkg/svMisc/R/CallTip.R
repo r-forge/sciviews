@@ -1,12 +1,17 @@
 "CallTip" <-
 function (code, only.args = FALSE, location = FALSE)
 {
+	# This is the old treatment!
 	# Get a call tip, given a part of the code
 	# Extract the last variable name, given it is either at the end,
 	# or terminated by '('
-	code <- sub(" *\\($", "", code[1])
-	pos <- regexpr("[a-zA-Z0-9_\\.]+$", code)
-	code <- substring(code, pos)
+	#code <- sub(" *\\($", "", code[1])
+	#pos <- regexpr("[a-zA-Z0-9_\\.]+$", code)
+	#code <- substring(code, pos)
+	# Now, we use a more exhaustive search, using complete
+	code <- attr(Complete(code, types = NA), "fguess")
+	if (is.null(code) || !length(code) || code == "")
+		return("")
 
 	# Get the corresponding Call Tip
 	ctip <- "" # Default value, in case the function does not exist
