@@ -4,6 +4,12 @@
 
 * Complete() now sorts items alphabetically and does not return completions
   as factor type in the data frame any more.
+
+* CallTip() does a better work to find current function, i.e., not only after
+  the opening parentheses '('.
+  
+* Args() now do no place a space anymore between the name of a function and its
+  arguments
   
 
 == Changes in svMisc 0.9-52

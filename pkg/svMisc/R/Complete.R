@@ -6,7 +6,7 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 	finalize <- function (completions) {
 		# Sort completion items alphabetically
 		completions <- sort(completions)
-		if (add.types) {
+		if (isTRUE(add.types)) {
 			tl <- numeric(length(completions))
 			tl[grep(" = $", completions)] <- 4L
 			tl[grep("::$", completions)] <- 3L
@@ -28,8 +28,8 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 		attr(ret, "funargs") <- funargs
 		attr(ret, "isFirstArg") <- isFirstArg
 
-		if (print) {
-			if (add.types)
+		if (isTRUE(print)) {
+			if (isTRUE(add.types))
 				completions <- paste(completions, tl, sep = type.sep)
 			cat(triggerPos, completions, sep = sep)
 			if (sep != "\n") cat("\n")
@@ -45,7 +45,7 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 			scintilla = .scintilla.completion.types,
 			.default.completion.types)
 	}
-	add.types <- !is.na(types[1L])
+	if (is.na(types[1L])) add.types <- FALSE else add.types <- TRUE
 
 	# Default values for completion context
 	token <- ""
@@ -132,7 +132,7 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 	if (length(i) > 0)
 		completions <- completions[-i]
 
-	if (addition && triggerPos > 0L)
+	if (isTRUE(addition) && triggerPos > 0L)
 		completions <- substring(completions, triggerPos + 1)
 
 	if (dblBrackets) {

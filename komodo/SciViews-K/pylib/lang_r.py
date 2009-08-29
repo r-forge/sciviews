@@ -2694,7 +2694,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
 
     # Used by ProgLangTriggerIntelMixin.preceding_trg_from_pos()
     trg_chars = tuple('$@[( ')
-    calltip_trg_chars = tuple('(')
+    calltip_trg_chars = tuple('(,')
 
     ##
     # Implicit triggering event, i.e. when typing in the editor.
@@ -2751,7 +2751,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                 print "triggered:: complete quoted variables"
             return Trigger(self.lang, TRG_FORM_CPLN, "quotevariables",
                            pos, implicit)            
-        elif char == '(':
+        elif char == '(' or char == ',':
             # Function calltip trigger.
             if DEBUG:
                 print "triggered:: function calltip"
@@ -2820,7 +2820,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         elif char == '[':
             return Trigger(self.lang, TRG_FORM_CPLN, "quotevariables",
                             pos, implicit=False)
-        elif char == '(':
+        elif char == '(' or char == ',':
             # Function calltip trigger.
             if DEBUG:
                 print "triggered:: function calltip"
@@ -2889,7 +2889,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
 
         if trg.id == (self.lang, TRG_FORM_CALLTIP, "call-signature"):
             # Get function calltip.
-            working_text = buf.accessor.text_range(max(0, pos-500), pos-1)
+            working_text = buf.accessor.text_range(max(0, pos-500), pos)
             complete_zone = buf.accessor.text_range(pos, pos)
             calltip = R.calltip(working_text)
             # This is done asynchronously by the R.calltip() function
