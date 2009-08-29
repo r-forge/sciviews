@@ -1,5 +1,11 @@
 = svMisc News
 
+== Changes in svMisc 0.9-53
+
+* Complete() now sorts items alphabetically and does not return completions
+  as factor type in the data frame any more.
+  
+
 == Changes in svMisc 0.9-52
 
 * Complete() now manages cases where code is like "iris[", "iris[[", or where

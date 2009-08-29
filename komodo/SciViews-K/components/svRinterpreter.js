@@ -130,8 +130,10 @@ svRinterpreter.prototype = {
 			classes["@activestate.com/koViewService;1"].
 			getService(Components.interfaces.koIViewService);
 		var ke = kvSvc.currentView.document.getView().scimoz;
+		// Record current position (could change, because asynch trigger of autoC)
+		var lastPos = ke.anchor;
 		var cmd = 'Complete("' + code + '", print = TRUE, types = "scintilla")';
-		koLogger.debug("R> " + cmd);
+		koLogger.debug("Complete: ..." + code.substring(code.length - 20));
 		var res = rCommand("<<<h>>>" + cmd, false, null,
 			function (autoCstring) {
 				// these should be set only once?:
@@ -139,12 +141,18 @@ svRinterpreter.prototype = {
 				//ke.autoCSetFillUps(" []{}<>/():;%+-*@!\t\n\r=$`");
 				var autoCSeparatorChar = String.fromCharCode(ke.autoCSeparator);
 				autoCstring = autoCstring.replace(/^(.*)[\r\n]+/, "");
-
-				var trigPos = RegExp.$1;
-				//var trigPos = RegExp.$1.split(/;/g)[1];
-
+				// Get length of the triggering text
+				var trigLen = parseInt(RegExp.$1);
+				koLogger.debug("trigLen: " + trigLen);
+				// Is something returned by Complete()?
+				if (isNaN(trigLen)) { return; }
+				// There is a bug (or feature?) in Complete(): if it returns all the code, better set trigLen to 0!
+				if (trigLen == code.length) { trigLen = 0; }
+				// TODO: we need to sort AutoCString with uppercase first
+				// otherwise, the algorithm does not find them (try: typing T, then ctrl+J, then R)
+				// TODO: there is a problem with items with special character (conversion problems)
 				autoCstring = autoCstring.replace(/\r?\n/g, autoCSeparatorChar);
-
+				
 				// code below taken from "CodeIntelCompletionUIHandler"
 			//	var iface = Components.interfaces.koICodeIntelCompletionUIHandler;
 			//	ke.registerImage(iface.ACIID_FUNCTION, ko.markers.
@@ -157,8 +165,16 @@ svRinterpreter.prototype = {
 			//		getPixmap("chrome://komodo/skin/images/ac_namespace.xpm"));
 			//	ke.registerImage(iface.ACIID_KEYWORD, ko.markers.
 			//		getPixmap("chrome://komodo/skin/images/ac_interface.xpm"));
-				ke.autoCChooseSingle = true;
-				ke.autoCShow(trigPos, autoCstring);
+				ke.autoCChooseSingle = false;
+				// Take into account if we entered more characters
+				Delta = ke.anchor -  lastPos;
+				koLogger.debug("Delta: " + Delta);
+				// Only display completion list if 0 <= Delta < 5
+				// Otherwise, it means we moved away for the triggering area
+				// and we are in a different context, most probably
+				if (Delta >= 0 & Delta < 5) {
+					ke.autoCShow(Delta + trigLen, autoCstring);
+				}
 			}
 		);
 		return res;
@@ -179,7 +195,7 @@ var koLogging = Components
 	.getService(Components.interfaces.koILoggingService);
 var koLogger = koLogging.getLogger("svRinterpreter");
 
-koLogger.setLevel(koLogging.DEBUG);
+//koLogger.setLevel(koLogging.DEBUG);
 
 
 //// Komodo preferences access /////////////////////////////////////////////////
@@ -224,6 +240,8 @@ function rCharset(force) {
 	
 	this.rCommand("<<<h>>>cat(localeToCharset()[1])", false, null,
 		function (s) {
+			// TODO: check s first, otherwise, we got an exception in next
+			// command if R is not running
 			this.converter.charset = s;
 			koLogger.debug("R character set is " + s);
 		}

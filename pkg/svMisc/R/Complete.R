@@ -4,6 +4,8 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 	ComplEnv <- utils:::.CompletionEnv
 
 	finalize <- function (completions) {
+		# Sort completion items alphabetically
+		completions <- sort(completions)
 		if (add.types) {
 			tl <- numeric(length(completions))
 			tl[grep(" = $", completions)] <- 4L
@@ -14,7 +16,8 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 			tl[i] <- ifelse(sapply(completions[i],
 				function(x) existsFunction(x)), 1L, 2L)
 			tl <- factor(tl, levels = 1:5, labels = types)
-			ret <- data.frame(completion = completions, type = tl)
+			ret <- data.frame(completion = completions, type = tl,
+				stringsAsFactors = FALSE)
 		} else {
 			ret <- completions
 		}
