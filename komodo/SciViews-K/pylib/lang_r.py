@@ -53,15 +53,11 @@ import operator
 from codeintel2.common import *
 from codeintel2.citadel import CitadelBuffer, CitadelLangIntel
 from codeintel2.langintel import LangIntel
-from codeintel2.langintel import (ParenStyleCalltipIntelMixin,
-                                  ProgLangTriggerIntelMixin)
+from codeintel2.langintel import ParenStyleCalltipIntelMixin, ProgLangTriggerIntelMixin
 from codeintel2.udl import UDLLexer
 from codeintel2.util import CompareNPunctLast
 
-from SilverCity.ScintillaConstants import (
-    SCE_UDL_SSL_DEFAULT, SCE_UDL_SSL_IDENTIFIER,
-    SCE_UDL_SSL_OPERATOR, SCE_UDL_SSL_VARIABLE, SCE_UDL_SSL_WORD,
-)
+from SilverCity.ScintillaConstants import SCE_UDL_SSL_DEFAULT, SCE_UDL_SSL_IDENTIFIER, SCE_UDL_SSL_OPERATOR, SCE_UDL_SSL_VARIABLE, SCE_UDL_SSL_WORD, SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK
 
 try:
     from xpcom.server import UnwrapObject
@@ -2697,8 +2693,8 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     lang = lang
 
     # Used by ProgLangTriggerIntelMixin.preceding_trg_from_pos()
-    trg_chars = tuple('$@[')        # Could also add ','
-    calltip_trg_chars = tuple('(')  # Idem here
+    trg_chars = tuple('$@[( ')
+    calltip_trg_chars = tuple('(')
 
     ##
     # Implicit triggering event, i.e. when typing in the editor.
@@ -2715,6 +2711,34 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         style = accessor.style_at_pos(last_pos)
         if DEBUG:
             print "trg_from_pos: char: %r, style: %d" % (char, accessor.style_at_pos(last_pos), )
+        if char == " " and (not (style in (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK))):
+            # Look the char just before all spaces, tabs or carriage return
+            # We do not trigger it if we are in a comment!
+            p = last_pos-1
+            min_p = max(0, p-500)      # Don't bother looking more than 500 chars
+            if DEBUG:
+                print "Checking char just before spaces"
+            while p >= min_p:
+                #accessor.style_at_pos(p) in jsClassifier.comment_styles:
+                ch = accessor.char_at_pos(p)
+                st = accessor.style_at_pos(p)
+                p -= 1
+                if (not (ch in " \t\v\r\n")) and \
+                (not (st in (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK))):
+                    break
+            if ch == ",":
+                # Calculate a completion list for function arguments
+                if DEBUG:
+                    print "triggered:: complete arguments"
+                return Trigger(self.lang, TRG_FORM_CPLN, "arguments",
+                               pos, implicit)
+            elif ch == "=":
+                # TODO: Try to provide correct completion for function arguments
+                if DEBUG:
+                    print "triggered:: complete identifiers"
+                return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
+                               pos, implicit)
+            return None
         if char == '$' or char == '@':
             # Variable completion trigger.
             if DEBUG:
@@ -2762,6 +2786,34 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         if DEBUG:
             print "pos: %d, curr_pos: %d" % (pos, curr_pos)
             print "char: %r, style: %d" % (char, style)
+        if char == " " and (not (style in (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK))):
+            # Look the char just before all spaces, tabs or carriage return
+            # We do not trigger it if we are in a comment!
+            p = last_pos-1
+            min_p = max(0, p-500)      # Don't bother looking more than 500 chars
+            if DEBUG:
+                print "Checking char just before spaces"
+            while p >= min_p:
+                #accessor.style_at_pos(p) in jsClassifier.comment_styles:
+                ch = accessor.char_at_pos(p)
+                st = accessor.style_at_pos(p)
+                p -= 1
+                if (not (ch in " \t\v\r\n")) and \
+                (not (st in (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK))):
+                    break
+            if ch == ",":
+                # Calculate a completion list for function arguments
+                if DEBUG:
+                    print "triggered:: complete arguments"
+                return Trigger(self.lang, TRG_FORM_CPLN, "arguments",
+                               pos, implicit=False)
+            elif ch == "=":
+                # TODO: Try to provide correct completion for function arguments
+                if DEBUG:
+                    print "triggered:: complete identifiers"
+                return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
+                               pos, implicit=False)
+            return None
         if char == '$'or char == '@':
             return Trigger(self.lang, TRG_FORM_CPLN, "variables",
                             pos, implicit=False)
@@ -2773,7 +2825,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             if DEBUG:
                 print "triggered:: function calltip"
             return Trigger(self.lang, TRG_FORM_CALLTIP,
-                           "call-signature", pos, implicit)
+                           "call-signature", pos, implicit=False)
         elif style in (SCE_UDL_SSL_VARIABLE, ):
             start, end = accessor.contiguous_style_range_from_pos(last_pos)
             if DEBUG:
@@ -2799,8 +2851,6 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     ##
     # Provide the list of completions or the calltip string.
     # Completions are a list of tuple (type, name) items.
-    #
-    # Note: This example is *not* asynchronous.
     def async_eval_at_trg(self, buf, trg, ctlr):
         if _xpcom_:
             trg = UnwrapObject(trg)
@@ -2829,10 +2879,18 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             self._autocomplete(buf, start, end)
             ctlr.done("success")
             return
+        
+        if trg.id == (self.lang, TRG_FORM_CPLN, "arguments"):
+            # Return all arguments of current function.
+            #ctlr.set_cplns(self._get_all_known_arguments(buf))
+            self._autocomplete(buf, pos, pos)
+            ctlr.done("success")
+            return
 
         if trg.id == (self.lang, TRG_FORM_CALLTIP, "call-signature"):
             # Get function calltip.
-            working_text = buf.accessor.text_range(max(0, pos-50), pos-1)
+            working_text = buf.accessor.text_range(max(0, pos-500), pos-1)
+            complete_zone = buf.accessor.text_range(pos, pos)
             calltip = R.calltip(working_text)
             # This is done asynchronously by the R.calltip() function
             #if calltip:
@@ -2849,7 +2907,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
 
     def _autocomplete(self, buf, start, end):
         # Get autocompletion list.
-        working_text = buf.accessor.text_range(max(0, start-50), end)
+        working_text = buf.accessor.text_range(max(0, start-500), end)
         complete_zone = buf.accessor.text_range(start, end)
         complete = R.complete(working_text)
         return complete
