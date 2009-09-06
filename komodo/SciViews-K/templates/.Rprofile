@@ -1,6 +1,6 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
-# Version 0.7.0, 2009-01-23 Ph. Grosjean (phgrosjean@sciviews.org)
+# Version 0.8.1, 2009-09-06 Ph. Grosjean (phgrosjean@sciviews.org)
 
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
@@ -302,7 +302,6 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 				rm(Ret, Path)
 			}
 
-
 			owarn <- getOption("warn")
 			options(warn = -1)
 			# Try to run Komodo now
@@ -345,13 +344,20 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 			try(setwd(getOption("R.initdir")), silent = TRUE)
 		})
 
+		msg <- paste("Session directory is", getOption("R.initdir"))
 		# Do we load .RData and .Rhistory now?
 		if (!"--vanilla" %in% args && !"--no-restore" %in% args &&
-			!"--no.restore-data" %in% args)
-				if (file.exists(".RData")) load(".RData")
-		if (!"--vanilla" %in% args && !"--no-restore" %in% args &&
-			!"--no.restore-history" %in% args)
-				if (file.exists(".Rhistory")) loadhistory()
+			!"--no.restore-data" %in% args) {
+				if (file.exists(".RData")) {
+						load(".RData")
+						msg <- paste(msg, "[data loaded")
+				} else msg <- paste(msg, "[no data")
+				if (file.exists(".Rhistory")) {
+						loadhistory()
+						msg <- paste(msg, ... = "/history loaded]", sep = "")
+				} else msg <- paste(msg, "/no history]", sep = "")
+		} else msg <- paste(msg, "[data/history not loaded]")
+		cat(msg, "\n", sep = "", file = stderr())
 
 		# Do we reactivate Komodo now?
 		koact <- getOption("ko.activate")
@@ -367,10 +373,10 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 			# And test also communication from R to Komodo!
 			koCmd('ko.statusBar.AddMessage("<<<data>>>", "R", 10000, true);',
 				data = paste("'", getOption("R.id"), "' (R ", R.Version()$major, ".",
-				R.Version()$minor, ") connected. Initial dir: ",
+				R.Version()$minor, ") connected. Session dir: ",
 				path.expand(getOption("R.initdir")), sep = ""))
 		}
-		rm(koact, Komodo, args)
+		rm(koact, Komodo, args, msg)
 	}
 }
 ### SciViews install end ###

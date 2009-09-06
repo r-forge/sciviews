@@ -33,6 +33,11 @@
 // sv.prefs.setString(pref, value, overwrite); // Set a preference string
 // sv.prefs.askString(pref, defvalue); // Ask for the value of a preference
 // sv.prefs.mru(mru, reset, items, sep); //Simplify update of MRU lists
+// sv.prefs.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
+                    // Initialize R session with corresponding directories
+                    // dir: session directory, xxxdir: xxx subdirectory,
+                    // saveOld (default true): do we save old session data?
+                    // loadNew (default true): do we load data from new session?
 //
 // SciViews-K Command Output management ('sv.cmdout' namespace) ////////////////
 // sv.cmdout.append(str, newline, scrollToStart); // Append to Command Output
@@ -588,6 +593,173 @@ sv.prefs.mru = function (mru, reset, items, sep) {
 	}
 }
 
+// Set a R session dir and corresponding directories preferences
+sv.prefs.setSession = function (dir, datadir, scriptdir, reportdir,
+	saveOld, loadNew) {
+	// Set defaults for saveOld and loadNew
+	if (typeof(saveOld) == "undefined") saveOld = true;
+	if (typeof(loadNew) == "undefined") loadNew = true;
+	
+	// cmd is the command executed in R to switch session (done asynchronously)
+	var cmd = "";
+	
+	// If dir is the same as current session dir, do nothing
+	if (typeof(dir) != "undefined" &
+		dir == sv.prefs.getString("sciviews.session.dir", "")) {
+		return(false);
+	}
+	
+	// Before switching to the new session directory, close current one
+	// if R is running
+	if (saveOld) {
+		// Save .RData & .Rhistory in the the session directory and clean WS
+		// We need also to restore .required and .SciViewsReady variables
+		cmd = 'assignTemp(".required", .required)\nTempEnv()$.Last.sys()\n' +
+			'save.image()\nsavehistory()\nrm(list = ls())\n' +
+			'.required <- getTemp(".required")\n.SciViewsReady <- TRUE\n';
+		
+	} else {
+		// Clear workspace (hint, we don't clear hidden objects!)
+		cmd = 'rm(list = ls())\n'
+	}
+	// TODO: possibly close the associated Komodo project
+	
+	// Initialize the various arguments
+	if (typeof(dir) == "undefined")
+		dir = sv.prefs.getString("sciviews.session.dir", "~");
+	if (typeof(datadir) == "undefined")
+		datadir = sv.prefs.getString("sciviews.session.data", "");
+	if (typeof(scriptdir) == "undefined")
+		scriptdir = sv.prefs.getString("sciviews.session.scripts", "");
+	if (typeof(reportdir) == "undefined")
+		reportdir = sv.prefs.getString("sciviews.session.reports", "");
+
+	var os = Components.classes['@activestate.com/koOs;1'].
+			getService(Components.interfaces.koIOs);
+	var ossep = os.sep;
+	
+	var localdir = dir;
+	// If dir starts with ~, get what's considered as '~' by R:
+	// '~' in Linux/Mac, but '~\My Documents' in Windows
+	if (dir.substring(0, 1) == "~") {
+		if (ossep == "/") {
+			// This is Linux or Mac OS X
+			// Instead of using '~', we get the actual home directory
+			var home = Components.
+				classes["@mozilla.org/file/directory_service;1"].
+				getService(Components.interfaces.nsIProperties).
+				get("Home", Components.interfaces.nsIFile).path;
+		} else {
+			// This is probably Windows
+			ossep = "\\";
+			// This is the way we got "My Documents" under Windows
+			var wrk = Components.classes["@mozilla.org/windows-registry-key;1"]
+				.createInstance(Components.interfaces.nsIWindowsRegKey);
+			wrk.open(wrk.ROOT_KEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft",
+				wrk.ACCESS_READ);
+			var subkey = wrk.
+				openChild("Windows\\CurrentVersion\\Explorer\\Shell Folders",
+				wrk.ACCESS_READ);
+			var key = subkey.readStringValue("Personal");
+			subkey.close();
+			wrk.close();
+			// Possibly eliminate trailing backslash
+			var home = key.replace(/\\$/, "");
+		}
+		// Construct localdir using home found here
+		localdir = home + dir.substring(1);
+	}
+
+	// Refresh preferences
+	sv.prefs.setString("sciviews.session.dir", dir, true);
+	sv.prefs.setString("sciviews.session.localdir", localdir, true);
+	// Subdirectories for data, reports and scripts
+	sv.prefs.setString("sciviews.session.data", datadir, true);
+	sv.prefs.setString("sciviews.session.scripts", scriptdir, true);
+	sv.prefs.setString("sciviews.session.reports", reportdir, true);
+	// Combination of these to give access to respective dirs
+	if (datadir == "") {
+		sv.prefs.setString("sciviews.data.dir", dir, true);
+		sv.prefs.setString("sciviews.data.localdir", localdir, true);
+	} else {
+		sv.prefs.setString("sciviews.data.dir", dir + "/" + datadir, true);
+		sv.prefs.setString("sciviews.data.localdir",
+			localdir + ossep + datadir, true);
+	}
+	if (scriptdir == "") {
+		sv.prefs.setString("sciviews.scripts.dir", dir, true);
+		sv.prefs.setString("sciviews.scripts.localdir", localdir, true);
+	} else {
+		sv.prefs.setString("sciviews.scripts.dir", dir + "/" + scriptdir, true);
+		sv.prefs.setString("sciviews.scripts.localdir",
+			localdir + ossep + scriptdir, true);
+	}
+	if (reportdir == "") {
+		sv.prefs.setString("sciviews.reports.dir", dir, true);
+		sv.prefs.setString("sciviews.reports.localdir", localdir, true);
+	} else {
+		sv.prefs.setString("sciviews.reports.dir", dir + "/" + reportdir, true);
+		sv.prefs.setString("sciviews.reports.localdir",
+			localdir + ossep + reportdir, true);
+	}
+
+	// Look if the session directory exists, or create it
+	var file = Components.classes["@mozilla.org/file/local;1"]
+		.createInstance(Components.interfaces.nsILocalFile);
+	file.initWithPath(localdir);
+	if (file.exists() == false) {
+		sv.log.debug( "Creating session directory... " );
+		file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 511);
+	}
+	// ... also make sure that /Data, /Script and /Report subdirs exist
+	if (datadir != "") {
+		file.initWithPath(localdir + ossep + datadir);
+		if (file.exists() == false) {
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 511);
+		}
+	}
+	if (scriptdir != "") {
+		file.initWithPath(localdir + ossep + scriptdir);
+		if (file.exists() == false) {
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 511);
+		}
+	}
+	if (reportdir != "") {
+		file.initWithPath(localdir + ossep + reportdir);
+		if (file.exists() == false) {
+			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 511);
+		}
+	}
+
+	// Switch to the new session directory in R
+	cmd = cmd + 'setwd("' + dir + '")\noptions(R.initdir = "' + dir + '")\n';
+	
+	// Do we load .RData and .Rhistory?
+	if (loadNew) {
+		cmd = cmd + 'if (file.exists(".RData")) load(".RData")\n' +
+					 'if (file.exists(".Rhistory")) loadhistory()\n';
+	}
+
+	// Execute the command in R (TODO: check for possible error here!)
+	// TODO: run first in R; make dirs in R; then change in Komodo!
+	sv.r.evalCallback(cmd, function(data) {
+		// Indicate everything is fine
+		ko.statusBar.AddMessage("R session directory set to '" + localdir + "'",
+			"R", 20000, true);
+        // Break possible partial multiline command in R from previous session
+        // and indicate that we are in a new session now in the R console
+        // TODO: report if we load something or not
+        sv.r.escape('cat("Session directory is now ' + dir +
+            '\n", file = stderr())');
+        // We most probably need to update the R Objects browser
+        rObjectsTree.getPackageList(true);
+	});
+
+	// TODO: possibly open the Komodo project associated with this session
+
+	return(true);
+}
+
 
 //// Control the command output tab ////////////////////////////////////////////
 if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
@@ -717,7 +889,7 @@ sv.log.show = function () {
     var os = Components.classes['@activestate.com/koOs;1'].
         getService(Components.interfaces.koIOs);
     try {
-        appdir = komodo.interpolate('%(path:hostUserDataDir)');
+        var appdir = ko.interpolate.interpolateStrings('%(path:hostUserDataDir)');
         var logFile = os.path.join(appdir, 'pystderr.log');
         var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
         window.openDialog('chrome://komodo/content/tail/tail.xul',"_blank",

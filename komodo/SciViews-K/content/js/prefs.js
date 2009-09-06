@@ -22,8 +22,11 @@ sv.prefs.setString("R-help", "", true);
 // Help page on the R Wiki
 sv.prefs.setString("RWiki-help", "", true);
 
-// Default working directory for R
+// Default working directory for R and default subdirs the first time SciViews-K
+// is used
 sv.prefs.setString("sciviews.session.dir", "~", false);
+// ... and other default values for directories used in snippets
+sv.prefs.setSession();
 
 // Where do we want to display R help? In internal browser or not?
 sv.prefs.setString("sciviews.r.help", "internal", false);
@@ -33,8 +36,8 @@ sv.prefs.setString("sciviews.rwiki.help.base",
 	"http:/wiki.r-project.org/rwiki/doku.php?id=", false);
 
 // Record default field and decimal separators for CSV files
-sv.prefs.setString("r.csv.sep", '\t', false);
-var sep = sv.prefs.getString("r.csv.sep", '\t');
+sv.prefs.setString("r.csv.sep", ',', false);
+var sep = sv.prefs.getString("r.csv.sep", ',');
 if (sep == '\t') {
 	sv.prefs.setString("r.csv.sep.arg", '"\\t"', true);
 } else {
@@ -46,7 +49,7 @@ sv.prefs.setString("r.csv.dec.arg", '"' + sv.prefs.getString("r.csv.dec", '.') +
 
 // Set default dataset to 'df'
 // Should be reset to a more useful value during first use of R
-sv.prefs.setString("R.active.data.frame", "df", false);
+sv.prefs.setString("r.active.data.frame", "df", false);
 
 
 //// (re)initialize a series of MRU for snippets' %ask constructs //////////////
@@ -104,7 +107,7 @@ sv.prefs.mru("col", true,
 sv.prefs.mru("type", true, '"p"|"l"|"b"|"c"|"o"|"h"|"s"|"S"|"n"', "|");
 
 // Pch
-sv.prefs.mru("type", true,
+sv.prefs.mru("pch", true,
     '0|1|2|3|3|4|5|6|7|8|9|10|11|12|13|14|15|15|17|18|19|20|21|22|23|24|25|' +
     '"."|"+"|"-"|"*"', "|");
 

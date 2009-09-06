@@ -2873,6 +2873,26 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             return
 
         if trg.id == (self.lang, TRG_FORM_CPLN, "identifiers"):
+            # First, check if there is an abbreviation
+            
+#            		var ke = ko.views.manager.currentView.scimoz;
+#		var sel = ke.selText;
+#		if (sv.abbrev.callTipActive & ke.callTipActive()) { ke.callTipCancel(); }
+#		// Only activate tip if current selection is empty!
+#		if (sel == "") {
+#			var trig = ko.interpolate.getWordUnderCursor(ke);
+#			var snip = sv.abbrev.findAbbrevSnippet(trig);
+#			if(snip) {
+#				var tip = snip.value;
+#				tip = tip.replace("!@#_anchor", "");
+#				tip = tip.replace("!@#_currentPos", "");
+#				ke.callTipShow(ke.anchor, "Meta+T expands:\n" + tip);
+#				sv.abbrev.callTipActive = true;
+#			}
+#		}
+#	} catch(e) { log.exception(e); }
+            
+            
             # Return all known keywords and builtins.
             #ctlr.set_cplns(self._get_all_known_identifiers(buf))
             start, end = buf.accessor.contiguous_style_range_from_pos(pos)
