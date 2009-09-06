@@ -137,7 +137,8 @@ if (typeof(sv.socket) == 'undefined')
 			pump.init(stream, -1, -1, 0, 0, false);
 			pump.asyncRead(dataListener, null);
 		} catch (e) {
-			sv.log.exception(e, "sv.socket.rClient() raises an unknown error");
+			sv.log.error("sv.socket.rClient() raises an unknown error\n");
+			//sv.log.exception(e, "sv.socket.rClient() raises an unknown error");
 			return(e);
 		}
 		return(null);
@@ -380,11 +381,18 @@ if (typeof(sv.socket) == 'undefined')
 		if (!force && _charsetUpdated) return;
 		//if (this.debug) sv.log.debug("charsetUpdate");
 		_charsetUpdated = true;
-		_this.rCommand("<<<h>>>cat(localeToCharset()[1])", false, null,
+		// We also make sure that dec and sep are synched in R
+		_this.rCommand('<<<h>>>options(OutDec = ' +
+			sv.prefs.getString("r.csv.dec.arg", ".") +
+			'); options(OutSep = ' +
+			sv.prefs.getString("r.csv.sep.arg", ",") +
+			'); cat(localeToCharset()[1])', false, null,
 			function (s) {
 				_this.charset = s;
 				if (this.debug) sv.log.debug(s);
 			});
+		// Update also the R Object browser
+		rObjectsTree.getPackageList(true);
 	}
 	
 	// [PhG] The following command raises an error on my Mac

@@ -296,7 +296,7 @@ this.setControllers = function () {
 			"SciViewsK"),
 			"koHost=localhost",
 			"koActivate=FALSE",
-			"Rinitdir=" + sv.io.makePath(isWin? "Pers" : "Home"),
+			"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
 			"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
 			"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
 			"koAppFile=" + sv.io.makePath("CurProcD", ["komodo" + (isWin? ".exe" : "")])
@@ -339,6 +339,10 @@ this.setControllers = function () {
 				env.push("Rid=R.app");
 				command = "open -a /Applications/R.app \"" + cwd + "\"";
 				break;
+			case "r64-app":
+				env.push("Rid=R64.app");
+				command = "open -a /Applications/R64.app \"" + cwd + "\"";
+				break;
 			default:
 				env.push("Rid=R");
 				command = "R --quiet";
@@ -357,7 +361,7 @@ this.setControllers = function () {
 
 		ko.run.runCommand(window, command, cwd, env.join("\n"), false,
 			false, false, runIn, false, false, false);
-
+		
 		// register observer of application termination.
 		this.rObserver = new AppTerminateObserver(command);
 	};

@@ -85,7 +85,7 @@ svRinterpreter.prototype = {
         // Send an <<<esc>>> sequence that breaks multiline mode
 		cmd = "";
 		prompt == ":> ";
-	// TODO: change this!	if (cmdout) { sv.cmdout.clear(); }
+	// TODO: put this only in sv.r.escape()!	if (cmdout) { sv.cmdout.clear(); }
 		var listener = { finished: function(data) {} }
 		var res = rCommand('<<<esc>>>', false);
 		return(res);

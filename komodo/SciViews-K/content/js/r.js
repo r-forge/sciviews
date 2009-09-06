@@ -12,7 +12,7 @@
 // sv.r.eval(cmd); // Evaluate 'cmd' in R
 // sv.r.evalHidden(cmd, earlyExit); // Evaluate 'cmd' in R in a hidden way
 // sv.r.evalCallback(cmd, procfun); // Evaluate 'cmd' in R and call 'procfun'
-// sv.r.escape(); // Escape R calculation or multiline mode
+// sv.r.escape(cmd); // Escape R multiline mode, 'cmd' to run then
 // sv.r.setwd(); // Set the working dir (choose or set to current buffer)
 // sv.r.run(); // Run current selection or line in R and goto next line
 // sv.r.runEnter(breakLine = false); // Run current line to pos in R
@@ -152,13 +152,17 @@ sv.r.evalCallback = function (cmd, procfun, context) {
 }
 
 // Escape R calculation
-sv.r.escape = function () {
+sv.r.escape = function (cmd) {
 	// Send an <<<esc>>> sequence that breaks multiline mode
 	sv.socket.cmd = "";
 	sv.socket.prompt == ":> ";
 	if (sv.socket.cmdout) { sv.cmdout.clear(); }
 	var listener = { finished: function(data) {} }
-	var res = sv.socket.rCommand('<<<esc>>>', false);
+	if (typeof(cmd) == "undefined") {
+		var res = sv.socket.rCommand('<<<esc>>>', false);
+	} else {
+		var res = sv.socket.rCommand('<<<esc>>>' + cmd, false);
+	}
 	return(res);
 }
 

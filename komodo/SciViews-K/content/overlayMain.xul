@@ -65,6 +65,7 @@
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
 
   <commandset id="allcommands">
     <command id="Tasks:svAbout"
@@ -159,6 +160,8 @@
 				 onpopupshowing="sv.command.setMenuRApp(this);" >
 		<menuitem id="r-app" type="checkbox" checked="false" label="R app"
 			  app="/Applications/R.app" platform="Mac" />
+		<menuitem id="r64-app" type="checkbox" checked="false" label="R64 app"
+			  app="/Applications/R64.app" platform="Mac" />
 		<menuitem id="r-gnome-term" type="checkbox" checked="false" label="R Gnome terminal"
 			  app="gnome-terminal" platform="Linux" />
 		<menuitem id="r-kde-term" type="checkbox" checked="false" label="R KDE terminal"
