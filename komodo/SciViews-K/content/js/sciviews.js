@@ -835,7 +835,7 @@ sv.log.debug = function (msg) {
 }
 
 sv.log.all = function (debug) {
-	this.logger.setLevel(debug);
+	this.logger.setLevel(!!debug);
 }
 
 sv.log.isAll = function () {
