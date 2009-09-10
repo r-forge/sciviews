@@ -19,7 +19,7 @@
 // Define the 'sv.misc' namespace
 if (typeof(sv.misc) == 'undefined')
 	sv.misc = {};
-    
+
 // Close all buffers except current one (an start page)
 sv.misc.closeAllOthers = function () {
     try {
@@ -146,7 +146,7 @@ sv.misc.moveLineDown = function () {
         // Check if we are not at the last line
         if( currentLine < (ke.lineCount - 1)) {
             ke.lineDown();
-            ke.lineTranspose();  
+            ke.lineTranspose();
         }
     }
 }
@@ -157,7 +157,7 @@ sv.misc.moveLineUp = function () {
     if (currentView) {
         currentView.scintilla.focus();
         var ke = currentView.scimoz;
-        var currentLine = ke.lineFromPosition(ke.currentPos);	
+        var currentLine = ke.lineFromPosition(ke.currentPos);
         // Check if we are not at the first line
         if (currentLine > 0) {
             ke.lineTranspose();
@@ -177,7 +177,7 @@ sv.misc.searchBySel = function () {
             // use last pattern used
             searchText = ko.mru.get("find-patternMru");
         }
-    
+
         // Search with last user find preferences
         var findSvc = Components.classes["@activestate.com/koFindService;1"]
                 .getService(Components.interfaces.koIFindService);
@@ -205,11 +205,11 @@ sv.misc.swapQuotes = function() {
             currentView.scintilla.focus();
             var scimoz = currentView.scimoz;
             scimoz.beginUndoAction();
-           
+
             // Retain these so we can reset the selection after the replacement
             var curAnchor = scimoz.anchor;
             var curPos = scimoz.currentPos;
-           
+
             // Replace the currently selected text
             scimoz.replaceSel(
                 // Find all single and double quote characters
@@ -218,7 +218,7 @@ sv.misc.swapQuotes = function() {
                     return value == '"'?"'":'"';
                 })
             );
-           
+
             // Reset the selection
             scimoz.setSel(curAnchor, curPos);
         }
@@ -267,15 +267,7 @@ sv.misc.timeStamp = function () {
 }
 
 // Delete current line
+// not really necessary. to be removed??
 sv.misc.delLine = function () {
-    try {
-        ko.views.manager.currentView.setFocus();
-        var scimoz = ko.views.manager.currentView.scimoz;
-        scimoz.home();
-        scimoz.delLineRight();
-        scimoz.deleteBack();
-        scimoz.charRight();
-    } catch(e) {
-        sv.log.exception(e, "sv.misc.delLine() error");
-    }
+    ko.commands.doCommand('cmd_lineDelete');
 }

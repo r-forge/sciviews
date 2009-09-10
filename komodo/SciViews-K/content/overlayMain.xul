@@ -20,7 +20,7 @@
  Contributor(s):
    Philippe Grosjean
    Romain Francois
-   Kamil Barton
+   Kamil Bartoñ
    ActiveState Software Inc
 
  Alternatively, the contents of this file may be used under the terms of
@@ -57,7 +57,6 @@
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
-  <!--No longer neeeded for robjects.js <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/e4x2dom.js"/>-->
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/io.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
@@ -66,6 +65,13 @@
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
+
+
+<broadcasterset id="broadcasterset_global">
+  <broadcaster id="sv_r_is_running"
+			   disabled="false"/>
+</broadcasterset>
+
 
   <commandset id="allcommands">
     <command id="Tasks:svAbout"
@@ -81,7 +87,7 @@
     <command id="cmd_sv_quit_R" key="key_cmd_sv_quit_R"
 		     oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
 		 desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;" />
-	
+
 	<command id="cmd_sv_update_charset" key="key_cmd_sv_update_charset"
 		     oncommand="ko.commands.doCommand('cmd_sv_update_charset');"
 		 desc="R: &RUpdateCharset;" label="&RUpdateCharset;"
@@ -129,7 +135,6 @@
 		   desc="R: &rSrcSel;" label="&rSrcSel;" accesskey="&rSrcSel.key;" />
 	</commandset>
     </commandset>
-
 <!-- 	<commandset id="cmdset_view_dependent"
 				removeelement="cmd_triggerPrecedingCompletion"
 	>
@@ -139,7 +144,6 @@
 						  ko.commands.doCommandAsync('cmd_sv_RTriggerCompletion', event);"
 				desc="&editorTriggerPrecedingAutoCompleteListOrCallTip.desc;"/>
 	</commandset>   -->
-
   </commandset>
   <menupopup id="popup_tools">
     <menuitem id="menu_sciviewsk"
@@ -178,7 +182,6 @@
 	</menu>
 
 	<menuitem id="r_quit_console_menu" observes="cmd_sv_quit_R" class="menuitem-iconic r-quit-command-icon" />
-
 	<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
 			  class="menuitem" />
 
