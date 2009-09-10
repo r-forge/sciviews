@@ -444,6 +444,8 @@ sv.helpURL = function (URL) {
 	return(false);
 }
 
+
+//is this still necessarry?
 // Get contextual help for a word in the buffer, or for snippets
 sv.helpContext = function () {
 	try {
@@ -599,16 +601,16 @@ sv.prefs.setSession = function (dir, datadir, scriptdir, reportdir,
 	// Set defaults for saveOld and loadNew
 	if (typeof(saveOld) == "undefined") saveOld = true;
 	if (typeof(loadNew) == "undefined") loadNew = true;
-	
+
 	// cmd is the command executed in R to switch session (done asynchronously)
 	var cmd = "";
-	
+
 	// If dir is the same as current session dir, do nothing
 	if (typeof(dir) != "undefined" &
 		dir == sv.prefs.getString("sciviews.session.dir", "")) {
 		return(false);
 	}
-	
+
 	// Before switching to the new session directory, close current one
 	// if R is running
 	if (saveOld) {
@@ -617,13 +619,13 @@ sv.prefs.setSession = function (dir, datadir, scriptdir, reportdir,
 		cmd = 'assignTemp(".required", .required)\nTempEnv()$.Last.sys()\n' +
 			'save.image()\nsavehistory()\nrm(list = ls())\n' +
 			'.required <- getTemp(".required")\n.SciViewsReady <- TRUE\n';
-		
+
 	} else {
 		// Clear workspace (hint, we don't clear hidden objects!)
 		cmd = 'rm(list = ls())\n'
 	}
 	// TODO: possibly close the associated Komodo project
-	
+
 	// Initialize the various arguments
 	if (typeof(dir) == "undefined")
 		dir = sv.prefs.getString("sciviews.session.dir", "~");
@@ -634,41 +636,10 @@ sv.prefs.setSession = function (dir, datadir, scriptdir, reportdir,
 	if (typeof(reportdir) == "undefined")
 		reportdir = sv.prefs.getString("sciviews.session.reports", "");
 
-	var os = Components.classes['@activestate.com/koOs;1'].
-			getService(Components.interfaces.koIOs);
-	var ossep = os.sep;
-	
-	var localdir = dir;
-	// If dir starts with ~, get what's considered as '~' by R:
-	// '~' in Linux/Mac, but '~\My Documents' in Windows
-	if (dir.substring(0, 1) == "~") {
-		if (ossep == "/") {
-			// This is Linux or Mac OS X
-			// Instead of using '~', we get the actual home directory
-			var home = Components.
-				classes["@mozilla.org/file/directory_service;1"].
-				getService(Components.interfaces.nsIProperties).
-				get("Home", Components.interfaces.nsIFile).path;
-		} else {
-			// This is probably Windows
-			ossep = "\\";
-			// This is the way we got "My Documents" under Windows
-			var wrk = Components.classes["@mozilla.org/windows-registry-key;1"]
-				.createInstance(Components.interfaces.nsIWindowsRegKey);
-			wrk.open(wrk.ROOT_KEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft",
-				wrk.ACCESS_READ);
-			var subkey = wrk.
-				openChild("Windows\\CurrentVersion\\Explorer\\Shell Folders",
-				wrk.ACCESS_READ);
-			var key = subkey.readStringValue("Personal");
-			subkey.close();
-			wrk.close();
-			// Possibly eliminate trailing backslash
-			var home = key.replace(/\\$/, "");
-		}
-		// Construct localdir using home found here
-		localdir = home + dir.substring(1);
-	}
+	var localdir = sv.io.makePath(dir);
+	// do we need all the "sciviews.*.localdir" preferences then??
+
+	var sep = "/";
 
 	// Refresh preferences
 	sv.prefs.setString("sciviews.session.dir", dir, true);
@@ -682,58 +653,48 @@ sv.prefs.setSession = function (dir, datadir, scriptdir, reportdir,
 		sv.prefs.setString("sciviews.data.dir", dir, true);
 		sv.prefs.setString("sciviews.data.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.data.dir", dir + "/" + datadir, true);
+		sv.prefs.setString("sciviews.data.dir", dir + sep + datadir, true);
 		sv.prefs.setString("sciviews.data.localdir",
-			localdir + ossep + datadir, true);
+			sv.io.makePath(localdir, datadir), true);
 	}
 	if (scriptdir == "") {
 		sv.prefs.setString("sciviews.scripts.dir", dir, true);
 		sv.prefs.setString("sciviews.scripts.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.scripts.dir", dir + "/" + scriptdir, true);
+		sv.prefs.setString("sciviews.scripts.dir", dir + sep + scriptdir, true);
 		sv.prefs.setString("sciviews.scripts.localdir",
-			localdir + ossep + scriptdir, true);
+			sv.io.makePath(localdir, scriptdir), true);
 	}
 	if (reportdir == "") {
 		sv.prefs.setString("sciviews.reports.dir", dir, true);
 		sv.prefs.setString("sciviews.reports.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.reports.dir", dir + "/" + reportdir, true);
+		sv.prefs.setString("sciviews.reports.dir", dir + sep + reportdir, true);
 		sv.prefs.setString("sciviews.reports.localdir",
-			localdir + ossep + reportdir, true);
+			sv.io.makePath(localdir, reportdir), true);
 	}
 
+	var DIRECTORY_TYPE = Components.interfaces.nsIFile.DIRECTORY_TYPE;
+
 	// Look if the session directory exists, or create it
-	var file = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
-	file.initWithPath(localdir);
-	if (file.exists() == false) {
+	var file = sv.io.file(localdir);
+	// file = sv.io.file(sv.io.makePath(dir);
+
+	if (!file.exists() || !file.isDirectory()) {
 		sv.log.debug( "Creating session directory... " );
-		file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 511);
+		file.create(DIRECTORY_TYPE, 511);
 	}
 	// ... also make sure that /Data, /Script and /Report subdirs exist
-	if (datadir != "") {
-		file.initWithPath(localdir + ossep + datadir);
-		if (file.exists() == false) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 511);
-		}
-	}
-	if (scriptdir != "") {
-		file.initWithPath(localdir + ossep + scriptdir);
-		if (file.exists() == false) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 511);
-		}
-	}
-	if (reportdir != "") {
-		file.initWithPath(localdir + ossep + reportdir);
-		if (file.exists() == false) {
-			file.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 511);
-		}
+	for (var i in [datadir, scriptdir, reportdir]) {
+		var file = sv.io.file(dir, datadir);
+		if (!file.exists() || !file.isDirectory())
+			file.create(DIRECTORY_TYPE, 511);
+		delete file;
 	}
 
 	// Switch to the new session directory in R
 	cmd = cmd + 'setwd("' + dir + '")\noptions(R.initdir = "' + dir + '")\n';
-	
+
 	// Do we load .RData and .Rhistory?
 	if (loadNew) {
 		cmd = cmd + 'if (file.exists(".RData")) load(".RData")\n' +
@@ -843,7 +804,7 @@ if (typeof(sv.log) == 'undefined') sv.log = {
 }
 
 sv.log.exception = function (e, msg, showMsg) {
-    if (typeof(showMsg) != 'undefined' & showMsg == true) {
+    if (typeof(showMsg) != 'undefined' && showMsg == true) {
         sv.alert("Error", msg);
     }
     this.logger.exception(e, msg);
@@ -874,11 +835,7 @@ sv.log.debug = function (msg) {
 }
 
 sv.log.all = function (debug) {
-    if (typeof(debug) == "undefined" || debug == false) {
-        this.logger.setLevel(false);
-    } else {
-        this.logger.setLevel(true);
-    }
+	this.logger.setLevel(debug);
 }
 
 sv.log.isAll = function () {
@@ -886,11 +843,8 @@ sv.log.isAll = function () {
 }
 
 sv.log.show = function () {
-    var os = Components.classes['@activestate.com/koOs;1'].
-        getService(Components.interfaces.koIOs);
     try {
-        var appdir = ko.interpolate.interpolateStrings('%(path:hostUserDataDir)');
-        var logFile = os.path.join(appdir, 'pystderr.log');
+		var logFile = sv.io.makePath("ProfD", ["..", "pystderr.log"]);
         var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
         window.openDialog('chrome://komodo/content/tail/tail.xul',"_blank",
             winOpts,logFile);
