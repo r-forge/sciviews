@@ -10,10 +10,9 @@
 // sv.misc.searchBySel();       // Search next using current selection
 // sv.misc.showConfig();        // Show Komodo configuration page
 // sv.misc.swapQuotes();        // Swap single and double quotes in selection
-// sv.misc.pathToClipboard(); // Copy file path to clipboard
+// sv.misc.pathToClipboard();   // Copy file path to clipboard
 // sv.misc.unixPathToClipboard(); // Copy file path in UNIX format to clipboard
-// sv.misc.timeStamp(); // Stamp text with current date/time
-// sv.misc.delLine(); // Delete current line in buffer
+// sv.misc.timeStamp();         // Stamp text with current date/time
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.misc' namespace
@@ -264,10 +263,4 @@ sv.misc.timeStamp = function () {
     } catch(e) {
         sv.log.exception(e, "sv.misc.timeStamp() error");
     }
-}
-
-// Delete current line
-// not really necessary. to be removed??
-sv.misc.delLine = function () {
-    ko.commands.doCommand('cmd_lineDelete');
 }

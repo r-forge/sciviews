@@ -42,6 +42,7 @@ sublanguage R
 # We have to specify the min and max styles we'll be referring to
 # Here are the available styles (see include/Scintilla.iface):
 #SCE_UDL_SSL_DEFAULT=31
+#Scintilla reserves styles 32->39 for its own use!
 #SCE_UDL_SSL_COMMENT=40
 #SCE_UDL_SSL_COMMENTBLOCK=41
 #SCE_UDL_SSL_NUMBER=42
@@ -57,7 +58,7 @@ end_style SSL_VARIABLE
 # If the language has keywords, specify which style needs to be transformed
 keyword_style SSL_IDENTIFIER => SSL_WORD
 
-# Define keywords (TODO: update this list)
+# Define keywords (TODO: update this list to latest R version)
 keywords [
 #{{
 # Reserved keywords
@@ -2623,44 +2624,52 @@ keywords [
 
 # Some info on the styles we're using here
 pattern NMSTART = 'a-zA-Z\.\x80-\xff'   # inside cset
-pattern NMCHAR = '_$NMSTART\d'          # inside cset
-pattern CS = '\w\d_\.\x80-\xff'         # inside cset
+pattern CS = '_$NMSTART\d'              # inside cset
 pattern WS = '\s\t\r\n'                 # inside cset
 pattern OP = '!%&\(\)\*\+,-\/:;<=>\?@\[\]\^\{\}~|\$'
 
 # Initial IN_SSL_DEFAULT
 state IN_SSL_DEFAULT:
 
+# A special mode for function definition
+'function' : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER), => IN_SSL_FUNDEF
+
+# This is shebang line or the R wiki construct used for R output
+/^#!/ : paint(upto, SSL_DEFAULT), paint(include, SSL_COMMENT), => IN_SSL_OUTPUT
+
 # One-line comments end at end-of-line
-'#' : paint(upto, SSL_DEFAULT),  => IN_SSL_COMMENT_1
-# This is the R wiki construct used for R output, not used (yet) here
-#'#!' : paint(upto, SSL_DEFAULT), => IN_SSL_COMMENTBLOCK_1
+'#' : paint(upto, SSL_DEFAULT),  => IN_SSL_COMMENT
 
 # Variables are always after $ or @ in list$var or obj@slot
-/[\$@](?=[$NMSTART])/ : paint(upto, SSL_DEFAULT), \
+/[\$@]/ : paint(upto, SSL_DEFAULT), \
     paint(include, SSL_OPERATOR), => IN_SSL_VARIABLE_1
 
-# We use also SSL_VARIABLE style to colorize function arguments (but also assignations with '=')
-# That is: arg/var = (but not var ==)
-/[$NMSTART](?=[$CS]*[$WS]*\=[^\=])/ :  paint(upto, SSL_DEFAULT), => IN_SSL_ARGUMENT_1
+# We use also SSL_VARIABLE style to colorize function arguments (but also
+# assignations with '='). That is: arg/var = (but not var ==)
+/[$NMSTART](?=[$CS]*[$WS]*\=[^\=])/ : paint(upto, SSL_DEFAULT), => IN_SSL_ARGUMENT
 
+# SSL_VARIABLE also colorizes namespaces ns in ns::fun() or ns:::fun()
+/[$NMSTART](?=[$CS]*[$WS]*::)/ : paint(upto, SSL_DEFAULT), => IN_SSL_NAMESPACE
+
+# Stay in SSL_DEFAULT mode, spaces have no meaning in R!
 /[$WS]+/  : #stay
 
+# Enter string mode
 '"' : paint(upto, SSL_DEFAULT), => IN_SSL_DSTRING
 '\'' : paint(upto, SSL_DEFAULT), => IN_SSL_SSTRING
 '`' : paint(upto, SSL_DEFAULT), => IN_SSL_BSTRING
 
 # Go process a number, try to do it in regexes
 # Hexadecimal numbers: 0x0A or 0x10L or 0xFF23i
-/0[Xx][0-9a-fA-F]+[Li]?/ : paint(upto, SSL_DEFAULT), paint(include, SSL_NUMBER)
+/0[Xx][0-9a-fA-F]+[Li]?/ : paint(upto, SSL_DEFAULT), paint(include, SSL_NUMBER), => IN_SSL_NUMBER_DONE
+# Beginning of any other number
 /(?<![$CS])[-+]?\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_INT
-
-# A "." can start a number only if it doesn't follow a
-# name, many keywords, string, regex, number, or a few
-# closing operators.
+# A "." can start a number only if it doesn't follow a name, many keywords,
+# string, regex, number, or a few closing operators.
 /[-+]?\.\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_FLOAT
 
-/[$NMSTART][$CS]*/ : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER)
+# Paint an identifier
+/[$NMSTART][$CS]*/ : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER), => IN_SSL_DEFAULT
 
 # Now a bunch of operators
 # Multi-char operators first
@@ -2669,31 +2678,41 @@ state IN_SSL_DEFAULT:
 /[$OP]/ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_OP1
 
 
-#### Non-keyword identifiers (slot names and list elements) ####################
+#### "Non-identifiers" names (slot names and list elements) ####################
 state IN_SSL_VARIABLE_1:
-/(?=.)/ : no_keyword, paint(include, SSL_VARIABLE), => IN_SSL_VARIABLE_2
+/[$WS]/ : # stay
+'#' : paint(upto, SSL_DEFAULT),  => IN_SSL_VARIABLE_COMMENT # Comments allowed!
+/[$NMSTART]/ : paint(upto, SSL_DEFAULT), => IN_SSL_VARIABLE_2
+/[^$WS$NMSTART#]/ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_DEFAULT
 
 state IN_SSL_VARIABLE_2:
 /[$CS]/ : #stay
-/[^$CS]/ : paint(upto, SSL_VARIABLE), no_keyword, => IN_SSL_DEFAULT
+/[^$CS]/ : paint(upto, SSL_VARIABLE), redo, no_keyword, => IN_SSL_DEFAULT
+
+state IN_SSL_VARIABLE_COMMENT:
+/[\r\n]/ : paint(upto, SSL_COMMENT), => IN_SSL_VARIABLE_1
 
 
 #### Arguments in functions fun(arg= ), or assignation using =, like a = 1 #####
-state IN_SSL_ARGUMENT_1:
-/(?=.)./ : no_keyword, paint(include, SSL_VARIABLE), => IN_SSL_ARGUMENT_2
+state IN_SSL_ARGUMENT:
+/[$CS]/ : #stay
+/[^$CS]/ : paint(upto, SSL_VARIABLE), redo, no_keyword, => IN_SSL_DEFAULT
 
-state IN_SSL_ARGUMENT_2:
+
+#### Namespace of package name is ns::fun or ns:::fun ##########################
+state IN_SSL_NAMESPACE:
 /[$CS]/ : #stay
 /[^$CS]/ : paint(upto, SSL_VARIABLE), redo, no_keyword, => IN_SSL_DEFAULT
 
 
 ##### Comments #################################################################
-state IN_SSL_COMMENT_1 : 
-/[\r\n]/ : paint(upto, SSL_COMMENT), => IN_SSL_DEFAULT
-
-#state IN_SSL_COMMENTBLOCK_1 : 
-##/[\r\n]/ : paint(include, SSL_COMMENTBLOCK), => IN_SSL_DEFAULT
+# This is used in R Wiki to denote R output
+state IN_SSL_OUTPUT: # SSL_COMMENTBLOCK not different from SSL_COMMENT
 #/[\r\n]/ : paint(upto, SSL_COMMENTBLOCK), => IN_SSL_DEFAULT
+/[\r\n]/ : paint(upto, SSL_STRING), => IN_SSL_DEFAULT # Use SSL_STRING instead
+
+state IN_SSL_COMMENT:
+/[\r\n]/ : paint(upto, SSL_COMMENT), => IN_SSL_DEFAULT
 
 
 ##### Strings ##################################################################
@@ -2757,42 +2776,55 @@ state IN_SSL_BSTRING_BADESC:
 state IN_SSL_NUMBER_INT :
 /\d/ : #stay
 '.' : => IN_SSL_NUMBER_FLOAT
-'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT # Integer
-'i' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT # Complex number
+'L' : paint(include, SSL_NUMBER) => IN_SSL_NUMBER_DONE # Integer
+'i' : paint(include, SSL_NUMBER) => IN_SSL_NUMBER_DONE # Complex number
 /[Ee][-+]?/ : => IN_SSL_NUMBER_EXP
-/_a-zA-Z/ : paint(upto, SSL_REGEX), redo, => IN_SSL_DEFAULT # Wrong number!
-/./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
+/_a-zA-Z/ : paint(upto, SSL_REGEX), redo, => IN_SSL_NUMBER_WRONG # Wrong number!
+/$/ : paint(upto, SSL_NUMBER) => IN_SSL_DEFAULT # End of line
+/./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_NUMBER_DONE
 
 # Note 'L' suffix allowed in float (R converts to integer with a warning)
 state IN_SSL_NUMBER_FLOAT:
 /[\d]/ : #stay
-'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT # Integer
-'i' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT # Complex number
+'L' : paint(include, SSL_NUMBER) => IN_SSL_NUMBER_DONE # Integer
+'i' : paint(include, SSL_NUMBER) => IN_SSL_NUMBER_DONE # Complex number
 /[Ee][-+]?/ : => IN_SSL_NUMBER_EXP
-/_a-zA-Z/ : paint(upto, SSL_REGEX), redo, => IN_SSL_DEFAULT # Wrong number!
-/./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
+/_a-zA-Z/ : paint(upto, SSL_REGEX), redo, => IN_SSL_NUMBER_WRONG # Wrong number!
+/$/ : paint(upto, SSL_NUMBER) => IN_SSL_DEFAULT # End of line
+/./ : paint(upto, SSL_NUMBER), redo, => IN_SSL_NUMBER_DONE
 
 state IN_SSL_NUMBER_EXP:
 /\d/ : #stay
-'L' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT
-'i' : paint(include, SSL_NUMBER) => IN_SSL_DEFAULT # Complex number
-/[^\d]/ : paint(upto, SSL_NUMBER), redo, => IN_SSL_DEFAULT
+'L' : paint(include, SSL_NUMBER) => IN_SSL_NUMBER_DONE
+'i' : paint(include, SSL_NUMBER) => IN_SSL_NUMBER_DONE # Complex number
+/$/ : paint(upto, SSL_NUMBER) => IN_SSL_DEFAULT # End of line
+/[^\d]/ : paint(upto, SSL_NUMBER), redo, => IN_SSL_NUMBER_DONE
+
+state IN_SSL_NUMBER_DONE:
+/$/ : => IN_SSL_DEFAULT # End of line
+/[$CS]/ : => IN_SSL_NUMBER_WRONG #This is wrong!
+/[^$CS]/ : redo, => IN_SSL_DEFAULT
+
+state IN_SSL_NUMBER_WRONG:
+/$/ : paint(upto, SSL_REGEX), no_keyword, => IN_SSL_DEFAULT # End of line
+/[$CS]/ : #stay
+/[^$CS]/ : paint(upto, SSL_REGEX), redo, no_keyword, => IN_SSL_DEFAULT
 
 
 ##### Operators ################################################################
 # If we're here, we've painted the previous part, and 
 # just need to figure out which operator we have, doing
-# greedy left-to-right matching ('+++' parses as /++/, /+/)
+# greedy left-to-right matching (':::' parses as /::/, /:/)
 state IN_SSL_OP1:
+# Special case for opening parentheses: we need to know if we define function
+# arguments 'myfun <- function (', then, we popup this mode each time we got
+# ',' or ')'
+'(' : paint(include, SSL_OPERATOR), spush_check(IN_SSL_NO_ARGSDEF), => IN_SSL_NO_ARGSDEF
+',' : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), spop_check, => IN_SSL_DEFAULT
+')' : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), spop_check, => IN_SSL_DEFAULT
 # Single-char operator -- all ops work as standalone chars
 /[$OP](?:(?![$OP])|$)/ : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 # Otherwise look from longest to smallest
-#/%.+%/  : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%in%'  : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%*%'   : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%/%'   : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%o%'   : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
-#'%x%'   : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 ':::'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 '<<-'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 '->>'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
@@ -2809,7 +2841,44 @@ state IN_SSL_OP1:
 # The fallback
 /[$OP]/ : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 
-#### End States ################################################################
+
+##### Special treatment for function arguments #################################
+# We are defining a function like 'myfun <- function'
+# Allowed items: $WS or a comment, or '(' that switches to IN_SSL_ARGSDEF mode
+state IN_SSL_FUNDEF:
+/[$WS]/ : # stay
+'#' : paint(upto, SSL_DEFAULT),  => IN_SSL_FUNDEF_COMMENT
+'(' : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), spush_check(IN_SSL_ARGSDEF), => IN_SSL_ARGSDEF
+/[^$WS#\(]/ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_DEFAULT # Exit
+
+state IN_SSL_FUNDEF_COMMENT:
+/[\r\n]/ : paint(upto, SSL_COMMENT), => IN_SSL_FUNDEF
+
+# Mode started after 'function ('
+state IN_SSL_ARGSDEF:
+/(?<=,)[$WS]/ : spush_check(IN_SSL_ARGSDEF) # Push again
+/(?<=,)#/ : spush_check(IN_SSL_ARGSDEF), paint(upto, SSL_DEFAULT), => IN_SSL_ARGSDEF_COMMENT 
+/(?<=,)[$NMSTART]/ : spush_check(IN_SSL_ARGSDEF), paint(upto, SSL_DEFAULT), paint(include, SSL_VARIABLE), => IN_SSL_ARGUMENT
+/(?<=,)[^$WS$NMSTART#]/ : spush_check(IN_SSL_ARGSDEF), paint(upto, SSL_DEFAULT), redo, => IN_SSL_DEFAULT
+/(?<=\))./ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_DEFAULT    # End of ARGSDEF mode
+/(?<=\))$/ : paint(upto, SSL_DEFAULT), => IN_SSL_DEFAULT    # Idem, closing parenthesis at end of line
+/[$WS]/ : # stay
+'#' : paint(upto, SSL_DEFAULT), => IN_SSL_ARGSDEF_COMMENT
+# Here, we have an argument
+/[$NMSTART]/ : paint(upto, SSL_DEFAULT), paint(include, SSL_VARIABLE), => IN_SSL_ARGUMENT
+/[^$WS$NMSTART#]/ : paint(upto, SSL_DEFAULT), redo,  => IN_SSL_DEFAULT
+
+state IN_SSL_ARGSDEF_COMMENT:
+/[\r\n]/ : paint(upto, SSL_COMMENT), => IN_SSL_ARGSDEF
+
+# Mode started after any '(' without 'function' in front of it
+state IN_SSL_NO_ARGSDEF:
+/(?<=,)./ : spush_check(IN_SSL_NO_ARGSDEF), paint(upto, SSL_DEFAULT), redo, => IN_SSL_DEFAULT # Push again
+/./ : redo, => IN_SSL_DEFAULT
+/$/ : => IN_SSL_DEFAULT # Idem at end of line
+
+
+##### End States ###############################################################
 
 
 # We might want to generalize this... by allowing named tokens.
