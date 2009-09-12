@@ -92,19 +92,29 @@ sv.prefs.mru("alternative", true, '"two.sided"|"less"|"greater"', "|");
 sv.prefs.mru("breaks", true, '"Sturges"|"Scott"|"Freedman-Diaconis"|10', "|");
 sv.prefs.mru("corMethod", true, '"pearson"|"kendall"|"spearman"', "|");
 
+// Var.equal (for t-test)
+sv.prefs.mru("var.equal", true, 'TRUE|FALSE', "|");
+
 //// Various graph parameters //////////////////////////////////////////////////
 // Colors
 sv.prefs.mru("col", true,
+    '1|2|3|4|5|6|7|8|"#838383"|' +
     '"black"|"red"|"blue"|"green"|"gray"|"darkred"|"darkblue"|"darkgreen"|' +
-	'"darkgray"|"lightblue"|"lightgreen"|"lightgray"|"gray10"|"gray20"|' +
-    '"gray30"|"gray40"|"gray50"|"gray60"|"gray70"|"gray80"|"gray90"|"white|"' +
-    '"transparent"|"wheat"|"cornsilk"|"yellow"|"orange"|"tan"|"tomato"|' +
-    '"firebrick"|"magenta"|"pink"|"salmon"|"violet"|"purple"|"plum"|"cyan"|' +
-    '"lavender"|"navy"|"azure"|"aquamarine"|"turquoise"|"khaki"|"gold"|' +
-    '"bisque"|"beige"|"brown"|"chocolate"', "|");
+	'"darkgray"|"mistyrose"|"lightblue"|"lightgreen"|"lightgray"|"gray10"|' +
+    '"gray20"|"gray30"|"gray40"|"gray50"|"gray60"|"gray70"|"gray80"|"gray90"|' +
+    '"white"|"transparent"|"wheat"|"cornsilk"|"yellow"|"orange"|"tan"|' +
+    '"tomato"|"firebrick"|"magenta"|"pink"|"salmon"|"violet"|"purple"|' +
+    '"plum"|"cyan"|"lightcyan"|"lavender"|"navy"|"azure"|"aquamarine"|' +
+    '"turquoise"|"khaki"|"gold"|"bisque"|"beige"|"brown"|"chocolate"', "|");
 
 // Type
 sv.prefs.mru("type", true, '"p"|"l"|"b"|"c"|"o"|"h"|"s"|"S"|"n"', "|");
+
+// Log
+sv.prefs.mru("log", true, '""|"x"|"y"|"xy"', "|");
+
+// Add
+sv.prefs.mru("add", true, 'TRUE|FALSE', "|");
 
 // Pch
 sv.prefs.mru("pch", true,
@@ -117,6 +127,10 @@ sv.prefs.mru("lty", true,
 
 // Lwd
 sv.prefs.mru("lwd", true, '1|2|3', "|");
+
+// Notch (for boxplot)
+sv.prefs.mru("notch", true, 'TRUE|FALSE', "|");
+
 
 //// various mrus for 'car' graphs /////////////////////////////////////////////
 sv.prefs.mru("reg.line", true, 'FALSE|lm', "|");
