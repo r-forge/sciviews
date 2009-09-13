@@ -6,6 +6,7 @@
 // sv.command.getRApp(event);  	// Select a preferred R application in the list 
 // sv.command.setMenuRApp(el); 	// Set up 'R application' submenu (checked item
 								// and hide incompatible items.
+// sv.command.startR();			// Start the preferred R app and connect to it
 // sv.command.openPkgManager(); // Open the package manager window
 // sv.command.setControllers(); // Set controllers for R related commands
 // sv.command.setKeybindings(clearOnly); // Set SciViews-K default keybindings
@@ -19,12 +20,6 @@ if (typeof(sv.command) == 'undefined') {
 (function () {
 
 	// private methods
-	function _RControl_supported () {
-		var currentView = ko.views.manager.currentView;
-		if (!currentView || !currentView.document)
-			return false;	
-		return(_isRRunning() && currentView.document.language == "R");
-	}
 	
 	function _keepCheckingR (stopMe) {
 		clearInterval(sv.r.testInterval);
@@ -39,6 +34,14 @@ if (typeof(sv.command) == 'undefined') {
 		return sv.r.running;
 	}
 	
+	function _RControl_supported () {
+		var currentView = ko.views.manager.currentView;
+		if (!currentView || !currentView.document)
+			return false;	
+		//return(_isRRunning() && currentView.document.language == "R");
+		return(currentView.document.language == "R");
+	}
+	
 	function _RControlSelection_supported () {
 		var currentView = ko.views.manager.currentView;
 		if (!currentView || !currentView.scimoz)
@@ -49,96 +52,108 @@ if (typeof(sv.command) == 'undefined') {
 				currentView.scimoz.selectionStart) != 0);
 	}
 	
-	// Selects the checkbox on selected element, while deselecting others
-	this.getRApp = function (event) {
-		var el = event.originalTarget;
-		var siblings = el.parentNode.childNodes;
-		for (var i = 0; i < siblings.length; i++) {
-			try {
-				siblings[i].setAttribute("checked", siblings[i] == el);
-			} catch(e) {}
+	// Start R, if not already running
+	this.startR = function () {
+		// runIn = "command-output-window", "new-console",
+		// env strings: "ENV1=fooJ\nENV2=bar"
+		// gPrefSvc.prefs.getStringPref("runEnv");
+		var defRApp = "r-terminal";
+		var isWin = navigator.platform == "Win32";
+		// Default preferredRApp on Windows is r-gui
+		if (isWin) defRApp = "r-gui";
+		var preferredRApp = sv.prefs.getString("sciviews.preferredRApp",
+			defRApp);
+		var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
+			"SciViewsK"),
+			"koHost=localhost",
+			"koActivate=FALSE",
+			"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
+			"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
+			"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
+			"koAppFile=" + sv.tools.file.path("CurProcD",
+				["komodo" + (isWin? ".exe" : "")])
+		];
+		var cwd = sv.tools.file.path("ProfD",
+			["extensions", "sciviewsk@sciviews.org", "templates"]);
+		var command, runIn = "no-console";
+	
+		ko.statusBar.AddMessage(sv.translate("Starting R... please wait"),
+			"StartR", 10000, true);
+		switch (preferredRApp) {
+			case "r-gui":
+				env.push("Rid=Rgui");
+				command = "Rgui --sdi";
+				break;
+			case "r-xfce4-term":
+				env.push("Rid=R-xfce4-term");
+				command = "xfce4-terminal --title \"SciViews-R\" -x R --quiet";
+				break;
+			case "r-gnome-term":
+				env.push("Rid=R-gnome-term");
+				command = "gnome-terminal --hide-menubar --title=SciViews-R -x R --quiet";
+				break;
+			case "r-kde-term":
+				env.push("Rid=R-kde-term");
+				command = "konsole --nomenubar --notabbar --noframe -T SciViews-R -e R --quiet";
+				break;
+			case "r-tk":
+				env.push("Rid=R-tk");
+				// Set DISPLAY only when not set:
+				var XEnv = Components.classes["@activestate.com/koEnviron;1"]
+					.createInstance(Components.interfaces.koIEnviron);
+				if (!XEnv.has("DISPLAY"))
+					env.push("DISPLAY=:0");
+				delete XEnv;
+				command = "R --quiet --save --gui=Tk";
+				// runIn = "no-console";
+				break;
+			case "r-app":
+				env.push("Rid=R.app");
+				command = "open -a /Applications/R.app \"" + cwd + "\"";
+				break;
+			case "r64-app":
+				env.push("Rid=R64.app");
+				command = "open -a /Applications/R64.app \"" + cwd + "\"";
+				break;
+			case "svr-app":
+				env.push("Rid=svR.app");
+				command = "open -a \"/Applications/SciViews R.app\" \"" +
+					cwd + "\"";
+				break;
+			case "svr64-app":
+				env.push("Rid=svR64.app");
+				command = "open -a \"/Applications/SciViews R64.app\" \"" +
+					cwd + "\"";
+				break;
+			// This does start, but ignore initial dir and thus SciViews is
+			// not initialized
+			case "jgrmac-app": // TODO: JGR on other platforms too!
+				env.push("Rid=JGR.app");
+				command = "open -a /Applications/JGR.app \"" +
+					cwd + "\"";
+				break;
+			default:
+				env.push("Rid=R");
+				command = "R --quiet";
+				runIn = "new-console";
 		}
-		// This will preserve the selection
-		el.parentNode.setAttribute('selected',  el.id);
-		// Set the preference string
-		sv.prefs.setString("sciviews.preferredRApp", el.id, true);
-	
-		document.getElementById("cmd_sv_start_R").setAttribute("label",
-			sv.translate("Start R") + " (" + el.getAttribute('label') + ")");
-	}
-	
-	// Selects checkbox on the 'preferred R application' menu on its first
-	// display and hides unsupported commands
-	// It is triggered on popupshowing event, onload would be better,
-	// but it is for compatibility with Komodo 4 which doesn't support onload()
-	this.setMenuRApp = function (el) {
-		var selected = el.getAttribute('selected');
-		var siblings =  el.childNodes;
-	
-		var isLinux = navigator.platform.toLowerCase().indexOf("linux") > -1;
-	
-		// This will tell whether an app is present on the *nix system
-		if (isLinux) {
-			function whereis(app) {
-				var runSvc = Components.
-					classes["@activestate.com/koRunService;1"].
-					getService(Components.interfaces.koIRunService);
-				var err = {}, out = {};
-				var res = runSvc.RunAndCaptureOutput("whereis -b " + app,
-					null, null, null, out, err);
-				var path = out.value.substr(app.length + 2);
-				if (!path) return false;
-				return out.value.substr(app.length + 2).split(" ");
-			}
-		}
-	
-		var validPlatforms, showItem;
-		var platform = navigator.platform;
-		for (var i = 0; i < siblings.length; i++) {
-			try {
-				validPlatforms = siblings[i].getAttribute("platform").
-					split(/\s*[,\s]\s*/);
-				showItem = false;
-				for (var j in validPlatforms) {
-					if (platform.indexOf(validPlatforms[j]) == 0) {
-						// On linux, try to determine which terminals are
-						// not available and remove these items from menu
-						if (!isLinux ||
-							whereis(siblings[i].getAttribute("app"))) {
-							showItem = true;
-							break;
-						}
-					}
-				}
-	
-				if (!showItem) {
-					siblings[i].style.display = "none";
-				} else {
-					siblings[i].setAttribute("checked",
-						siblings[i].id == selected);
-				}
-			} catch(e) {}
-		}
-	
-		// Set the preference string
-		sv.prefs.setString("sciviews.preferredRApp", selected, false);
-	
-		document.getElementById("cmd_sv_start_R").setAttribute("label",
-			sv.translate("Start R") + " (" + document.getElementById(selected).
-				getAttribute('label') + ")"
-		);
-	
-		// We do not need to run it anymore
-		el.removeAttribute("onpopupshowing");
-	}
-	
-	this.openPkgManager = function () {
-		window.openDialog(
-			"chrome://sciviewsk/content/pkgManagerOverlay.xul",
-			"RPackageManager",
-			"chrome=yes,dependent,centerscreen,resizable=yes,scrollbars=yes,status=no",
-			sv);
-	}
+		sv.log.debug("Running: " + command);
+		
+		// Debugging garbage...
+		//var command = "CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt";
+		//ko.run.runCommand(window,
+		//	"CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt", cwd, {});
+		//var runSvc = Components.classes["@activestate.com/koRunService;1"]
+		//	.getService(Components.interfaces.koIRunService);
+		//var Rapp = runSvc.RunAndNotify(command, cwd, env.join("\n"), null);
+		//ko.run.runCommand(window, command, cwd, env.join("\n"), false,
+		
+		ko.run.runCommand(window, command, cwd, env.join("\n"), false,
+			false, false, runIn, false, false, false);
+				
+		// Register observer of application termination.
+		this.rObserver = new AppTerminateObserver(command);
+	};
 	
 	// This will observe status message notification to be informed about
 	// application being terminated. A more straightforward way would be to use
@@ -147,7 +162,7 @@ if (typeof(sv.command) == 'undefined') {
 	// This is not used for anything yet.
 	function AppTerminateObserver (command) {
 		this.register(command);
-	}
+	};
 	
 	AppTerminateObserver.prototype = {
 		command: "",
@@ -188,6 +203,113 @@ if (typeof(sv.command) == 'undefined') {
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');
 		}
+	};
+	
+	// Selects the checkbox on selected element, while deselecting others
+	this.getRApp = function (event) {
+		var el = event.originalTarget;
+		var siblings = el.parentNode.childNodes;
+		for (var i = 0; i < siblings.length; i++) {
+			try {
+				siblings[i].setAttribute("checked", siblings[i] == el);
+			} catch(e) {}
+		}
+		// This will preserve the selection
+		el.parentNode.setAttribute('selected',  el.id);
+		// Set the preference string
+		sv.prefs.setString("sciviews.preferredRApp", el.id, true);
+	
+		document.getElementById("cmd_sv_start_R").setAttribute("label",
+			sv.translate("Start R") + " (" + el.getAttribute('label') + ")");
+	}
+	
+	// Selects checkbox on the 'preferred R application' menu on its first
+	// display and hides unsupported commands
+	// It is triggered on popupshowing event, onload would be better,
+	// but it is for compatibility with Komodo 4 which doesn't support onload()
+	this.setMenuRApp = function (el) {
+		var selected = el.getAttribute('selected');
+		var siblings =  el.childNodes;
+
+		var isLinux = navigator.platform.toLowerCase().indexOf("linux") > -1;
+		var isMac = navigator.platform.toLowerCase().indexOf("mac") > -1;
+	
+		// This will tell whether an app is present on the *nix system
+		function whereis(app) {
+			var runSvc = Components.
+				classes["@activestate.com/koRunService;1"].
+				getService(Components.interfaces.koIRunService);
+			var err = {}, out = {};
+			var res = runSvc.RunAndCaptureOutput("whereis -b " + app,
+				null, null, null, out, err);
+			var path = out.value.substr(app.length + 2);
+			if (!path) return false;
+			return out.value.substr(app.length + 2).split(" ");
+		}
+		
+		var validPlatforms, showItem;
+		var platform = navigator.platform;
+		for (var i = 0; i < siblings.length; i++) {
+			try {
+				validPlatforms = siblings[i].getAttribute("platform").
+					split(/\s*[,\s]\s*/);
+				showItem = false;
+				for (var j in validPlatforms) {
+					if (platform.indexOf(validPlatforms[j]) > -1) {
+						// On linux, try to determine which terminals are
+						// not available and remove these items from menu
+						if (isLinux) {
+							if (whereis(siblings[i].getAttribute("app"))) {
+								showItem = true;
+								break;
+							}
+						} else if (isMac) {
+							// Check that we find the application
+							var Rapp = siblings[i].getAttribute("app");
+							if (Rapp == "R" || sv.tools.file.exists(Rapp)) {
+								showItem = true;
+								break;
+							}
+						} else { // Windows, RGui & RTerm always available?
+							showItem = true;
+							break;
+						}
+					}
+				}
+	
+				if (!showItem) {
+					siblings[i].style.display = "none";
+					// This does not work on the Mac, but the following is fine
+					siblings[i].setAttribute("hidden", true);
+				} else {
+					sv.log.debug("R application supported: " +
+						siblings[i].getAttribute("app"));
+					siblings[i].setAttribute("checked",
+						siblings[i].id == selected);
+				}
+			} catch(e) {
+				sv.log.exception(e, "Error looking for R apps in setMenuRApp");
+			}
+		}
+	
+		// Set the preference string
+		sv.prefs.setString("sciviews.preferredRApp", selected, false);
+	
+		document.getElementById("cmd_sv_start_R").setAttribute("label",
+			sv.translate("Start R") + " (" + document.getElementById(selected).
+				getAttribute('label') + ")"
+		);
+	
+		// We do not need to run it anymore
+		el.removeAttribute("onpopupshowing");
+	}
+	
+	this.openPkgManager = function () {
+		window.openDialog(
+			"chrome://sciviewsk/content/pkgManagerOverlay.xul",
+			"RPackageManager",
+			"chrome=yes,dependent,centerscreen,resizable=yes,scrollbars=yes,status=no",
+			sv);
 	}
 	
 	this.setControllers = function () {
@@ -280,83 +402,7 @@ if (typeof(sv.command) == 'undefined') {
 			sv.r.source("function");
 		};
 		vmProto.do_cmd_sv_start_R = function () {
-			// runIn = "command-output-window", "new-console",
-			// env strings: "ENV1=fooJ\nENV2=bar"
-			// gPrefSvc.prefs.getStringPref("runEnv");
-			var isWin = navigator.platform == "Win32";
-			var preferredRApp = sv.prefs.getString("sciviews.preferredRApp",
-				"r-terminal");
-			var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
-				"SciViewsK"),
-				"koHost=localhost",
-				"koActivate=FALSE",
-				"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
-				"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
-				"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
-				"koAppFile=" + sv.tools.file.path("CurProcD",
-					["komodo" + (isWin? ".exe" : "")])
-			];
-			var cwd = sv.tools.file.path("ProfD",
-				["extensions", "sciviewsk@sciviews.org", "templates"]);
-			var command, runIn = "no-console";
-	
-			switch (preferredRApp) {
-				case "r-gui":
-					env.push("Rid=Rgui");
-					command = "Rgui --sdi";
-					break;
-				case "r-xfce4-term":
-					env.push("Rid=R-xfce4-term");
-					command = "xfce4-terminal --title \"SciViews-R\" -x R --quiet";
-					break;
-				case "r-gnome-term":
-					env.push("Rid=R-gnome-term");
-					command = "gnome-terminal --hide-menubar --title=SciViews-R -x R --quiet";
-					break;
-				case "r-kde-term":
-					env.push("Rid=R-kde-term");
-					command = "konsole --nomenubar --notabbar --noframe -T SciViews-R -e R --quiet";
-					break;
-				case "r-tk":
-					env.push("Rid=R-tk");
-					// Set DISPLAY only when not set:
-					var XEnv = Components.classes["@activestate.com/koEnviron;1"]
-						.createInstance(Components.interfaces.koIEnviron);
-					if (!XEnv.has("DISPLAY"))
-						env.push("DISPLAY=:0");
-					delete XEnv;
-					command = "R --quiet --save --gui=Tk";
-					// runIn = "no-console";
-					break;
-				case "r-app":
-					env.push("Rid=R.app");
-					command = "open -a /Applications/R.app \"" + cwd + "\"";
-					break;
-				case "r64-app":
-					env.push("Rid=R64.app");
-					command = "open -a /Applications/R64.app \"" + cwd + "\"";
-					break;
-				default:
-					env.push("Rid=R");
-					command = "R --quiet";
-					runIn = "new-console";
-	
-			}
-	
-			// Debugging garbage...
-			//var command = "CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt";
-			//ko.run.runCommand(window,
-			//	"CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt", cwd, {});
-			//var runSvc = Components.classes["@activestate.com/koRunService;1"]
-			//	.getService(Components.interfaces.koIRunService);
-			//var Rapp = runSvc.RunAndNotify(command, cwd, env.join("\n"), null);
-			//ko.run.runCommand(window, command, cwd, env.join("\n"), false,
-	
-			ko.run.runCommand(window, command, cwd, env.join("\n"), false,
-				false, false, runIn, false, false, false);
-			
-			// Register observer of application termination.
-			this.rObserver = new AppTerminateObserver(command);
+			sv.command.startR();
 		};
 	}
 	
