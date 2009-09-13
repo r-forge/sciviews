@@ -13,9 +13,6 @@
 #
 # The Original Code is SciViews-K by Philippe Grosjean et al.
 #
-# Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
-# ActiveState Software Inc. All Rights Reserved.
-#
 # Contributor(s):
 #   Philippe Grosjean
 #   Kamil Barton
@@ -35,7 +32,7 @@
 #
 # ***** END LICENSE BLOCK *****
 
-# Komodo R language service.
+# Komodo R language service
 
 import logging
 from koUDLLanguageBase import KoUDLLanguage

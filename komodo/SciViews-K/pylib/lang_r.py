@@ -14,9 +14,6 @@
 #
 # The Original Code is SciViews-K by Philippe Grosjean et al.
 #
-# Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
-# ActiveState Software Inc. All Rights Reserved.
-#
 # Contributor(s):
 #   Philippe Grosjean
 #   ActiveState Software Inc (code inspired from)
@@ -2875,6 +2872,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         if trg.id == (self.lang, TRG_FORM_CPLN, "identifiers"):
             # First, check if there is an abbreviation
             
+# TODO: convert this into Python and integrate
 #            		var ke = ko.views.manager.currentView.scimoz;
 #		var sel = ke.selText;
 #		if (sv.abbrev.callTipActive & ke.callTipActive()) { ke.callTipCancel(); }

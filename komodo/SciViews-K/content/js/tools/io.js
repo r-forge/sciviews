@@ -10,19 +10,18 @@
 //sv.io.fileExists(file); 				// Checks for file existence
 										// returns 2 for directory, 1 for file,
 										// otherwise 0
-//sv.io.tempFile(prefix);				// creates unique temporary file,
+//sv.io.tempFile(prefix);				// Creates unique temporary file,
 										// accessible by all users, and returns
 										// its name
-//sv.io.makePath(baseDir, ...); // create path from array,
+//sv.io.makePath(baseDir, ...); 		// Create path from array,
 										// and/or special directory name
-//sv.io.file(baseDir, [pathComponents]); // create nsILocalFile object from array,
+//sv.io.file(baseDir, [pathComponents]);// Create nsILocalFile object from array
 										// and/or special directory name
 // sv.io.readURI(uri);					// Read data from an URI
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO: this are not only i/o functions anymore, rename to something like
+// TODO: these are not only i/o functions anymore, rename to something like
 // sv.fileUtils ...
-
 
 // Define the 'sv.io' namespace
 if (typeof(sv.io) == 'undefined')
@@ -164,7 +163,7 @@ if (typeof(sv.io) == 'undefined')
 		return file;
 	}
 
-	// concatenates ist arguments into a file path.
+	// Concatenate the arguments into a file path.
 	// baseDir - can be a name for special directory, see special directory
 	// reference at https://developer.mozilla.org/En/Code_snippets:File_I/O
 	// eg. "ProfD", "TmpD", "Home", "Pers", "Desk", "Progs"

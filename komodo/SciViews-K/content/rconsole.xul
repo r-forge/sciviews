@@ -12,10 +12,7 @@
  License for the specific language governing rights and limitations
  under the License.
 
- The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
-
- Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
- ActiveState Software Inc. All Rights Reserved.
+ The Original Code is SciViews-K by Philippe Grosjean et al.
 
  Contributor(s):
    Romain Francois
@@ -33,9 +30,11 @@
  the terms of any one of the MPL, the GPL or the LGPL.
 
  ***** END LICENSE BLOCK ***** -->
-<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
-  <!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
-  %sciviewskDTD;
+
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
+	"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+	<!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
+	%sciviewskDTD;
 ]>
 
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
@@ -45,9 +44,9 @@
 <?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk_console.css" type="text/css"?>
 
 <overlay id="sciviewskRconsoleOverlay"
-         xmlns:html="http://www.w3.org/1999/xhtml"
-         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
@@ -60,122 +59,104 @@
   <script type="application/x-javascript" src="chrome://sciviewsk/content/js/console.js"/>
 
   <menupopup id="tabPicker_popup">
-    <menuitem id="show_rconsole_tab"
-      oncommand="uilayout_ensureTabShown('sciviews_rconsole_tab', true)"
-      label="&sciviews.console.tab;"
-    />
+    <menuitem id="show_rconsole_tab" label="&sciviews.console.tab;"
+      oncommand="uilayout_ensureTabShown('sciviews_rconsole_tab', true)"/>
   </menupopup>
 
   <menupopup id="menu_view_tabs_popup">
-    <menuitem id="show_rconsole_tab2"
-      class="menuitem-iconic-wide"
-      oncommand="uilayout_ensureTabShown('sciviews_rconsole_tab', true)"
-      label="&sciviews.console.tab;"
-    />
+    <menuitem id="show_rconsole_tab2" class="menuitem-iconic-wide"
+			label="&sciviews.console.tab;"
+      oncommand="uilayout_ensureTabShown('sciviews_rconsole_tab', true)"/>
   </menupopup>
 
   <tabbox id="output_area">
     <tabs id="output_tabs">
-      <tab id="sciviews_rconsole_tab"
-           label="&sciviews.console.tab;"
-           tooltiptext="&sciviews.console.tip;"
-           onclick="sv.r.console.init();" />
+      <tab id="sciviews_rconsole_tab" label="&sciviews.console.tab;"
+        tooltiptext="&sciviews.console.tip;" onclick="sv.r.console.init();"/>
     </tabs>
     <tabpanels id="output_tabpanels">
-      <tabpanel flex="1" id="sciviews_rconsole_tabpanel">
-  
-      
-      <vbox id="sciviews_rconsole_console_vbox" flex="1" style="margin-left:10px;"> 
-      
-        <richlistbox id="sciviews_rconsole_console_results" flex="1" />
-        
-        <splitter id="sciviews_rconsole_console_splitter" ><grippy/></splitter>
-        
-        
-        <hbox>
-          <!-- TODO: replace this with a scintilla editor, would we get syntax highlighting for free? -->
-          <!-- TODO: needs a bit of styling -->
-          
-        <!-- here is the input area where R code is typed and sent to the console -->
-        <textbox id="sciviews_rconsole_console_input" cols="20"
-                   onkeypress="sv.r.console.handleConsoleKeyPress(event)"
-                   onkeyup="sv.r.console.handleConsoleKeyUp(event)"
-                   flex="1" multiline="true" rows="2" />
-        </hbox>
- 
-      </vbox>
-      
-      <splitter><grippy/></splitter>
-      
-      <tabbox flex="1">
-        <tabs>
-          <tab label="completion" id="sciviews_rconsole_console_tab_completion"  />
-          <tab label="history" id="sciviews_rconsole_console_tab_history" />
-        </tabs>
-        <tabpanels flex="1">
-          
-          <!-- completion tab -->
-          <!-- TODO: use this as a tooltip -->
-          <tabpanel>
-              <vbox flex="1">
-                <hbox>
-                  <label value="&sciviews.rconsole.completion.settings.label;" 
-                        tooltiptext="&sciviews.rconsole.completion.settings.tip;"  />
-                  <checkbox label="&sciviews.rconsole.completion.cb.arguments;"
-                            id="sciviews_rconsole_completion_cb_arguments"
-                            tooltiptext="&sciviews.rconsole.completion.cb.arguments.tip;"
-                            onclick="sv.r.console.updateCompletionChoiceSetting(event, 'arguments' )" />
-                  <checkbox label="&sciviews.rconsole.completion.cb.functions;"
-                            id="sciviews_rconsole_completion_cb_functions"
-                            tooltiptext="&sciviews.rconsole.completion.cb.functions.tip;"
-                            onclick="sv.r.console.updateCompletionChoiceSetting(event, 'functions' )"/>
-                  <checkbox label="&sciviews.rconsole.completion.cb.packages;"
-                            id="sciviews_rconsole_completion_cb_packages"
-                            tooltiptext="&sciviews.rconsole.completion.cb.packages.tip;"
-                            onclick="sv.r.console.updateCompletionChoiceSetting(event, 'packages' )" />
-                  <checkbox label="&sciviews.rconsole.completion.cb.history;"
-                            id="sciviews_rconsole_completion_cb_history"
-                            tooltiptext="&sciviews.rconsole.completion.cb.history.tip;"
-                            onclick="sv.r.console.updateCompletionChoiceSetting(event, 'history' )"/>
-                </hbox>  
-                <tree flex="1">
-                  <treecols>
-                    <treecol primary="true" label="completion" flex="1" />
-                    <treecol label="position" flex="1" />
-                    <treecol label="description" flex="6"/>
-                  </treecols>
-                  <treechildren id="sciviews_rconsole_completion_tree_main" /> 
-                </tree>  
-              </vbox>
-              
-          </tabpanel>
-          
-          
-          <!-- history tab -->
-          <tabpanel>
-              <vbox flex="1">
-                <hbox>
-                  <label>history</label>
-                  <textbox
-                  id="sciviews_rconsole_history_filter"
-                  style="min-width:40px; margin-right:0px; max-width:100px;"
-                  type="timed"
-                  timeout="500"
-                  flex="1"
-                  oninput="sv.r.console.refreshHistory();"
-                  multiline="false" rows="1"
-                  tooltiptext="&sciviews.console.history.filter.tip;" />
-                </hbox>  
-                <richlistbox id="sciviews_rconsole_console_history_richlistbox" flex="1"/>
-              </vbox>
-          </tabpanel>
-          
-        </tabpanels>  
-      </tabbox>
-      
-      
-     </tabpanel> 
-    </tabpanels>
-  </tabbox>
 
+      <tabpanel flex="1" id="sciviews_rconsole_tabpanel">				
+				<vbox id="sciviews_rconsole_console_vbox" flex="1" style="margin-left:10px;"> 
+					<richlistbox id="sciviews_rconsole_console_results" flex="1"/>
+					<splitter id="sciviews_rconsole_console_splitter">
+						<grippy/>
+					</splitter>
+					<hbox>
+						<!-- TODO: replace this with a scintilla editor, would we get syntax highlighting for free? -->
+						<!-- TODO: needs a bit of styling -->
+						<!-- here is the input area where R code is typed and sent to the console -->
+						<textbox id="sciviews_rconsole_console_input" cols="20"
+              onkeypress="sv.r.console.handleConsoleKeyPress(event)"
+              onkeyup="sv.r.console.handleConsoleKeyUp(event)"
+              flex="1" multiline="true" rows="2"/>
+					</hbox>
+				</vbox>
+				<splitter>
+					<grippy/>
+				</splitter>
+      
+				<tabbox flex="1">
+					<tabs>
+						<tab label="completion" id="sciviews_rconsole_console_tab_completion"/>
+						<tab label="history" id="sciviews_rconsole_console_tab_history"/>
+					</tabs>
+					<tabpanels flex="1">
+          
+						<!-- completion tab -->
+						<!-- TODO: use this as a tooltip -->
+						<tabpanel>
+							<vbox flex="1">
+								<hbox>
+									<label value="&sciviews.rconsole.completion.settings.label;" 
+										tooltiptext="&sciviews.rconsole.completion.settings.tip;"/>
+									<checkbox label="&sciviews.rconsole.completion.cb.arguments;"
+										id="sciviews_rconsole_completion_cb_arguments"
+										tooltiptext="&sciviews.rconsole.completion.cb.arguments.tip;"
+										onclick="sv.r.console.updateCompletionChoiceSetting(event, 'arguments' )"/>
+									<checkbox label="&sciviews.rconsole.completion.cb.functions;"
+										id="sciviews_rconsole_completion_cb_functions"
+										tooltiptext="&sciviews.rconsole.completion.cb.functions.tip;"
+										onclick="sv.r.console.updateCompletionChoiceSetting(event, 'functions' )"/>
+									<checkbox label="&sciviews.rconsole.completion.cb.packages;"
+										id="sciviews_rconsole_completion_cb_packages"
+										tooltiptext="&sciviews.rconsole.completion.cb.packages.tip;"
+										onclick="sv.r.console.updateCompletionChoiceSetting(event, 'packages' )"/>
+									<checkbox label="&sciviews.rconsole.completion.cb.history;"
+										id="sciviews_rconsole_completion_cb_history"
+										tooltiptext="&sciviews.rconsole.completion.cb.history.tip;"
+										onclick="sv.r.console.updateCompletionChoiceSetting(event, 'history' )"/>
+								</hbox>  
+								<tree flex="1">
+									<treecols>
+										<treecol primary="true" label="completion" flex="1"/>
+										<treecol label="position" flex="1"/>
+										<treecol label="description" flex="6"/>
+									</treecols>
+									<treechildren id="sciviews_rconsole_completion_tree_main"/> 
+								</tree>  
+							</vbox>
+						</tabpanel>
+          
+						<!-- history tab -->
+						<tabpanel>
+							<vbox flex="1">
+								<hbox>
+									<label>history</label>
+									<textbox id="sciviews_rconsole_history_filter"
+										style="min-width:40px; margin-right:0px; max-width:100px;"
+										type="timed" timeout="500" flex="1"
+										oninput="sv.r.console.refreshHistory();"
+										multiline="false" rows="1"
+										tooltiptext="&sciviews.console.history.filter.tip;"/>
+								</hbox>  
+								<richlistbox id="sciviews_rconsole_console_history_richlistbox"
+									flex="1"/>
+							</vbox>
+						</tabpanel>
+					</tabpanels>  
+				</tabbox>  
+			</tabpanel> 
+		</tabpanels>
+	</tabbox>
 </overlay>

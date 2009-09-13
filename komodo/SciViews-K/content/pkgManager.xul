@@ -12,10 +12,7 @@
  License for the specific language governing rights and limitations
  under the License.
 
- The Original Code is SciViews-K by Philippe Grosjean & Kamil Barton
-
- Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
- ActiveState Software Inc. All Rights Reserved.
+ The Original Code is SciViews-K by Philippe Grosjean et al.
 
  Contributor(s):
    Kamil Barton
@@ -35,7 +32,8 @@
 
  ***** END LICENSE BLOCK ***** -->
  
-<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
+"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
  
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
@@ -47,14 +45,11 @@
 <?xml-stylesheet href="chrome://sciviewsk/skin/pkgManager.css" type="text/css"?>
 
 <window id="RPackageManager" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	height="500" width="500"
-	persists="width height"
-	style="min-height: 500px; min-width: 500px;"
-	title="Manage R Packages"
->
-<script type="text/javascript">
-<![CDATA[
+	height="500" width="500" persists="width height"
+	style="min-height: 500px; min-width: 500px;" title="Manage R Packages">
 
+	<script type="text/javascript">
+	<![CDATA[
 //TODO: 	use xbl bindings
 // 		list of available packages at CRAN
 // 		repository selection + custom repositories
@@ -357,71 +352,60 @@ self.onload = function () {
 }
 
 ]]>
-</script>
+	</script>
 
-<script>
+	<script>
     function richSelect(aControl) {
-				//document.getElementById("selection-name").value = aControl.selectedItem ? aControl.selectedItem.getAttribute("name") : "";
+			//document.getElementById("selection-name").value = aControl.selectedItem ? aControl.selectedItem.getAttribute("name") : "";
 			// document.getElementById("selection-index").value = aControl.selectedIndex;
     }
-</script>
-
+	</script>
 
   <hbox>
 		<radiogroup id="pkgPanelButtons" orient="horizontal">
 			<radio label="Available"
-				oncommand="document.getElementById('pkgPanels').selectedIndex = 0;"
-			/>
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 0;"/>
 			<radio label="Installed" selected="true"
-				oncommand="document.getElementById('pkgPanels').selectedIndex = 1;"
-			/>
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 1;"/>
 			<radio label="Updates"
-				oncommand="document.getElementById('pkgPanels').selectedIndex = 2;"
-			/>
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 2;"/>
 		</radiogroup>
-
-		<spacer flex = "2" />
-		<button label="Close" onclick="self.close();" />
+		<spacer flex = "2"/>
+		<button label="Close" onclick="self.close();"/>
   </hbox>
   
 	<deck id="pkgPanels" flex="1" style="padding: 0px; border: none;"
-		selectedIndex="1" persists="selectedIndex"
-	>
+		selectedIndex="1" persists="selectedIndex">
   
-	<box><!-- tabpanel First elements go here --></box>
+		<box><!-- tabpanel First elements go here --></box>
   
-	<box>
-		<!--<notificationbox flex="1">-->
-		<vbox flex="1">
-			<hbox flex="5">
-				<richlistbox
-					id = "TheList"
-					onselect="richSelect(this)" flex="1" />
-			</hbox>
-			<hbox align="left" flex="1" maxheight="20">
-				<button label="Find updates" accesskey="F" oncommand="pkgFindUpdates();"
-					align="left" />	<spacer flex="1" />
-			</hbox>
-		</vbox>
-	<!--</notificationbox>-->
-	</box>
+		<box>
+			<!--<notificationbox flex="1">-->
+			<vbox flex="1">
+				<hbox flex="5">
+					<richlistbox id = "TheList" onselect="richSelect(this)" flex="1"/>
+				</hbox>
+				<hbox align="left" flex="1" maxheight="20">
+					<button label="Find updates" accesskey="F"
+						oncommand="pkgFindUpdates();" align="left"/>
+					<spacer flex="1"/>
+				</hbox>
+			</vbox>
+			<!--</notificationbox>-->
+		</box>
 	
-	<box>
-		<vbox flex="1">
-			<hbox flex="5">
-				<richlistbox
-					id = "TheUpdatesList"
-					flex="1"
-					onselect="this.selectedItem.getElementsByTagName('checkbox')[0].focus();"
-				/>
-			</hbox>
-			
-			<hbox align="left" flex="1" maxheight="20">
-				<button label="Install updates" accesskey="I" oncommand=""
-					align="left" />
-				<spacer flex="1" />
-			</hbox>
-		</vbox>
-	</box>
+		<box>
+			<vbox flex="1">
+				<hbox flex="5">
+					<richlistbox id = "TheUpdatesList" flex="1"
+						onselect="this.selectedItem.getElementsByTagName('checkbox')[0].focus();"/>
+				</hbox>
+				<hbox align="left" flex="1" maxheight="20">
+					<button label="Install updates" accesskey="I" oncommand=""
+						align="left"/>
+					<spacer flex="1"/>
+				</hbox>
+			</vbox>
+		</box>
   </deck>
 </window>

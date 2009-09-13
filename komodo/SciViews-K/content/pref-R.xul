@@ -12,10 +12,7 @@
  License for the specific language governing rights and limitations
  under the License.
 
- The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
-
- Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
- ActiveState Software Inc. All Rights Reserved.
+ The Original Code is SciViews-K by Philippe Grosjean et al.
 
  Contributor(s):
    Philippe Grosjean
@@ -43,43 +40,40 @@
 
 <window xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	class="kodialog"
-	orient="vertical"
-	onload="svPrefR_OnLoad();">
+	class="kodialog" orient="vertical" onload="svPrefR_OnLoad();">
 
-    <script src="chrome://komodo/content/library/trace.js" type="application/x-javascript"/>
-    <script src="chrome://komodo/content/library/logging.js" type="application/x-javascript"/>
-    <script src="chrome://komodo/content/library/dialogs.js" type="application/x-javascript"/>
-    <script src="chrome://komodo/content/library/filepickers.js" type="application/x-javascript"/>
-    <script src="chrome://komodo/content/library/windowManager.js" type="application/x-javascript"/>
-    <script src="chrome://sciviewsk/content/js/pref-R.js" type="application/x-javascript"/>
+  <script src="chrome://komodo/content/library/trace.js" type="application/x-javascript"/>
+  <script src="chrome://komodo/content/library/logging.js" type="application/x-javascript"/>
+  <script src="chrome://komodo/content/library/dialogs.js" type="application/x-javascript"/>
+  <script src="chrome://komodo/content/library/filepickers.js" type="application/x-javascript"/>
+  <script src="chrome://komodo/content/library/windowManager.js" type="application/x-javascript"/>
+  <script src="chrome://sciviewsk/content/js/pref-R.js" type="application/x-javascript"/>
 
 	<box class="kobox-smallheader" title="R interpreter configuration"/>
     <groupbox orient="vertical">
-        <caption label="Default R Interpreter"/>
-        <text value="Use this R application:" style="padding: 2px 6px 2px 6px"/>
-        <hbox align="center">
-            <textbox id="R_interpreterPath" pref="true" prefstring="RDefaultInterpreter" flex="1"/>
-            <button label="Browse..." oncommand="svPrefR_loadRExecutable();"/>
-        </hbox>
-        <vbox flex="1" align="center">
-			<description>
-			   For these changes to take effect, you have to close R first.
+      <caption label="Default R Interpreter"/>
+      <text value="Use this R application:" style="padding: 2px 6px 2px 6px"/>
+      <hbox align="center">
+        <textbox id="R_interpreterPath" pref="true"
+					prefstring="RDefaultInterpreter" flex="1"/>
+        <button label="Browse..." oncommand="svPrefR_loadRExecutable();"/>
+      </hbox>
+      <vbox flex="1" align="center">
+				<description>
+					For these changes to take effect, you have to close R first.
 		    </description>
-			<separator class="thin"/>
-			<description>
-                SciViews-K currently needs a valid R installation on the
-				local machine. If you have not installed R yet, you can
-				find it at the CRAN website (Comprehensive R Archive Network):
-            </description>
-			<separator class="thin"/>
-            <button label="http://cran.r-project.org"
-                class="button-link"
-                style="margin: -10px; color: #0000FF;
-				text-decoration: underline !important;
-				cursor: pointer;"
-                onclick="parent.opener.ko.browse.openUrlInDefaultBrowser('http://cran.r-project.org/');"/>
-            <separator class="thin"/>
-        </vbox>
+				<separator class="thin"/>
+				<description>
+          SciViews-K currently needs a valid R installation on the
+					local machine. If you have not installed R yet, you can
+					find it at the CRAN website (Comprehensive R Archive Network):
+        </description>
+				<separator class="thin"/>
+        <button label="http://cran.r-project.org" class="button-link"
+          style="margin: -10px; color: #0000FF;
+					text-decoration: underline !important; cursor: pointer;"
+          onclick="parent.opener.ko.browse.openUrlInDefaultBrowser('http://cran.r-project.org/');"/>
+        <separator class="thin"/>
+      </vbox>
     </groupbox>
 </window>
