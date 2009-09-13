@@ -42,8 +42,19 @@
 // sv.r.saveHistory(file, title); // Save the history in a file
 // sv.r.loadHistory(file, title); // Load the history from a file
 // sv.r.saveGraph(type, file, title, height, width, method);
-//                         // Save the current R graph in different formats
-// sv.r.quit(save);        // Quit R (ask to save in save in not defined)
+//                  // Save the current R graph in different formats
+// sv.r.initSession(dir, datadir, scriptdir, reportdir);
+// sv.r.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
+                    // Initialize R session with corresponding directories
+					// setSession() also do the change in R and is to be used
+					// preferably, except at Komodo startup!
+                    // dir: session directory, xxxdir: xxx subdirectory,
+                    // saveOld (default true): do we save old session data?
+                    // loadNew (default true): do we load data from new session?
+// sv.r.quit(save); // Quit R (ask to save in save in not defined)
+//
+// Note: sv.r.objects is implemented in robjects.js
+//       sv.r.console functions are implemented in rconsole.js
 //
 // sv.r.pkg namespace: /////////////////////////////////////////////////////////
 // sv.r.pkg.repositories(); // Select repositories for installing R packages
@@ -185,7 +196,7 @@ sv.r.setwd = function (dir, ask, type) {
 
 	var getDirFromR = "";
 
-	if (!dir || (sv.io.fileExists(dir) == 2)) { // dir not there or unspecified
+	if (!dir || (sv.tools.file.exists(dir) == 2)) { // Not there or unspecified
 		//sv.log.debug(dir + ":" + type)
 		checkType:
 		switch (type) {
@@ -202,14 +213,14 @@ sv.r.setwd = function (dir, ask, type) {
 				break;
 			case "current":
 				getDirFromR = "getwd()";
-				ask = true;	// assume ask is always true in this case
+				ask = true;	// Assume ask is always true in this case
 				break;
 			case "file":
 				var kv = ko.views.manager.currentView;
 				if (kv) {
 					kv.setFocus();
 					if (!kv.document.isUntitled) {
-						// if not, look for current file directory
+						// If not, look for current file directory
 						dir = kv.document.file.dirName;
 					}
 					break;
@@ -352,8 +363,8 @@ sv.r.source = function (what) {
 			sv.cmdout.append(':> #source("' + file + '*") # unsaved buffer (' +
 				what + ')');
 
-			var tempFile = sv.io.tempFile();
-			sv.io.writefile(tempFile, code, 'utf-8', false);
+			var tempFile = sv.tools.file.temp();
+			sv.tools.file.write(tempFile, code, 'utf-8', false);
 			tempFile = tempFile.addslashes();
 
 			var cmd = 'tryCatch(source("' + tempFile + '", encoding =' +
@@ -761,6 +772,142 @@ sv.r.saveGraph = function (type, file, title, height, width, method) {
 		method + '")');
 }
 
+// Initialize R session preferences in Komodo
+// use sv.r.setSession() except at startup!
+sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
+	// Initialize the various arguments
+	if (typeof(dir) == "undefined")
+		dir = sv.prefs.getString("sciviews.session.dir", "~");
+	if (typeof(datadir) == "undefined")
+		datadir = sv.prefs.getString("sciviews.session.data", "");
+	if (typeof(scriptdir) == "undefined")
+		scriptdir = sv.prefs.getString("sciviews.session.scripts", "");
+	if (typeof(reportdir) == "undefined")
+		reportdir = sv.prefs.getString("sciviews.session.reports", "");
+
+	var localdir = sv.tools.file.path(dir);
+	var sep = "/";
+
+	// Refresh preferences
+	sv.prefs.setString("sciviews.session.dir", dir, true);
+	sv.prefs.setString("sciviews.session.localdir", localdir, true);
+	// Subdirectories for data, reports and scripts
+	sv.prefs.setString("sciviews.session.data", datadir, true);
+	sv.prefs.setString("sciviews.session.scripts", scriptdir, true);
+	sv.prefs.setString("sciviews.session.reports", reportdir, true);
+	// Combination of these to give access to respective dirs
+	if (datadir == "") {
+		sv.prefs.setString("sciviews.data.dir", dir, true);
+		sv.prefs.setString("sciviews.data.localdir", localdir, true);
+	} else {
+		sv.prefs.setString("sciviews.data.dir", dir + sep + datadir, true);
+		sv.prefs.setString("sciviews.data.localdir",
+			sv.tools.file.path(localdir, datadir), true);
+	}
+	if (scriptdir == "") {
+		sv.prefs.setString("sciviews.scripts.dir", dir, true);
+		sv.prefs.setString("sciviews.scripts.localdir", localdir, true);
+	} else {
+		sv.prefs.setString("sciviews.scripts.dir", dir + sep + scriptdir, true);
+		sv.prefs.setString("sciviews.scripts.localdir",
+			sv.tools.file.path(localdir, scriptdir), true);
+	}
+	if (reportdir == "") {
+		sv.prefs.setString("sciviews.reports.dir", dir, true);
+		sv.prefs.setString("sciviews.reports.localdir", localdir, true);
+	} else {
+		sv.prefs.setString("sciviews.reports.dir", dir + sep + reportdir, true);
+		sv.prefs.setString("sciviews.reports.localdir",
+			sv.tools.file.path(localdir, reportdir), true);
+	}
+
+	var DIRECTORY_TYPE = Components.interfaces.nsIFile.DIRECTORY_TYPE;
+
+	// Look if the session directory exists, or create it
+	var file = sv.tools.file.getfile(localdir);
+	// file = sv.tools.file.getfile(sv.tools.file.path(dir);
+
+	if (!file.exists() || !file.isDirectory()) {
+		sv.log.debug( "Creating session directory... " );
+		file.create(DIRECTORY_TYPE, 511);
+	}
+	// ... also make sure that /Data, /Script and /Report subdirs exist
+	var subdirs = [datadir, scriptdir, reportdir];
+    for (var i in subdirs) {
+		if (subdirs[i] != "") {
+            var file = sv.tools.file.getfile(sv.tools.file.path(dir, subdirs[i]));
+            // TODO: check for error and issue a message if the file is not a dir
+			if (!file.exists() || !file.isDirectory())
+            	file.create(DIRECTORY_TYPE, 511);
+            delete file;
+        }
+	}
+	return(dir);
+}
+
+// Set a R session dir and corresponding dir preferences both in R and Komodo
+sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
+	saveOld, loadNew) {
+	// Set defaults for saveOld and loadNew
+	if (typeof(saveOld) == "undefined") saveOld = true;
+	if (typeof(loadNew) == "undefined") loadNew = true;
+
+	// cmd is the command executed in R to switch session (done asynchronously)
+	var cmd = "";
+
+	// If dir is the same as current session dir, do nothing
+	if (typeof(dir) != "undefined" &
+		dir == sv.prefs.getString("sciviews.session.dir", "")) {
+		return(false);
+	}
+
+	// Before switching to the new session directory, close current one
+	// if R is running
+	if (saveOld) {
+		// Save .RData & .Rhistory in the the session directory and clean WS
+		// We need also to restore .required and .SciViewsReady variables
+		cmd = 'assignTemp(".required", .required)\nTempEnv()$.Last.sys()\n' +
+			'save.image()\nsavehistory()\nrm(list = ls())\n' +
+			'.required <- getTemp(".required")\n.SciViewsReady <- TRUE\n';
+
+	} else {
+		// Clear workspace (hint, we don't clear hidden objects!)
+		cmd = 'rm(list = ls())\n'
+	}
+	// TODO: possibly close the associated Komodo project
+
+	// Initialize the session
+	dir = sv.r.initSession(dir, datadir, scriptdir, reportdir);
+	
+	// Switch to the new session directory in R
+	cmd = cmd + 'setwd("' + dir + '")\noptions(R.initdir = "' + dir + '")\n';
+
+	// Do we load .RData and .Rhistory?
+	if (loadNew) {
+		cmd = cmd + 'if (file.exists(".RData")) load(".RData")\n' +
+					 'if (file.exists(".Rhistory")) loadhistory()\n';
+	}
+
+	// Execute the command in R (TODO: check for possible error here!)
+	// TODO: run first in R; make dirs in R; then change in Komodo!
+	sv.r.evalCallback(cmd, function(data) {
+		// Indicate everything is fine
+		ko.statusBar.AddMessage("R session directory set to '" + dir + "'",
+			"R", 20000, true);
+        // Break possible partial multiline command in R from previous session
+        // and indicate that we are in a new session now in the R console
+        // TODO: report if we load something or not
+        sv.r.escape('cat("Session directory is now ' + dir +
+            '\n", file = stderr())');
+        // We most probably need to update the R Objects browser
+		sv.r.objects.getPackageList(true);
+	});
+
+	// TODO: possibly open the Komodo project associated with this session
+
+	return(true);
+}
+
 // Quit R (ask to save in save in not defined)
 sv.r.quit = function (save) {
 	if (typeof(save) == "undefined") {
@@ -1097,10 +1244,14 @@ sv.r.pkg.installSVrforge = function () {
 	return(res);
 }
 
-sv.r.RinterpreterTrial = function (code) {
-	var R = Components
-		.classes["@sciviews.org/svRinterpreter;1"]
-		.getService(Components.interfaces.svIRinterpreter);
+// Initialize the default (last used) R session
+sv.r.initSession();
 
-	return R.calltip(code);
-}
+// Temp code
+//sv.r.RinterpreterTrial = function (code) {
+//	var R = Components
+//		.classes["@sciviews.org/svRinterpreter;1"]
+//		.getService(Components.interfaces.svIRinterpreter);
+//
+//	return R.calltip(code);
+//}

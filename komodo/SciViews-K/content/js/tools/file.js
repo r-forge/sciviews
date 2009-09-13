@@ -1,36 +1,36 @@
-// SciViews-K IO functions
-// Various file related functions in 'sv.io' namespace'
+// SciViews-K file related functions
+// Various file related functions in 'sv.tools.file' namespace
 // Copyright (c) 2008-2009, Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.io.defaultEncoding				// Default file encoding to use
-// sv.io.readfile(filename, encoding);	// Read a file with encoding
-// sv.io.writefile(filename, content, encoding, append);
-										// Write in a file with encoding
-//sv.io.fileExists(file); 				// Checks for file existence
-										// returns 2 for directory, 1 for file,
-										// otherwise 0
-//sv.io.tempFile(prefix);				// Creates unique temporary file,
-										// accessible by all users, and returns
-										// its name
-//sv.io.makePath(baseDir, ...); 		// Create path from array,
-										// and/or special directory name
-//sv.io.file(baseDir, [pathComponents]);// Create nsILocalFile object from array
-										// and/or special directory name
-// sv.io.readURI(uri);					// Read data from an URI
+// sv.tools.file.defaultEncoding;			// Default file encoding to use
+// sv.tools.file.read(filename, encoding);	// Read a file with encoding
+// sv.tools.file.write(filename, content, encoding, append);
+								// Write in a file with encoding
+// sv.tools.file.exists(file); 	// Checks for file existence, returns 2 for
+								// directory, 1 for file, otherwise 0
+// sv.tools.file.temp(prefix);	// Creates unique temporary file, accessible
+								// by all users, and returns its name
+// sv.tools.file.path(baseDir, ...); 		// Create path from array, and/or
+											// special directory name
+// sv.tools.file.getfile(baseDir, [pathComponents]);
+								// Create nsILocalFile object from array and/or
+								// special dir name
+// sv.tools.file.readURI(uri);	// Read data from an URI
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO: these are not only i/o functions anymore, rename to something like
-// sv.fileUtils ...
+// Define the 'sv.tools' namespace
+if (typeof(sv.tools) == 'undefined')
+	sv.tools = {};
+// Define the 'sv.tools.file' namespace
+if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
 
-// Define the 'sv.io' namespace
-if (typeof(sv.io) == 'undefined')
-	sv.io = {};
-
-(function() {
+(function () {
+	// Default file encoding to use
 	this.defaultEncoding = "latin1";
 
-	this.readfile = function (filename, encoding) {
+	// Read a file with encoding
+	this.read = function (filename, encoding) {
 		if (!encoding)
 			encoding = this.defaultEncoding;
 
@@ -57,7 +57,7 @@ if (typeof(sv.io) == 'undefined')
 			}
 		} catch (e) {
 			sv.log.exception(e, "Error while trying to read in " + filename +
-				" (sv.io.readfile)", true);
+				" (sv.tools.file.read)", true);
 		}
 		finally {
 			is.close();
@@ -66,7 +66,8 @@ if (typeof(sv.io) == 'undefined')
 		return ret;
 	}
 
-	this.writefile = function (filename, content, encoding, append) {
+	// Write in a file with encoding
+	this.write = function (filename, content, encoding, append) {
 		if (!encoding)
 			encoding = this.defaultEncoding;
 
@@ -91,14 +92,15 @@ if (typeof(sv.io) == 'undefined')
 			os.writeString(content);
 		} catch (e) {
 			sv.log.exception(e, "Error while trying to write in " + filename +
-				" (sv.io.writefile)", true)
+				" (sv.tools.file.write)", true)
 		}
 		finally {
 			os.close();
 		}
 	}
 
-	this.fileExists = function (path) {
+	// Checks for file existence, returns 2 for dir, 1 for file, otherwise 0
+	this.exists = function (path) {
 		var file = Components.classes["@mozilla.org/file/local;1"].
 			createInstance(Components.interfaces.nsILocalFile);
 
@@ -117,7 +119,8 @@ if (typeof(sv.io) == 'undefined')
 		return 0;
 	}
 
-	this.tempFile = function (prefix) {
+	// Creates unique temporary file, accessible by all users; returns its name
+	this.temp = function (prefix) {
 		var nsIFile = Components.interfaces.nsIFile;
 		var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"].
 			 getService(Components.interfaces.nsIProperties);
@@ -135,7 +138,8 @@ if (typeof(sv.io) == 'undefined')
 		return tmpfile.path;
 	}
 
-	this.file = function (baseDir, pathComponents) {
+	// Create nsILocalFile object from array and/or special dir name
+	this.getfile = function (baseDir, pathComponents) {
 		var file, baseFile;
 		if (baseDir) {
 			try {
@@ -167,37 +171,40 @@ if (typeof(sv.io) == 'undefined')
 	// baseDir - can be a name for special directory, see special directory
 	// reference at https://developer.mozilla.org/En/Code_snippets:File_I/O
 	// eg. "ProfD", "TmpD", "Home", "Pers", "Desk", "Progs"
-	// or
-	// leading "~" is expanded to a real path
-	// following arguments can be specified as single array or string
-	// example: sv.io.makePath("~/workspace/dir1", "dir2", "file1.tmp")
+	// or leading "~" is expanded to a real path.
+	// Following arguments can be specified as single array or string
+	// example: sv.tools.file.path("~/workspace/dir1", "dir2", "file1.tmp")
 	// would produce something like that:
 	// "c:\users\bob\MyDocuments\workspace\dir1\dir2\file1.tmp"
 	// "/home/bob/workspace/dir1/dir2/file1.tmp"
-	this.makePath = function (baseDir, pathComponents) {
-		if (!baseDir)
-			return null;
-		if (!pathComponents)
-			pathComponents = [];
-		else if (typeof pathComponents == "string") {
-			var pc = [];
-			for (var i = 1; i < arguments.length; i++)
-				if (typeof arguments[i] != "undefined")
-					pc.push(arguments[i]);
-			pathComponents = pc;
-		}
-
-		var pathSep = Components.classes['@activestate.com/koOs;1'].
-			getService(Components.interfaces.koIOs).sep;
-
-		baseDir = baseDir.replace(/[\\/]+/g, pathSep);
-		if (baseDir[0] == "~") {
-			pathComponents.unshift(baseDir.replace(/^~[\\/]*/, ""));
-			baseDir = (navigator.platform.indexOf("Win") == 0)? "Pers" : "Home";
-		}
-		return this.file(baseDir, pathComponents).path;
+	this.path = function (baseDir, pathComponents) {
+		try {
+			if (!baseDir)
+				return null;
+			if (!pathComponents)
+				pathComponents = [];
+			else if (typeof pathComponents == "string") {
+				var pc = [];
+				for (var i = 1; i < arguments.length; i++)
+					if (typeof arguments[i] != "undefined")
+						pc.push(arguments[i]);
+				pathComponents = pc;
+			}
+	
+			var pathSep = Components.classes['@activestate.com/koOs;1'].
+				getService(Components.interfaces.koIOs).sep;
+	
+			baseDir = baseDir.replace(/[\\/]+/g, pathSep);
+			if (baseDir[0] == "~") {
+				pathComponents.unshift(baseDir.replace(/^~[\\/]*/, ""));
+				baseDir = (navigator.platform.
+					indexOf("Win") == 0)? "Pers" : "Home";
+			}
+			return this.getfile(baseDir, pathComponents).path;
+		} catch (e) { return null; }
 	}
 
+	// Read data from an URI
 	this.readURI = function (uri) {
 		var fileSvc = Components.classes["@activestate.com/koFileService;1"]
 			.getService(Components.interfaces.koIFileService);
@@ -208,4 +215,4 @@ if (typeof(sv.io) == 'undefined')
 		return res;
 	}
 
-}).apply(sv.io);
+}).apply(sv.tools.file);

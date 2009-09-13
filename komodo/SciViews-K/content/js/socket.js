@@ -392,7 +392,7 @@ if (typeof(sv.socket) == 'undefined')
 				if (this.debug) sv.log.debug(s);
 			});
 		// Update also the R Object browser
-		rObjectsTree.getPackageList(true);
+		sv.r.objects.getPackageList(true);
 	}
 	
 	// [PhG] The following command raises an error on my Mac

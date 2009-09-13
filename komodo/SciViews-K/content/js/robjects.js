@@ -1,170 +1,116 @@
-//TODO: A better SciViews-K header
-
+// SciViews-K R objects explorer functions
+// Define the 'sv.r.objects' tree and implement RObjectsOverlay functions
+// Copyright (c) 2009, Kamil Barton & Ph. Grosjean (phgrosjean@sciviews.org)
+// License: MPL 1.1/GPL 2.0/LGPL 2.1
+////////////////////////////////////////////////////////////////////////////////
+// sv.r.objects properties and methods
+//TODO: complete this documentation, clean up the code
+//
+///// These variables store all the information ////////////////////////////////
+// treeData - original tree data
+// visibleData - displayed data
+//
+///// Functions/properties to implement the tree view object ///////////////////
+// treeBox - treeBoxObject
+// selection - tree selection object
+// toggleOpenState
+// rowCount
+// setTree
+// setCellText
+// setCellValue
+// getCellText
+// isContainer
+//isContainerOpen
+// isContainerEmpty
+//isSeparator
+// isSorted
+// isEditable
+// getParentIndex
+// getLevel
+// hasNextSibling
+// getImageSrc
+// getProgressMode - not used, not really needed
+// getCellValue
+// cycleHeader
+// selectionChanged
+// cycleCell - not used, not really needed
+// performAction
+// performActionOnCell
+// getRowProperties
+// getCellProperties
+// getColumnProperties
+// canDrop - always false (but may be later, with svIO functions?)
+// drop - not needed so far
+//
+///// Other ////////////////////////////////////////////////////////////////////
+///// Private methods
+// _createVisibleData () - create visibleData from treeData
+// _addObjectList(pack)
+// _parseObjectList(data, packSelected)
+// _removeObjectList(pack)
+// _addSubObject(obj)
+// _parseSubObjectList(data, obj)
+// _getFilter()
+// _addVItems(item, parentIndex, level, parentUid)
+// _addVIChildren(vItem, parentIndex, isOpen)
+// _getVItem(obj, index, level, first, last, parentIndex, parentUid)
+//TODO: _addSubObject, _parseSubObjectList - should be possibly merged with
+//      _addObjectList and _parseObjectList
+//
+///// Private properties
+// iconTypes - icons to display
+// debug - well, you know...
+// isInitialized
+// atomSvc
+//
+///// Public methods not belonging to the tree object implementation
+// sort
+// applyFilter
+// filter
+// foldAll
+// getSelectedRows
+// toString - textual representation of the tree for debugging purposes
+// init - initialize
+// refreshAll
+// removeSelected
+// getSelectedNames
+// insertName
+// setFilterBy
+//
+///// Event handling
+// contextOnShow
+// do
+// onEvent
+// listObserver - drag & drop handler
+//
+///// Search path box methods
+// _processPackageList - private method
+// getPackageList
+// toggleViewSearchPath
+// displayPackageList
+// packageSelectedEvent
+// packageListObserver
+// packageListKeyEvent
+// searchPaths
+//
+////////////////////////////////////////////////////////////////////////////////
 //TODO: identify packages by pos rather than name (allow for non-unique names)
-
 //TODO: sort inserted child nodes (3-state sorting), restoring natural order of
 //      sub-elements (add orderIndex property to inserted elements)
 //TODO: resolve filtering modes: should sub-object be filtered too?
-//TODO: quoting non-syntactic sub-names inserted into text
 //TODO: preserve opened sub-objects on refresh
 //TODO: context menu for search-paths list
 //TODO: renaming objects on the list - editable names
 //TODO: add context menu item for environments: remove all objects
-//TODO: toolbar: dropdown menu for packages maintenance (add, install, etc)
-//TODO: solve problems with selection, when removing objects
-
-//DONE: "remove" command: Shift + Command - removes immediately (confirmation
-//       box first), Command - adds R code to the current document
-
-//sv.r.objects = rObjectsTree;
-
-/*
-
-rObjectsTree properties and methods:
-TODO: complete this documentation, clean up the code
-
-// these variables store all the information:
-treeData - original tree data
-visibleData - displayed data
-
-//  functions/properties to implement tree view object //
-treeBox - treeBoxObject
-selection - tree selection object
-toggleOpenState
-rowCount
-setTree
-setCellText
-setCellValue
-getCellText
-isContainer
-isContainerOpen
-isContainerEmpty
-isSeparator
-isSorted
-isEditable
-getParentIndex
-getLevel
-hasNextSibling
-getImageSrc
-getProgressMode - not really needed
-getCellValue
-cycleHeader
-selectionChanged
-cycleCell - not really needed
-performAction
-performActionOnCell
-getRowProperties
-getCellProperties
-getColumnProperties
-canDrop - always false
-drop - not needed so far
-
-// other //
-// private methods: //
-_createVisibleData () - create visibleData from treeData
-_addObjectList(pack)
-_parseObjectList(data, packSelected)
-_removeObjectList(pack)
-_addSubObject(obj)
-_parseSubObjectList(data, obj)
-_getFilter()
-_addVItems(item, parentIndex, level, parentUid)
-_addVIChildren(vItem, parentIndex, isOpen)
-_getVItem(obj, index, level, first, last, parentIndex, parentUid)
-TODO: _addSubObject, _parseSubObjectList - should be possibly merged with _addObjectList and _parseObjectList
-
-// private properties: //
-iconTypes - icons to display
-debug
-isInitialized
-atomSvc
-
-// public methods not belonging to tree object implementation //
-sort
-applyFilter
-filter
-foldAll
-getSelectedRows
-//toString - textual representation of the tree for debug purposes
-init - initialize
-refreshAll
-removeSelected
-getSelectedNames
-insertName
-setFilterBy
-
-// Event handling //
-contextOnShow
-do
-onEvent
-listObserver - drag & drop handler
-
-// search path box methods: //
-getPackageList
-_processPackageList // private
-toggleViewSearchPath
-displayPackageList
-packageSelectedEvent
-packageListObserver
-packageListKeyEvent
-searchPaths
-
-*/
-
-// Compute the intersection of n arrays
-//Array.prototype.intersect = function() {
-//    if (!arguments.length)
-//      return [];
-//    var a1 = this;
-//    var a = a2 = null;
-//    var n = 0;
-//    while(n < arguments.length) {
-//      a = [];
-//      a2 = arguments[n];
-//      var l = a1.length;
-//      var l2 = a2.length;
-//      for(var i=0; i<l; i++) {
-//        for(var j=0; j<l2; j++) {
-//          if (a1[i] === a2[j])
-//            a.push(a1[i]);
-//        }
-//      }
-//      a1 = a;
-//      n++;
-//    }
-//    return a.unique();
-//};
-//
-//// Get the union of n arrays
-//Array.prototype.union =  function() {
-//    var a = [].concat(this);
-//    var l = arguments.length;
-//    for(var i=0; i<l; i++) {
-//      a = a.concat(arguments[i]);
-//    }
-//    return a.unique();
-//};
-//
-//// Return new array with duplicate values removed
-//Array.prototype.unique =  function() {
-//    var a = [];
-//    var l = this.length;
-//    for(var i=0; i<l; i++) {
-//      for(var j=i+1; j<l; j++) {
-//        // If this[i] is found later in the array
-//        if (this[i] === this[j])
-//          j = ++i;
-//      }
-//      a.push(this[i]);
-//    }
-//    return a;
-//};
-//
+//TODO: add a checkbutton to show also hidden objects (starting with a dot)
+//TODO: delegate context menu calculation to R
+//TODO: automatic refresh of the browser from R
+////////////////////////////////////////////////////////////////////////////////
 
 // TODO: make this a sv.robjects.tree instead!
-var rObjectsTree = {};
+sv.r.objects = {};
 
-// rObjectsTree constructor
+// sv.r.objects constructor
 (function () {
 	
 	// Item separator for objList
@@ -1543,22 +1489,22 @@ var rObjectsTree = {};
 	}
 	
 	//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragdrop",
-	//		"nsDragAndDrop.drop(event, rObjectsTree.packageListObserver);"
+	//		"nsDragAndDrop.drop(event, sv.r.objects.packageListObserver);"
 	//		);
 	//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragover",
-	//		"nsDragAndDrop.dragOver(event, rObjectsTree.packageListObserver);"
+	//		"nsDragAndDrop.dragOver(event, sv.r.objects.packageListObserver);"
 	//		);
 	//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragexit",
-	//		"nsDragAndDrop.dragExit(event, rObjectsTree.packageListObserver);"
+	//		"nsDragAndDrop.dragExit(event, sv.r.objects.packageListObserver);"
 	//		);
 	//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondraggesture",
-	//		"nsDragAndDrop.startDrag(event, rObjectsTree.packageListObserver);"
+	//		"nsDragAndDrop.startDrag(event, sv.r.objects.packageListObserver);"
 	//		);
 	//_setOnEvent("sciviews_robjects_objects_tree_main", "ondragover",
-	//		"nsDragAndDrop.dragOver(event, rObjectsTree.listObserver);"
+	//		"nsDragAndDrop.dragOver(event, sv.r.objects.listObserver);"
 	//		);
 	//_setOnEvent("sciviews_robjects_objects_tree_main", "ondragdrop",
-	//		"nsDragAndDrop.drop(event, rObjectsTree.listObserver);"
+	//		"nsDragAndDrop.drop(event, sv.r.objects.listObserver);"
 	//		);
 
-} ).apply(rObjectsTree);
+} ).apply(sv.r.objects);

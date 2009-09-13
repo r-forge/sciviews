@@ -45,65 +45,65 @@
 <?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
 <?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
 
-<overlay id="sciviewsRBrowserOverlay" xmlns:html="http://www.w3.org/1999/xhtml"
+<overlay id="sciviewsRObjectsOverlay" xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 	<popupset id="extensionPopupSet">
 		<menupopup id="rObjectsContext"
-			onpopupshowing="rObjectsTree.contextOnShow();">
-      <menuitem class="primary_menu_item" id="menu_robjects_cmd_insertname"
-        command="robjects_cmd_insertname" acceltext="Ins"/>
+			onpopupshowing="sv.r.objects.contextOnShow();">
+			<menuitem class="primary_menu_item" id="menu_robjects_cmd_insertname"
+				command="robjects_cmd_insertname" acceltext="Ins"/>
 			<menuitem id="menu_robjects_cmd_insertfullname"
-        command="robjects_cmd_insertfullname" acceltext="Ctrl+Ins"/>
-      <menuitem id="menu_robjects_cmd_removeobj"
-        command="robjects_cmd_removeobj" acceltext="Del"
-        key="key_cmd_delete" class="menuitem-iconic list-item-remove-icon"/>
-      <menuitem id="menu_robjects_cmd_attach" command="robjects_cmd_attach"/>
-      <menuitem id="menu_robjects_cmd_detach" command="robjects_cmd_detach"/>
-      <menuseparator keep="false" intoplevel="true"/>
-      <menuitem id="menu_robjects_cmd_print" command="robjects_cmd_print"/>
-      <menuitem id="menu_robjects_cmd_plot" command="robjects_cmd_plot"/>
-      <menuitem id="menu_robjects_cmd_summary" command="robjects_cmd_summary"/>
-      <menuitem id="menu_robjects_cmd_str" command="robjects_cmd_str"/>
-      <menuitem id="menu_robjects_cmd_args" command="robjects_cmd_args"/>
-      <menuitem id="menu_robjects_cmd_names" command="robjects_cmd_names"/>
-      <menuseparator keep="false" intoplevel="true"/>
-      <menuitem id="menu_robjects_cmd_help" command="robjects_cmd_help"/>
+				command="robjects_cmd_insertfullname" acceltext="Ctrl+Ins"/>
+			<menuitem id="menu_robjects_cmd_removeobj"
+				command="robjects_cmd_removeobj" acceltext="Del"
+				key="key_cmd_delete" class="menuitem-iconic list-item-remove-icon"/>
+			<menuitem id="menu_robjects_cmd_attach" command="robjects_cmd_attach"/>
+			<menuitem id="menu_robjects_cmd_detach" command="robjects_cmd_detach"/>
+			<menuseparator keep="false" intoplevel="true"/>
+			<menuitem id="menu_robjects_cmd_print" command="robjects_cmd_print"/>
+			<menuitem id="menu_robjects_cmd_plot" command="robjects_cmd_plot"/>
+			<menuitem id="menu_robjects_cmd_summary" command="robjects_cmd_summary"/>
+			<menuitem id="menu_robjects_cmd_str" command="robjects_cmd_str"/>
+			<menuitem id="menu_robjects_cmd_args" command="robjects_cmd_args"/>
+			<menuitem id="menu_robjects_cmd_names" command="robjects_cmd_names"/>
+			<menuseparator keep="false" intoplevel="true"/>
+			<menuitem id="menu_robjects_cmd_help" command="robjects_cmd_help"/>
 		</menupopup>
 	</popupset>
 
 	<broadcasterset id="broadcasterset_global">
-	  <broadcaster id="cmd_robjects_viewSearchPath"
+		<broadcaster id="cmd_robjects_viewSearchPath"
 			tooltiptext="&sciviews.robjects.tab;: &sciviews.robjects.showHide;"
 			label="&sciviews.robjects.showHide;" splitter="bottom_splitter"
 			box="robjects_searchpath_panel"
-			oncommand="rObjectsTree.toggleViewSearchPath(event);"
+			oncommand="sv.r.objects.toggleViewSearchPath(event);"
 			checked="true" state="open"/>
 	</broadcasterset>
 
 	<commandset id="allcommands">
-	  <commandset id="r-objects-commands">
-	    <command id="robjects_cmd_insertname" label="&sciviews.robjects.insName;"
-				oncommand="rObjectsTree.insertName(false);" accesskey="I"/>
+		<commandset id="r-objects-commands">
+			<command id="robjects_cmd_insertname" label="&sciviews.robjects.insName;"
+				oncommand="sv.r.objects.insertName(false);" accesskey="I"/>
 			<command id="robjects_cmd_insertfullname" label="&sciviews.robjects.insFullName;"
-				oncommand="rObjectsTree.insertName(true);" accesskey="F"/>
+				oncommand="sv.r.objects.insertName(true);" accesskey="F"/>
 			<command id="robjects_cmd_removeobj" label="&sciviews.robjects.rmObj;"
-				oncommand="rObjectsTree.removeSelected(event.shiftKey);" accesskey="R"/>
+				oncommand="sv.r.objects.removeSelected(event.shiftKey);" accesskey="R"/>
 			<command id="robjects_cmd_attach" label="&sciviews.robjects.loadPkg;"
-				oncommand="rObjectsTree.do('library');" accesskey="L" disabled="true"/>
+				oncommand="sv.r.objects.do('library');" accesskey="L" disabled="true"/>
 			<command id="robjects_cmd_summary" label="&sciviews.robjects.summary;"
-			oncommand="rObjectsTree.do('summary');" accesskey="S"/>
+				oncommand="sv.r.objects.do('summary');" accesskey="S"/>
 			<command id="robjects_cmd_print" label="&sciviews.robjects.print;"
-				oncommand="rObjectsTree.do('print');" accesskey="P"/>
+				oncommand="sv.r.objects.do('print');" accesskey="P"/>
 			<command id="robjects_cmd_plot" label="&sciviews.robjects.plot;"
-				oncommand="rObjectsTree.do('plot');" accesskey="O"/>
+				oncommand="sv.r.objects.do('plot');" accesskey="O"/>
 			<command id="robjects_cmd_str" label="&sciviews.robjects.str;"
-				oncommand="rObjectsTree.do('str');" accesskey="T"/>
+				oncommand="sv.r.objects.do('str');" accesskey="T"/>
 			<command id="robjects_cmd_names" label="&sciviews.robjects.names;"
-				oncommand="rObjectsTree.do('names');" accesskey="N"/>
+				oncommand="sv.r.objects.do('names');" accesskey="N"/>
 			<command id="robjects_cmd_help" label="&sciviews.robjects.help;"
-				oncommand="rObjectsTree.do('help');" accesskey="H"/>
+				oncommand="sv.r.objects.do('help');" accesskey="H"/>
 		</commandset>
 	</commandset>
 
@@ -121,23 +121,23 @@
 			label="&sciviews.robjects.tab;"/>
 	</menupopup>
 
-  <tabbox id="leftTabBox">
-    <tabs id="project_toolbox_tabs">
-      <tab id="sciviews_robjects_tab" label="&sciviews.robjects.tab;"
-        insertafter="project_tab,codebrowser_tab"
-        tooltiptext="&sciviews.robjects.tip;"
-        onclick="rObjectsTree.getPackageList(false);"/>
-    </tabs>
-    <tabpanels id="project_toolbox_tabpanels">
-      <tabpanel flex="1" id="sciviews_robjects_tabpanel"
-        insertafter="projectviewbox,codebrowserviewbox">
+	<tabbox id="leftTabBox">
+		<tabs id="project_toolbox_tabs">
+			<tab id="sciviews_robjects_tab" label="&sciviews.robjects.tab;"
+				insertafter="project_tab,codebrowser_tab"
+				tooltiptext="&sciviews.robjects.tip;"
+				onclick="sv.r.objects.getPackageList(false);"/>
+		</tabs>
+		<tabpanels id="project_toolbox_tabpanels">
+			<tabpanel flex="1" id="sciviews_robjects_tabpanel"
+				insertafter="projectviewbox,codebrowserviewbox">
 				<vbox flex="1" id="sciviews_robjects_vbox">
-				  <hbox align="center" id="sciviews_robjects_hbox">
+					<hbox align="center" id="sciviews_robjects_hbox">
 						<toolbarbutton id="sciviews_robjects_refresh_button"
 							tooltiptext="&sciviews.robjects.refresh.tip;"
 							buttonstyle="pictures"
 							label="&sciviews.robjects.refresh;" class="refresh-icon"
-							oncommand="rObjectsTree.getPackageList(true);"/>
+							oncommand="sv.r.objects.getPackageList(true);"/>
 						<toolbarbutton id="sciviews_robjects_searchpath_button"
 							observes="cmd_robjects_viewSearchPath"
 							buttonstyle="pictures" class="searchPath-icon"
@@ -174,35 +174,35 @@
 							<menupopup id="sciviews_robjects_filterPopup">
 								<menuitem id="sciviews_robjects_context_filterByName"
 									label="&sciviews.robjects.filterByName;"
-                  checked="true" accesskey="n" type="checkbox"
-                  oncommand="rObjectsTree.setFilterBy(this, 'name')"/>
+									checked="true" accesskey="n" type="checkbox"
+									oncommand="sv.r.objects.setFilterBy(this, 'name')"/>
 								<menuitem id="sciviews_robjects_context_filterByClass"
-                  label="&sciviews.robjects.filterByClass;"
-                  accesskey="c" type="checkbox"
-                  oncommand="rObjectsTree.setFilterBy(this, 'class')"/>
+									label="&sciviews.robjects.filterByClass;"
+									accesskey="c" type="checkbox"
+									oncommand="sv.r.objects.setFilterBy(this, 'class')"/>
 								<menuitem id="sciviews_robjects_context_filterByGroup"
-                  label="&sciviews.robjects.filterByGroup;"
-                  accesskey="g" type="checkbox"
-                  oncommand="rObjectsTree.setFilterBy(this, 'group')"/>
+									label="&sciviews.robjects.filterByGroup;"
+									accesskey="g" type="checkbox"
+									oncommand="sv.r.objects.setFilterBy(this, 'group')"/>
 								<menuseparator/>
 								<menuitem id="sciviews_robjects_context_clrFilter"
-                  label="&sciviews.robjects.clrFilter;" accesskey="l"
-                  oncommand="document.getElementById('sciviews_robjects_filterbox').value = ''; rObjectsTree.applyFilter();"/>
+									label="&sciviews.robjects.clrFilter;" accesskey="l"
+									oncommand="document.getElementById('sciviews_robjects_filterbox').value = ''; sv.r.objects.applyFilter();"/>
 							</menupopup>
 						</toolbarbutton>
 						<textbox id="sciviews_robjects_filterbox" flex="1" type="timed"
 							timeout="500" tooltiptext="&sciviews.robjects.filter.tip;"
-							oninput="rObjectsTree.applyFilter();"
+							oninput="sv.r.objects.applyFilter();"
 							emptytext="&sciviews.robjects.filterEmptyText;"/>
 					</hbox>
 					<vbox id="robjects_searchpath_panel"
 						persist="height collapsed" flex="1">
 						<listbox flex="1" id="sciviews_robjects_searchpath_listbox"
-							ondragdrop="nsDragAndDrop.drop(event, rObjectsTree.packageListObserver);"
-							ondragover="nsDragAndDrop.dragOver(event, rObjectsTree.packageListObserver);"
-							ondraggesture="nsDragAndDrop.startDrag(event, rObjectsTree.packageListObserver);"
-							onkeypress="rObjectsTree.packageListKeyEvent(event);"
-							oncommand="rObjectsTree.packageSelectedEvent(event);"/>
+							ondragdrop="nsDragAndDrop.drop(event, sv.r.objects.packageListObserver);"
+							ondragover="nsDragAndDrop.dragOver(event, sv.r.objects.packageListObserver);"
+							ondraggesture="nsDragAndDrop.startDrag(event, sv.r.objects.packageListObserver);"
+							onkeypress="sv.r.objects.packageListKeyEvent(event);"
+							oncommand="sv.r.objects.packageSelectedEvent(event);"/>
 					</vbox>
 					<splitter id="sciviews_robjects_splitter" collapse="before"
 						resizeafter="closest" resizebefore="closest" persist="state"
@@ -211,38 +211,38 @@
 					</splitter>
 					<vbox flex="5">
 						<tree flex="1" id="sciviews_robjects_objects_tree"
-              persist="sortDirection sortResource"
-              sortDirection="ascending" sortResource="r-name"
+							persist="sortDirection sortResource"
+							sortDirection="ascending" sortResource="r-name"
 							enableColumnDrag="true"
-							onselect="rObjectsTree.onEvent(event);"
-							onkeypress="rObjectsTree.onEvent(event);">
+							onselect="sv.r.objects.onEvent(event);"
+							onkeypress="sv.r.objects.onEvent(event);">
 							<treecols>
 								<treecol id="r-name" label="&sciviews.robjects.Name;"
 									primary="true" sortActive="true"
 									persist="width ordinal hidden"
-									onclick="rObjectsTree.sort(this);" ordinal="1" flex="4"/>
+									onclick="sv.r.objects.sort(this);" ordinal="1" flex="4"/>
 								<splitter class="tree-splitter" ordinal="2"/>
 								<treecol id="r-dims" label="&sciviews.robjects.Dims;"
 									persist="width ordinal hidden"
-									onclick="rObjectsTree.sort(this);" flex="1" ordinal="3"/>
+									onclick="sv.r.objects.sort(this);" flex="1" ordinal="3"/>
 								<splitter class="tree-splitter" ordinal="4"/>
 								<treecol id="r-group" label="&sciviews.robjects.Group;"
 									flex="2" hidden="true" persist="width ordinal hidden"
-									onclick="rObjectsTree.sort(this);" ordinal="5"/>
+									onclick="sv.r.objects.sort(this);" ordinal="5"/>
 								<splitter class="tree-splitter" ordinal="6"/>
 								<treecol id="r-class" label="&sciviews.robjects.Class;"
 									flex="2" hidden="true" persist="width ordinal hidden"
-									onclick="rObjectsTree.sort(this);" ordinal="7"/>
+									onclick="sv.r.objects.sort(this);" ordinal="7"/>
 								<splitter class="tree-splitter" ordinal="8"/>
-                <treecol id="r-fullName" label="&sciviews.robjects.FullName;"
+								<treecol id="r-fullName" label="&sciviews.robjects.FullName;"
 									persist="width ordinal hidden" flex="1" ordinal="9"/>
 							</treecols>
 							<treechildren id="sciviews_robjects_objects_tree_main"
-								ondraggesture="nsDragAndDrop.startDrag(event, rObjectsTree.listObserver);"
-								ondragdrop="nsDragAndDrop.drop(event, rObjectsTree.listObserver);"
-								ondragover="nsDragAndDrop.dragOver(event, rObjectsTree.listObserver);"
-								onclick="rObjectsTree.onEvent(event);"
-								ondblclick="rObjectsTree.onEvent(event);"
+								ondraggesture="nsDragAndDrop.startDrag(event, sv.r.objects.listObserver);"
+								ondragdrop="nsDragAndDrop.drop(event, sv.r.objects.listObserver);"
+								ondragover="nsDragAndDrop.dragOver(event, sv.r.objects.listObserver);"
+								onclick="sv.r.objects.onEvent(event);"
+								ondblclick="sv.r.objects.onEvent(event);"
 								context="rObjectsContext">
 							</treechildren>
 						</tree>
@@ -252,19 +252,19 @@
 							<toolbarbutton id="sciviews_robjects_foldAll_button"
 								label="Fold All" buttonstyle="pictures"
 								class="robjects-fold-all-icon"
-								oncommand="rObjectsTree.foldAll(true);"
+								oncommand="sv.r.objects.foldAll(true);"
 								tooltiptext="&sciviews.robjects.foldAll;"/>
 							<toolbarbutton id="sciviews_robjects_ExpandAll_button"
 								label="Expand All" buttonstyle="pictures"
 								class="robjects-expand-all-icon"
-								oncommand="rObjectsTree.foldAll(false);"
+								oncommand="sv.r.objects.foldAll(false);"
 								tooltiptext="&sciviews.robjects.unfoldAll;"/>
 							<!--<toolbarbutton id="sciviews_robjects_tmpInitialize_button"
-								label="Init!" oncommand="rObjectsTreeInit();"/>-->
+								label="Init!" oncommand="sv.r.objectsInit();"/>-->
 						</hbox>
 					</vbox>
-        </vbox>
-      </tabpanel>
-    </tabpanels>
-  </tabbox>
+				</vbox>
+			</tabpanel>
+		</tabpanels>
+	</tabbox>
 </overlay>

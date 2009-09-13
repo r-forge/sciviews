@@ -45,6 +45,7 @@ sv.tools.strings.toRegex = function (str) {
 String.prototype.trim = function () {
 	return this.replace(/^\s+|\s+$/g, '');
 }
+
 // Right trim
 String.prototype.rtrim = function () {
 	return this.replace(/\s+$/, '');

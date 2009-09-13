@@ -1,6 +1,6 @@
 // SciViews-K general functions
 // Define the basic 'sv' namespace, plus 'sv.cmdout', 'sv.log' & 'sv.prefs'
-// Copyright (c) 2008, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.version; // Get current SciViews-K version (major.minor)
@@ -27,17 +27,6 @@
                      // for active snippet in toolbox/project (see Help context)
 // sv.translate(textId); // translate messages using data from
 						 // chrome://sciviewsk/locale/main.properties
-//
-// SciViews-K preferences management ('sv.prefs' namespace) ////////////////////
-// sv.prefs.getString(pref, def); // Get a preference, use 'def' is not found
-// sv.prefs.setString(pref, value, overwrite); // Set a preference string
-// sv.prefs.askString(pref, defvalue); // Ask for the value of a preference
-// sv.prefs.mru(mru, reset, items, sep); //Simplify update of MRU lists
-// sv.prefs.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
-                    // Initialize R session with corresponding directories
-                    // dir: session directory, xxxdir: xxx subdirectory,
-                    // saveOld (default true): do we save old session data?
-                    // loadNew (default true): do we load data from new session?
 //
 // SciViews-K Command Output management ('sv.cmdout' namespace) ////////////////
 // sv.cmdout.append(str, newline, scrollToStart); // Append to Command Output
@@ -542,186 +531,6 @@ sv.translate = function (textId) {
 }
 
 
-//// Preferences management ////////////////////////////////////////////////////
-if (typeof(sv.prefs) == 'undefined') sv.prefs = new Object();
-
-// Get a string preference, or default value
-sv.prefs.getString = function (pref, def) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
-		getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	if (prefs.hasStringPref(pref)) {
-		return(prefs.getStringPref(pref));
-	} else return(def);
-}
-
-// Set a string preference
-sv.prefs.setString = function (pref, value, overwrite) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
-		getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	if (overwrite == false & prefs.hasStringPref(pref)) return;
-	prefs.setStringPref(pref, value);
-}
-
-// Display a dialog box to change a preference string
-sv.prefs.askString = function (pref, defvalue) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
-		getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	// If defvalue is defined, use it, otherwise, use current pref value
-	if (defvalue == null & prefs.hasStringPref(pref))
-		defvalue = prefs.getStringPref(pref);
-	if (defvalue == null) defvalue == "";
-	// Display a dialog box to change the preference value
-	newvalue = ko.dialogs.prompt("Change preference value for:", pref,
-		defvalue, "SciViews-K preference", "svPref" + pref)
-	if (newvalue != null) prefs.setStringPref(pref, newvalue);
-}
-
-// Simplify update of MRU lists
-sv.prefs.mru = function (mru, reset, items, sep) {
-	var mruList = "dialog-interpolationquery-" + mru + "Mru";
-	// Do we reset the MRU list?
-	if (typeof(reset) == "undefined") reset = false;
-	if (reset == true) ko.mru.reset(mruList);
-
-	// Do we need to split items (when sep is defined)?
-	if (typeof(sep) != "undefined") items = items.split(sep);
-
-	// Add each item in items in inverse order
-    for (var i = items.length - 1; i >= 0; i--) {
-		ko.mru.add(mruList, items[i], true);
-	}
-}
-
-// Set a R session dir and corresponding directories preferences
-sv.prefs.setSession = function (dir, datadir, scriptdir, reportdir,
-	saveOld, loadNew) {
-	// Set defaults for saveOld and loadNew
-	if (typeof(saveOld) == "undefined") saveOld = true;
-	if (typeof(loadNew) == "undefined") loadNew = true;
-
-	// cmd is the command executed in R to switch session (done asynchronously)
-	var cmd = "";
-
-	// If dir is the same as current session dir, do nothing
-	if (typeof(dir) != "undefined" &
-		dir == sv.prefs.getString("sciviews.session.dir", "")) {
-		return(false);
-	}
-
-	// Before switching to the new session directory, close current one
-	// if R is running
-	if (saveOld) {
-		// Save .RData & .Rhistory in the the session directory and clean WS
-		// We need also to restore .required and .SciViewsReady variables
-		cmd = 'assignTemp(".required", .required)\nTempEnv()$.Last.sys()\n' +
-			'save.image()\nsavehistory()\nrm(list = ls())\n' +
-			'.required <- getTemp(".required")\n.SciViewsReady <- TRUE\n';
-
-	} else {
-		// Clear workspace (hint, we don't clear hidden objects!)
-		cmd = 'rm(list = ls())\n'
-	}
-	// TODO: possibly close the associated Komodo project
-
-	// Initialize the various arguments
-	if (typeof(dir) == "undefined")
-		dir = sv.prefs.getString("sciviews.session.dir", "~");
-	if (typeof(datadir) == "undefined")
-		datadir = sv.prefs.getString("sciviews.session.data", "");
-	if (typeof(scriptdir) == "undefined")
-		scriptdir = sv.prefs.getString("sciviews.session.scripts", "");
-	if (typeof(reportdir) == "undefined")
-		reportdir = sv.prefs.getString("sciviews.session.reports", "");
-
-	var localdir = sv.io.makePath(dir);
-	// do we need all the "sciviews.*.localdir" preferences then??
-
-	var sep = "/";
-
-	// Refresh preferences
-	sv.prefs.setString("sciviews.session.dir", dir, true);
-	sv.prefs.setString("sciviews.session.localdir", localdir, true);
-	// Subdirectories for data, reports and scripts
-	sv.prefs.setString("sciviews.session.data", datadir, true);
-	sv.prefs.setString("sciviews.session.scripts", scriptdir, true);
-	sv.prefs.setString("sciviews.session.reports", reportdir, true);
-	// Combination of these to give access to respective dirs
-	if (datadir == "") {
-		sv.prefs.setString("sciviews.data.dir", dir, true);
-		sv.prefs.setString("sciviews.data.localdir", localdir, true);
-	} else {
-		sv.prefs.setString("sciviews.data.dir", dir + sep + datadir, true);
-		sv.prefs.setString("sciviews.data.localdir",
-			sv.io.makePath(localdir, datadir), true);
-	}
-	if (scriptdir == "") {
-		sv.prefs.setString("sciviews.scripts.dir", dir, true);
-		sv.prefs.setString("sciviews.scripts.localdir", localdir, true);
-	} else {
-		sv.prefs.setString("sciviews.scripts.dir", dir + sep + scriptdir, true);
-		sv.prefs.setString("sciviews.scripts.localdir",
-			sv.io.makePath(localdir, scriptdir), true);
-	}
-	if (reportdir == "") {
-		sv.prefs.setString("sciviews.reports.dir", dir, true);
-		sv.prefs.setString("sciviews.reports.localdir", localdir, true);
-	} else {
-		sv.prefs.setString("sciviews.reports.dir", dir + sep + reportdir, true);
-		sv.prefs.setString("sciviews.reports.localdir",
-			sv.io.makePath(localdir, reportdir), true);
-	}
-
-	var DIRECTORY_TYPE = Components.interfaces.nsIFile.DIRECTORY_TYPE;
-
-	// Look if the session directory exists, or create it
-	var file = sv.io.file(localdir);
-	// file = sv.io.file(sv.io.makePath(dir);
-
-	if (!file.exists() || !file.isDirectory()) {
-		sv.log.debug( "Creating session directory... " );
-		file.create(DIRECTORY_TYPE, 511);
-	}
-	// ... also make sure that /Data, /Script and /Report subdirs exist
-	for (var i in [datadir, scriptdir, reportdir]) {
-		var file = sv.io.file(dir, datadir);
-		if (!file.exists() || !file.isDirectory())
-			file.create(DIRECTORY_TYPE, 511);
-		delete file;
-	}
-
-	// Switch to the new session directory in R
-	cmd = cmd + 'setwd("' + dir + '")\noptions(R.initdir = "' + dir + '")\n';
-
-	// Do we load .RData and .Rhistory?
-	if (loadNew) {
-		cmd = cmd + 'if (file.exists(".RData")) load(".RData")\n' +
-					 'if (file.exists(".Rhistory")) loadhistory()\n';
-	}
-
-	// Execute the command in R (TODO: check for possible error here!)
-	// TODO: run first in R; make dirs in R; then change in Komodo!
-	sv.r.evalCallback(cmd, function(data) {
-		// Indicate everything is fine
-		ko.statusBar.AddMessage("R session directory set to '" + localdir + "'",
-			"R", 20000, true);
-        // Break possible partial multiline command in R from previous session
-        // and indicate that we are in a new session now in the R console
-        // TODO: report if we load something or not
-        sv.r.escape('cat("Session directory is now ' + dir +
-            '\n", file = stderr())');
-        // We most probably need to update the R Objects browser
-        rObjectsTree.getPackageList(true);
-	});
-
-	// TODO: possibly open the Komodo project associated with this session
-
-	return(true);
-}
-
-
 //// Control the command output tab ////////////////////////////////////////////
 if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 
@@ -844,7 +653,7 @@ sv.log.isAll = function () {
 
 sv.log.show = function () {
     try {
-		var logFile = sv.io.makePath("ProfD", ["..", "pystderr.log"]);
+		var logFile = sv.tools.file.path("ProfD", ["..", "pystderr.log"]);
         var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
         window.openDialog('chrome://komodo/content/tail/tail.xul',"_blank",
             winOpts,logFile);
