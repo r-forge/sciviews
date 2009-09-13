@@ -53,33 +53,33 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/file.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/io.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
 
 	<broadcasterset id="broadcasterset_global">
 		<broadcaster id="sv_r_is_running" disabled="false"/>
 	</broadcasterset>
 
-  <commandset id="allcommands"> 
-	  <command id="Tasks:svAbout"
+	<commandset id="allcommands"> 
+		<command id="Tasks:svAbout"
 			oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
 
 		<commandset id="cmdset_rApp" commandupdater="true"
 			oncommandupdate="ko.commands.updateCommandset(this);"
 			events="r_app_started_closed">
 			<command id="cmd_sv_start_R" key="key_cmd_sv_start_R"
-			  oncommand="ko.commands.doCommand('cmd_sv_start_R');"
+				oncommand="ko.commands.doCommand('cmd_sv_start_R');"
 				desc="R: &StartR;" label="&StartR;" accesskey="&StartR.key;"/>
-		  <command id="cmd_sv_quit_R" key="key_cmd_sv_quit_R"
-		    oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
+			<command id="cmd_sv_quit_R" key="key_cmd_sv_quit_R"
+				oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
 				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
 			<command id="cmd_sv_update_charset" key="key_cmd_sv_update_charset"
 				oncommand="ko.commands.doCommand('cmd_sv_update_charset');"
@@ -93,7 +93,7 @@
 				desc="R: &svBrowseWD;" label="&svBrowseWD;" accesskey="&svBrowseWD.key;"/>
 		</commandset>
 
-    <commandset id="cmdset_r_control" commandupdater="true"
+		<commandset id="cmdset_r_control" commandupdater="true"
 		  events="current_view_language_changed"
 		  oncommandupdate="ko.commands.updateCommandset(this);">
 			<command id="cmd_sv_RRunAll" key="key_cmd_sv_RRunAll"
@@ -133,7 +133,7 @@
 					oncommand="ko.commands.doCommand('cmd_sv_RSourceSelection')"
 					desc="R: &rSrcSel;" label="&rSrcSel;" accesskey="&rSrcSel.key;"/>
 			</commandset>
-	  </commandset>
+		</commandset>
 	
 		<!--<commandset id="cmdset_view_dependent"
 				removeelement="cmd_triggerPrecedingCompletion">
@@ -144,13 +144,13 @@
 				desc="&editorTriggerPrecedingAutoCompleteListOrCallTip.desc;"/>
 		</commandset>   -->
 	</commandset>
-  
-	<menupopup id="popup_tools">
-    <menuitem id="menu_sciviewsk" label="SciViews-K" observes="Tasks:svAbout"
-      class="menu-iconic-wide"/>
-  </menupopup>
 
-  <menubar id="menubar_main">
+	<menupopup id="popup_tools">
+		<menuitem id="menu_sciviewsk" label="SciViews-K" observes="Tasks:svAbout"
+			class="menu-iconic-wide"/>
+	</menupopup>
+
+	<menubar id="menubar_main">
 		<menu id="sciviews_menu" label="R" accesskey="R"
 			insertbefore="menu_window,help_menu">
 			<menupopup id="popup_sciviews_main">
@@ -213,6 +213,6 @@
 				<menuitem id="r_src_function_menu" observes="cmd_sv_RSourceFunction"
 					class="menuitem-iconic r-source-function-icon"/>
 			</menupopup>
-   </menu>
-  </menubar>
+		</menu>
+	</menubar>
 </overlay>

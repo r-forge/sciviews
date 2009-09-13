@@ -1,17 +1,15 @@
-/*
-
-TODO: A better SciViews-K header
-
-Defines sv.command object.
-
-sv.command.setMenuRApp, sv.command.getRApp; // manage 'R application' submenu
-sv.command.setControllers; // sets controllers for R related commands
-sv.command.isRRunning; // tells if R has been started/closed with cmd_sv_start_R
-sv.command.setKeybindings; // sets default keybindings
-sv.command.openPkgManager; // opens package manager window
-
-*/
-
+// SciViews-K command functions
+// Define the 'sv.command' namespace
+// Copyright (c) 2009, K. Barton & Ph. Grosjean (phgrosjean@sciviews.org)
+// License: MPL 1.1/GPL 2.0/LGPL 2.1
+////////////////////////////////////////////////////////////////////////////////
+// sv.command.getRApp(event);  	// Select a preferred R application in the list 
+// sv.command.setMenuRApp(el); 	// Set up 'R application' submenu (checked item
+								// and hide incompatible items.
+// sv.command.openPkgManager(); // Open the package manager window
+// sv.command.setControllers(); // Set controllers for R related commands
+// sv.command.setKeybindings(clearOnly); // Set SciViews-K default keybindings
+///////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv.command) == 'undefined') {
     sv.command = {};
@@ -136,7 +134,7 @@ if (typeof(sv.command) == 'undefined') {
 	
 	this.openPkgManager = function () {
 		window.openDialog(
-			"chrome://sciviewsk/content/pkgManager.xul",
+			"chrome://sciviewsk/content/pkgManagerOverlay.xul",
 			"RPackageManager",
 			"chrome=yes,dependent,centerscreen,resizable=yes,scrollbars=yes,status=no",
 			sv);
@@ -295,10 +293,10 @@ if (typeof(sv.command) == 'undefined') {
 				"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
 				"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
 				"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
-				"koAppFile=" + sv.io.makePath("CurProcD",
+				"koAppFile=" + sv.tools.file.path("CurProcD",
 					["komodo" + (isWin? ".exe" : "")])
 			];
-			var cwd = sv.io.makePath("ProfD",
+			var cwd = sv.tools.file.path("ProfD",
 				["extensions", "sciviewsk@sciviews.org", "templates"]);
 			var command, runIn = "no-console";
 	
@@ -370,7 +368,7 @@ if (typeof(sv.command) == 'undefined') {
 			.classes["@activestate.com/koKeybindingSchemeService;1"]
 			.getService(Components.interfaces.koIKeybindingSchemeService);
 	
-		var svSchemeDefault = sv.io
+		var svSchemeDefault = sv.tools.file
 			.readURI("chrome://sciviewsk/content/default-keybindings.kkf");
 		var currentSchemeName = sv.prefs.getString("keybinding-scheme");
 	

@@ -38,24 +38,24 @@
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
 
 <overlay id="SciViewsPrefOverlay"
-  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<hbox id="prefsTree">
-		<treechildren id="panelChildren">
-			<treeitem container="true" id="svPrefMainItem">
+	<treechildren id="panelChildren">
+		<treeitem container="true" id="svPrefMainItem">
+		<treerow>
+			<treecell class="treecell-indent"
+			url="chrome://sciviewsk/content/pref-Main.xul" label="SciViews-K"/>
+		</treerow>
+		<treechildren id="svPrefChildren">
+			<treeitem container="false" id="svPrefRItem">
 				<treerow>
 					<treecell class="treecell-indent"
-						url="chrome://sciviewsk/content/pref-Main.xul" label="SciViews-K"/>
+						url="chrome://sciviewsk/content/pref-R.xul"
+						label="R Interpreter"/>
 				</treerow>
-				<treechildren id="svPrefChildren">
-          <treeitem container="false" id="svPrefRItem">
-            <treerow>
-              <treecell class="treecell-indent"
-                url="chrome://sciviewsk/content/pref-R.xul"
-								label="R Interpreter"/>
-            </treerow>
-          </treeitem>
-				</treechildren>
 			</treeitem>
 		</treechildren>
+		</treeitem>
+	</treechildren>
 	</hbox>
 </overlay>

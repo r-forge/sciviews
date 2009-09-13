@@ -1,8 +1,67 @@
 // SciViews-K preference code
+// SciViews-K preferences management ('sv.prefs' namespace)
 // Define default preferences values for SciViews-K and MRU lists
 // Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
+// sv.prefs.getString(pref, def); // Get a preference, use 'def' is not found
+// sv.prefs.setString(pref, value, overwrite); // Set a preference string
+// sv.prefs.askString(pref, defvalue); // Ask for the value of a preference
+// sv.prefs.mru(mru, reset, items, sep); //Simplify update of MRU lists
+//
+////////////////////////////////////////////////////////////////////////////////
+
+if (typeof(sv.prefs) == 'undefined') sv.prefs = new Object();
+
+// Get a string preference, or default value
+sv.prefs.getString = function (pref, def) {
+	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
+		getService(Components.interfaces.koIPrefService);
+	var prefs = prefsSvc.prefs;
+	if (prefs.hasStringPref(pref)) {
+		return(prefs.getStringPref(pref));
+	} else return(def);
+}
+
+// Set a string preference
+sv.prefs.setString = function (pref, value, overwrite) {
+	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
+		getService(Components.interfaces.koIPrefService);
+	var prefs = prefsSvc.prefs;
+	if (overwrite == false & prefs.hasStringPref(pref)) return;
+	prefs.setStringPref(pref, value);
+}
+
+// Display a dialog box to change a preference string
+sv.prefs.askString = function (pref, defvalue) {
+	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
+		getService(Components.interfaces.koIPrefService);
+	var prefs = prefsSvc.prefs;
+	// If defvalue is defined, use it, otherwise, use current pref value
+	if (defvalue == null & prefs.hasStringPref(pref))
+		defvalue = prefs.getStringPref(pref);
+	if (defvalue == null) defvalue == "";
+	// Display a dialog box to change the preference value
+	newvalue = ko.dialogs.prompt("Change preference value for:", pref,
+		defvalue, "SciViews-K preference", "svPref" + pref)
+	if (newvalue != null) prefs.setStringPref(pref, newvalue);
+}
+
+// Simplify update of MRU lists
+sv.prefs.mru = function (mru, reset, items, sep) {
+	var mruList = "dialog-interpolationquery-" + mru + "Mru";
+	// Do we reset the MRU list?
+	if (typeof(reset) == "undefined") reset = false;
+	if (reset == true) ko.mru.reset(mruList);
+
+	// Do we need to split items (when sep is defined)?
+	if (typeof(sep) != "undefined") items = items.split(sep);
+
+	// Add each item in items in inverse order
+    for (var i = items.length - 1; i >= 0; i--) {
+		ko.mru.add(mruList, items[i], true);
+	}
+}
 
 //// Preferences (default values, or values reset on each start) ///////////////
 // Define default socket ports for the client and server, and other parameters
@@ -23,10 +82,8 @@ sv.prefs.setString("R-help", "", true);
 sv.prefs.setString("RWiki-help", "", true);
 
 // Default working directory for R and default subdirs the first time SciViews-K
-// is used
+// is used... the rest of session dirs is set in r.js with sv.r.setSession()
 sv.prefs.setString("sciviews.session.dir", "~", false);
-// ... and other default values for directories used in snippets
-sv.prefs.setSession();
 
 // Where do we want to display R help? In internal browser or not?
 sv.prefs.setString("sciviews.r.help", "internal", false);

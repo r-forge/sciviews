@@ -355,13 +355,13 @@ self.onload = function () {
 	</script>
 
 	<script>
-    function richSelect(aControl) {
+	function richSelect(aControl) {
 			//document.getElementById("selection-name").value = aControl.selectedItem ? aControl.selectedItem.getAttribute("name") : "";
 			// document.getElementById("selection-index").value = aControl.selectedIndex;
-    }
+	}
 	</script>
 
-  <hbox>
+	<hbox>
 		<radiogroup id="pkgPanelButtons" orient="horizontal">
 			<radio label="Available"
 				oncommand="document.getElementById('pkgPanels').selectedIndex = 0;"/>
@@ -372,13 +372,13 @@ self.onload = function () {
 		</radiogroup>
 		<spacer flex = "2"/>
 		<button label="Close" onclick="self.close();"/>
-  </hbox>
-  
+	</hbox>
+
 	<deck id="pkgPanels" flex="1" style="padding: 0px; border: none;"
 		selectedIndex="1" persists="selectedIndex">
-  
+
 		<box><!-- tabpanel First elements go here --></box>
-  
+
 		<box>
 			<!--<notificationbox flex="1">-->
 			<vbox flex="1">
@@ -393,7 +393,7 @@ self.onload = function () {
 			</vbox>
 			<!--</notificationbox>-->
 		</box>
-	
+
 		<box>
 			<vbox flex="1">
 				<hbox flex="5">
@@ -407,5 +407,5 @@ self.onload = function () {
 				</hbox>
 			</vbox>
 		</box>
-  </deck>
+	</deck>
 </window>

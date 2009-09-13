@@ -40,16 +40,16 @@
 <window xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	class="kodialog" orient="vertical">
-  <groupbox orient="vertical">
-    <caption label="SciViews-K"/>
+	<groupbox orient="vertical">
+		<caption label="SciViews-K"/>
 		<description style="margin-top: 10px;">
-      SciViews-K is a Komodo extension providing tools to interact with R (an Open Source data analysis software).
-    </description>
+			SciViews-K is a Komodo extension providing tools to interact with R (an Open Source data analysis software).
+		</description>
 		<separator class="thin"/>
-    <button label="Visit the SciViews web site" class="button-link"
-      style="margin: -10px; color: #0000FF;
-				text-decoration: underline !important; cursor: pointer;"
-      onclick="parent.opener.ko.browse.openUrlInDefaultBrowser('http://www.sciviews.org/SciViews-K');"/>
+		<button label="Visit the SciViews web site" class="button-link"
+			style="margin: -10px; color: #0000FF;
+			text-decoration: underline !important; cursor: pointer;"
+			onclick="parent.opener.ko.browse.openUrlInDefaultBrowser('http://www.sciviews.org/SciViews-K');"/>
 		<separator class="thin"/>
 	</groupbox>
 	<separator class="thin"/>
