@@ -81,10 +81,10 @@
 			<command id="cmd_sv_quit_R" key="key_cmd_sv_quit_R"
 				oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
 				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
-			<command id="cmd_sv_update_charset" key="key_cmd_sv_update_charset"
+			<!--<command id="cmd_sv_update_charset" key="key_cmd_sv_update_charset"
 				oncommand="ko.commands.doCommand('cmd_sv_update_charset');"
 				desc="R: &RUpdateCharset;" label="&RUpdateCharset;"
-				accesskey="&RUpdateCharset.key;"/>
+				accesskey="&RUpdateCharset.key;"/>-->
 			<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
 				oncommand="sv.command.openPkgManager();" disabled="true"
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
@@ -123,7 +123,7 @@
 			<command id="cmd_sv_RSourcePara" key="key_cmd_sv_RSourcePara"
 				oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
 				desc="R: &rSrcPara;" label="&rSrcPara;" accesskey="&rSrcPara.key;"/>
-
+			
 			<commandset id="cmdset_r_control" commandupdater="true" events="select"
 				oncommandupdate="ko.commands.updateCommandset(this);">	  
 				<command id="cmd_sv_RRunSelection" key="key_cmd_sv_RRunSelection"
@@ -166,6 +166,12 @@
 							app="/Applications/R.app" platform="Mac"/>
 						<menuitem id="r64-app" type="checkbox" checked="false" label="R64 app"
 							app="/Applications/R64.app" platform="Mac"/>
+						<menuitem id="svr-app" type="checkbox" checked="false" label="SciViews R app"
+							app="/Applications/SciViews R.app" platform="Mac"/>
+						<menuitem id="svr64-app" type="checkbox" checked="false" label="SciViews R64 app"
+							app="/Applications/SciViews R64.app" platform="Mac"/>
+						<!--<menuitem id="jgrmac-app" type="checkbox" checked="false" label="JGR"
+							app="/Applications/JGR.app" platform="Mac"/>-->
 						<menuitem id="r-gnome-term" type="checkbox" checked="false" label="R Gnome terminal"
 							app="gnome-terminal" platform="Linux"/>
 						<menuitem id="r-kde-term" type="checkbox" checked="false" label="R KDE terminal"
@@ -183,8 +189,8 @@
 
 				<menuitem id="r_quit_console_menu" observes="cmd_sv_quit_R"
 					class="menuitem-iconic r-quit-command-icon"/>
-				<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
-					class="menuitem"/>
+				<!--<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
+					class="menuitem"/>-->
 				<menuitem id="r_start_pkg_manager" observes="cmd_sv_OpenPkgManager"
 					class="menuitem"/>
 				<menuitem id="r_browse_wd" observes="cmd_sv_BrowseWD"

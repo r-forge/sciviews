@@ -1,6 +1,6 @@
 // SciViews-K R functions
 // Define functions to pilot R from Komodo Edit 'sv.r' & 'sv.r.pkg'
-// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org) & K. Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // To cope with versions incompatibilities, we define this:
@@ -94,7 +94,13 @@ if (typeof(sv.r) == 'undefined')
 //sv.r.init = function(cmd) {
 //}
 
+// Indicate if R is currently running
 sv.r.running = false;
+
+// Used to record pending commands while R is starting
+sv.r.pendingCmd = "";
+sv.r.pendingFun = null;
+sv.r.pendingContext = "";
 
 sv.r.test = function sv_RTest () {
 	function sv_RTest_callback (response) {
@@ -103,17 +109,51 @@ sv.r.test = function sv_RTest () {
 
 		sv.r.running = isRRunning;
 		if (wasRRunning != isRRunning) {
+			if (isRRunning) {
+				// Remove message in the statusbar
+				ko.statusBar.AddMessage("", "StartR");
+				// update character set used by R
+				sv.socket.updateCharset(true);
+				window.setTimeout(function() {
+					sv.log.info(sv.translate("R uses \"%S\" encoding.",
+					sv.socket.charset));
+				}, 1000);
+				// If there is a pending command, then run it now
+				var cmd = sv.r.pendingCmd;
+				if (cmd != "") {
+					sv.r.pendingCmd = ""; 	// Clear command
+					// If pendingFun is defined, use evalCallback
+					if (sv.r.pendingFun != null) {
+						sv.r.evalCallback(cmd, sv.r.pendingFun,
+							sv.r.pendingContext);
+						// Clear pendingFun and pendingContext
+						sv.r.pendingFun = null;
+						sv.r.pendingContext = "";
+					} else { 				// Just run this command
+						sv.r.eval(cmd);
+					}
+				}
+			}
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');
 			sv.log.debug("R state changed: " + wasRRunning + "->" + isRRunning);
 		}
 	}
-	var res = sv.r.evalCallback("cat('ok!');", sv_RTest_callback);
+	var res = sv.socket.rCommand("<<<h>>>cat('ok!');", false, null,
+		sv_RTest_callback, "R test");
 	return res;
 }
 
 // Evaluate code in R
 sv.r.eval = function (cmd) {
+	// If R is not running, start it now
+	if (!sv.r.running) {
+		// Indicate that we want to execute this command when R is started
+		sv.r.pendingCmd = cmd;
+		// and start R now
+		sv.command.startR();
+		return null;
+	}
 	cmd = (new String(cmd)).trim();
 	// Store the current R command
 	if (sv.socket.prompt == ":> ") {
@@ -140,6 +180,8 @@ sv.r.eval = function (cmd) {
 
 // Evaluate code in R in a hidden way
 sv.r.evalHidden = function (cmd, earlyExit) {
+	// If R is not running, do nothing
+	if (!sv.r.running) { return null; }
 	var preCode = "<<<h>>>";
 	if (earlyExit) preCode = "<<<H>>>";
 	// Evaluate a command in hidden mode (contextual help, calltip, etc.)
@@ -155,6 +197,16 @@ sv.r.evalHidden = function (cmd, earlyExit) {
 // Evaluate R expression and call procfun in Komodo with the result as argument
 // context might be used to pass more data as the second argument of procfun
 sv.r.evalCallback = function (cmd, procfun, context) {
+	// If R is not running, do nothing
+	if (!sv.r.running) {
+		// Indicate that we want to execute this command when R is started
+		sv.r.pendingCmd = cmd;
+		sv.r.pendingFun = procfun;
+		sv.r.pendingContext = context;
+		// and start R now
+		sv.command.startR();
+		return null;
+	}
 	// Evaluate a command in hidden mode (contextual help, calltip, etc.)
 	// and call 'procfun' at the end of the evaluation
 	var res = sv.socket.rCommand("<<<h>>>" + cmd,
@@ -164,6 +216,8 @@ sv.r.evalCallback = function (cmd, procfun, context) {
 
 // Escape R calculation
 sv.r.escape = function (cmd) {
+	// If R is not running, do nothing
+	if (!sv.r.running) { return null; }
 	// Send an <<<esc>>> sequence that breaks multiline mode
 	sv.socket.cmd = "";
 	sv.socket.prompt == ":> ";
