@@ -55,5 +55,4 @@ ko.help.language = function () {
 		ko.run.runCommand(window, command, null, null, false, false, true,
 			"no-console", 0, "", 0, name);
 	}
-
 }

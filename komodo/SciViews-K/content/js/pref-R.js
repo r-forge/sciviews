@@ -1,5 +1,5 @@
 // SciViews-K R preferences panel functions
-// Copyright (c) 2009, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2009, Ph. Grosjean (phgrosjean@sciviews.org) & Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // svPrefR_OnPreferencePageOK(prefset);         // User click OK

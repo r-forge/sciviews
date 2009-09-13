@@ -12,30 +12,30 @@
 <!ENTITY sciviews.rconsole.completion.cb.packages.tip "Afficher les packages">
 <!ENTITY sciviews.rconsole.completion.cb.history.tip "Afficher les commandes de l'historique">
 
-<!ENTITY sciviews.rconsole.completion.settings.label "Reglages">
-<!ENTITY sciviews.rconsole.completion.settings.tip "Choix du type de completions affichees">
+<!ENTITY sciviews.rconsole.completion.settings.label "Réglages">
+<!ENTITY sciviews.rconsole.completion.settings.tip "Choix du type de complétions affichées">
 
 <!ENTITY sciviews.robjects.tab "R Objects">
 <!ENTITY sciviews.robjects.tip "Explorateur d'objets R">
-<!ENTITY sciviews.robjects.refresh "R�actualiser">
-<!ENTITY sciviews.robjects.refresh.tip "R�actualiser les objets R">
+<!ENTITY sciviews.robjects.refresh "Réactualiser">
+<!ENTITY sciviews.robjects.refresh.tip "Réactualiser les objets R">
 <!ENTITY sciviews.robjects.showHide "Chemin de recherche">
 <!ENTITY sciviews.robjects.showHide.tip "Montrer/cacher le chemin de recherche">
-<!ENTITY sciviews.robjects.filter.tip "Filtrer by regular expression">
+<!ENTITY sciviews.robjects.filter.tip "Filtrer par expression régulière">
 <!ENTITY sciviews.robjects.Name "Nom">
 <!ENTITY sciviews.robjects.Dims "Dims">
 <!ENTITY sciviews.robjects.Group "Groupe">
 <!ENTITY sciviews.robjects.Class "Classe">
-<!ENTITY sciviews.robjects.FullName "Full name">
-+<!ENTITY sciviews.robjects.foldAll "Fold all objects of current branch">
-+<!ENTITY sciviews.robjects.unfoldAll "Unfold all objects of current branch">
+<!ENTITY sciviews.robjects.FullName "Nom complet">
++<!ENTITY sciviews.robjects.foldAll "Replier tous les objects de la branche">
++<!ENTITY sciviews.robjects.unfoldAll "Déplier tous les objets de la branche">
 
-<!ENTITY sciviews.robjects.insName "Inserer le nom dans le texte">
-<!ENTITY sciviews.robjects.insFullName "Inserer le nom complet dans le texte">
+<!ENTITY sciviews.robjects.insName "Insérer le nom dans le texte">
+<!ENTITY sciviews.robjects.insFullName "Insérer le nom complet dans le texte">
 <!ENTITY sciviews.robjects.rmObj "Effacer les objets">
 <!ENTITY sciviews.robjects.loadPkg "Charger un package" >
-<!ENTITY sciviews.robjects.detach "Detacher un package">
-<!ENTITY sciviews.robjects.clrFilter "Effacer les criteres de filtration">
+<!ENTITY sciviews.robjects.detach "Détacher un package">
+<!ENTITY sciviews.robjects.clrFilter "Effacer les critères de filtration">
 <!ENTITY sciviews.robjects.filterByDims "Filtrer les dimensions">
 <!ENTITY sciviews.robjects.filterByGroup "Filtrer les groupes">
 <!ENTITY sciviews.robjects.filterByClass "Filtrer les classes">
@@ -44,43 +44,45 @@
 <!ENTITY sciviews.robjects.names "Noms" >
 <!ENTITY sciviews.robjects.str "Structure" >
 <!ENTITY sciviews.robjects.plot "Graphique" >
-<!ENTITY sciviews.robjects.print "Imprimer" >
-<!ENTITY sciviews.robjects.summary "Resume" >
+<!ENTITY sciviews.robjects.print "Contenu" >
+<!ENTITY sciviews.robjects.summary "Résumé" >
 
 <!ENTITY sciviews.robjects.filterEmptyText "Filtrer les objets..." >
 
-<!ENTITY pkgMgr "Package manager">
+<!ENTITY pkgMgr "Maintenance de package">
 <!ENTITY pkgMgr.key "M">
-<!ENTITY rSendBlock "Send marked block">
+<!ENTITY rSendBlock "Exécuter du bloc marqué">
 <!ENTITY rSendBlock.key "B">
-<!ENTITY rSendFile "Send file content">
+<!ENTITY rSendFile "Exécuter le contenu du fichier">
 <!ENTITY rSendFile.key "S">
-<!ENTITY rSendFun "Send function under cursor">
+<!ENTITY rSendFun "Envoyer la fonction sous le curseur">
 <!ENTITY rSendFun.key "F">
-<!ENTITY rSendLine "Send active line">
+<!ENTITY rSendLine "Exécuter la ligne courante">
 <!ENTITY rSendLine.key "L">
-<!ENTITY rSendPara "Send current paragraph">
+<!ENTITY rSendPara "Exécuter le paragraphe actuel">
 <!ENTITY rSendPara.key "P">
-<!ENTITY rSendSel "Send selection">
+<!ENTITY rSendSel "Exécuter la sélection">
 <!ENTITY rSendSel.key "S">
-<!ENTITY rSrcBlock "Source marked block">
+<!ENTITY rSrcBlock "Sourcer le bloc marqué">
 <!ENTITY rSrcBlock.key "O">
-<!ENTITY rSrcFile "Source file">
+<!ENTITY rSrcFile "Sourcer le fichier">
 <!ENTITY rSrcFile.key "I">
-<!ENTITY rSrcFun "Source function under cursor">
+<!ENTITY rSrcFun "Sourcer la fonction sous le curseur">
 <!ENTITY rSrcFun.key "U">
-<!ENTITY rSrcPara "Source current paragraph">
+<!ENTITY rSrcPara "Sourcer le paragraphe actuel">
 <!ENTITY rSrcPara.key "A">
-<!ENTITY rSrcSel "Source selection">
+<!ENTITY rSrcSel "Sourcer la sélection">
 <!ENTITY rSrcSel.key "E">
-<!ENTITY StartRConsole "Start R Console">
-<!ENTITY StartRConsole.key "C">
+<!ENTITY StartR "Démarrer R">
+<!ENTITY StartR.key "R">
+<!ENTITY QuitR "Quitter R">
+<!ENTITY QuitR.key "Q">
 
-<!ENTITY svBrowseWD "Browse for working directory">
+<!ENTITY svBrowseWD "Sélectionner le répertoire de travail">
 <!ENTITY svBrowseWD.key "D">
 
-<!ENTITY svSelectRApp "Preferred R application">
+<!ENTITY svSelectRApp "Application R préférée">
 <!ENTITY svSelectRApp.key "E">
 
-<!ENTITY RUpdateCharset "Update character set">
+<!ENTITY RUpdateCharset "Mise-à-jour du jeu de caractères">
 <!ENTITY RUpdateCharset.key "C">

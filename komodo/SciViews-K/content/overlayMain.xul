@@ -12,16 +12,13 @@
  License for the specific language governing rights and limitations
  under the License.
 
- The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
-
- Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
- ActiveState Software Inc. All Rights Reserved.
+ The Original Code is SciViews-K by Philippe Grosjean et al.
 
  Contributor(s):
    Philippe Grosjean
    Romain Francois
-   Kamil Bartoñ
-   ActiveState Software Inc
+   Kamil Barton
+   ActiveState Software Inc (code inspired from)
 
  Alternatively, the contents of this file may be used under the terms of
  either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -36,11 +33,13 @@
  the terms of any one of the MPL, the GPL or the LGPL.
 
  ***** END LICENSE BLOCK ***** -->
-<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
-  <!ENTITY % komodoDTD SYSTEM "chrome://komodo/locale/komodo.dtd">
-  %komodoDTD;
-  <!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
-  %sciviewskDTD;
+ 
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
+	"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+	<!ENTITY % komodoDTD SYSTEM "chrome://komodo/locale/komodo.dtd">
+	%komodoDTD;
+	<!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
+	%sciviewskDTD;
 ]>
 
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
@@ -49,158 +48,171 @@
 <?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
 
 <overlay id="sciviewskOverlay"
-         xmlns:html="http://www.w3.org/1999/xhtml"
-         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	   >
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/io.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
-  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/io.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
 
+	<broadcasterset id="broadcasterset_global">
+		<broadcaster id="sv_r_is_running" disabled="false"/>
+	</broadcasterset>
 
-<broadcasterset id="broadcasterset_global">
-  <broadcaster id="sv_r_is_running"
-			   disabled="false"/>
-</broadcasterset>
+  <commandset id="allcommands"> 
+	  <command id="Tasks:svAbout"
+			oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
 
-
-  <commandset id="allcommands">
-    <command id="Tasks:svAbout"
-			 oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
-
-	<commandset id="cmdset_rApp" commandupdater="true"
+		<commandset id="cmdset_rApp" commandupdater="true"
 			oncommandupdate="ko.commands.updateCommandset(this);"
 			events="r_app_started_closed">
-    <command id="cmd_sv_start_R" key="key_cmd_sv_start_R"
-		     oncommand="ko.commands.doCommand('cmd_sv_start_R');"
-		 desc="R: &StartR;" label="&StartR;" accesskey="&StartR.key;" />
-
-    <command id="cmd_sv_quit_R" key="key_cmd_sv_quit_R"
-		     oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
-		 desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;" />
-
-	<command id="cmd_sv_update_charset" key="key_cmd_sv_update_charset"
-		     oncommand="ko.commands.doCommand('cmd_sv_update_charset');"
-		 desc="R: &RUpdateCharset;" label="&RUpdateCharset;"
-			 accesskey="&RUpdateCharset.key;" />
-
-	<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
-		    oncommand="sv.command.openPkgManager();" disabled="true"
-			desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;" />
-
-	<command id="cmd_sv_BrowseWD" key="key_cmd_sv_BrowseWD"
-		oncommand="sv.r.setwd('current', true);"
-		desc="R: &svBrowseWD;" label="&svBrowseWD;" accesskey="&svBrowseWD.key;" />
-</commandset>
+			<command id="cmd_sv_start_R" key="key_cmd_sv_start_R"
+			  oncommand="ko.commands.doCommand('cmd_sv_start_R');"
+				desc="R: &StartR;" label="&StartR;" accesskey="&StartR.key;"/>
+		  <command id="cmd_sv_quit_R" key="key_cmd_sv_quit_R"
+		    oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
+				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
+			<command id="cmd_sv_update_charset" key="key_cmd_sv_update_charset"
+				oncommand="ko.commands.doCommand('cmd_sv_update_charset');"
+				desc="R: &RUpdateCharset;" label="&RUpdateCharset;"
+				accesskey="&RUpdateCharset.key;"/>
+			<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
+				oncommand="sv.command.openPkgManager();" disabled="true"
+				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
+			<command id="cmd_sv_BrowseWD" key="key_cmd_sv_BrowseWD"
+				oncommand="sv.r.setwd('current', true);"
+				desc="R: &svBrowseWD;" label="&svBrowseWD;" accesskey="&svBrowseWD.key;"/>
+		</commandset>
 
     <commandset id="cmdset_r_control" commandupdater="true"
-		    events="current_view_language_changed"
-		    oncommandupdate="ko.commands.updateCommandset(this);" >
-	<command id="cmd_sv_RRunAll"  key="key_cmd_sv_RRunAll"  oncommand="ko.commands.doCommand('cmd_sv_RRunAll')"
-			 desc="R: &rSendFile;" label="&rSendFile;" accesskey="&rSendFile.key;" />
-	<command id="cmd_sv_RSourceAll"  key="key_cmd_sv_RSourceAll" oncommand="ko.commands.doCommand('cmd_sv_RSourceAll')"
-		   desc="R: &rSrcFile;" label="&rSrcFile;" accesskey="&rSrcFile.key;" />
-	<command id="cmd_sv_RRunBlock"  key="key_cmd_sv_RRunBlock"  oncommand="ko.commands.doCommand('cmd_sv_RRunBlock')"
-		   desc="R: &rSendBlock;" label="&rSendBlock;" accesskey="&rSendBlock.key;" />
-	<command id="cmd_sv_RRunFunction"  key="key_cmd_sv_RRunFunction" oncommand="ko.commands.doCommand('cmd_sv_RRunFunction')"
-		   desc="R: &rSendFun;" label="&rSendFun;" accesskey="&rSendFun.key;" />
-	<command id="cmd_sv_RRunLine"  key="key_cmd_sv_RRunLine" oncommand="ko.commands.doCommand('cmd_sv_RRunLine')"
-		   desc="R: &rSendLine;" label="&rSendLine;" accesskey="&rSendLine.key;" />
-	<command id="cmd_sv_RRunPara"  key="key_cmd_sv_RRunPara" oncommand="ko.commands.doCommand('cmd_sv_RRunPara')"
-		   desc="R: &rSendPara;" label="&rSendPara;" accesskey="&rSendPara.key;" />
+		  events="current_view_language_changed"
+		  oncommandupdate="ko.commands.updateCommandset(this);">
+			<command id="cmd_sv_RRunAll" key="key_cmd_sv_RRunAll"
+				oncommand="ko.commands.doCommand('cmd_sv_RRunAll')"
+				desc="R: &rSendFile;" label="&rSendFile;" accesskey="&rSendFile.key;"/>
+			<command id="cmd_sv_RSourceAll" key="key_cmd_sv_RSourceAll"
+				oncommand="ko.commands.doCommand('cmd_sv_RSourceAll')"
+				desc="R: &rSrcFile;" label="&rSrcFile;" accesskey="&rSrcFile.key;"/>
+			<command id="cmd_sv_RRunBlock" key="key_cmd_sv_RRunBlock"
+				oncommand="ko.commands.doCommand('cmd_sv_RRunBlock')"
+				desc="R: &rSendBlock;" label="&rSendBlock;" accesskey="&rSendBlock.key;"/>
+			<command id="cmd_sv_RRunFunction" key="key_cmd_sv_RRunFunction"
+				oncommand="ko.commands.doCommand('cmd_sv_RRunFunction')"
+				desc="R: &rSendFun;" label="&rSendFun;" accesskey="&rSendFun.key;"/>
+			<command id="cmd_sv_RRunLine" key="key_cmd_sv_RRunLine"
+				oncommand="ko.commands.doCommand('cmd_sv_RRunLine')"
+				desc="R: &rSendLine;" label="&rSendLine;" accesskey="&rSendLine.key;"/>
+			<command id="cmd_sv_RRunPara" key="key_cmd_sv_RRunPara"
+				oncommand="ko.commands.doCommand('cmd_sv_RRunPara')"
+				desc="R: &rSendPara;" label="&rSendPara;" accesskey="&rSendPara.key;"/>
+			<command id="cmd_sv_RSourceBlock" key="key_cmd_sv_RSourceBlock"
+				oncommand="ko.commands.doCommand('cmd_sv_RSourceBlock')"
+				desc="R: &rSrcBlock;" label="&rSrcBlock;" accesskey="&rSrcBlock.key;"/>
+			<command id="cmd_sv_RSourceFunction" key="key_cmd_sv_RSourceFunction"
+				oncommand="ko.commands.doCommand('cmd_sv_RSourceFunction')"
+				desc="R: &rSrcFun;" label="&rSrcFun;" accesskey="&rSrcFun.key;"/>
+			<command id="cmd_sv_RSourcePara" key="key_cmd_sv_RSourcePara"
+				oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
+				desc="R: &rSrcPara;" label="&rSrcPara;" accesskey="&rSrcPara.key;"/>
 
-	<command id="cmd_sv_RSourceBlock"  key="key_cmd_sv_RSourceBlock" oncommand="ko.commands.doCommand('cmd_sv_RSourceBlock')"
-		   desc="R: &rSrcBlock;" label="&rSrcBlock;" accesskey="&rSrcBlock.key;" />
-	<command id="cmd_sv_RSourceFunction"  key="key_cmd_sv_RSourceFunction" oncommand="ko.commands.doCommand('cmd_sv_RSourceFunction')"
-		   desc="R: &rSrcFun;" label="&rSrcFun;" accesskey="&rSrcFun.key;" />
-
-	<command id="cmd_sv_RSourcePara"  key="key_cmd_sv_RSourcePara" oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
-		   desc="R: &rSrcPara;" label="&rSrcPara;" accesskey="&rSrcPara.key;" />
-
-	<commandset id="cmdset_r_control" commandupdater="true"
-		    events="select"
-		    oncommandupdate="ko.commands.updateCommandset(this);" >
-	  <command id="cmd_sv_RRunSelection"  key="key_cmd_sv_RRunSelection" oncommand="ko.commands.doCommand('cmd_sv_RRunSelection')"
-	     desc="R: &rSendSel;" label="&rSendSel;" accesskey="&rSendSel.key;" />
-	  <command id="cmd_sv_RSourceSelection"  key="key_cmd_sv_RSourceSelection" oncommand="ko.commands.doCommand('cmd_sv_RSourceSelection')"
-		   desc="R: &rSrcSel;" label="&rSrcSel;" accesskey="&rSrcSel.key;" />
-	</commandset>
-    </commandset>
-<!-- 	<commandset id="cmdset_view_dependent"
-				removeelement="cmd_triggerPrecedingCompletion"
-	>
-	  <command id="cmd_triggerPrecedingCompletion"
+			<commandset id="cmdset_r_control" commandupdater="true" events="select"
+				oncommandupdate="ko.commands.updateCommandset(this);">	  
+				<command id="cmd_sv_RRunSelection" key="key_cmd_sv_RRunSelection"
+					oncommand="ko.commands.doCommand('cmd_sv_RRunSelection')"
+					desc="R: &rSendSel;" label="&rSendSel;" accesskey="&rSendSel.key;"/>
+				<command id="cmd_sv_RSourceSelection" key="key_cmd_sv_RSourceSelection"
+					oncommand="ko.commands.doCommand('cmd_sv_RSourceSelection')"
+					desc="R: &rSrcSel;" label="&rSrcSel;" accesskey="&rSrcSel.key;"/>
+			</commandset>
+	  </commandset>
+	
+		<!--<commandset id="cmdset_view_dependent"
+				removeelement="cmd_triggerPrecedingCompletion">
+			<command id="cmd_triggerPrecedingCompletion"
 				key="key_cmd_triggerPrecedingCompletion"
 				oncommand="ko.commands.doCommandAsync('cmd_triggerPrecedingCompletion', event);
-						  ko.commands.doCommandAsync('cmd_sv_RTriggerCompletion', event);"
+					ko.commands.doCommandAsync('cmd_sv_RTriggerCompletion', event);"
 				desc="&editorTriggerPrecedingAutoCompleteListOrCallTip.desc;"/>
-	</commandset>   -->
-  </commandset>
-  <menupopup id="popup_tools">
-    <menuitem id="menu_sciviewsk"
-              label="SciViews-K"
-              observes="Tasks:svAbout"
-              class="menu-iconic-wide"/>
+		</commandset>   -->
+	</commandset>
+  
+	<menupopup id="popup_tools">
+    <menuitem id="menu_sciviewsk" label="SciViews-K" observes="Tasks:svAbout"
+      class="menu-iconic-wide"/>
   </menupopup>
 
   <menubar id="menubar_main">
-   <menu id="sciviews_menu" label="R" accesskey="R" insertbefore="menu_window,help_menu">
-    <menupopup id="popup_sciviews_main">
+		<menu id="sciviews_menu" label="R" accesskey="R"
+			insertbefore="menu_window,help_menu">
+			<menupopup id="popup_sciviews_main">
+				<menuitem id="r_start_console_menu" observes="cmd_sv_start_R"
+					class="menuitem-iconic r-run-command-icon"/>
 
-	<menuitem id="r_start_console_menu" observes="cmd_sv_start_R" class="menuitem-iconic r-run-command-icon"  />
+				<menu label="&svSelectRApp;" accesskey="&svSelectRApp.key;">
+					<menupopup id="sciviews_menu_select_r_application"
+						oncommand="sv.command.getRApp(event);"
+						selected="r-terminal" persist="selected"
+						onpopupshowing="sv.command.setMenuRApp(this);">
+						<menuitem id="r-app" type="checkbox" checked="false" label="R app"
+							app="/Applications/R.app" platform="Mac"/>
+						<menuitem id="r64-app" type="checkbox" checked="false" label="R64 app"
+							app="/Applications/R64.app" platform="Mac"/>
+						<menuitem id="r-gnome-term" type="checkbox" checked="false" label="R Gnome terminal"
+							app="gnome-terminal" platform="Linux"/>
+						<menuitem id="r-kde-term" type="checkbox" checked="false" label="R KDE terminal"
+							app="konsole" platform="Linux"/>
+						<menuitem id="r-xfce4-term" type="checkbox" checked="false" label="R XFCE terminal"
+							app="xfce4-terminal" platform="Linux"/>
+						<menuitem id="r-gui" type="checkbox" checked="false" label="R GUI"
+							app="Rgui" platform="Win"/>
+						<menuitem id="r-terminal" type="checkbox" checked="false" label="R terminal"
+							app="R" platform="Linux,Mac,Win"/>
+						<menuitem id="r-tk" type="checkbox" checked="false" label="R tk"
+							app="R" platform="Linux,Mac"/>
+					</menupopup>
+				</menu>
 
-	<menu label="&svSelectRApp;" accesskey="&svSelectRApp.key;">
-	  <menupopup id="sciviews_menu_select_r_application" oncommand="sv.command.getRApp(event);"
-				 selected="r-terminal" persist="selected"
-				 onpopupshowing="sv.command.setMenuRApp(this);" >
-		<menuitem id="r-app" type="checkbox" checked="false" label="R app"
-			  app="/Applications/R.app" platform="Mac" />
-		<menuitem id="r64-app" type="checkbox" checked="false" label="R64 app"
-			  app="/Applications/R64.app" platform="Mac" />
-		<menuitem id="r-gnome-term" type="checkbox" checked="false" label="R Gnome terminal"
-			  app="gnome-terminal" platform="Linux" />
-		<menuitem id="r-kde-term" type="checkbox" checked="false" label="R KDE terminal"
-			  app="konsole" platform="Linux" />
-		<menuitem id="r-xfce4-term" type="checkbox" checked="false" label="R XFCE terminal"
-			  app="xfce4-terminal" platform="Linux" />
-		<menuitem id="r-gui" type="checkbox" checked="false" label="R GUI"
-			  app="Rgui" platform="Win" />
-		<menuitem id="r-terminal" type="checkbox" checked="false" label="R terminal"
-			  app="R" platform="Linux,Mac,Win" />
-		<menuitem id="r-tk" type="checkbox" checked="false" label="R tk"
-			  app="R" platform="Linux,Mac" />
-	  </menupopup>
-	</menu>
-
-	<menuitem id="r_quit_console_menu" observes="cmd_sv_quit_R" class="menuitem-iconic r-quit-command-icon" />
-	<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
-			  class="menuitem" />
-
-	<menuitem id="r_start_pkg_manager" observes="cmd_sv_OpenPkgManager" class="menuitem" />
-	<menuitem id="r_browse_wd" observes="cmd_sv_BrowseWD" class="menuitem-iconic r-working-dir-icon" />
-
-	<menuseparator/>
-	<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine" class="menuitem-iconic r-run-line-icon" />
-	<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll" class="menuitem-iconic r-run-all-icon" />
-	<menuitem id="r_src_all_menu" observes="cmd_sv_RSourceAll" class="menuitem-iconic r-source-all-icon" />
-	<menuitem id="r_send_sel_menu" observes="cmd_sv_RRunSelection" class="menuitem-iconic r-run-selection-icon" />
-	<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection" class="menuitem-iconic r-source-selection-icon" />
-	<menuitem id="r_send_block_menu" observes="cmd_sv_RRunBlock" class="menuitem-iconic r-run-block-icon" />
-	<menuitem id="r_src_block_menu" observes="cmd_sv_RSourceBlock" class="menuitem-iconic r-source-block-icon" />
-	<menuitem id="r_send_para_menu" observes="cmd_sv_RRunPara" class="menuitem-iconic r-run-para-icon" />
-	<menuitem id="r_src_para_menu" observes="cmd_sv_RSourcePara" class="menuitem-iconic r-source-para-icon" />
-	<menuitem id="r_send_function_menu" observes="cmd_sv_RRunFunction" class="menuitem-iconic r-run-function-icon" />
-	<menuitem id="r_src_function_menu" observes="cmd_sv_RSourceFunction" class="menuitem-iconic r-source-function-icon" />
-    </menupopup>
+				<menuitem id="r_quit_console_menu" observes="cmd_sv_quit_R"
+					class="menuitem-iconic r-quit-command-icon"/>
+				<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
+					class="menuitem"/>
+				<menuitem id="r_start_pkg_manager" observes="cmd_sv_OpenPkgManager"
+					class="menuitem"/>
+				<menuitem id="r_browse_wd" observes="cmd_sv_BrowseWD"
+					class="menuitem-iconic r-working-dir-icon"/>
+				<menuseparator/>
+				<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine"
+					class="menuitem-iconic r-run-line-icon"/>
+				<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll"
+					class="menuitem-iconic r-run-all-icon"/>
+				<menuitem id="r_src_all_menu" observes="cmd_sv_RSourceAll"
+					class="menuitem-iconic r-source-all-icon"/>
+				<menuitem id="r_send_sel_menu" observes="cmd_sv_RRunSelection"
+					class="menuitem-iconic r-run-selection-icon"/>
+				<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection"
+					class="menuitem-iconic r-source-selection-icon"/>
+				<menuitem id="r_send_block_menu" observes="cmd_sv_RRunBlock"
+					class="menuitem-iconic r-run-block-icon"/>
+				<menuitem id="r_src_block_menu" observes="cmd_sv_RSourceBlock"
+					class="menuitem-iconic r-source-block-icon"/>
+				<menuitem id="r_send_para_menu" observes="cmd_sv_RRunPara"
+					class="menuitem-iconic r-run-para-icon"/>
+				<menuitem id="r_src_para_menu" observes="cmd_sv_RSourcePara"
+					class="menuitem-iconic r-source-para-icon"/>
+				<menuitem id="r_send_function_menu" observes="cmd_sv_RRunFunction"
+					class="menuitem-iconic r-run-function-icon"/>
+				<menuitem id="r_src_function_menu" observes="cmd_sv_RSourceFunction"
+					class="menuitem-iconic r-source-function-icon"/>
+			</menupopup>
    </menu>
   </menubar>
 </overlay>

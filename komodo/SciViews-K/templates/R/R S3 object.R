@@ -3,7 +3,7 @@
 
 # Creator of the S3 object (usually, a function with the same name)
 "[[%ask1]]" <- # S3 class
-function() {
+function () {
 	# Code to create the object here...
 	obj <- "[[%ask1]] object"
 	class(obj) <- [[%ask1]]

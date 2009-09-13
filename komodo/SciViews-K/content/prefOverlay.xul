@@ -12,10 +12,7 @@
  License for the specific language governing rights and limitations
  under the License.
 
- The Original Code is SciViews-K by Philippe Grosjean & Romain Francois.
-
- Portions created by ActiveState Software Inc are Copyright (C) 2000-2008
- ActiveState Software Inc. All Rights Reserved.
+ The Original Code is SciViews-K by Philippe Grosjean et al.
 
  Contributor(s):
    Philippe Grosjean
@@ -35,29 +32,29 @@
 
  ***** END LICENSE BLOCK ***** -->
 
-<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
+"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
 
 <overlay id="SciViewsPrefOverlay"
-    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<hbox id="prefsTree">
 		<treechildren id="panelChildren">
 			<treeitem container="true" id="svPrefMainItem">
 				<treerow>
 					<treecell class="treecell-indent"
-						url="chrome://sciviewsk/content/pref-Main.xul"
-						label="SciViews-K"/>
+						url="chrome://sciviewsk/content/pref-Main.xul" label="SciViews-K"/>
 				</treerow>
 				<treechildren id="svPrefChildren">
-                    <treeitem container="false" id="svPrefRItem">
-                        <treerow>
-                            <treecell class="treecell-indent"
-                                url="chrome://sciviewsk/content/pref-R.xul"
-                                label="R Interpreter"/>
-                        </treerow>
-                    </treeitem>
-                </treechildren>
+          <treeitem container="false" id="svPrefRItem">
+            <treerow>
+              <treecell class="treecell-indent"
+                url="chrome://sciviewsk/content/pref-R.xul"
+								label="R Interpreter"/>
+            </treerow>
+          </treeitem>
+				</treechildren>
 			</treeitem>
 		</treechildren>
 	</hbox>
