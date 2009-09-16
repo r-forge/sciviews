@@ -106,8 +106,8 @@ sv.prefs.setString("r.csv.dec.arg", '"' + sv.prefs.getString("r.csv.dec", '.') +
 
 // Set default dataset to 'df'
 // Should be reset to a more useful value during first use of R
-sv.prefs.setString("r.active.data.frame", "df", false);
-
+sv.prefs.setString("r.active.data.frame", "df1", false);
+sv.prefs.setString("r.active.lm", "lm1", false);
 
 //// (re)initialize a series of MRU for snippets' %ask constructs //////////////
 // TODO: defaultMRU for ts, data, table, ...

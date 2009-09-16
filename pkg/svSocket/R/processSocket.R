@@ -124,6 +124,9 @@ function (msg, socket, serverport, ...)
     if (length(expr) < 1) return(paste(pars$last, Prompt, sep = ""))
     # Correct code,... we evaluate it
     results <- captureAll(expr)
+	# Should we run taskCallbacks?
+	if (!hiddenMode)
+		results <- c(results, taskCallbackManager()$evaluate())
     # Collapse and add last and the prompt at the end
     results <- paste(results, collapse = "\n")
     if (Echo) cat(results)

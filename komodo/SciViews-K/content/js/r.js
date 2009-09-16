@@ -43,6 +43,9 @@
 // sv.r.loadHistory(file, title); // Load the history from a file
 // sv.r.saveGraph(type, file, title, height, width, method);
 //                  // Save the current R graph in different formats
+// sv.r.obj(objClass); // Set active object for objClass (data.frame if omitted)
+// sv.r.obj_select(data); // The callback for sv.r.obj() to select an object
+// sv.r.obj_refresh_dataframe(data); // Refresh active data frame's MRUs
 // sv.r.initSession(dir, datadir, scriptdir, reportdir);
 // sv.r.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
                     // Initialize R session with corresponding directories
@@ -353,6 +356,7 @@ sv.r.run = function () {
 			}
 		}
 		var res = sv.r.eval(ke.selText);
+		ke.currentPos = ke.selectionEnd; // We want to go past the highest pos
 		ke.lineDown();
 		ke.homeDisplay();
 	} catch(e) {
@@ -361,7 +365,7 @@ sv.r.run = function () {
 	return res;
 }
 
-// Run current line up to position and optionally add line feed
+// Run current line (or selection) up to position and optionally add line feed
 sv.r.runEnter = function (breakLine) {
 	try {
 		var res = false;
@@ -824,6 +828,139 @@ sv.r.saveGraph = function (type, file, title, height, width, method) {
 	sv.r.eval('dev2bitmap("' + file.addslashes() + '", type = "' + type +
 		'", height = ' + height + ', width = ' + width + ', method = "' +
 		method + '")');
+}
+
+// Select one object of class 'objClass' from .GlobalEnv
+sv.r.obj = function (objClass) {
+	// By default, we look at data.frames in .GlobalEnv
+	if (typeof(objClass) == "undefined") objClass = "data.frame";
+	var res = false;
+	// Get list of all objects with such a specification loaded in R
+	// If there is a comment attribute, also get it
+	res = sv.r.evalCallback('cat("' + objClass + '\n");' +
+	  'cat(unlist(apply(matrix(objects(pos = 1)), 1, ' +
+	  'function(x) try(if (inherits(get(x), "' + objClass +
+	  '")) paste(x, "\t     ",  sub("[\t\n\r].*$", "", ' +
+	  'comment(get(x))), sep = ""), silent = TRUE))), sep = ",,,")',
+	  sv.r.obj_select);
+	ko.statusBar.AddMessage("Listing available '" + objClass +
+		"'... please wait", "R", 20000, true);
+	return(res);
+}
+
+// The callback for sv.r.obj
+sv.r.obj_select = function (data) {
+	ko.statusBar.AddMessage("", "R");
+	var res = false;
+	if (sv.tools.strings.removeLastCRLF(data) == "") {
+		sv.alert("Select R objects", "Problem retrieving the list of objects!");
+	} else {	// Something is returned
+		var res = data.split("\n");
+		// First item is objClass, second one is the list of objects
+		var objclass = sv.tools.strings.removeLastCRLF(res[0]);
+		if (typeof(res[1]) == "undefined") {
+			sv.alert("Select R objects", "No object of class '" + objclass +
+				"' currently loaded in R memory!");
+		} else {	// At least one object, display a selection list
+			var items = res[1].split(",,,");
+			// TODO: highlight current active object...
+			// Select the item you want in the list
+			var item = ko.dialogs.selectFromList("Currently loaded '" +
+				objclass + "' objects in R",
+				"Select one '" + objclass + "' to make it active in Komodo:",
+				items, "one");
+			if (item != null) {
+				// Update default object
+				// We need to eliminate the comment first
+				var obj = item[0].split("\t");
+				var objname = obj[0];
+				// The rest of the treatment depends on objClass
+				if (objclass == "data.frame") {
+					// Refresh the default val and list of vars
+					res = sv.r.evalCallback(
+						'.active.data.frame <- list(object = "' + objname +
+						'", fun = function () {\n' +
+'	if (exists(.active.data.frame$object, envir = .GlobalEnv)) {\n' +
+'		obj <- get(.active.data.frame$object, envir = .GlobalEnv)\n' +
+'		res <- paste(c(.active.data.frame$object, names(obj)), "\t",\n' +
+'		c(class(obj), sapply(obj, class)), "\n", sep = "")\n' +
+'		return(.active.data.frame$cache <<- res)\n' +
+'	} else return(.active.data.frame$cache <<- NULL)\n' +       
+						'}, cache = "")\n' +
+						'cat(.active.data.frame$fun(), sep = "")',
+						sv.r.obj_refresh_dataframe);
+				} else {
+					// Not implemented yet for other objects!
+					//alert("Update of MRU lists not implemented yet for other " +
+					//	"objects than 'data.frame'");
+					// Temporary code: at least set pref value
+					sv.prefs.setString("r.active." + objclass, objname, true);
+				}
+			}
+		}
+	}
+	return(res);
+}
+
+// Callback for sv.r.obj_select to refresh the MRUs associated with data frames
+sv.r.obj_refresh_dataframe = function (data) {
+	ko.statusBar.AddMessage("", "R");
+	// If we got nothing, then the object does not exists any more... clear MRUs
+	if (data == "<<<data>>>") {
+		var oldobj = sv.prefs.getString("r.active.data.frame", "");
+		sv.prefs.setString("r.active.data.frame", "df1", true); // Default value
+		sv.prefs.mru("var", true, "", "|");
+		sv.prefs.mru("var2", true, "", "|");
+		sv.prefs.mru("x", true, "", "|");
+		sv.prefs.mru("x2", true, "", "|");
+		sv.prefs.mru("y", true, "", "|");
+		sv.prefs.mru("factor", true, "", "|");
+		sv.prefs.mru("factor2", true, "", "|");
+		sv.prefs.mru("blockFactor", true, "", "|");
+		// Display a message
+		ko.statusBar.AddMessage("Active data frame '" + oldobj + "' removed",
+			"R", 10000, true);
+		return(false);
+	}
+	
+	var items = data.split("\n");
+	// First item contains the name of the active object and its class
+	var item = sv.tools.strings.removeLastCRLF(items[0]).split("\t");
+	var objname = item[0];
+	var objclass = item[1];
+	// Make sure r.active.data.frame pref is set to obj
+	sv.prefs.setString("r.active." + objclass, objname, true);
+	items.shift(); // Eliminate first item from the array
+	// Create three lists: vars collects all var names, nums and facts do so for
+	// only numeric and factor variables (separate items by "|")
+	var vars = "", nums = "", facts = "";
+	for (i in items) {
+		item = sv.tools.strings.removeLastCRLF(items[i]).split("\t");
+		// Fill the various lists according to the nature of item
+		vars = vars + "|" + item[0];
+		if (item[1] == "numeric") nums = nums + "|" + item[0];
+		if (item[1] == "factor") facts = facts + "|" + item[0];
+	}
+	// Eliminate first "|"
+	vars = vars.substr(1);
+	nums = nums.substr(1);
+	facts = facts.substr(1);
+	// Add these lists in various MRUs
+	// vars => var and var2
+	sv.prefs.mru("var", true, vars, "|");
+	sv.prefs.mru("var2", true, vars, "|");
+	// nums => x, x2, y
+	sv.prefs.mru("x", true, nums, "|");
+	sv.prefs.mru("x2", true, nums, "|");
+	sv.prefs.mru("y", true, nums, "|");
+	// facts => factor, factor2, blockFactor
+	sv.prefs.mru("factor", true, facts, "|");
+	sv.prefs.mru("factor2", true, facts, "|");
+	sv.prefs.mru("blockFactor", true, facts, "|");
+	// Report which object is currently active (TODO: indicate this in obj explorer)
+	ko.statusBar.AddMessage("Active " + objclass +
+		": " + objname, "R", 20000, true);
+	return(true);
 }
 
 // Initialize R session preferences in Komodo

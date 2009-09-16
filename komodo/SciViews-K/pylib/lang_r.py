@@ -2977,7 +2977,7 @@ class RBuffer(CitadelBuffer):
 
     cb_show_if_empty = True
 
-    cpln_fillup_chars = "~`!$@#%^&*()-=+{}[]|\\;:'\",<>?/\t\n\r"
+    cpln_fillup_chars = "\t" #"~`!$@#%^&*()-=+{}[]|\\;:'\",<>?/\t\n\r"
     cpln_stop_chars = "~`!$@#%^&*()-=+{}[]|\\;:'\",<>?/ "
 
     # Dev Note: many details elided.

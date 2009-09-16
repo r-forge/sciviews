@@ -13,6 +13,7 @@ function ()
 	# Use getTaskCallbackNames() to know if some tasks are registered
 	Callback.Id <- getTemp(".guiObjCallbackId", default = NULL)
 	if (!is.null(Callback.Id)) {
-	    if (removeTaskCallback(Callback.Id)) assignTemp(".guiObjCallbackId", NULL)
+	    if (removeTaskCallback(Callback.Id))
+			assignTemp(".guiObjCallbackId", NULL)
 	}
 }

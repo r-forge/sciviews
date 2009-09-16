@@ -71,7 +71,8 @@
 // getSelectedRows
 // toString - textual representation of the tree for debugging purposes
 // init - initialize
-// refreshAll
+// refreshAll()
+// refreshGlobalEnv(data); // R sends data to refresh the global environment
 // removeSelected
 // getSelectedNames
 // insertName
@@ -1013,6 +1014,10 @@ sv.r.objects = {};
 			'", raw.output = TRUE, header = TRUE)))';
 		sv.log.debug(cmd);
 		sv.r.evalCallback(cmd, _parseObjectList);
+	}
+	
+	this.refreshGlobalEnv = function (data) {
+		this._parseObjectList(data);
 	}
 	
 	//TODO: on package deletion -> remove it also from the search path
