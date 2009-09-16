@@ -1,5 +1,11 @@
 = svGUI News
 
+== Changes in svGUI 0.9-45
+
+* Added guiRefresh() and guiAutoRefresh() to refresh automatically the content
+of the GUI (Komodo) object explorer and the lists of active objects
+
+
 == Changes in svGUI 0.9-44
 
 * Preparation for CRAN submission: polishing the package

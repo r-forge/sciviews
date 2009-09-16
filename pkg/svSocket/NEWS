@@ -1,5 +1,10 @@
 = svSocket News
 
+== Changes in svSocket 0.9-47
+
+* The server now calls taskCallbacks on non-hidden mode after code evaluation
+
+
 == Changes in svSocket 0.9-46
 
 * evalServer() slightly reworked
