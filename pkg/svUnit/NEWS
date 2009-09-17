@@ -1,5 +1,11 @@
 = svUnit News
 
+== svUnit 0.6-3
+
+* The task callback mechanism introduced in svSocket 0.9-48 is now used to all
+  running the task after R code send by socket clients is executed.
+
+
 == svUnit 0.6-2
 
 * There is now a vignette for the svUnit package.

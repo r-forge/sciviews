@@ -307,7 +307,7 @@ if (typeof(sv.socket) == 'undefined')
 			sv.log.exception(e, "SciViews-K cannot open a server socket on port" +
 				port + ".\nMake sure the port is not already used by another" +
 					" Komodo instance" + "\nor choose another port in the" +
-					" preferences and restart Komdo", true);
+					" preferences and restart Komodo", false);
 			// If the port is already used, I got:
 			// "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame ::
 			// chrome://sciviewsk/content/js/socket.js :: anonymous :: line 285
@@ -403,3 +403,4 @@ if (typeof(sv.socket) == 'undefined')
 
 // [PhG] This raises an error on Komodo 5.1 on Mac OS X
 //addEventListener("load", sv.socket.serverStart, false);
+window.setTimeout(sv.socket.serverStart, 500);

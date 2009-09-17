@@ -46,6 +46,7 @@
 // sv.r.obj(objClass); // Set active object for objClass (data.frame if omitted)
 // sv.r.obj_select(data); // The callback for sv.r.obj() to select an object
 // sv.r.obj_refresh_dataframe(data); // Refresh active data frame's MRUs
+// sv.r.obj_message(); // Refresh statusbar message about active df and lm
 // sv.r.initSession(dir, datadir, scriptdir, reportdir);
 // sv.r.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
                     // Initialize R session with corresponding directories
@@ -135,7 +136,14 @@ sv.r.test = function sv_RTest () {
 					} else { 				// Just run this command
 						sv.r.eval(cmd);
 					}
+				} else {
+					// Possibly refresh the GUI by running SciViews-specific
+					// R task callbacks and make sure R Objects pane is updated
+					sv.r.evalHidden("try(guiRefresh(force = TRUE), " +
+						"silent = TRUE)");
 				}
+				// Make sure the R Objects explorer is updated
+				
 			}
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');
@@ -895,11 +903,24 @@ sv.r.obj_select = function (data) {
 					//	"objects than 'data.frame'");
 					// Temporary code: at least set pref value
 					sv.prefs.setString("r.active." + objclass, objname, true);
+					// Refresh statusbar message in case an 'lm' object is changed
+					if (objclass == "lm") sv.r.obj_message(); 
 				}
 			}
 		}
 	}
 	return(res);
+}
+
+// Display which objects (data frame and lm model, as for Rcmdr) are currently
+// active in the Komodo statusbar
+sv.r.obj_message = function () {
+	var df = sv.prefs.getString("r.active.data.frame", "<none>");
+	if (df == "<df>") df = "<none>";
+	var lm = sv.prefs.getString("r.active.lm", "<none>")
+	if (lm == "<lm>") lm = "<none>";
+	ko.statusBar.AddMessage("Data: " + df + ", linear model: " + lm, "Rref", 0,
+		false);
 }
 
 // Callback for sv.r.obj_select to refresh the MRUs associated with data frames
@@ -908,7 +929,7 @@ sv.r.obj_refresh_dataframe = function (data) {
 	// If we got nothing, then the object does not exists any more... clear MRUs
 	if (data == "<<<data>>>") {
 		var oldobj = sv.prefs.getString("r.active.data.frame", "");
-		sv.prefs.setString("r.active.data.frame", "df1", true); // Default value
+		sv.prefs.setString("r.active.data.frame", "<df>", true); // Default value
 		sv.prefs.mru("var", true, "", "|");
 		sv.prefs.mru("var2", true, "", "|");
 		sv.prefs.mru("x", true, "", "|");
@@ -917,9 +938,8 @@ sv.r.obj_refresh_dataframe = function (data) {
 		sv.prefs.mru("factor", true, "", "|");
 		sv.prefs.mru("factor2", true, "", "|");
 		sv.prefs.mru("blockFactor", true, "", "|");
-		// Display a message
-		ko.statusBar.AddMessage("Active data frame '" + oldobj + "' removed",
-			"R", 10000, true);
+		// Update message in the statusbar
+		sv.r.obj_message();
 		return(false);
 	}
 	
@@ -957,9 +977,8 @@ sv.r.obj_refresh_dataframe = function (data) {
 	sv.prefs.mru("factor", true, facts, "|");
 	sv.prefs.mru("factor2", true, facts, "|");
 	sv.prefs.mru("blockFactor", true, facts, "|");
-	// Report which object is currently active (TODO: indicate this in obj explorer)
-	ko.statusBar.AddMessage("Active " + objclass +
-		": " + objname, "R", 20000, true);
+	// Update message in the statusbar
+	sv.r.obj_message();
 	return(true);
 }
 

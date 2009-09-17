@@ -24,7 +24,7 @@ if (typeof(sv.command) == 'undefined') {
 	function _keepCheckingR (stopMe) {
 		clearInterval(sv.r.testInterval);
 		if (!stopMe) {
-			sv.r.testInterval = window.setInterval(sv.r.test, 10000);
+			sv.r.testInterval = window.setInterval(sv.r.test, 1000);
 		}
 		setTimeout(window.updateCommands, 1000, 'r_app_started_closed');
 	}
@@ -187,6 +187,10 @@ if (typeof(sv.command) == 'undefined') {
 			observerSvc.addObserver(this, 'status_message', false);
 			sv.log.debug("R has been started with command: " + command);
 			sv.r.running = true;
+			sv.socket.updateCharset(true);
+			// Possibly refresh the GUI by running SciViews-specific
+			// R task callbacks and make sure R Objects pane is updated
+			sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
 	
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');

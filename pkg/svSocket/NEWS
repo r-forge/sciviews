@@ -1,5 +1,12 @@
 = svSocket News
 
+== Changes in svSocket 0.9-48
+
+* svTaskCallbackManager() added to allow callbacks to be executed after each
+  (complete) R code send by a client to the server, as well as, any top-level
+  task run at the R console.
+
+
 == Changes in svSocket 0.9-47
 
 * The server now calls taskCallbacks on non-hidden mode after code evaluation

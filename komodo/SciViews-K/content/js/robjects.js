@@ -1017,7 +1017,7 @@ sv.r.objects = {};
 	}
 	
 	this.refreshGlobalEnv = function (data) {
-		this._parseObjectList(data);
+		_parseObjectList(data);
 	}
 	
 	//TODO: on package deletion -> remove it also from the search path

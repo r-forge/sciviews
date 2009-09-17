@@ -9,11 +9,8 @@ function ()
 
 	rmTemp(".koCmd")
 
-	# Unregister the TaskCallback
-	# Use getTaskCallbackNames() to know if some tasks are registered
-	Callback.Id <- getTemp(".guiObjCallbackId", default = NULL)
-	if (!is.null(Callback.Id)) {
-	    if (removeTaskCallback(Callback.Id))
-			assignTemp(".guiObjCallbackId", NULL)
-	}
+	# Unregister our own TaskCallback
+	h <- getTemp(".svTaskCallbackManager", default = NULL, mode = "list")
+	if (!is.null(h))
+		h$remove("guiAutoRefresh")
 }
