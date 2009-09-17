@@ -1,12 +1,12 @@
 .active.data.frame <- list(object = "",
     fun = function () {
         if (exists(.active.data.frame$object, envir = .GlobalEnv)) {
-            obj <- get(.active.data.frame$object, envir = .GlobalEnv)
-            res <- paste(names(obj), "\t", sapply(obj, class), "\n", sep = "")
-            return(.active.data.frame$cache <<- res)
+        	obj <- get(.active.data.frame$object, envir = .GlobalEnv)
+        	res <- paste(c(.active.data.frame$object, names(obj)), "\t",
+        	c(class(obj), sapply(obj, class)), "\n", sep = "")
+        	return(.active.data.frame$cache <<- res)
         } else return(.active.data.frame$cache <<- NULL)       
-    }, cache = "")
-
+	}, cache = "")
 
 guiRefresh <- function (force = FALSE) {    
     # Refresh active items and the R Objects explorer
@@ -31,14 +31,16 @@ guiRefresh <- function (force = FALSE) {
     }
     # Refresh object browser (only data from .GlobalEnv)
     lst <- objList(envir = .GlobalEnv, all.info = FALSE, compare = TRUE)
-    if (length(lst$Name) > 0)
-        koCmd('sv.r.objects.refreshGlobalEnv("<<<data>>>");',
-              data = print(lst, sep = ";;", raw.output = TRUE, header = TRUE))
-        
+    if (length(lst$Name) > 0) {
+        msg <- paste("Env=.GlobalEnv\nObj=\n", 
+            paste(t(sapply(lst, paste)), c(rep(";;", 4), "\n"), sep = "",
+            collapse = ""), sep = "")
+        koCmd('sv.r.objects.refreshGlobalEnv("<<<data>>>");', data = msg)
+    }
     return(TRUE)
 }
 
 guiAutoRefresh <- function (...) {
-    guiRefresh(force = FALSE)
-    return(TRUE)
+    try(guiRefresh(force = FALSE), silent = TRUE)
+    return(TRUE) # We need to return TRUE for callback reschedule
 }

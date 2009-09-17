@@ -10,4 +10,5 @@ export(evalServer,
        sendSocketClients,
        closeSocketClients,
        startSocketServer,
-       stopSocketServer)
+       stopSocketServer,
+	   svTaskCallbackManager)

@@ -33,17 +33,9 @@ function ()
 		koCmd(command, ...)
 	})
 
-	# Register a TaskCallback to generate automatically informations for an object browser
-	# Use  getTaskCallbackNames() to know if some tasks are registered
-#	assignTemp(".guiObjCallback", function(...) {
-#	    ob <- names(getTemp(".guiObjListCache", default = NULL))
-#	    if (!is.null(ob)) for (i in 1:length(ob)) objBrowse(id = ob[i])
-#		return(TRUE)   # Required to keep it in the TaskCallback list
-#	})
-	Callback <- getTemp(".guiObjCallbackId", default = NULL)
-	if (is.null(Callback)) {
-#	    n <- addTaskCallback(getTemp(".guiObjCallback"))
-		n <- addTaskCallback(guiAutoRefresh)
-	    if (!is.null(n)) assignTemp(".guiObjCallbackId", as.character(n))
-	}
+	# Register a TaskCallback to generate automatically informations for an
+	# object browser.
+	h <- getTemp(".svTaskCallbackManager", default = NULL, mode = "list")
+	if (!is.null(h))
+		h$add(guiAutoRefresh, name = "guiAutoRefresh")
 }

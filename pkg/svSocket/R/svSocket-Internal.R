@@ -1,3 +1,17 @@
+".onLoad" <-
+function (lib, pkg)
+{
+	# Create our SciViews task callback manager
+	assignTemp(".svTaskCallbackManager", svTaskCallbackManager())
+}
+
+".onUnload" <-
+function (libpath)
+{
+	removeTaskCallback("SV-taskCallbackManager")
+	rmTemp(".svTaskCallbackManager")
+}
+
 ".Last.lib" <-
 function (libpath)
 {
