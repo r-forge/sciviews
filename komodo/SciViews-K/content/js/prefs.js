@@ -58,8 +58,9 @@ sv.prefs.mru = function (mru, reset, items, sep) {
 	if (typeof(sep) != "undefined") items = items.split(sep);
 
 	// Add each item in items in inverse order
-    for (var i = items.length - 1; i >= 0; i--) {
-		ko.mru.add(mruList, items[i], true);
+	for (var i = items.length - 1; i >= 0; i--) {
+		if (items[i] != "")
+			ko.mru.add(mruList, items[i], true);
 	}
 }
 

@@ -48,6 +48,7 @@
 // sv.r.obj_refresh_dataframe(data); // Refresh active data frame's MRUs
 // sv.r.obj_refresh_lm(data); 		 // Refresh active 'lm' object
 // sv.r.obj_message(); // Refresh statusbar message about active df and lm
+// sv.r.refreshSession(); // Refresh MRU lists associated with current session
 // sv.r.initSession(dir, datadir, scriptdir, reportdir);
 // sv.r.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
                     // Initialize R session with corresponding directories
@@ -56,6 +57,10 @@
                     // dir: session directory, xxxdir: xxx subdirectory,
                     // saveOld (default true): do we save old session data?
                     // loadNew (default true): do we load data from new session?
+// sv.r.switchSession(inDoc); // Switch to another R session (possibly create it)
+// sv.r.exploreSession(); // Explore the session dirs in default file browser
+// sv.r.clearSession();   // Clear session's .RData and .Rhistory files
+// sv.r.reloadSession();  // Reload .RData nd .Rhistory files from session dir
 // sv.r.quit(save); // Quit R (ask to save in save in not defined)
 //
 // Note: sv.r.objects is implemented in robjects.js
@@ -974,7 +979,7 @@ sv.r.obj_refresh_dataframe = function (data) {
 	var objname = item[0];
 	var objclass = item[1];
 	// Make sure r.active.data.frame pref is set to obj
-	sv.prefs.setString("r.active." + objclass, objname, true);
+	sv.prefs.setString("r.active.data.frame", objname, true);
 	items.shift(); // Eliminate first item from the array
 	// Create three lists: vars collects all var names, nums and facts do so for
 	// only numeric and factor variables (separate items by "|")
@@ -983,7 +988,8 @@ sv.r.obj_refresh_dataframe = function (data) {
 		item = sv.tools.strings.removeLastCRLF(items[i]).split("\t");
 		// Fill the various lists according to the nature of item
 		vars = vars + "|" + item[0];
-		if (item[1] == "numeric") nums = nums + "|" + item[0];
+		if (item[1] == "numeric" | item[1] == "integer")
+			nums = nums + "|" + item[0];
 		if (item[1] == "factor") facts = facts + "|" + item[0];
 	}
 	// Eliminate first "|"
@@ -1025,10 +1031,44 @@ sv.r.obj_refresh_lm = function (data) {
 	var objname = item[0];
 	var objclass = item[1];
 	// Make sure r.active.data.frame pref is set to obj
-	sv.prefs.setString("r.active." + objclass, objname, true);
+	sv.prefs.setString("r.active.lm", objname, true);
 	// Update message in the statusbar
 	sv.r.obj_message();
 	return(true);
+}
+
+// Refresh MRU lists associated with the current session
+sv.r.refreshSession = function () {
+	var i;
+	// Refresh lists of dataset
+	var items = sv.tools.file.list(sv.prefs.getString("sciviews.data.localdir"),
+		/\.[cC][sS][vV]$/, true);
+	sv.prefs.mru("datafile", true, items);
+	ko.mru.reset("datafile_mru");
+	for (i = items.length - 1; i >= 0; i--) {
+		if (items[i] != "")
+			ko.mru.add("datafile_mru", items[i], true);
+	}
+	
+	// Refresh lists of scripts
+	items = sv.tools.file.list(sv.prefs.getString("sciviews.scripts.localdir"),
+		/\.[rR]$/, true);
+	sv.prefs.mru("scriptfile", true, items);
+	ko.mru.reset("scriptfile_mru");
+	for (i = items.length - 1; i >= 0; i--) {
+		if (items[i] != "")
+			ko.mru.add("scriptfile_mru", items[i], true);
+	}
+	
+	// Refresh lists of reports
+	items = sv.tools.file.list(sv.prefs.getString("sciviews.reports.localdir"),
+		/\.[oO][dD][tT]$/, true);
+	sv.prefs.mru("reportfile", true, items);
+	ko.mru.reset("reportfile_mru");
+	for (i = items.length - 1; i >= 0; i--) {
+		if (items[i] != "")
+			ko.mru.add("reportfile_mru", items[i], true);
+	}
 }
 
 // Initialize R session preferences in Komodo
@@ -1084,13 +1124,12 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 
 	// Look if the session directory exists, or create it
 	var file = sv.tools.file.getfile(localdir);
-	// file = sv.tools.file.getfile(sv.tools.file.path(dir);
 
 	if (!file.exists() || !file.isDirectory()) {
 		sv.log.debug( "Creating session directory... " );
 		file.create(DIRECTORY_TYPE, 511);
 	}
-	// ... also make sure that /Data, /Script and /Report subdirs exist
+	// ... also make sure that Data, Script and Report subdirs exist
 	var subdirs = [datadir, scriptdir, reportdir];
     for (var i in subdirs) {
 		if (subdirs[i] != "") {
@@ -1101,6 +1140,9 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
             delete file;
         }
 	}
+	// refresh lists of data, scripts and reports found in the session
+	sv.r.refreshSession();
+
 	return(dir);
 }
 
@@ -1168,6 +1210,146 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
 	// TODO: possibly open the Komodo project associated with this session
 
 	return(true);
+}
+
+// Switch to another R session (create it if it does not exists yet)
+sv.r.switchSession = function (inDoc) {
+	var baseDir = "";
+	var sessionDir = "";
+	// Base directory is different on Linux/Mac OS X and Windows
+	if (navigator.platform.indexOf("Win") > -1) {
+		baseDir = "~"	
+	} else {
+		baseDir = "~/Documents"
+	}
+	if (inDoc) {
+		// Ask for the session subdirectory
+		var Session = "SciViews R Session"
+		Session = ko.dialogs.prompt(sv.translate("Session in my documents " +
+			"(use '/' for subdirs, like in 'dir/session')"),
+			sv.translate("Session"), Session,
+			sv.translate("Switch to R session"), "okRsession");
+		if (Session != null & Session != "") {
+			// Make sure that Session does not start with /, or ./, or ../
+			Session = Session.replace(/\^.{0,2}\//, "");
+			// Construct session dir
+			sessionDir = baseDir + "/" + Session;
+		} else sessionDir = "";
+	} else {
+		// Ask for the session path
+		sessionDir = ko.filepicker.
+			getFolder(baseDir, sv.translate("Choose session directory"));
+	}
+	if (sessionDir != null & sessionDir != "") {
+		// Subdirectories for data, scripts and reports
+		var datadir = "";
+		var scriptdir = "";
+		var reportdir = "";
+		var cfg = "";
+		var cfgfile = sv.tools.file.path(sessionDir, ".svData");
+		var filefound = false;
+		// Look if this directory already exists and contains a .svData file
+		if (sv.tools.file.exists(sessionDir) == 2 &
+			sv.tools.file.exists(cfgfile) == 1) {
+			// Try reading .svData file
+			try {
+				cfg = sv.tools.file.read(cfgfile, "utf-8");
+				filefound = true;
+				// Actualize values for datadir, scriptdir and reportdir
+				cfg = cfg.split("\n");
+				var key, value;
+				for (i in cfg) {
+					key = cfg[i].split("=");
+					if (key[0].trim() == "datadir") datadir = key[1].trim();
+					if (key[0].trim() == "scriptdir") scriptdir = key[1].trim();
+					if (key[0].trim() == "reportdir") reportdir = key[1].trim();
+				}
+			} catch (e) { }
+		}
+		// If no .svData file found, ask for respective directories
+		if (!filefound) {
+			datadir = ko.dialogs.prompt(
+				sv.translate("Subdirectory for datasets (nothing for none):"),
+				"", "data", sv.translate("R session configuration"), "okRsesData");
+			if (datadir == null) return false;
+			scriptdir = ko.dialogs.prompt(
+				sv.translate("Subdirectory for R scripts (nothing for none):"),
+				"", "R", sv.translate("R session configuration"), "okRsesScript");
+			if (scriptdir == null) return false;
+			reportdir = ko.dialogs.prompt(
+				sv.translate("Subdirectory for reports (nothing for none):"),
+				"", "doc", sv.translate("R session configuration"), "okRsesReport");
+			if (reportdir == null) return false;
+		}
+		// Now create or switch to this session directory
+		sv.r.setSession(sessionDir, datadir, scriptdir, reportdir);
+		// If there were no .svData file, create it now
+		if (!filefound) {
+			// Save these informations to the .svData file in the session dir
+		sv.tools.file.write(cfgfile,
+			"datadir=" + datadir + "\nscriptdir=" + scriptdir +
+			"\nreportdir=" + reportdir, "utf-8", false);
+		}
+	return true;
+	}
+}
+
+// Show the session directory in the file explorer, finder, nautilus, ...
+sv.r.exploreSession = function () {
+	var dataDir = sv.prefs.getString("sciviews.session.localdir", "~");
+	var file = Components.classes["@mozilla.org/file/local;1"]
+		.createInstance(Components.interfaces.nsILocalFile);
+	file.initWithPath(dataDir);
+	if (file.exists() == true) {
+		try {
+			file.reveal();
+		} catch(e) { // On Linux, this does not work...
+			// First try nautilus, and then, try konqueror
+			try {
+				ko.run.runEncodedCommand(window,
+					'nautilus "' + file.path + '" & ');
+			} catch(e) {
+				ko.run.runEncodedCommand(window,
+					'konqueror --profile filemanagement "' + file.path + '" & ');
+			}
+		}
+	}
+}
+
+// Reload .RData and .Rhistory files from session directory
+sv.r.reloadSession = function () {
+	// Ask for confirmation first
+	if (ko.dialogs.okCancel("Are you sure you want to delete all objects " +
+		"and reload them from disk?", "OK", "You are about to delete all " +
+		"objects currently in R memory, and reload the initial content from " +
+		"disk (.RData and .Rhistory files)...", "Reload session") == "OK") {
+		// Switch temporarily to the session directory and try loading
+		// .RData and Rhistory files
+		var dir = sv.prefs.getString("sciviews.session.dir", "");
+		var cmd = 'rm(list = ls(pattern = "\\.active.", all.names = TRUE))\n' +
+			'rm(list = ls()); .savdir. <- setwd("' + dir + '")\n' +
+			'if (file.exists(".RData")) load(".RData")\n' +
+			'if (file.exists(".Rhistory")) loadhistory()\n' +
+			'setwd(.savdir.); rm(.savdir.)\n' +
+			'try(guiRefresh(force = TRUE), silent = TRUE)';
+		sv.r.evalHidden(cmd);
+	}
+}
+
+// Clear .RData and .Rhistory files from session directory
+sv.r.clearSession = function () {
+	// Ask for confirmation first
+	if (ko.dialogs.okCancel("Are you sure you want to delete .RData and " +
+		".Rhistory files from disk?", "OK", "You are about to delete the data" +
+		" saved in .RData and the command history saved in .Rhistory for the " +
+		"current session...", "Clear session") == "OK") {
+		// Delete .RData and Rhistory files
+		var dir = sv.prefs.getString("sciviews.session.dir", "");
+		var cmd = '.savdir. <- setwd("' + dir + '")\n' +
+			'unlink(".RData"); unlink(".Rhistory")\n' +
+			'setwd(.savdir.); rm(.savdir.)';
+		sv.r.evalHidden(cmd);
+	}	
 }
 
 // Quit R (ask to save in save in not defined)

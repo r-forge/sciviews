@@ -3,21 +3,175 @@
 // Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.misc.closeAllOthers();    // Close all buffer except current one
-// sv.misc.colorPicker();       // Invoke a color picker dialog box
-// sv.misc.moveLineDown();      // Move current line down
-// sv.misc.moveLineUp();        // Move current line up
-// sv.misc.searchBySel();       // Search next using current selection
-// sv.misc.showConfig();        // Show Komodo configuration page
-// sv.misc.swapQuotes();        // Swap single and double quotes in selection
-// sv.misc.pathToClipboard();   // Copy file path to clipboard
-// sv.misc.unixPathToClipboard(); // Copy file path in UNIX format to clipboard
-// sv.misc.timeStamp();         // Stamp text with current date/time
+// sv.misc.sessionData(data);     // Create or open a .csv dataset from session
+// sv.misc.sessionScript(script); // Create or open a .R script from session
+// sv.misc.sessionReport(rep);    // Create or open a .odt report from session
+// sv.misc.closeAllOthers();      // Close all buffer except current one
+// sv.misc.colorPicker();         // Invoke a color picker dialog box
+// sv.misc.moveLineDown();        // Move current line down
+// sv.misc.moveLineUp();          // Move current line up
+// sv.misc.searchBySel();         // Search next using current selection
+// sv.misc.showConfig();          // Show Komodo configuration page
+// sv.misc.swapQuotes();          // Swap single and double quotes in selection
+// sv.misc.pathToClipboard();     // Copy file path to clipboard
+// sv.misc.unixPathToClipboard(); // Copy UNIX file path to clipboard
+// sv.misc.timeStamp();           // Stamp text with current date/time
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.misc' namespace
 if (typeof(sv.misc) == 'undefined')
 	sv.misc = {};
+
+// sv.misc.sessionData(name);   // Create or open a .csv dataset from session
+sv.misc.sessionData = function (data) {
+    if (typeof(data) == "undefined") {
+        data = ko.dialogs.prompt(
+            "Open or create a dataset in .csv format in the data session directory...",
+            "Dataset name:", "Dataset", "Select a dataset", "datafile");
+    }
+    if (data != null & data != "") {
+        var dataDir = sv.prefs.getString("sciviews.data.localdir", "~");
+        var file = Components.classes["@mozilla.org/file/local;1"]
+            .createInstance(Components.interfaces.nsILocalFile);
+        file.initWithPath(dataDir);
+        file.append(data + ".csv");
+        if (file.exists() == false) {
+        file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 438);
+        // Create a minimal content in this file
+        var outputStream = Components.
+            classes["@mozilla.org/network/file-output-stream;1"]
+            .createInstance( Components.interfaces.nsIFileOutputStream );
+        /* Open flags
+        #define PR_RDONLY       0x01
+        #define PR_WRONLY       0x02
+        #define PR_RDWR         0x04
+        #define PR_CREATE_FILE  0x08
+        #define PR_APPEND       0x10
+        #define PR_TRUNCATE     0x20
+        #define PR_SYNC         0x40
+        #define PR_EXCL         0x80
+        */
+        /*
+        ** File modes ....
+        **
+        ** CAVEAT: 'mode' is currently only applicable on UNIX platforms.
+        ** The 'mode' argument may be ignored by PR_Open on other platforms.
+        **
+        **   00400   Read by owner.
+        **   00200   Write by owner.
+        **   00100   Execute (search if a directory) by owner.
+        **   00040   Read by group.
+        **   00020   Write by group.
+        **   00010   Execute by group.
+        **   00004   Read by others.
+        **   00002   Write by others
+        **   00001   Execute by others.
+        **
+        */
+        outputStream.init(file, 0x04 | 0x08 | 0x20, 438, 0);
+        var sep = sv.prefs.getString("r.csv.sep", "\t");
+            var content = '"var1"' + sep + '"var2"\n';
+        var result = outputStream.write(content, content.length);
+        outputStream.close();
+        }
+        try {
+            file.launch();
+        } catch(e) { // On Linux, this does not work...
+            // First try nautilus, and then, try konqueror
+            try {
+                ko.run.runEncodedCommand(window, 'gnome-open "' +
+                    file.path + '" & ');
+            } catch(e) {
+                ko.run.runEncodedCommand(window, 'kfmclient exec "' +
+                    file.path + '" & ');
+            }
+        }
+    }
+    // Make sure lists of session files are refreshed
+    sv.r.refreshSession();
+}
+
+// sv.misc.sessionScript(name); // Create or open a .R script from session
+sv.misc.sessionScript = function (script) {
+    if (typeof(script) == "undefined") {
+        script = ko.dialogs.prompt(
+            "Open or create a R script in session directory...",
+            "Script name:", "Script", "Select a script", "scriptfile");
+    }
+    if (script != null & script != "") {
+        var scriptsDir = sv.prefs.getString("sciviews.scripts.localdir",
+            "~/Scripts");
+        var file = Components.classes["@mozilla.org/file/local;1"]
+            .createInstance(Components.interfaces.nsILocalFile);
+        file.initWithPath(scriptsDir);
+        file.append(script + ".R");
+        if (file.exists() == false) {
+            file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 438);
+        }
+        ko.open.URI(file.path);
+    }
+    // Make sure lists of session files are refreshed
+    sv.r.refreshSession();
+}
+    
+// sv.misc.sessionReport(name); // Create or open a .odt report from session
+sv.misc.sessionReport = function (rep) {
+    if (typeof(rep) == "undefined") {
+        rep = ko.dialogs.prompt(
+            "Open or create an .odt report in session directory...",
+            "Report name:", "Report", "Select a report", "reportfile");
+    }
+    if (rep != null & rep != "") {
+        var reportsDir = sv.prefs.getString("sciviews.reports.localdir",
+            "~/Reports");
+        var file = Components.classes["@mozilla.org/file/local;1"]
+            .createInstance(Components.interfaces.nsILocalFile);
+        file.initWithPath(reportsDir);
+        file.append(rep + ".odt");
+        if (file.exists() == false) {
+            // Copy the report template from SciViews-K templates
+            var tpl = ko.interpolate.
+                interpolateStrings("%(path:hostUserDataDir)");
+            var os = Components.classes['@activestate.com/koOs;1'].
+                getService(Components.interfaces.koIOs);
+        if (os.sep == "/") {
+            tpl += "/XRE/extensions/sciviewsk@sciviews.org/templates/Report.odt";
+        } else {
+            // We should be under Windows
+            tpl += "\\XRE\\extensions\\sciviewsk@sciviews.org\\templates\\Report.odt";
+        }
+        file.initWithPath(tpl);
+        var dir = Components.classes["@mozilla.org/file/local;1"]
+            .createInstance(Components.interfaces.nsILocalFile);
+        dir.initWithPath(reportsDir);
+        try {
+            file.copyTo(dir, rep + ".odt");
+        } catch(e) {
+            sv.log.exception(e, "Error while retrieving the default Report.odt template" +
+				" (sv.misc.sessionReport)", true);
+            alert("Error while retrieving the default Report.odt template.")
+        }
+        file.initWithPath(reportsDir);
+        file.append(rep + ".odt");
+        }
+        // This would be to force using OpenOffice Writer (on Linux?)
+        // ko.run.runEncodedCommand(window, 'oowriter -o "' + file.path + '" & ');
+        try {
+            file.launch();
+        } catch(e) { // On Linux, this does not work...
+            // First try nautilus, and then, try konqueror
+            try {
+                ko.run.runEncodedCommand(window, 'gnome-open "' +
+                    file.path + '" & ');
+            } catch(e) {
+                ko.run.runEncodedCommand(window, 'kfmclient exec "' +
+                    file.path + '" & ');
+            }
+        }
+    }
+    // Make sure lists of session files are refreshed
+    sv.r.refreshSession();
+}
 
 // Close all buffers except current one (an start page)
 sv.misc.closeAllOthers = function () {
