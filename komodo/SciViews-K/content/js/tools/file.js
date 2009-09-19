@@ -17,6 +17,8 @@
 								// Create nsILocalFile object from array and/or
 								// special dir name
 // sv.tools.file.readURI(uri);	// Read data from an URI
+// sv.tools.file.list(dirname, pattern, noext); // List all files matching
+								// pattern in dirname (with/without extension)
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.tools' namespace
@@ -213,6 +215,35 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
 		var res = file.readfile();
 		file.close();
 		return res;
+	}
+	
+	// List all files matching a given pattern in directory
+	this.list = function (dirname, pattern, noext) {
+		try {
+			var dir = Components.classes["@mozilla.org/file/local;1"].
+				createInstance(Components.interfaces.nsILocalFile);
+			dir.initWithPath(dirname);
+			if (dir.exists() && dir.isDirectory()) {
+				var files = dir.directoryEntries;
+				var selfiles = new Array();
+				var files;
+				while (files.hasMoreElements()) {
+					file = files.getNext().
+						QueryInterface(Components.interfaces.nsILocalFile);
+					if (file.isFile() && file.leafName.search(pattern) > -1) {
+						if (noext) {
+							selfiles.push(file.leafName.replace(pattern, ""));
+						} else {
+							selfiles.push(file.leafName);
+						}
+					}
+				}
+				return(selfiles);
+			}
+		} catch (e) {
+			sv.log.exception(e, "Error while listing files " + dirname +
+				" (sv.tools.file.list)", true)
+		}
 	}
 
 }).apply(sv.tools.file);
