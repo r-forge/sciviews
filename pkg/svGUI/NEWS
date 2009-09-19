@@ -4,6 +4,9 @@
 * Use of svTaskCallbackManager() of svSocket >= 0.9-48 to register task
   callback that are also executed after each R code send by socket clients.
 
+* guiRefresh() now clears active items and MRU lists in Komodo for non-defined
+  active data frames and lm objects.
+  
 
 == Changes in svGUI 0.9-45
 

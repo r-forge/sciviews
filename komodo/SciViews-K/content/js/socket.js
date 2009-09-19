@@ -386,13 +386,15 @@ if (typeof(sv.socket) == 'undefined')
 			sv.prefs.getString("r.csv.dec.arg", ".") +
 			'); options(OutSep = ' +
 			sv.prefs.getString("r.csv.sep.arg", ",") +
-			'); cat(localeToCharset()[1])', false, null,
-			function (s) {
+			'); invisible(guiRefresh(force = TRUE)); cat(localeToCharset()[1])',
+			false, null, function (s) {
 				_this.charset = s;
 				if (this.debug) sv.log.debug(s);
 			});
-		// Update also the R Object browser
-		sv.r.objects.getPackageList(true);
+		// Update also the R Object browser and active objects lists
+		//sv.r.objects.getPackageList(true); // old code refreshing only object browser
+		// New code is: sv.r.eval("guiRefresh(force = TRUE)");
+		// ... and it is integrated in the command above!
 	}
 	
 	// [PhG] The following command raises an error on my Mac

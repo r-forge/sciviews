@@ -108,15 +108,14 @@ sv.prefs.setString("r.csv.dec.arg", '"' + sv.prefs.getString("r.csv.dec", '.') +
 // Should be reset to a more useful value during first use of R
 sv.prefs.setString("r.active.data.frame", "<df>", true);
 sv.prefs.setString("r.active.lm", "<lm>", true);
-ko.statusBar.AddMessage("Data: <none>, linear model: <none>", "Rref", 0, false);
-sv.prefs.mru("var", true, "", "|");
-sv.prefs.mru("var2", true, "", "|");
-sv.prefs.mru("x", true, "", "|");
-sv.prefs.mru("x2", true, "", "|");
-sv.prefs.mru("y", true, "", "|");
-sv.prefs.mru("factor", true, "", "|");
-sv.prefs.mru("factor2", true, "", "|");
-sv.prefs.mru("blockFactor", true, "", "|");
+sv.prefs.mru("var", true, "");
+sv.prefs.mru("var2", true, "");
+sv.prefs.mru("x", true, "");
+sv.prefs.mru("x2", true, "");
+sv.prefs.mru("y", true, "");
+sv.prefs.mru("factor", true, "");
+sv.prefs.mru("factor2", true, "");
+sv.prefs.mru("blockFactor", true, "");
 
 
 //// (re)initialize a series of MRU for snippets' %ask constructs //////////////
