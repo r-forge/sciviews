@@ -196,7 +196,7 @@
 							emptytext="&sciviews.robjects.filterEmptyText;"/>
 					</hbox>
 					<vbox id="robjects_searchpath_panel"
-						persist="height collapsed" flex="1">
+						persist="height collapsed" state="collapsed" flex="1">
 						<listbox flex="1" id="sciviews_robjects_searchpath_listbox"
 							ondragdrop="nsDragAndDrop.drop(event, sv.r.objects.packageListObserver);"
 							ondragover="nsDragAndDrop.dragOver(event, sv.r.objects.packageListObserver);"
@@ -235,7 +235,7 @@
 									onclick="sv.r.objects.sort(this);" ordinal="7"/>
 								<splitter class="tree-splitter" ordinal="8"/>
 								<treecol id="r-fullName" label="&sciviews.robjects.FullName;"
-									persist="width ordinal hidden" flex="1" ordinal="9"/>
+									persist="width ordinal hidden" flex="1" hidden="true" ordinal="9"/>
 							</treecols>
 							<treechildren id="sciviews_robjects_objects_tree_main"
 								ondraggesture="nsDragAndDrop.startDrag(event, sv.r.objects.listObserver);"

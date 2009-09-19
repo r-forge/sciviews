@@ -46,6 +46,7 @@
 // sv.r.obj(objClass); // Set active object for objClass (data.frame if omitted)
 // sv.r.obj_select(data); // The callback for sv.r.obj() to select an object
 // sv.r.obj_refresh_dataframe(data); // Refresh active data frame's MRUs
+// sv.r.obj_refresh_lm(data); 		 // Refresh active 'lm' object
 // sv.r.obj_message(); // Refresh statusbar message about active df and lm
 // sv.r.initSession(dir, datadir, scriptdir, reportdir);
 // sv.r.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
@@ -139,11 +140,10 @@ sv.r.test = function sv_RTest () {
 				} else {
 					// Possibly refresh the GUI by running SciViews-specific
 					// R task callbacks and make sure R Objects pane is updated
-					sv.r.evalHidden("try(guiRefresh(force = TRUE), " +
-						"silent = TRUE)");
+					sv.r.evalCallback("try(guiRefresh(force = TRUE), " +
+						"silent = TRUE)", function () {
+							sv.r.objects.getPackageList(true); });
 				}
-				// Make sure the R Objects explorer is updated
-				
 			}
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');
@@ -388,6 +388,11 @@ sv.r.runEnter = function (breakLine) {
 			var text = sv.getTextRange(breakLine? "linetobegin" : "line", true);
 			ko.commands.doCommand('cmd_newlineExtra');
 			if (text != "") res = sv.r.eval(text);
+		} else {
+			var res = sv.r.eval(ke.selText);
+			ke.currentPos = ke.selectionEnd; // We want to go past the highest pos
+			ke.selectionStart = ke.selectionEnd; // Collapse selection
+			ko.commands.doCommand('cmd_newlineExtra');
 		}
 	} catch(e) {
 		return e;
@@ -722,6 +727,8 @@ sv.r.data_select = function (data) {
 			datname = datname.replace(/^[a-zA-Z0-9._ ]*[(]/, "");
 			datname = datname.replace(/[)]$/, "");
 			res = sv.r.eval('data(' + datname + ')');
+			// Activate this dataset now and refresh corresponding MRU lists
+			sv.r.obj_refresh_dataframe(datname);
 		}
 	}
 	return(res);
@@ -897,6 +904,19 @@ sv.r.obj_select = function (data) {
 						'}, cache = "")\n' +
 						'cat(.active.data.frame$fun(), sep = "")',
 						sv.r.obj_refresh_dataframe);
+				} else if (objclass == "lm") {
+					// Refresh the default lm object in R session
+					res = sv.r.evalCallback(
+						'.active.lm <- list(object = "' + objname +
+						'", fun = function () {\n' +
+'	if (exists(.active.lm$object, envir = .GlobalEnv)) {\n' +
+'		obj <- get(.active.lm$object, envir = .GlobalEnv)\n' +
+'		res <- paste(.active.lm$object, class(obj), sep = "\t")\n' +
+'		return(.active.lm$cache <<- res)\n' +
+'	} else return(.active.lm$cache <<- NULL)\n' +
+						'}, cache = "")\n' +
+						'cat(.active.lm$fun(), sep = "")',
+						sv.r.obj_refresh_lm);
 				} else {
 					// Not implemented yet for other objects!
 					//alert("Update of MRU lists not implemented yet for other " +
@@ -915,12 +935,17 @@ sv.r.obj_select = function (data) {
 // Display which objects (data frame and lm model, as for Rcmdr) are currently
 // active in the Komodo statusbar
 sv.r.obj_message = function () {
+	// Get the directory of current session
+	var ses = sv.prefs.getString("sciviews.session.dir", "~");
+	ses = sv.tools.strings.filename(ses);
+	// Get currently active data frame
 	var df = sv.prefs.getString("r.active.data.frame", "<none>");
 	if (df == "<df>") df = "<none>";
+	// Get currently active 'lm' object
 	var lm = sv.prefs.getString("r.active.lm", "<none>")
 	if (lm == "<lm>") lm = "<none>";
-	ko.statusBar.AddMessage("Data: " + df + ", linear model: " + lm, "Rref", 0,
-		false);
+	ko.statusBar.AddMessage("R session: " + ses + ", data: " + df +
+		", linear model: " + lm, "Rstatus", 0, false);
 }
 
 // Callback for sv.r.obj_select to refresh the MRUs associated with data frames
@@ -928,16 +953,16 @@ sv.r.obj_refresh_dataframe = function (data) {
 	ko.statusBar.AddMessage("", "R");
 	// If we got nothing, then the object does not exists any more... clear MRUs
 	if (data == "<<<data>>>") {
-		var oldobj = sv.prefs.getString("r.active.data.frame", "");
+		//var oldobj = sv.prefs.getString("r.active.data.frame", "");
 		sv.prefs.setString("r.active.data.frame", "<df>", true); // Default value
-		sv.prefs.mru("var", true, "", "|");
-		sv.prefs.mru("var2", true, "", "|");
-		sv.prefs.mru("x", true, "", "|");
-		sv.prefs.mru("x2", true, "", "|");
-		sv.prefs.mru("y", true, "", "|");
-		sv.prefs.mru("factor", true, "", "|");
-		sv.prefs.mru("factor2", true, "", "|");
-		sv.prefs.mru("blockFactor", true, "", "|");
+		sv.prefs.mru("var", true, "");
+		sv.prefs.mru("var2", true, "");
+		sv.prefs.mru("x", true, "");
+		sv.prefs.mru("x2", true, "");
+		sv.prefs.mru("y", true, "");
+		sv.prefs.mru("factor", true, "");
+		sv.prefs.mru("factor2", true, "");
+		sv.prefs.mru("blockFactor", true, "");
 		// Update message in the statusbar
 		sv.r.obj_message();
 		return(false);
@@ -977,6 +1002,30 @@ sv.r.obj_refresh_dataframe = function (data) {
 	sv.prefs.mru("factor", true, facts, "|");
 	sv.prefs.mru("factor2", true, facts, "|");
 	sv.prefs.mru("blockFactor", true, facts, "|");
+	// Update message in the statusbar
+	sv.r.obj_message();
+	return(true);
+}
+
+// Callback for sv.r.obj_select to refresh the MRUs associated with lm objects
+sv.r.obj_refresh_lm = function (data) {
+	ko.statusBar.AddMessage("", "R");
+	// If we got nothing, then the object does not exists any more... clear MRUs
+	if (data == "<<<data>>>") {
+		//var oldobj = sv.prefs.getString("r.active.lm", "");
+		sv.prefs.setString("r.active.lm", "<lm>", true); // Default value
+		// Update message in the statusbar
+		sv.r.obj_message();
+		return(false);
+	}
+	
+	var items = data.split("\n");
+	// First item contains the name of the active object and its class
+	var item = sv.tools.strings.removeLastCRLF(items[0]).split("\t");
+	var objname = item[0];
+	var objclass = item[1];
+	// Make sure r.active.data.frame pref is set to obj
+	sv.prefs.setString("r.active." + objclass, objname, true);
 	// Update message in the statusbar
 	sv.r.obj_message();
 	return(true);
@@ -1109,8 +1158,11 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
         // TODO: report if we load something or not
         sv.r.escape('cat("Session directory is now ' + dir +
             '\n", file = stderr())');
-        // We most probably need to update the R Objects browser
-		sv.r.objects.getPackageList(true);
+		// Refresh active objects support
+		
+        // We most probably need to update the R Objects browser and active objs
+		//sv.r.objects.getPackageList(true); // Old command, but refresh only object browser
+		sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
 	});
 
 	// TODO: possibly open the Komodo project associated with this session
@@ -1128,7 +1180,12 @@ sv.r.quit = function (save) {
 			null, "Exiting R");
 		if (response == "Cancel") { return; }
 	}
+	// Quit R
 	sv.r.eval('q("' + response.toLowerCase() + '")');
+	// Clear the R-relative statusbar message
+	ko.statusBar.AddMessage("", "Rstatus");
+	// Clear the objects browser
+	sv.r.objects.clearPackageList();
 }
 
 

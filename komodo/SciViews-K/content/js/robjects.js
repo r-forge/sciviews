@@ -87,6 +87,7 @@
 ///// Search path box methods
 // _processPackageList - private method
 // getPackageList
+// clearPackageList - clear the list of packages and object explorer content
 // toggleViewSearchPath
 // displayPackageList
 // packageSelectedEvent
@@ -936,6 +937,13 @@ sv.r.objects = {};
 		var cmd = 'cat(objSearch(sep = "' + sep + '", compare = FALSE))';
 		sv.r.evalCallback(cmd, _processPackageList, refreshObjects);
 	};
+	
+	// Clear the list of packages on the search path (when quitting R)
+	this.clearPackageList =  function () {
+		_this.searchPaths = [];
+		_this.displayPackageList(false);
+		_parseObjectList("Env=.GlobalEnv\n");
+	}
 	
 	this.toggleViewSearchPath = function (event) {
 		var what = event.target.tagName;

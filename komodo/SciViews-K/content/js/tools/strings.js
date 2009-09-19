@@ -5,7 +5,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // sv.tools.strings.replaceCRLF(str, code);	// Replace LF and CR by 'code'
 // sv.tools.strings.removeLastCRLF(str);    // Remove last CR and/or LF
-// sv.tools.strings.toRegex(str);			// changes a string to a regex
+// sv.tools.strings.toRegex(str);			// Changes a string to a regex
+// sv.tools.strings.filename(str);			// Get filename/last dir from path
 //
 // Additional methods to String objects ////////////////////////////////////////
 // String.prototype.trim();					// Trim function for String
@@ -37,6 +38,20 @@ sv.tools.strings.toRegex = function (str) {
 
 	// TODO: anything else
 	return(str);
+}
+
+// Get filename or last directory name in a file path
+sv.tools.strings.filename = function (str) {
+	// Under Windows, replace \ by /
+	if (navigator.platform.indexOf("Win") > -1) {
+		str = str.replace(/[\\]/g, "/");
+	}
+	// Remove last trailing '/'
+	str = str.replace(/\/$/, "");
+	// Split into components
+	items = str.split("/");
+	// Return last component
+	return(items[items.length - 1]);
 }
 
 
