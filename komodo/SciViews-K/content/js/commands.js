@@ -8,6 +8,7 @@
 								// and hide incompatible items.
 // sv.command.startR();			// Start the preferred R app and connect to it
 // sv.command.openPkgManager(); // Open the package manager window
+// sv.command.openHelp(webpage);// Open the R Help window at this web page
 // sv.command.setControllers(); // Set controllers for R related commands
 // sv.command.setKeybindings(clearOnly); // Set SciViews-K default keybindings
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,9 +19,9 @@ if (typeof(sv.command) == 'undefined') {
 
 // sv.command object constructor
 (function () {
+	var RHelpWin;  // A reference to the R Help Window
 
 	// private methods
-	
 	function _keepCheckingR (stopMe) {
 		clearInterval(sv.r.testInterval);
 		if (!stopMe) {
@@ -314,6 +315,32 @@ if (typeof(sv.command) == 'undefined') {
 			"RPackageManager",
 			"chrome=yes,dependent,centerscreen,resizable=yes,scrollbars=yes,status=no",
 			sv);
+	}
+	
+	this.openHelp = function (webpage) {
+		if (typeof(webpage) == "undefined") {
+			// We are asking for the R help home page
+			if (typeof(RHelpWin) == "undefined" || RHelpWin.closed) {
+				sv.r.helpStart(true);
+			} else {
+				RHelpWin.home();
+				RHelpWin.focus();
+			}
+		} else {
+			// We want to display a specific page
+			if (typeof(RHelpWin) == "undefined" || RHelpWin.closed) {
+				RHelpWin = window.openDialog(
+					"chrome://sciviewsk/content/RHelpOverlay.xul",
+					"RHelp",
+					"chrome=yes,dependent,resizable=yes,scrollbars=yes,status=no",
+					sv, webpage);
+				// Recalculate home page for R Help only
+				sv.r.helpStart(false);
+			} else {
+				RHelpWin.display(webpage);
+			}
+			RHelpWin.focus();
+		}
 	}
 	
 	this.setControllers = function () {

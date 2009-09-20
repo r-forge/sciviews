@@ -1,6 +1,6 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
-# Version 0.8.1, 2009-09-06 Ph. Grosjean (phgrosjean@sciviews.org)
+# Version 0.8.1b, 2009-09-20 Ph. Grosjean (phgrosjean@sciviews.org)
 
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
@@ -286,10 +286,9 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 				options(pager = svPager)
 			}
 		} else {
-
 		    # if komodo path was passed in environment
 			if (file.exists(Sys.getenv("koAppFile"))) {
-				Komodo <-  paste("\"", Sys.getenv("koAppFile"), "\"", sep="")
+				Komodo <-  Sys.getenv("koAppFile")
 			} else {
 				Komodo <- "komodo"	# On Windows, 'komodo' should be enough
 				# But for reasons that escape me, komodo seems to stip off its own
@@ -305,7 +304,7 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 			owarn <- getOption("warn")
 			options(warn = -1)
 			# Try to run Komodo now
-			res <- try(system(Komodo, wait = FALSE), silent = TRUE)
+			res <- try(system(paste('"', Komodo, '"', sep = ""), wait = FALSE), silent = TRUE)
 			if (res == -1) {
 				Komodo <- NULL
 				cat("R cannot find Komodo. Please, make sure you install it correctly\n",

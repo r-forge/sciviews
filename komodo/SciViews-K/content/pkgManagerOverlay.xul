@@ -45,7 +45,7 @@
 <?xml-stylesheet href="chrome://sciviewsk/skin/pkgManager.css" type="text/css"?>
 
 <window id="RPackageManager" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	height="500" width="500" persists="width height"
+	height="500" width="500" persist="width height"
 	style="min-height: 500px; min-width: 500px;" title="Manage R Packages">
 
 	<script type="text/javascript">
