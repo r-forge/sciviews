@@ -1,11 +1,11 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
-# Version 0.8.1b, 2009-09-20 Ph. Grosjean (phgrosjean@sciviews.org)
+# Version 0.9.0, 2009-09-20 Ph. Grosjean (phgrosjean@sciviews.org)
 
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	.SciViewsReady <- FALSE
-	minVersion <- c(R = "2.6.0", svMisc = "0.9-48", svSocket = "0.9-44", svGUI = "0.9-44")
+	minVersion <- c(R = "2.8.0", svMisc = "0.9-53", svSocket = "0.9-48", svGUI = "0.9-46")
 
 	# First of all, check R version... redefine compareVersion() because it is
 	# not defined in very old R versions... and thus we don't get an explicit

@@ -52,21 +52,21 @@
 	<popupset id="extensionPopupSet">
 		<menupopup id="rObjectsContext"
 			onpopupshowing="sv.r.objects.contextOnShow();">
-			<menuitem class="primary_menu_item" id="menu_robjects_cmd_insertname"
-				command="robjects_cmd_insertname" acceltext="Ins"/>
-			<menuitem id="menu_robjects_cmd_insertfullname"
-				command="robjects_cmd_insertfullname" acceltext="Ctrl+Ins"/>
+			<menuitem class="primary_menu_item" id="menu_robjects_cmd_insertfullname"
+				command="robjects_cmd_insertfullname" acceltext="Ins"/>
+			<menuitem id="menu_robjects_cmd_insertname"
+				command="robjects_cmd_insertname" acceltext="Ctrl+Ins"/>
 			<menuitem id="menu_robjects_cmd_removeobj"
 				command="robjects_cmd_removeobj" acceltext="Del"
 				key="key_cmd_delete" class="menuitem-iconic list-item-remove-icon"/>
-			<menuitem id="menu_robjects_cmd_attach" command="robjects_cmd_attach"/>
-			<menuitem id="menu_robjects_cmd_detach" command="robjects_cmd_detach"/>
+			<!--<menuitem id="menu_robjects_cmd_attach" command="robjects_cmd_attach"/>
+			<menuitem id="menu_robjects_cmd_detach" command="robjects_cmd_detach"/>-->
 			<menuseparator keep="false" intoplevel="true"/>
 			<menuitem id="menu_robjects_cmd_print" command="robjects_cmd_print"/>
 			<menuitem id="menu_robjects_cmd_plot" command="robjects_cmd_plot"/>
 			<menuitem id="menu_robjects_cmd_summary" command="robjects_cmd_summary"/>
 			<menuitem id="menu_robjects_cmd_str" command="robjects_cmd_str"/>
-			<menuitem id="menu_robjects_cmd_args" command="robjects_cmd_args"/>
+			<!--<menuitem id="menu_robjects_cmd_args" command="robjects_cmd_args"/>-->
 			<menuitem id="menu_robjects_cmd_names" command="robjects_cmd_names"/>
 			<menuseparator keep="false" intoplevel="true"/>
 			<menuitem id="menu_robjects_cmd_help" command="robjects_cmd_help"/>
@@ -84,14 +84,14 @@
 
 	<commandset id="allcommands">
 		<commandset id="r-objects-commands">
-			<command id="robjects_cmd_insertname" label="&sciviews.robjects.insName;"
-				oncommand="sv.r.objects.insertName(false);" accesskey="I"/>
 			<command id="robjects_cmd_insertfullname" label="&sciviews.robjects.insFullName;"
 				oncommand="sv.r.objects.insertName(true);" accesskey="F"/>
+			<command id="robjects_cmd_insertname" label="&sciviews.robjects.insName;"
+				oncommand="sv.r.objects.insertName(false);" accesskey="I"/>
 			<command id="robjects_cmd_removeobj" label="&sciviews.robjects.rmObj;"
 				oncommand="sv.r.objects.removeSelected(event.shiftKey);" accesskey="R"/>
-			<command id="robjects_cmd_attach" label="&sciviews.robjects.loadPkg;"
-				oncommand="sv.r.objects.do('library');" accesskey="L" disabled="true"/>
+			<!--<command id="robjects_cmd_attach" label="&sciviews.robjects.loadPkg;"
+				oncommand="sv.r.objects.do('library');" accesskey="L" disabled="true"/>-->
 			<command id="robjects_cmd_summary" label="&sciviews.robjects.summary;"
 				oncommand="sv.r.objects.do('summary');" accesskey="S"/>
 			<command id="robjects_cmd_print" label="&sciviews.robjects.print;"

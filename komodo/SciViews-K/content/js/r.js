@@ -45,8 +45,10 @@
 //                  // Save the current R graph in different formats
 // sv.r.obj(objClass); // Set active object for objClass (data.frame if omitted)
 // sv.r.obj_select(data); // The callback for sv.r.obj() to select an object
-// sv.r.obj_refresh_dataframe(data); // Refresh active data frame's MRUs
-// sv.r.obj_refresh_lm(data); 		 // Refresh active 'lm' object
+// sv.r.obj_select_dataframe(objname); // Select one data frame to activate
+// sv.r.obj_select_lm(objname);		   // Select one lm object to activate
+// sv.r.obj_refresh_dataframe(data);   // Refresh active data frame's MRUs
+// sv.r.obj_refresh_lm(data); 		   // Refresh active 'lm' object
 // sv.r.obj_message(); // Refresh statusbar message about active df and lm
 // sv.r.refreshSession(); // Refresh MRU lists associated with current session
 // sv.r.initSession(dir, datadir, scriptdir, reportdir);
@@ -749,9 +751,9 @@ sv.r.data_select = function (data) {
 			// Sometimes, we got 'item (data)' => retrieve 'data' in this case
 			datname = datname.replace(/^[a-zA-Z0-9._ ]*[(]/, "");
 			datname = datname.replace(/[)]$/, "");
-			res = sv.r.eval('data(' + datname + ')');
-			// Activate this dataset now and refresh corresponding MRU lists
-			sv.r.obj_refresh_dataframe(datname);
+			res = sv.r.evalCallback('data(' + datname + '); cat("' + datname +
+				'"); invisible(try(guiRefresh(force = TRUE), silent = TRUE))',
+				sv.r.obj_select_dataframe);
 		}
 	}
 	return(res);
@@ -914,32 +916,9 @@ sv.r.obj_select = function (data) {
 				var objname = obj[0];
 				// The rest of the treatment depends on objClass
 				if (objclass == "data.frame") {
-					// Refresh the default val and list of vars
-					res = sv.r.evalCallback(
-						'.active.data.frame <- list(object = "' + objname +
-						'", fun = function () {\n' +
-'	if (exists(.active.data.frame$object, envir = .GlobalEnv)) {\n' +
-'		obj <- get(.active.data.frame$object, envir = .GlobalEnv)\n' +
-'		res <- paste(c(.active.data.frame$object, names(obj)), "\t",\n' +
-'		c(class(obj), sapply(obj, class)), "\n", sep = "")\n' +
-'		return(.active.data.frame$cache <<- res)\n' +
-'	} else return(.active.data.frame$cache <<- NULL)\n' +       
-						'}, cache = "")\n' +
-						'cat(.active.data.frame$fun(), sep = "")',
-						sv.r.obj_refresh_dataframe);
+					sv.r.obj_select_dataframe(objname);
 				} else if (objclass == "lm") {
-					// Refresh the default lm object in R session
-					res = sv.r.evalCallback(
-						'.active.lm <- list(object = "' + objname +
-						'", fun = function () {\n' +
-'	if (exists(.active.lm$object, envir = .GlobalEnv)) {\n' +
-'		obj <- get(.active.lm$object, envir = .GlobalEnv)\n' +
-'		res <- paste(.active.lm$object, class(obj), sep = "\t")\n' +
-'		return(.active.lm$cache <<- res)\n' +
-'	} else return(.active.lm$cache <<- NULL)\n' +
-						'}, cache = "")\n' +
-						'cat(.active.lm$fun(), sep = "")',
-						sv.r.obj_refresh_lm);
+					sv.r.obj_select_lm(objname);
 				} else {
 					// Not implemented yet for other objects!
 					//alert("Update of MRU lists not implemented yet for other " +
@@ -971,7 +950,24 @@ sv.r.obj_message = function () {
 		", linear model: " + lm, "Rstatus", 0, false);
 }
 
-// Callback for sv.r.obj_select to refresh the MRUs associated with data frames
+// Select one data frame
+sv.r.obj_select_dataframe = function (objname) {
+	// Refresh the default val and list of vars
+	res = sv.r.evalCallback(
+		'.active.data.frame <- list(object = "' + objname +
+		'", fun = function () {\n' +
+		'	if (exists(.active.data.frame$object, envir = .GlobalEnv)) {\n' +
+		'		obj <- get(.active.data.frame$object, envir = .GlobalEnv)\n' +
+		'		res <- paste(c(.active.data.frame$object, names(obj)), "\t",\n' +
+		'		c(class(obj), sapply(obj, class)), "\n", sep = "")\n' +
+		'		return(.active.data.frame$cache <<- res)\n' +
+		'	} else return(.active.data.frame$cache <<- NULL)\n' +       
+		'}, cache = "")\n' +
+		'cat(.active.data.frame$fun(), sep = "")',
+		sv.r.obj_refresh_dataframe);
+}
+
+// Callback for sv.r.obj_select_dataframe to refresh the associated MRUs
 sv.r.obj_refresh_dataframe = function (data) {
 	ko.statusBar.AddMessage("", "R");
 	// If we got nothing, then the object does not exists any more... clear MRUs
@@ -1029,6 +1025,22 @@ sv.r.obj_refresh_dataframe = function (data) {
 	// Update message in the statusbar
 	sv.r.obj_message();
 	return(true);
+}
+
+// Select one data frame
+sv.r.obj_select_lm = function (objname) {
+	// Refresh the default lm object in R session
+	res = sv.r.evalCallback(
+		'.active.lm <- list(object = "' + objname +
+		'", fun = function () {\n' +
+		'	if (exists(.active.lm$object, envir = .GlobalEnv)) {\n' +
+		'		obj <- get(.active.lm$object, envir = .GlobalEnv)\n' +
+		'		res <- paste(.active.lm$object, class(obj), sep = "\t")\n' +
+		'		return(.active.lm$cache <<- res)\n' +
+		'	} else return(.active.lm$cache <<- NULL)\n' +
+		'}, cache = "")\n' +
+		'cat(.active.lm$fun(), sep = "")',
+		sv.r.obj_refresh_lm);
 }
 
 // Callback for sv.r.obj_select to refresh the MRUs associated with lm objects
