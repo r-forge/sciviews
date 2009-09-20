@@ -1239,8 +1239,8 @@ sv.r.objects = {};
 	
 			document.getElementById("robjects_cmd_removeobj")
 				.setAttribute("disabled", noDetach);
-			document.getElementById("robjects_cmd_attach")
-				.setAttribute("disabled", noDetach || !isPackage);
+			//document.getElementById("robjects_cmd_attach")
+			//	.setAttribute("disabled", noDetach || !isPackage);
 			document.getElementById("robjects_cmd_summary")
 				.setAttribute("disabled", isFunction || isPackage);
 			document.getElementById("robjects_cmd_print")
@@ -1252,7 +1252,7 @@ sv.r.objects = {};
 			document.getElementById("robjects_cmd_str")
 				.setAttribute("disabled", isPackage);
 			document.getElementById("robjects_cmd_help")
-				.setAttribute("disabled", !isPackage && !inPackage);
+				.setAttribute("disabled", isPackage); // && !inPackage);
 		}
 	}
 	
@@ -1280,6 +1280,8 @@ sv.r.objects = {};
 					sv.r.help(obj[i].name, obj[i].pkg.replace(/^package:/, ''));
 				} else if (obj[i].name.indexOf("package:") == 0) {
 					sv.r.help("", obj[i].name.replace(/^package:/, ''));
+				} else {
+					sv.r.help(obj[i].name);
 				}
 			}
 		break;
