@@ -22,7 +22,7 @@
 if (typeof(sv.misc) == 'undefined')
 	sv.misc = {};
 
-// sv.misc.sessionData(name);   // Create or open a .csv dataset from session
+// Create or open a .csv dataset from session
 sv.misc.sessionData = function (data) {
     if (typeof(data) == "undefined") {
         data = ko.dialogs.prompt(

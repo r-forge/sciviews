@@ -23,8 +23,8 @@
 // sv.r.calltip_show(tip);		// Companion functions for sv.r.calltip
 // sv.r.complete(code); // AutoComplete mechanism for R
 // sv.r.display(topic, what); // Display 'topic' according to 'what' type
-// sv.r.helpStart(); // Start R help in the default browser
-// sv.r.help(topic, package); // Get help in R for 'topic', 'topic' is optional
+// sv.r.helpStart(start); // Start R help in the browser, unless start is false
+// sv.r.help(topic, package); // Get help in R for 'topic', 'package' is optional
 // sv.r.example(topic); // Run example in R for 'topic', 'topic' is optional
 // sv.r.search(topic); // Search R help for 'topic'
 // sv.r.search_select(topics); // Callback function: display a list of
@@ -588,10 +588,26 @@ sv.r.display = function (topic, what) {
 }
 
 // Start R help in the default browser
-sv.r.helpStart = function () {
-	var res = sv.r.eval("help.start()");
-	ko.statusBar.AddMessage(sv.translate("R help started... should display" +
-		+ " in browser soon"), "R", 5000, true);
+sv.r.helpStart = function (start) {
+	var cmd = 'suppressMessages(make.packages.html()); options(htmlhelp = TRUE); ' +
+		'cat(paste("file://", URLencode(tempdir()), "/.R/doc/html/index.html\n", sep = ""))';
+	if (typeof(start) == "undefined" || start == true) {
+		ko.statusBar.AddMessage(sv.translate("R help started... should display" +
+			" in browser soon"), "RhelpStart", 10000, true);
+		var res = sv.r.evalCallback(cmd, function (page) {
+			ko.statusBar.AddMessage("", "RhelpStart");
+			page = sv.tools.strings.removeLastCRLF(page);
+			sv.prefs.setString("Rhelp.index", page, true);
+			// Launch the help window
+			sv.command.openHelp(page);
+		});
+	} else { // Just set the home page
+		var res = sv.r.evalCallback(cmd, function (page) {
+			ko.statusBar.AddMessage("", "RhelpStart");
+			page = sv.tools.strings.removeLastCRLF(page);
+			sv.prefs.setString("Rhelp.index", page, true);
+		});
+	}
 	return(res);
 }
 
@@ -611,7 +627,7 @@ sv.r.help = function (topic, pkg) {
 		cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
 
 		// TODO: error handling when package does not exists
-		res = sv.r.evalCallback(cmd, sv.browseURI);
+		res = sv.r.evalCallback(cmd, sv.command.openHelp);
 		ko.statusBar.AddMessage(sv.translate("R help asked for \"%S\"", topic),
 			"R", 5000, true);
 	}
@@ -636,12 +652,14 @@ sv.r.example = function (topic) {
 // Search R help for topic
 sv.r.search = function (topic, internal) {
 	var res = false;
-	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
-	// Ask for the search string
-	topic = ko.dialogs.prompt(sv.translate("Search R objects using a regular" +
-		" expression (e.g. '^log' for objects starting with 'log')"),
-							  sv.translate("Pattern"), topic,
-							  sv.translate("Search R help"), "okRsearchPattern");
+	if (typeof(topic) == "undefined" | topic == "") {
+		topic = sv.getText();
+		// Ask for the search string
+		topic = ko.dialogs.prompt(sv.translate("Search R objects using a regular" +
+			" expression (e.g. '^log' for objects starting with 'log')"),
+			sv.translate("Pattern"), topic,
+			sv.translate("Search R help"), "okRsearchPattern");
+	}
 	if (topic != null & topic != "") {
 		// Get list of matching items and evaluate it with sv.r.search_select()
 		res = sv.r.evalCallback('cat(apropos("' + topic + '"), sep = "' +
@@ -665,7 +683,7 @@ sv.r.search_select = function (topics) {
 			res = sv.r.help(sv.tools.strings.removeLastCRLF(topics));
 		} else {
 			// Select the item you want in the list
-			var topic = ko.dialogs.selectFromList("R help",
+			var topic = ko.dialogs.selectFromList("R help topics",
 				"Select a topic:", items, "one");
 			if (topic != null)
 				res = sv.r.help(sv.tools.strings.removeLastCRLF(topic.join("")));

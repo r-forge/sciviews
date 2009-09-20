@@ -433,15 +433,16 @@ sv.helpURL = function (URL) {
 	return(false);
 }
 
-
-//is this still necessarry?
-// Get contextual help for a word in the buffer, or for snippets
+// Get some help for a snippet, or a word in the buffer by hitting Shift+F1
 sv.helpContext = function () {
 	try {
 		if (ko.window.focusedView() == null) {
 			if (ko.projects.active) {
 				var item = ko.projects.active.getSelectedItem();
 				var content = item.value;
+				// We need to eliminate newlines for easier regexp search
+				content = content.replace(/[\n\r]/g, '\t');
+
 				// Look for a string defining the URL for associated help file
 				// This is something like: [[%pref:URL|R|RWiki-help:<value>]]
 

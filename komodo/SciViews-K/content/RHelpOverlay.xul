@@ -1,0 +1,184 @@
+<?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+
+ The contents of this file are subject to the Mozilla Public License
+ Version 1.1 (the "License"); you may not use this file except in
+ compliance with the License. You may obtain a copy of the License at
+ http://www.mozilla.org/MPL/
+
+ Software distributed under the License is distributed on an "AS IS"
+ basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ License for the specific language governing rights and limitations
+ under the License.
+
+ The Original Code is SciViews-K by Philippe Grosjean et al.
+
+ Contributor(s):
+   Philippe Grosjean
+   ActiveState Software Inc (code inspired from)
+
+ Alternatively, the contents of this file may be used under the terms of
+ either the GNU General Public License Version 2 or later (the "GPL"), or
+ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ in which case the provisions of the GPL or the LGPL are applicable instead
+ of those above. If you wish to allow use of your version of this file only
+ under the terms of either the GPL or the LGPL, and not to allow others to
+ use your version of this file under the terms of the MPL, indicate your
+ decision by deleting the provisions above and replace them with the notice
+ and other provisions required by the GPL or the LGPL. If you do not delete
+ the provisions above, a recipient may use your version of this file under
+ the terms of any one of the MPL, the GPL or the LGPL.
+
+ ***** END LICENSE BLOCK ***** -->
+
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
+"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/toolbar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/views.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/widgets.css" type="text/css"?>
+
+<window
+    id="RHelpWindow" title="R Help" onload="rHelpOnLoad();"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    width="600" height="400" screenX="20" screenY="20"
+    persist="screenX screenY width height"
+    style="min-height: 400px; min-width: 300px;">
+
+    <script type="text/javascript">
+        <![CDATA[
+        var sv;
+		var rHelpBrowser;
+		var rHelpTopic;
+		var rHelpHome;
+                
+        function display(page) {
+			rHelpBrowser.webNavigation.loadURI(page, null, null, null, null);
+		}
+		
+		function go() {
+			var page = rHelpTopic.value;
+			rHelpTopic.select();
+			// Try to differenciate an URL from a help topic
+			if (page.match(/^[a-zA-Z]+:\/\//) != null) {
+				// This looks like a URL
+				rHelpBrowser.webNavigation.loadURI(page, null, null, null, null);
+			} else {
+				// Look for this 'topic' web page
+				sv.r.help(rHelpTopic.value);
+			}
+		}
+		
+		function txtInput(aEvent) {
+			if (aEvent.keyCode == KeyEvent.DOM_VK_RETURN) {
+				go();
+			}
+		}
+		
+		function search() {       
+			rHelpTopic.select();
+			sv.r.search(rHelpTopic.value);
+        }
+    
+		function print() {
+			alert("Print not implemented yet!");
+			//window.print();
+		}
+		
+		function home() {
+			// Change rHelpHome (not set before to display quicker the first time)
+			rHelpHome = sv.prefs.getString("Rhelp.index",
+				"about:blank")
+			rHelpBrowser.webNavigation.loadURI(rHelpHome,
+				null, null, null, null);
+		}
+	
+        function goBack() {
+            var webNavigation = rHelpBrowser.webNavigation;      
+			if (webNavigation.canGoBack)
+				webNavigation.goBack();
+        }
+    
+        function goForward() {
+            var webNavigation = rHelpBrowser.webNavigation;
+            if (webNavigation.canGoForward)
+               webNavigation.goForward();
+        }
+		
+		self.onload = function () {
+            var args = window.arguments;
+			sv = args[0];
+			var page = rHelpHome;
+			if (typeof(args[1]) != "undefined") page = args[1];
+			rHelpTopic = document.getElementById("rhelp-topic");
+			rHelpBrowser = document.getElementById("rhelp-browser");
+			rHelpBrowser.webNavigation.loadURI(page,
+				null, null, null, null);
+        }
+        ]]>
+    </script>
+    <hbox>
+		<vbox align="stretch" flex="1">
+            <textbox id="rhelp-topic" flex="0" emptytext="topic or web page"
+				onkeypress="txtInput(event);"
+				tooltiptext="Search topic or Web page"/>
+        </vbox>
+		<toolbarbutton id="rhelp-go" class="macro-play-icon"
+		    oncommand="go();" disabled="false" label="Go"
+			tooltiptext="Show topic or web page" persist="buttonstyle" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-search" class="help-icon"
+		    oncommand="search();" disabled="false" label="Search"
+			tooltiptext="Search expression in R help" persist="buttonstyle" buttonstyle="pictures"/>
+		<spacer flex="1"/>
+		<toolbarbutton id="rhelp-back-button" class="history-back-icon"
+		    oncommand="goBack();" disabled="false" label="Back"
+			tooltiptext="Back" persist="buttonstyle" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-forward-button" class="history-forward-icon"
+		    oncommand="goForward();" disabled="false" label="Forward"
+			tooltiptext="Forward" persist="buttonstyle" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-home" class="open-file-icon"
+		    oncommand="home();" disabled="false" label="Home"
+			tooltiptext="R help index" persist="buttonstyle" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-web" type="menu"
+		     disabled="false" label="Web"
+			tooltiptext="R help on the web" persist="buttonstyle" buttonstyle="pictures">
+			<menupopup>
+				<menuitem id="rhelp-menu-sitesearch" label="R Site Search"
+					accesskey="s"
+					oncommand="display('http://finzi.psych.upenn.edu/search.html');"/>
+				<menuitem id="rhelp-menu-cran" label="CRAN"
+					accesskey="c"
+					oncommand="display('http://cran.r-project.org/');"/>
+				<menuitem id="rhelp-menu-wiki" label="R wiki"
+					accesskey="w"
+					oncommand="display('http://wiki.r-project.org/');"/>
+				<menuitem id="rhelp-menu-bioconductor" label="Bioconductor"
+					accesskey="b"
+					oncommand="display('http://www.bioconductor.org/');"/>
+				<menuitem id="rhelp-menu-graph" label="Graph Gallery"
+					accesskey="g"
+					oncommand="display('http://addictedtor.free.fr/graphiques/');"/>
+				<menuitem id="rhelp-menu-forge" label="R-Forge"
+					accesskey="f"
+					oncommand="display('http://r-forge.r-project.org/');"/>
+			</menupopup>
+		</toolbarbutton>
+		<toolbarseparator/>
+		<toolbarbutton id="rhelp-print" class="print-button"
+		    oncommand="print();" disabled="false" label="Print"
+			tooltiptext="Print this page" persist="buttonstyle" buttonstyle="pictures"/>
+    </hbox>
+            
+    <vbox flex="1">
+        <hbox flex="1">
+            <browser id="rhelp-browser" type="content-primary"
+                src="about:blank" flex="1"/>
+        </hbox>
+    </vbox>
+</window>
