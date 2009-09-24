@@ -1,11 +1,14 @@
 // SciViews-K R functions
 // Define functions to pilot R from Komodo Edit 'sv.r' & 'sv.r.pkg'
-// Copyright (c) 2009, Kamil Barton
+// based on original Komodo code
+// Copyright (c) 2000-2007, ActiveState Software Inc
+// Copyright (c) 2009, Kamil Bartoñ
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // ko.help.language();	// Replacement for language specific help on selection
-						//function (cmd_helpLanguage command) to handle R help
-						// without using system command
+						//function (cmd_helpLanguage command) extended to
+						//handle "javascript:" commands.
+// original code located in chrome://komodo/content/launch.js
 ////////////////////////////////////////////////////////////////////////////////
 
 // This should be kept updated with new versions of the original function

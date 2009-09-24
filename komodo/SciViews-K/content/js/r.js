@@ -250,6 +250,7 @@ sv.r.escape = function (cmd) {
 }
 
 // Set the current working directory (to current buffer dir, or ask for it)
+// TODO: make it update sv.prefs.setSession?
 sv.r.setwd = function (dir, ask, type) {
 	// TODO: simplify this:
 	// for compatibility with previous versions
@@ -503,6 +504,7 @@ sv.r.calltip = function (code) {
 }
 
 // The callback for sv.r.calltip
+//TODO: make private
 sv.r.calltip_show = function (tip) {
 	if (tip != "") {
 		//ko.statusBar.AddMessage(tip, "R", 2000, true);
@@ -513,9 +515,9 @@ sv.r.calltip_show = function (tip) {
 }
 
 // AutoComplete mechanism for R
+// deprecated??
 sv.r.complete = function (code) {
-	//if (ko.views.manager.currentView.languageObj.name != "R")
-	//	return false;
+
 	// If code is not defined, get currently edited code
 	if (typeof(code) == "undefined" | code == "") {
 		code = sv.getTextRange("codefrag");
@@ -524,7 +526,6 @@ sv.r.complete = function (code) {
 	
 	var scimoz = ko.views.manager.currentView.scimoz;
 	var cmd = 'Complete("' + code + '", print = TRUE, types = "scintilla")';
-	//sv.log.debug(cmd);
 
 	var res = sv.r.evalCallback(cmd, function(autoCstring) {
 		// these should be set only once?:
@@ -535,7 +536,6 @@ sv.r.complete = function (code) {
 		autoCstring = autoCstring.replace(/^(.*)[\r\n]+/, "");
 
 		var trigPos = RegExp.$1;
-		//var trigPos = RegExp.$1.split(/;/g)[1];
 
 		autoCstring = autoCstring.replace(/\r?\n/g, autoCSeparatorChar);
 
@@ -559,6 +559,7 @@ sv.r.complete = function (code) {
 
 // Display R objects in different ways
 // TODO: allow custom methods + arguments + forcevisible + affect to var
+// TODO: this duplicates rObjectsTree.do(), so do something with it
 sv.r.display = function (topic, what) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
@@ -637,6 +638,7 @@ sv.r.help = function (topic, pkg) {
 }
 
 // Run the example for selected item
+// TODO: merge with sv.r.help
 sv.r.example = function (topic) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
@@ -673,6 +675,7 @@ sv.r.search = function (topic, internal) {
 }
 
 // The callback for sv.r.search
+//TODO: make private
 sv.r.search_select = function (topics) {
 	ko.statusBar.AddMessage("", "R");
 	var res = false;
@@ -1412,6 +1415,7 @@ sv.r.pkg.repositories = function () {
 }
 
 // Select CRAN mirror
+//TODO: remove?
 sv.r.pkg.CRANmirror = function () {
 	sv.r.pkg.chooseCRANMirror(false);
 }
@@ -1564,6 +1568,7 @@ sv.r.pkg.unload = function () {
 }
 
 // The callback for sv.r.pkg.unload
+//TODO: make private
 sv.r.pkg.unload_select = function (pkgs) {
 	ko.statusBar.AddMessage("", "R");
 	var res = false;
@@ -1671,6 +1676,7 @@ sv.r.pkg.install = function (isCRANMirrorSet) {
 }
 
 // Install R packages from local files (either source, or binaries)
+// TODO: combine with: sv.r.pkg.install
 sv.r.pkg.installLocal = function () {
 	var res = false;
 	// Get list of files to install
@@ -1697,6 +1703,7 @@ sv.r.pkg.installLocal = function () {
 }
 
 // Install the SciViews bundle from CRAN
+// TODO: combine with: sv.r.pkg.install
 sv.r.pkg.installSV = function () {
 	var res = false;
 	res = sv.r.eval('install.packages(c("svMisc", "svSocket", "svGUI", "svIDE"' +
@@ -1707,6 +1714,7 @@ sv.r.pkg.installSV = function () {
 }
 
 // Install the latest development version of Sciviews packages from R-Forge
+// TODO: combine with: sv.r.pkg.install
 sv.r.pkg.installSVrforge = function () {
 	var res = false;
 	var response = ko.dialogs.customButtons(

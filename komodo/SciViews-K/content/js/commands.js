@@ -25,7 +25,8 @@ if (typeof(sv.command) == 'undefined') {
 	function _keepCheckingR (stopMe) {
 		clearInterval(sv.r.testInterval);
 		if (!stopMe) {
-			sv.r.testInterval = window.setInterval(sv.r.test, 1000);
+			// checking every second may cause problems when R is busy, changed to 5000
+			sv.r.testInterval = window.setInterval(sv.r.test, 5000);
 		}
 		setTimeout(window.updateCommands, 1000, 'r_app_started_closed');
 	}
@@ -327,6 +328,9 @@ if (typeof(sv.command) == 'undefined') {
 				RHelpWin.focus();
 			}
 		} else {
+			// Webpage should be of the form: file:///
+			webpage = sv.tools.file.getURI(sv.tools.file.getfile(webpage.replace(/\//g, "\\")));
+
 			// We want to display a specific page
 			if (typeof(RHelpWin) == "undefined" || RHelpWin.closed) {
 				RHelpWin = window.openDialog(
