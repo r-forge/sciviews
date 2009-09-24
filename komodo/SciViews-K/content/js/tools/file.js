@@ -206,6 +206,13 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
 		} catch (e) { return null; }
 	}
 
+	this.getURI = function(file) {
+		var ios = Components.classes["@mozilla.org/network/io-service;1"].
+                    getService(Components.interfaces.nsIIOService);
+		var URL = ios.newFileURI(file);
+		return URL.spec;
+	}
+
 	// Read data from an URI
 	this.readURI = function (uri) {
 		var fileSvc = Components.classes["@activestate.com/koFileService;1"]
