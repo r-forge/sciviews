@@ -30,6 +30,9 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
 (function () {
 	// Default file encoding to use
 	this.defaultEncoding = "latin1";
+	this.TYPE_DIRECTORY = 2;
+	this.TYPE_FILE = 1;
+	this.TYPE_NONE = 0;
 
 	// Read a file with encoding
 	this.read = function (filename, encoding) {
@@ -109,14 +112,14 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
 		try {
 			file.initWithPath(path);
 		} catch(e) {
-			return 0;
+			return this.TYPE_NONE;
 		}
 
 		if (file.exists()) {
 			if (file.isDirectory())
-				return 2;
+				return this.TYPE_DIRECTORY;
 			else if (file.isFile())
-				return 1;
+				return this.TYPE_FILE;
 		}
 		return 0;
 	}
@@ -192,10 +195,10 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
 						pc.push(arguments[i]);
 				pathComponents = pc;
 			}
-	
+
 			var pathSep = Components.classes['@activestate.com/koOs;1'].
 				getService(Components.interfaces.koIOs).sep;
-	
+
 			baseDir = baseDir.replace(/[\\/]+/g, pathSep);
 			if (baseDir[0] == "~") {
 				pathComponents.unshift(baseDir.replace(/^~[\\/]*/, ""));
@@ -223,7 +226,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
 		file.close();
 		return res;
 	}
-	
+
 	// List all files matching a given pattern in directory
 	this.list = function (dirname, pattern, noext) {
 		try {

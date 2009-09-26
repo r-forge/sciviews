@@ -157,7 +157,7 @@
 									oncommand="sv.r.pkg.install();"/>
 								<menuitem id="r_objects_pkg_installLocal" label="Install from local files..."
 									accesskey="c" class="menuitem-iconic r-pkg-install-local-icon"
-									oncommand="sv.r.pkg.installLocal();"/>
+									oncommand="sv.r.pkg.install(null, 'local');"/>
 								<menuitem id="r_objects_pkg_update" label="Update"
 									accesskey="u" class="menuitem-iconic r-pkg-update-icon"
 									oncommand="sv.r.pkg.update();"/>

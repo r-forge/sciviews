@@ -3,7 +3,7 @@
 // Copyright (c) 2009, K. Barton & Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.command.getRApp(event);  	// Select a preferred R application in the list 
+// sv.command.getRApp(event);  	// Select a preferred R application in the list
 // sv.command.setMenuRApp(el); 	// Set up 'R application' submenu (checked item
 								// and hide incompatible items.
 // sv.command.startR();			// Start the preferred R app and connect to it
@@ -30,30 +30,30 @@ if (typeof(sv.command) == 'undefined') {
 		}
 		setTimeout(window.updateCommands, 1000, 'r_app_started_closed');
 	}
-	
+
 	function _isRRunning () {
 		//sv.log.debug("is R Running? " + sv.r.running);
 		return sv.r.running;
 	}
-	
+
 	function _RControl_supported () {
 		var currentView = ko.views.manager.currentView;
 		if (!currentView || !currentView.document)
-			return false;	
+			return false;
 		//return(_isRRunning() && currentView.document.language == "R");
 		return(currentView.document.language == "R");
 	}
-	
+
 	function _RControlSelection_supported () {
 		var currentView = ko.views.manager.currentView;
 		if (!currentView || !currentView.scimoz)
 			return false;
-	
+
 		return _RControl_supported()
 			&&  ((currentView.scimoz.selectionEnd -
 				currentView.scimoz.selectionStart) != 0);
 	}
-	
+
 	// Start R, if not already running
 	this.startR = function () {
 		// runIn = "command-output-window", "new-console",
@@ -78,7 +78,7 @@ if (typeof(sv.command) == 'undefined') {
 		var cwd = sv.tools.file.path("ProfD",
 			["extensions", "sciviewsk@sciviews.org", "templates"]);
 		var command, runIn = "no-console";
-	
+
 		ko.statusBar.AddMessage(sv.translate("Starting R... please wait"),
 			"StartR", 10000, true);
 		switch (preferredRApp) {
@@ -140,7 +140,7 @@ if (typeof(sv.command) == 'undefined') {
 				runIn = "new-console";
 		}
 		sv.log.debug("Running: " + command);
-		
+
 		// Debugging garbage...
 		//var command = "CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt";
 		//ko.run.runCommand(window,
@@ -149,14 +149,14 @@ if (typeof(sv.command) == 'undefined') {
 		//	.getService(Components.interfaces.koIRunService);
 		//var Rapp = runSvc.RunAndNotify(command, cwd, env.join("\n"), null);
 		//ko.run.runCommand(window, command, cwd, env.join("\n"), false,
-		
+
 		ko.run.runCommand(window, command, cwd, env.join("\n"), false,
 			false, false, runIn, false, false, false);
-				
+
 		// Register observer of application termination.
 		this.rObserver = new AppTerminateObserver(command);
 	};
-	
+
 	// This will observe status message notification to be informed about
 	// application being terminated. A more straightforward way would be to use
 	// runService.RunAndNotify but this wouldn't allow to start app in a console
@@ -165,14 +165,14 @@ if (typeof(sv.command) == 'undefined') {
 	function AppTerminateObserver (command) {
 		this.register(command);
 	};
-	
+
 	AppTerminateObserver.prototype = {
 		command: "",
 		// This is launched when status message is set, we then check if it was
 		// about terminated application
 		observe: function (subject, topic, data) {
 			var matches;
-	
+
 			if ((subject.category == "run_command") && (matches =
 				subject.msg.match(/^(['`"])(.+)\1 returned ([0-9]+).$/))
 				!= null && matches[2] == this.command) {
@@ -193,7 +193,7 @@ if (typeof(sv.command) == 'undefined') {
 			// Possibly refresh the GUI by running SciViews-specific
 			// R task callbacks and make sure R Objects pane is updated
 			sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
-	
+
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');
 		},
@@ -202,15 +202,15 @@ if (typeof(sv.command) == 'undefined') {
 				classes["@mozilla.org/observer-service;1"].
 				getService(Components.interfaces.nsIObserverService);
 			observerSvc.removeObserver(this, 'status_message');
-	
+
 			sv.log.debug("R has been closed. Command was: " + this.command);
-	
+
 			sv.r.running = false;
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');
 		}
 	};
-	
+
 	// Selects the checkbox on selected element, while deselecting others
 	this.getRApp = function (event) {
 		var el = event.originalTarget;
@@ -224,11 +224,11 @@ if (typeof(sv.command) == 'undefined') {
 		el.parentNode.setAttribute('selected',  el.id);
 		// Set the preference string
 		sv.prefs.setString("sciviews.preferredRApp", el.id, true);
-	
+
 		document.getElementById("cmd_sv_start_R").setAttribute("label",
 			sv.translate("Start R") + " (" + el.getAttribute('label') + ")");
 	}
-	
+
 	// Selects checkbox on the 'preferred R application' menu on its first
 	// display and hides unsupported commands
 	// It is triggered on popupshowing event, onload would be better,
@@ -239,7 +239,7 @@ if (typeof(sv.command) == 'undefined') {
 
 		var isLinux = navigator.platform.toLowerCase().indexOf("linux") > -1;
 		var isMac = navigator.platform.toLowerCase().indexOf("mac") > -1;
-	
+
 		// This will tell whether an app is present on the *nix system
 		function whereis(app) {
 			var runSvc = Components.
@@ -252,7 +252,7 @@ if (typeof(sv.command) == 'undefined') {
 			if (!path) return false;
 			return out.value.substr(app.length + 2).split(" ");
 		}
-		
+
 		var validPlatforms, showItem;
 		var platform = navigator.platform;
 		for (var i = 0; i < siblings.length; i++) {
@@ -282,7 +282,7 @@ if (typeof(sv.command) == 'undefined') {
 						}
 					}
 				}
-	
+
 				if (!showItem) {
 					siblings[i].style.display = "none";
 					// This does not work on the Mac, but the following is fine
@@ -297,19 +297,19 @@ if (typeof(sv.command) == 'undefined') {
 				sv.log.exception(e, "Error looking for R apps in setMenuRApp");
 			}
 		}
-	
+
 		// Set the preference string
 		sv.prefs.setString("sciviews.preferredRApp", selected, false);
-	
+
 		document.getElementById("cmd_sv_start_R").setAttribute("label",
 			sv.translate("Start R") + " (" + document.getElementById(selected).
 				getAttribute('label') + ")"
 		);
-	
+
 		// We do not need to run it anymore
 		el.removeAttribute("onpopupshowing");
 	}
-	
+
 	this.openPkgManager = function () {
 		window.openDialog(
 			"chrome://sciviewsk/content/pkgManagerOverlay.xul",
@@ -317,7 +317,7 @@ if (typeof(sv.command) == 'undefined') {
 			"chrome=yes,dependent,centerscreen,resizable=yes,scrollbars=yes,status=no",
 			sv);
 	}
-	
+
 	this.openHelp = function (webpage) {
 		if (typeof(webpage) == "undefined") {
 			// We are asking for the R help home page
@@ -336,7 +336,7 @@ if (typeof(sv.command) == 'undefined') {
 				RHelpWin = window.openDialog(
 					"chrome://sciviewsk/content/RHelpOverlay.xul",
 					"RHelp",
-					"chrome=yes,dependent,resizable=yes,scrollbars=yes,status=no",
+					"chrome=yes,dependent,resizable=yes,scrollbars=yes,status=no,close,dialog=no",
 					sv, webpage);
 				// Recalculate home page for R Help only
 				sv.r.helpStart(false);
@@ -346,26 +346,26 @@ if (typeof(sv.command) == 'undefined') {
 			RHelpWin.focus();
 		}
 	}
-	
+
 	this.setControllers = function () {
 		//sv.log.debug("this.setControllers");
 		// Allow some commands only when R is running...
 		// using this needs solving an issue of running R in some terminals
 		// on linux (mac?) that send terminate signal right after start.
-	
+
 		var vmProto = ko.views.viewManager.prototype;
-	
+
 		var cmdsIfRRunning = ['OpenPkgManager', 'BrowseWD', 'quit_R',
 			'update_charset'];
 		var cmdsIfRNotRunning = ['start_R'];
-	
+
 		// Make these commands active only when current document language is R
 		var cmdsIfIsRView = ["RunAll", "SourceAll", "RunBlock", "RunFunction",
 			"RunLine", "RunPara", "SourceBlock", "SourceFunction", "SourcePara",
 			"TriggerCompletion"];
 		// ... and if some text is selected
 		var cmdsIfIsRViewAndSelection = ["RunSelection", "SourceSelection"];
-	
+
 		function _setCommandCtrl1 (arr, fun, pfx) {
 			pfx = "is_cmd_" + pfx;
 			for (var i in arr) {
@@ -373,18 +373,18 @@ if (typeof(sv.command) == 'undefined') {
 				vmProto[pfx + arr[i] + "_enabled"] = fun;
 			}
 		}
-	
+
 		_setCommandCtrl1(cmdsIfRRunning, _isRRunning, "sv_");
 		_setCommandCtrl1(cmdsIfRNotRunning, function() {
 			return !_isRRunning()}, "sv_");
 		_setCommandCtrl1(cmdsIfIsRView, _RControl_supported, "sv_R");
 		_setCommandCtrl1(cmdsIfIsRViewAndSelection,
 			_RControlSelection_supported, "sv_R");
-	
+
 		vmProto.do_cmd_sv_quit_R = function () {
 			sv.r.quit();
 		};
-	
+
 		vmProto.do_cmd_sv_update_charset = function () {
 			sv.socket.updateCharset(true);
 			window.setTimeout(function() {
@@ -392,9 +392,9 @@ if (typeof(sv.command) == 'undefined') {
 				sv.socket.charset));
 			}, 100);
 		};
-	
+
 		_keepCheckingR();
-	
+
 		// This is no longer needed:
 		// To run it with the same key as autocompletion with other languages
 		// command "cmd_triggerPrecedingCompletion" is replaced in XUL
@@ -402,7 +402,7 @@ if (typeof(sv.command) == 'undefined') {
 		//vmProto.do_cmd_sv_RTriggerCompletion = function () {
 		//	sv.r.complete();
 		//};
-	
+
 		vmProto.do_cmd_sv_RRunLine = function () {
 			sv.r.send("line");
 		};
@@ -440,7 +440,7 @@ if (typeof(sv.command) == 'undefined') {
 			sv.command.startR();
 		};
 	}
-	
+
 	// Set default keybindings from file
 	// chrome://sciviewsk/content/default-keybindings.kkf
 	// preserving user modified ones and avoiding key conflicts
@@ -448,18 +448,18 @@ if (typeof(sv.command) == 'undefined') {
 		var keybindingSvc = Components
 			.classes["@activestate.com/koKeybindingSchemeService;1"]
 			.getService(Components.interfaces.koIKeybindingSchemeService);
-	
+
 		var svSchemeDefault = sv.tools.file
 			.readURI("chrome://sciviewsk/content/default-keybindings.kkf");
 		var currentSchemeName = sv.prefs.getString("keybinding-scheme");
-	
+
 		// Perhaps this should be redone for each scheme?
 		//var currentSchemeName = "Default";
 		//var schemeNames = {};
 		//keybindingSvc.getSchemeNames(schemeNames, {});
 		//schemeNames = schemeNames.value;
 		var sch = keybindingSvc.getScheme(currentSchemeName);
-	
+
 		var bindingRx = /[\r\n]+(# *SciViews|binding cmd_sv_.*)/g;
 		if (clearOnly != true) {
 			function _getSvKeys (data, pattern) {
@@ -473,14 +473,14 @@ if (typeof(sv.command) == 'undefined') {
 				}
 				return res;
 			}
-	
+
 			var svCmdPattern = "cmd_sv_";
 			var svKeysDefault = _getSvKeys (svSchemeDefault, svCmdPattern);
 			var svKeysCurrent = _getSvKeys (sch.data, svCmdPattern);
-	
+
 			// Temporarily delete SciViews keybindings
 			sch.data = sch.data.replace(bindingRx, "");
-	
+
 			// Check for key conflicts
 			var svKeysCurrentOther = _getSvKeys (sch.data, "");
 			var currKeyArr = [];
@@ -491,7 +491,7 @@ if (typeof(sv.command) == 'undefined') {
 					delete svKeysDefault[k];
 				}
 			}
-	
+
 			var newSchemeData = "";
 			var key, updatedKeys = [];
 			for (var k in svKeysDefault) {
@@ -515,7 +515,7 @@ if (typeof(sv.command) == 'undefined') {
 		}
 		sch.save();
 		sv.log.debug("You may need to restart Komodo.");
-	
+
 		// A (temporary) hack to allow for R autocompletion/calltips to be
 		// triggered with the same key-shortcut as for other languages.
 		// cmd_sv_RTriggerCompletion will exit for files other than R
@@ -525,6 +525,7 @@ if (typeof(sv.command) == 'undefined') {
 		//  event);"].join(";"));
 	}
 }).apply(sv.command);
+
 
 addEventListener("load", sv.command.setControllers, false);
 addEventListener("load", sv.command.setKeybindings, false);

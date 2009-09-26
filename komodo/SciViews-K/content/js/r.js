@@ -85,7 +85,10 @@
 // sv.r.pkg.unload_select(pkgs); // Callback function for sv.r.pkg.unload()
 // sv.r.pkg.remove(); // Remove one R package
 // sv.r.pkg.remove_select(pkgs); // Callback function for sv.r.pkg.remove()
-// sv.r.pkg.install(isCRANMirrorSet); // Install R package(s) from repository
+// sv.r.pkg.install(pkgs, repos); // Install R package(s) from local files or repositories
+
+
+/// REMOVED! replaced by sv.r.pkg.install
 // sv.r.pkg.installLocal(); // Install one or more R packages from local files
 // sv.r.pkg.installSV(); // Install the SciViews-R packages from CRAN
 // sv.r.pkg.installSVrforge(); // Install development versions of SciViews-R
@@ -169,7 +172,7 @@ sv.r.eval = function (cmd) {
 		// Indicate that we want to execute this command when R is started
 		sv.r.pendingCmd = cmd;
 		// and start R now
-		sv.command.startR();
+		//sv.command.startR();
 		return null;
 	}
 	cmd = (new String(cmd)).trim();
@@ -222,7 +225,7 @@ sv.r.evalCallback = function (cmd, procfun, context) {
 		sv.r.pendingFun = procfun;
 		sv.r.pendingContext = context;
 		// and start R now
-		sv.command.startR();
+		//sv.command.startR();
 		return null;
 	}
 	// Evaluate a command in hidden mode (contextual help, calltip, etc.)
@@ -523,7 +526,7 @@ sv.r.complete = function (code) {
 		code = sv.getTextRange("codefrag");
 	}
 	code = code.replace(/(")/g, "\\$1");
-	
+
 	var scimoz = ko.views.manager.currentView.scimoz;
 	var cmd = 'Complete("' + code + '", print = TRUE, types = "scintilla")';
 
@@ -562,7 +565,8 @@ sv.r.complete = function (code) {
 // TODO: this duplicates rObjectsTree.do(), so do something with it
 sv.r.display = function (topic, what) {
 	var res = false;
-	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
+	if (typeof(topic) == "undefined" | topic == "")
+		topic = sv.getTextRange("word");
 	if (topic == "") {
 		//sv.alert("Nothing is selected!");
 	} else {
@@ -619,7 +623,7 @@ sv.r.help = function (topic, pkg) {
 	var res = false;
 	if (!topic && !pkg) {
 		if (typeof(topic) == "undefined" || topic == "")
-			topic = sv.getText();
+			topic = sv.getTextRange("word");
 		if (topic == "")
 			ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
 				1000, false);
@@ -641,7 +645,8 @@ sv.r.help = function (topic, pkg) {
 // TODO: merge with sv.r.help
 sv.r.example = function (topic) {
 	var res = false;
-	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
+	if (typeof(topic) == "undefined" | topic == "")
+		topic = sv.getTextRange("word");
 	if (topic == "") {
 		ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
 			1000, false);
@@ -657,7 +662,7 @@ sv.r.example = function (topic) {
 sv.r.search = function (topic, internal) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "") {
-		topic = sv.getText();
+		topic = sv.getTextRange("word");
 		// Ask for the search string
 		topic = ko.dialogs.prompt(sv.translate("Search R objects using a regular" +
 			" expression (e.g. '^log' for objects starting with 'log')"),
@@ -701,7 +706,8 @@ sv.r.search_select = function (topics) {
 // Search R web sites for topic
 sv.r.siteSearch = function (topic) {
 	var res = false;
-	if (typeof(topic) == "undefined" | topic == "") topic = sv.getText();
+	if (typeof(topic) == "undefined" | topic == "")
+		topic = sv.getTextRange("word");
 	if (topic == "") {
 		ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
 			1000, false);
@@ -929,7 +935,7 @@ sv.r.obj_select = function (data) {
 					// Temporary code: at least set pref value
 					sv.prefs.setString("r.active." + objclass, objname, true);
 					// Refresh statusbar message in case an 'lm' object is changed
-					if (objclass == "lm") sv.r.obj_message(); 
+					if (objclass == "lm") sv.r.obj_message();
 				}
 			}
 		}
@@ -964,7 +970,7 @@ sv.r.obj_select_dataframe = function (objname) {
 		'		res <- paste(c(.active.data.frame$object, names(obj)), "\t",\n' +
 		'		c(class(obj), sapply(obj, class)), "\n", sep = "")\n' +
 		'		return(.active.data.frame$cache <<- res)\n' +
-		'	} else return(.active.data.frame$cache <<- NULL)\n' +       
+		'	} else return(.active.data.frame$cache <<- NULL)\n' +
 		'}, cache = "")\n' +
 		'cat(.active.data.frame$fun(), sep = "")',
 		sv.r.obj_refresh_dataframe);
@@ -989,7 +995,7 @@ sv.r.obj_refresh_dataframe = function (data) {
 		sv.r.obj_message();
 		return(false);
 	}
-	
+
 	var items = data.split("\n");
 	// First item contains the name of the active object and its class
 	var item = sv.tools.strings.removeLastCRLF(items[0]).split("\t");
@@ -1057,7 +1063,7 @@ sv.r.obj_refresh_lm = function (data) {
 		sv.r.obj_message();
 		return(false);
 	}
-	
+
 	var items = data.split("\n");
 	// First item contains the name of the active object and its class
 	var item = sv.tools.strings.removeLastCRLF(items[0]).split("\t");
@@ -1082,7 +1088,7 @@ sv.r.refreshSession = function () {
 		if (items[i] != "")
 			ko.mru.add("datafile_mru", items[i], true);
 	}
-	
+
 	// Refresh lists of scripts
 	items = sv.tools.file.list(sv.prefs.getString("sciviews.scripts.localdir"),
 		/\.[rR]$/, true);
@@ -1092,7 +1098,7 @@ sv.r.refreshSession = function () {
 		if (items[i] != "")
 			ko.mru.add("scriptfile_mru", items[i], true);
 	}
-	
+
 	// Refresh lists of reports
 	items = sv.tools.file.list(sv.prefs.getString("sciviews.reports.localdir"),
 		/\.[oO][dD][tT]$/, true);
@@ -1212,7 +1218,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
 
 	// Initialize the session
 	dir = sv.r.initSession(dir, datadir, scriptdir, reportdir);
-	
+
 	// Switch to the new session directory in R
 	cmd = cmd + 'setwd("' + dir + '")\noptions(R.initdir = "' + dir + '")\n';
 
@@ -1234,7 +1240,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
         sv.r.escape('cat("Session directory is now ' + dir +
             '\n", file = stderr())');
 		// Refresh active objects support
-		
+
         // We most probably need to update the R Objects browser and active objs
 		//sv.r.objects.getPackageList(true); // Old command, but refresh only object browser
 		sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
@@ -1251,7 +1257,7 @@ sv.r.switchSession = function (inDoc) {
 	var sessionDir = "";
 	// Base directory is different on Linux/Mac OS X and Windows
 	if (navigator.platform.indexOf("Win") > -1) {
-		baseDir = "~"	
+		baseDir = "~"
 	} else {
 		baseDir = "~/Documents"
 	}
@@ -1382,7 +1388,7 @@ sv.r.clearSession = function () {
 			'unlink(".RData"); unlink(".Rhistory")\n' +
 			'setwd(.savdir.); rm(.savdir.)';
 		sv.r.evalHidden(cmd);
-	}	
+	}
 }
 
 // Quit R (ask to save in save in not defined)
@@ -1414,54 +1420,49 @@ sv.r.pkg.repositories = function () {
 	return(res);
 }
 
-// Select CRAN mirror
-//TODO: remove?
-sv.r.pkg.CRANmirror = function () {
-	sv.r.pkg.chooseCRANMirror(false);
-}
-
-// Replacement for sv.r.pkg.CRANmirror, optionaly calls .install after execution
-sv.r.pkg.chooseCRANMirror = function (andInstall) {
+// Select CRAN mirror, with optional callback
+sv.r.pkg.chooseCRANMirror = function (callback) {
 	var res = false;
-	res = sv.r.evalCallback(
-		'.sv.tmp <- getCRANmirrors(all = FALSE, local.only = FALSE); ' +
-		'cat(.sv.tmp$Name[.sv.tmp$OK == 1], sep="' + sv.r.sep + '"); rm(.sv.tmp)',
-		function (repos) {
-			ko.statusBar.AddMessage("", "R");
+
+	var cmd = 'assignTemp("cranMirrors", getCRANmirrors(all = FALSE, local.only = FALSE));' +
+		'write.table(getTemp("cranMirrors")[, c("Name", "URL")], col.names = FALSE, quote = FALSE, sep ="' + sv.r.sep + '", row.names = FALSE)';
+
+	res = sv.r.evalCallback(cmd, function (repos) {
 			var res = false;
 
 			if (repos.trim() == "") {
 				sv.alert("Error getting CRAN Mirrors list.");
 			} else {
-				var items = repos.split(sv.r.sep);
-				items = ko.dialogs.selectFromList(sv.translate("CRAN mirrors"),
-					sv.translate("Select CRAN mirror to use:"), items, "one");
-
-				if (items != null) {
-					res = sv.r.evalCallback(".sv.tmp <- getCRANmirrors(all = FALSE, " +
-						"local.only = FALSE); .sv.repos <- getOption(\"repos\"); " +
-						".sv.repos[\"CRAN\"] <- gsub(\"/$\", \"\", " +
-						".sv.tmp$URL[.sv.tmp$Name == \"" + items[0] + "\"]); " +
-						"options(repos =.sv.repos); rm(.sv.repos, .sv.tmp); " +
-						"cat(getOption(\"repos\")['CRAN']);",
-						function(url) {
-							ko.statusBar.AddMessage(
-								sv.translate("Current CRAN mirror is set to %S",
-								url), "R", 5000, false);
-							if (andInstall)
-								sv.r.pkg.install(true);
-						},
-						andInstall);
+				repos = repos.split(/[\n\r]+/);
+				var names = [], urls = [];
+				for (i in repos) {
+					var m = repos[i].split(sv.r.sep);
+					names.push(m[0]);
+					urls.push(m[1]);
 				}
+				items = ko.dialogs.selectFromList(sv.translate("CRAN mirrors"),
+					sv.translate("Select CRAN mirror to use:"), names, "one");
+
+				repos = urls[names.indexOf(items[0])].replace(/\/$/, "");
+				ko.statusBar.AddMessage(sv.translate("Current CRAN mirror is set to %S",
+					repos), "R", 5000, false);
+
+				sv.r.eval('with(TempEnv(), { repos <- getOption("repos");' +
+						  'repos["CRAN"] <- "' + repos + '"; ' +
+						  'options(repos = repos) } )');
+				sv.r.pkg.repos = repos;
+				if (callback)
+					callback();
+
 			}
 			return(res);
-		}
-	);
+		});
 	ko.statusBar.AddMessage(
 		sv.translate("Retrieving CRAN mirrors list... please wait."), "R",
 		20000, true);
 	return(res);
 }
+
 
 // List available packages on the selected repositories
 sv.r.pkg.available = function () {
@@ -1628,108 +1629,130 @@ sv.r.pkg.remove_select = function (pkgs) {
 	return(res);
 }
 
-sv.r.pkg.install = function (isCRANMirrorSet) {
+
+
+
+
+// sv.r.pkg.install - install R packages
+// examples:
+// sv.r.pkg.install() // use default CRAN mirror
+// sv.r.pkg.install("", true) // re-set CRAN mirror
+// sv.r.pkg.install(["boot", "lme4"])
+// sv.r.pkg.install("", "local") // local installation, popups "Open file" dialog
+// sv.r.pkg.install("/path/to/packages", "local") // with initial path
+// sv.r.pkg.install("sciviews") // install all sciViews packages
+// sv.r.pkg.install("sciviews", "r-forge") // ... from R-Forge
+// sv.r.pkg.install("sciviews", "http://r.meteo.uni.wroc.pl") // use different CRAN mirror
+
+sv.r.pkg.install = function (pkgs, repos) {
+	// Just in case, to prevent infinite callbacks
+	// but such should never happen
+	var allowCCM = arguments.length < 3;
+
 	var res = false;
-	if (!isCRANMirrorSet) {
+	var reset = repos === true;
+
+	function _installCallback() {
+			sv.r.pkg.install(pkgs, sv.r.pkg.repos, true);
+	};
+
+	if (!repos && sv.r.pkg.repos) {
+		repos = sv.r.pkg.repos;
+	} else if (reset && allowCCM) {
+		res = sv.r.pkg.chooseCRANMirror(_installCallback);
+		return;
+	} else if (!repos && allowCCM) {
 		res = sv.r.evalCallback("cat(getOption(\"repos\")[\"CRAN\"])",
 			function(cran) {
 				var res = false;
-				if (cran.trim() == "@CRAN@") {
-					res = sv.r.pkg.chooseCRANMirror("install");
+				cran = cran.trim();
+				if (cran == "@CRAN@") {
+					res = sv.r.pkg.chooseCRANMirror(_installCallback);
 				} else {
-					res = sv.r.pkg.install(true);
+					sv.r.pkg.repos = cran;
+					res = sv.r.pkg.install(pkgs, sv.r.pkg.repos, true);
 				}
-				return (res);
+				return;
 			}
 		);
-	} else {
-		ko.statusBar.AddMessage(sv.translate("ListingPackages"),
-				"R", 20000, true);
+		return;
+	}
+
+	// At this point repos should be always set
+	sv.cmdout.append(">> Using " + repos);
+
+	repos = repos.toLowerCase();
+
+	var startDir = null;
+	if (typeof pkgs == "string" &&
+		sv.tools.file.exists(pkgs) == sv.tools.file.TYPE_DIRECTORY) {
+		repos = "local";
+		startDir = pkgs;
+	}
+
+	// no packages provided, popup a list with available ones
+	// then callback again
+	if (!pkgs && repos != "local") {
+		sv.cmdout.message(sv.translate("Listing available packages..."), 5000);
 		res = sv.r.evalCallback('cat(available.packages()[,1], sep="' +
 			sv.r.sep + '")', function (pkgs) {
-				ko.statusBar.AddMessage("", "R");
+				sv.cmdout.message("");
+
 				var res = false;
 				if (pkgs.trim() != "") {
-					var items = pkgs.split(sv.r.sep);
-					items = ko.dialogs.selectFromList(
+					pkgs = pkgs.split(sv.r.sep);
+					pkgs = ko.dialogs.selectFromList(
 						sv.translate("Install R package"),
-						sv.translate("Select package(s) to install") + ":",
-						items);
+						sv.translate("Select package(s) to install") + ":", pkgs);
 
-					if (items != null) {
-						items = '"' + items.join('", "') + '"';
-						ko.statusBar.AddMessage(
-							sv.translate("Installing packages... please wait"),
-							"R");
-						sv.socket.rCommand("install.packages(c(" + items + "))",
-							true, null, function(data) {
-								ko.statusBar.AddMessage("", "R");
-							}
-						);
+					if (pkgs != null) {
+						res = sv.r.pkg.install(pkgs, repos, true);
 					}
 				}
-				return(res);
-			}
-		);
+			});
+		return;
+
 	}
-	return(res);
-}
 
-// Install R packages from local files (either source, or binaries)
-// TODO: combine with: sv.r.pkg.install
-sv.r.pkg.installLocal = function () {
-	var res = false;
-	// Get list of files to install
-	var files = sv.fileOpen(null, null,
-		sv.translate("Select package(s) to install"),
-		['Zip archive (*.zip)|*.zip', 'Gzip archive (*.tgz;*.tar.gz)|*.tgz;*.tar.gz'],
-		true);
+	// Expand short names
+	if (repos == "r-forge") {
+		repos = "http://r-forge.r-project.org";
+	} else if (repos == "local") {
+		repos = "NULL";
 
-	if (files != null) {
-		var cmd = "install.packages("
+		if (!pkgs || startDir) {
+			// Get list of files to install
+			pkgs = sv.fileOpen(startDir, null,
+				sv.translate("Select package(s) to install"),
+					['Zip archive (*.zip)|*.zip', 'Gzip archive (*.tgz;*.tar.gz)|*.tgz;*.tar.gz'], true);
 
-		if (typeof(files) == "object") {
-			cmd += 'c("' + files.join('", "').addslashes() + '")';
-		} else {
-			cmd += '"' + files.addslashes() + '"';
+			if (pkgs == null)
+				return;
+
+			for (i in pkgs)
+				pkgs[i] = pkgs[i].addslashes();
 		}
-		cmd += ', repos = NULL)';
-
-		res = sv.r.eval(cmd);
-		ko.statusBar.AddMessage(sv.translate("InstallingPackages"),
-			"R", 5000, true);
 	}
-	return(res);
+
+	if (repos != "NULL")
+		repos = "\"" + repos + "\"";
+
+	if (typeof pkgs == "string") {
+		if (pkgs.toLowerCase() == "sciviews") {
+			pkgs = ["svMisc", "svSocket", "svGUI", "svIDE", "svDialogs", "svWidgets",
+				"svSweave", "svTools", "svUnit", "tcltk2"];
+		} else {
+			pkgs = [pkgs];
+		}
+	}
+
+	var cmd = "install.packages(c(\"" + pkgs.join('", "') + "\"), repos = " +
+		repos + ")";
+	//sv.cmdout.append(cmd);
+
+	sv.r.eval(cmd);
 }
 
-// Install the SciViews bundle from CRAN
-// TODO: combine with: sv.r.pkg.install
-sv.r.pkg.installSV = function () {
-	var res = false;
-	res = sv.r.eval('install.packages(c("svMisc", "svSocket", "svGUI", "svIDE"' +
-		', "svDialogs", "svWidgets", "svSweave", "svTools", "svUnit", "tcltk2"))');
-	ko.statusBar.AddMessage("Installing SciViews-R packages... please wait",
-		"R", 5000, true);
-	return(res);
-}
-
-// Install the latest development version of Sciviews packages from R-Forge
-// TODO: combine with: sv.r.pkg.install
-sv.r.pkg.installSVrforge = function () {
-	var res = false;
-	var response = ko.dialogs.customButtons(
-		"R-Forge distributes latest development\n" +
-		"version of the SciViews-R bundle.\nThis is NOT the lastest stable one!" +
-		"\nInstall it anyway?", ["&Continue...", "Cancel"], "Continue...", null,
-		"Install the SciViews-R bundle from R-Forge");
-	if (response == "Cancel") { return res; }
-	res = sv.r.eval('install.packages(c("svMisc", "svSocket", "svGUI", "svIDE"' +
-		', "svDialogs", "svWidgets", "svSweave", "svTools", "svUnit", "tcltk2")' +
-		', repos = "http://R-Forge.R-project.org")');
-	ko.statusBar.AddMessage("Installing SciViews R packages from R-Forge..." +
-		" please wait", "R", 5000, true);
-	return(res);
-}
 
 // Initialize the default (last used) R session
 sv.r.initSession();
