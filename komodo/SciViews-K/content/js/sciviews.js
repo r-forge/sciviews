@@ -10,11 +10,6 @@
 //
 // Various functions defined in the 'sv' namespace directly
 // sv.alert(header, text); // Own alert box; text is optional
-// sv.getText(); // Get current selection, or word under the cursor
-// sv.getLine(); // Get current line in the active buffer
-// sv.getPart(what, resel, clipboard); // Get a part of text in the buffer
-            // or copy it to the clipboard (reset selection if resel == false)
-
 // sv.getTextRange(what, gotoend, select);  // Get a part of text in the buffer,
                                             // but do not operate on selection
 // sv.fileOpen(directory, filename, title, filter, multiple); // file open dlg,
@@ -50,7 +45,15 @@
 //
 // Not used any more?
 // sv.checkToolbox(); // Check that the correct SciViews-K toolbox is installed
-//
+
+// Commented out, not used.
+// sv.getLine(); // Get current line in the active buffer
+// sv.getPart(what, resel, clipboard); // Get a part of text in the buffer
+            // or copy it to the clipboard (reset selection if resel == false)
+
+// replaced by sv.getTextRange("word")
+// sv.getText(); // Get current selection, or word under the cursor
+
 ////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') {
@@ -78,16 +81,6 @@ if (typeof(sv) == 'undefined') {
 	};
 }
 
-//DEBUG: this is now obsolete, please, use sv.log.debug()!
-// global debugging flag:
-//sv.debug = false;
-//
-//sv.debugMsg = function (msg) {
-//	if (sv.debug)
-//		sv.cmdout.append("debug: " + msg);
-//}
-
-
 // Create the 'sv.tools' namespace
 if (typeof(sv.tools) == 'undefined') sv.tools = new Object();
 
@@ -106,65 +99,86 @@ sv.getText = function () {
 	var kv = ko.views.manager.currentView;
 	if (!kv) return("");
 	kv.setFocus();
-	var ke = kv.scimoz;
+	var scimoz = kv.scimoz;
 	var txt = ke.selText;
 	// If selection is empty, get the word under the cursor
-	if (txt == "") txt = ko.interpolate.getWordUnderCursor(ke);
+
+	if (txt == "") {
+		// this should be set for every R document by default. but how?
+		var wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.";
+		scimoz.setWordChars(wordChars);
+		var start = scimoz.wordStartPosition(scimoz.currentPos, true);
+		var end = scimoz.wordEndPosition(scimoz.currentPos, true);
+		return scimoz.getTextRange(start, end);
+	}
 	return(txt);
 }
 
-// Get current line of text in the active buffer
-sv.getLine = function () {
-	var kv = ko.views.manager.currentView;
-	if (!kv) return("");
-	kv.setFocus();
-	var ke = kv.scimoz;
-	// retain these so we can reset the selection after the replacement
-	var curAnchor = ke.anchor;
-	var curPos = ke.currentPos;
-	// Get the text in the current line
-	ke.home();
-	ke.lineEndExtend();
-	var currentLine = ke.selText;
-	// Reset the selection
-	ke.setSel(curAnchor, curPos);
-	// Return the content of the current line
-	return(currentLine);
-}
+// NOT USED ANYMORE
+//// Get current line of text in the active buffer
+//sv.getLine = function () {
+//	var kv = ko.views.manager.currentView;
+//	if (!kv) return("");
+//	kv.setFocus();
+//	var ke = kv.scimoz;
+//	// retain these so we can reset the selection after the replacement
+//	var curAnchor = ke.anchor;
+//	var curPos = ke.currentPos;
+//	// Get the text in the current line
+//	ke.home();
+//	ke.lineEndExtend();
+//	var currentLine = ke.selText;
+//	// Reset the selection
+//	ke.setSel(curAnchor, curPos);
+//	// Return the content of the current line
+//	return(currentLine);
+//}
 
+// NOT USED ANYMORE
 // Select a part of text in the current buffer and return it
-sv.getPart = function (what, resel, clipboard) {
-	var range;
-	var text = sv.getTextRange(what, false, !resel, range);
-	if (clipboard) {
-		// Copy to clipboard instead of returning the text
-		ke.copyRange(range.value.start, range.value.end);
-	}
-	return(text);
-}
+//sv.getPart = function (what, resel, clipboard) {
+//	var range;
+//	var text = sv.getTextRange(what, false, !resel, range);
+//	if (clipboard) {
+//		// Copy to clipboard instead of returning the text
+//		ke.copyRange(range.value.start, range.value.end);
+//	}
+//	return(text);
+//}
 
 // Select a part of text in the current buffer and return it
 // differs from sv.getPart that it does not touch the selection
 sv.getTextRange = function (what, gotoend, select, range) {
-	var text = "";
-	var kv = ko.views.manager.currentView;
-	if (!kv) {
+
+	var currentView = ko.views.manager.currentView;
+	if (!currentView) {
 		return "";
 	}
-	kv.setFocus();
-	var ke = kv.scimoz;
-	// retain these so we can reset the selection after the extraction
-	var curPos = ke.currentPos;
-	var curLine = ke.lineFromPosition(curPos);
 
-	var pStart = Math.min (ke.anchor, curPos);
-	var pEnd = Math.max (ke.anchor, curPos);
+	currentView.setFocus();
+	var scimoz = currentView.scimoz;
+
+	var text = "";
+	var curPos = scimoz.currentPos;
+	var curLine = scimoz.lineFromPosition(curPos);
+
+	var pStart = Math.min (scimoz.anchor, curPos);
+	var pEnd = Math.max (scimoz.anchor, curPos);
 
 	// Depending on 'what', we select different parts of the file
 	// By default, we keep current selection
 	switch(what) {
 	case "sel":
 	   // Simply retain current selection
+	   break;
+	case "word":
+	   if (pStart == pEnd) { // only return word if no selection
+			// TODO: this should be set for every R document by default. but how?
+			var wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.";
+			scimoz.setWordChars(wordChars);
+			pStart = scimoz.wordStartPosition(curPos, true);
+			pEnd = scimoz.wordEndPosition(curPos, true);
+	   }
 	   break;
 	case "function":
 	   // tricky one: select an entire R function
@@ -186,52 +200,52 @@ sv.getTextRange = function (what, gotoend, select, range) {
 
 		var line0, line1, pos1, pos2, pos3, pos4;
 		var lineArgsStart, lineBodyStart, firstLine; //lineArgsEnd lineBodyEnd,
-		var pos0 = ke.getLineEndPosition(curLine);
+		var pos0 = scimoz.getLineEndPosition(curLine);
 		var findRes;
 
 		do {
 			//  search for function pattern backwards:
 			findSvc.options.searchBackward = true;
 			findRes = findSvc.find("", // view.document.displayPath
-									ke.text, funcRegExStr,
-									ke.charPosAtPosition(pos0), 0); //start, end
+									scimoz.text, funcRegExStr,
+									scimoz.charPosAtPosition(pos0), 0); //start, end
 			if (!findRes) break;
 
 			// function declaration start:
-			pos0 = ke.positionAtChar(0, findRes.start);
+			pos0 = scimoz.positionAtChar(0, findRes.start);
 			// opening brace of function declaration
-			pos1 = ke.positionAtChar(0, findRes.end);
+			pos1 = scimoz.positionAtChar(0, findRes.end);
 			// closing brace of function declaration
-			pos2 = ke.braceMatch(pos1 - 1) + 1;
+			pos2 = scimoz.braceMatch(pos1 - 1) + 1;
 
 			// find first character following the closing brace
 			findSvc.options.searchBackward = false;
 			findRes = findSvc.find("",  //view.document.displayPath
-									ke.text, "\\S",
-									ke.charPosAtPosition(pos2) + 1,
-									ke.charPosAtPosition(ke.length));
+									scimoz.text, "\\S",
+									scimoz.charPosAtPosition(pos2) + 1,
+									scimoz.charPosAtPosition(scimoz.length));
 			if (!findRes) break;
 
 			//  beginning of the function body:
-			pos3 = ke.positionAtChar(0, findRes.end);
+			pos3 = scimoz.positionAtChar(0, findRes.end);
 
-			lineArgsStart = ke.lineFromPosition(pos1);
-			lineBodyStart = ke.lineFromPosition(pos3);
+			lineArgsStart = scimoz.lineFromPosition(pos1);
+			lineBodyStart = scimoz.lineFromPosition(pos3);
 
 			// get first line of the folding block:
-			firstLine = (ke.getFoldParent(lineBodyStart) != lineArgsStart)?
+			firstLine = (scimoz.getFoldParent(lineBodyStart) != lineArgsStart)?
 				lineBodyStart : lineArgsStart;
 
 			// get end of the function body
-			if (ke.getWCharAt(pos3 - 1) == "{") {
-				pos4 = ke.braceMatch(pos3 - 1) + 1;
+			if (scimoz.getWCharAt(pos3 - 1) == "{") {
+				pos4 = scimoz.braceMatch(pos3 - 1) + 1;
 			} else {
-				pos4 = ke.getLineEndPosition(lineBodyStart);
+				pos4 = scimoz.getLineEndPosition(lineBodyStart);
 			}
 
 		// repeat if selected function does not embrace cursor position and if
 		// there are possibly any functions enclosing it:
-		} while (pos4 < curPos && ke.getFoldParent(lineArgsStart) != -1);
+		} while (pos4 < curPos && scimoz.getFoldParent(lineArgsStart) != -1);
 
 		if (pos4 >= curPos) {
 			pStart = pos0;
@@ -245,68 +259,68 @@ sv.getTextRange = function (what, gotoend, select, range) {
 	case "block":
 		// Select all content between two bookmarks
 		var Mark1, Mark2;
-		Mark1 = ke.markerPrevious(curLine, 64);
+		Mark1 = scimoz.markerPrevious(curLine, 64);
 		if (Mark1 == -1)	Mark1 = 0;
-		Mark2 = ke.markerNext(curLine, 64);
-		if (Mark2 == -1)	Mark2 = ke.lineCount - 1;
+		Mark2 = scimoz.markerNext(curLine, 64);
+		if (Mark2 == -1)	Mark2 = scimoz.lineCount - 1;
 
-		pStart = ke.positionFromLine(Mark1);
-		pEnd = ke.getLineEndPosition(Mark2);
+		pStart = scimoz.positionFromLine(Mark1);
+		pEnd = scimoz.getLineEndPosition(Mark2);
 
 	   break;
 	case "para":
 	   // Select the entire paragraph
 	   // go up from curLine until
 	   for (var i = curLine; i >= 0
-			&& ke.lineLength(i) > 0
-			&& ke.getTextRange(
-			   pStart = ke.positionFromLine(i),
-			   ke.getLineEndPosition(i)).trim() != "";
+			&& scimoz.lineLength(i) > 0
+			&& scimoz.getTextRange(
+			   pStart = scimoz.positionFromLine(i),
+			   scimoz.getLineEndPosition(i)).trim() != "";
 			i--) {		}
 
-	   for (var i = curLine; i <= ke.lineCount
-			&& ke.lineLength(i) > 0
-			&& ke.getTextRange(ke.positionFromLine(i),
-			   pEnd = ke.getLineEndPosition(i)).trim() != "";
+	   for (var i = curLine; i <= scimoz.lineCount
+			&& scimoz.lineLength(i) > 0
+			&& scimoz.getTextRange(scimoz.positionFromLine(i),
+			   pEnd = scimoz.getLineEndPosition(i)).trim() != "";
 			i++) {		}
 
 	   break;
 	case "line":
 		 // Select whole current line
-		pStart = ke.positionFromLine(curLine);
-		pEnd = ke.getLineEndPosition(curLine);
+		pStart = scimoz.positionFromLine(curLine);
+		pEnd = scimoz.getLineEndPosition(curLine);
 	   break;
 	case "linetobegin":
 	   // Select line content from beginning to anchor
-	   pStart = ke.positionFromLine(curLine);
+	   pStart = scimoz.positionFromLine(curLine);
 	   break;
 	case "linetoend":
 	   // Select line from anchor to end of line
-	   pEnd = ke.getLineEndPosition(curLine);
+	   pEnd = scimoz.getLineEndPosition(curLine);
 	   break;
 	case "end":
 	   // take text from current line to the end
-	   pStart = ke.positionFromLine(curLine);
-	   pEnd = ke.textLength;
+	   pStart = scimoz.positionFromLine(curLine);
+	   pEnd = scimoz.textLength;
 	   break;
     case "codefrag":
         // This is used by calltip and completion. Returns all text backwards from current
 		// position to the beginning of the current folding level
-        pStart = ke.positionFromLine(ke.getFoldParent(curLine));
+        pStart = scimoz.positionFromLine(scimoz.getFoldParent(curLine));
 
 	case "all":
 	default:
 	   // Take everything
-	   text = ke.text;
+	   text = scimoz.text;
 	}
 
 	if (what != "all") {
-		text = ke.getTextRange(pStart, pEnd).trim();
+		text = scimoz.getTextRange(pStart, pEnd).trim();
 		if (gotoend) {
-			ke.gotoPos(pEnd);
+			scimoz.gotoPos(pEnd);
 		}
 		if (select) {
-			ke.setSel(pStart, pEnd);
+			scimoz.setSel(pStart, pEnd);
 		}
 	}
 	if (typeof (range) == "object") {
@@ -486,7 +500,7 @@ sv.helpContext = function () {
 			}
 		} else {	// The focus is currently on a buffer
 			// Try to get R help for current word
-			topic = sv.getText();
+			topic = sv.getTextRange("word");
 			if (topic == "") {
 				alert(sv.translate("Nothing is selected!"));
 			} else sv.r.help(topic);
@@ -609,59 +623,67 @@ sv.cmdout.message = function (msg, timeout) {
 
 
 //// Logging management ////////////////////////////////////////////////////////
-if (typeof(sv.log) == 'undefined') sv.log = {
-	logger: ko.logging.getLogger("SciViews-K")
-}
 
-sv.log.exception = function (e, msg, showMsg) {
-    if (typeof(showMsg) != 'undefined' && showMsg == true) {
-        sv.alert("Error", msg);
-    }
-    this.logger.exception(e, msg);
-}
 
-sv.log.critical = function (msg) {
-    this.logger.critical(msg);
-}
+if (typeof(sv.log) == 'undefined')
+	sv.log = {};
 
-sv.log.error = function (msg) {
-    this.logger.error(msg);
-}
+(function () {
+	var logger = ko.logging.getLogger("SciViews-K");
 
-sv.log.warn = function (msg) {
-    this.logger.warn(msg);
-}
+	this.exception = function (e, msg, showMsg) {
+		if (typeof(showMsg) != 'undefined' && showMsg == true) {
+			sv.alert("Error", msg);
+		}
+		logger.exception(e, msg);
+	}
 
-sv.log.warnStack = function (msg) {
-    this.logger.deprecated(msg);
-}
+	this.critical = function (msg) {
+		logger.critical(msg);
+	}
 
-sv.log.info = function (msg) {
-    this.logger.info(msg);
-}
+	this.error = function (msg) {
+		logger.error(msg);
+	}
 
-sv.log.debug = function (msg) {
-    this.logger.debug(msg);
-}
+	this.warn = function (msg) {
+		logger.warn(msg);
+	}
 
-sv.log.all = function (debug) {
-	this.logger.setLevel(!!debug);
-}
+	this.warnStack = function (msg) {
+		logger.deprecated(msg);
+	}
 
-sv.log.isAll = function () {
-    return(this.logger.getEffectiveLevel() == 1);
-}
+	this.info = function (msg) {
+		logger.info(msg);
+	}
 
-sv.log.show = function () {
-    try {
-		var logFile = sv.tools.file.path("ProfD", ["..", "pystderr.log"]);
-        var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
-        window.openDialog('chrome://komodo/content/tail/tail.xul',"_blank",
-            winOpts,logFile);
-    } catch(e) {
-        sv.log.exception(e, "Unable to display the Komodo error log!", true);
-    }
-}
+	this.debug = function (msg) {
+		logger.debug(msg);
+	}
+
+	this.all = function (debug) {
+		logger.setLevel(!!debug);
+	}
+
+	this.isAll = function () {
+		return(logger.getEffectiveLevel() == 1);
+	}
+
+	this.show = function () {
+		try {
+			var logFile = sv.tools.file.path("ProfD", ["..", "pystderr.log"]);
+			var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
+			window.openDialog('chrome://komodo/content/tail/tail.xul',"_blank",
+				winOpts,logFile);
+		} catch(e) {
+			this.exception(e, "Unable to display the Komodo error log!", true);
+		}
+	}
+
+}).apply(sv.log);
+
+
 
 //// Tests... default level do not print debug and infos!
 //sv.log.all(false);
@@ -689,6 +711,8 @@ sv.log.show = function () {
 
 
 //// Not used any more? ////////////////////////////////////////////////////////
+// Note: this is bit dangerous in its present form, removes current SciViews-K toolbox
+// without notice, all modifications are lost.
 sv.checkToolbox = function () {
     try {
 		var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");

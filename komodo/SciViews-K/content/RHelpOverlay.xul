@@ -57,11 +57,11 @@
 		var rHelpBrowser;
 		var rHelpTopic;
 		var rHelpHome;
-                
+
         function display(page) {
 			rHelpBrowser.webNavigation.loadURI(page, null, null, null, null);
 		}
-		
+
 		function go() {
 			var page = rHelpTopic.value;
 			rHelpTopic.select();
@@ -74,23 +74,24 @@
 				sv.r.help(rHelpTopic.value);
 			}
 		}
-		
+
+
 		function txtInput(aEvent) {
 			if (aEvent.keyCode == KeyEvent.DOM_VK_RETURN) {
 				go();
 			}
 		}
-		
-		function search() {       
+
+		function search() {
 			rHelpTopic.select();
 			sv.r.search(rHelpTopic.value);
         }
-    
+
 		function print() {
 			alert("Print not implemented yet!");
 			//window.print();
 		}
-		
+
 		function home() {
 			// Change rHelpHome (not set before to display quicker the first time)
 			rHelpHome = sv.prefs.getString("Rhelp.index",
@@ -98,36 +99,125 @@
 			rHelpBrowser.webNavigation.loadURI(rHelpHome,
 				null, null, null, null);
 		}
-	
+
         function goBack() {
-            var webNavigation = rHelpBrowser.webNavigation;      
+            var webNavigation = rHelpBrowser.webNavigation;
 			if (webNavigation.canGoBack)
 				webNavigation.goBack();
+
         }
-    
+
         function goForward() {
             var webNavigation = rHelpBrowser.webNavigation;
             if (webNavigation.canGoForward)
                webNavigation.goForward();
         }
-		
+
+
+		// Browser progress listener:
+		// so far used only to change title
+
+		// From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
+		const STATE_START = Components.interfaces.nsIWebProgressListener.STATE_START;
+		const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
+		var progressListener = {
+			QueryInterface: function(aIID) 	{
+				if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
+					aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
+					aIID.equals(Components.interfaces.nsISupports))
+						return this;
+					throw Components.results.NS_NOINTERFACE;
+			},
+
+			onStateChange: function(aWebProgress, aRequest, aFlag, aStatus) {
+				// If you use myListener for more than one tab/window, use
+				// aWebProgress.DOMWindow to obtain the tab/window which triggers the state change
+				if(aFlag & STATE_START) {
+					// This fires when the load event is initiated
+					rHelpTopic.value = aWebProgress.DOMWindow.document.location;
+					//sv.cmdout.append(">>" + aWebProgress.DOMWindow.document.location);
+				}
+				if(aFlag & STATE_STOP) {
+					// This fires when the load finishes
+					self.document.title = aWebProgress.DOMWindow.document.title;
+				}
+			},
+
+			onLocationChange: function(aProgress, aRequest, aURI){
+				// This fires when the location bar changes; i.e load event is confirmed
+				// or when the user switches tabs. If you use myListener for more than one tab/window,
+				// use aProgress.DOMWindow to obtain the tab/window which triggered the change.
+			},
+
+			// For definitions of the remaining functions see XULPlanet.com
+			onProgressChange: function(aWebProgress, aRequest, curSelf, maxSelf, curTot, maxTot) { },
+			onStatusChange: function(aWebProgress, aRequest, aStatus, aMessage) { },
+			onSecurityChange: function(aWebProgress, aRequest, aState) { }
+		}
+
+		function keyPressListener (event) {
+			//alert(event.ctrlKey + " * " + event.which);
+
+			if ((event.ctrlKey && event.which == 102)
+				|| event.keyCode == 114) {
+				findInDoc(rHelpTopic.value, false);
+			}
+		}
+
+
 		self.onload = function () {
             var args = window.arguments;
 			sv = args[0];
 			var page = rHelpHome;
 			if (typeof(args[1]) != "undefined") page = args[1];
 			rHelpTopic = document.getElementById("rhelp-topic");
+
+			rHelpTopic.clickSelectsAll = true;
+
 			rHelpBrowser = document.getElementById("rhelp-browser");
 			rHelpBrowser.webNavigation.loadURI(page,
 				null, null, null, null);
+
+
+			rHelpBrowser.addProgressListener(progressListener,
+			  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+
+
+			document.addEventListener("keypress", keyPressListener, true);
+
+			/*rHelpBrowser.removeProgressListener(myListener,
+			  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+			*/
         }
+
+
+		function findInDoc(searchString, findBackwards) {
+			findBackwards = findBackwards? true : false;
+
+			var rhb = rHelpBrowser;
+
+			if (!rhb.fastFind.searchString) {
+				//rHelpBrowser.fastFind.setDocShell(rhb.docShell)
+				rhb.fastFind.init(rhb.docShell);
+			}
+
+			if (searchString) {
+				if (searchString == rhb.fastFind.searchString) {
+					rhb.fastFind.findAgain(findBackwards, false);
+				} else {
+					rhb.fastFind.find(searchString, false);
+				}
+			}
+		}
+
+
         ]]>
     </script>
     <hbox>
 		<vbox align="stretch" flex="1">
             <textbox id="rhelp-topic" flex="0" emptytext="topic or web page"
 				onkeypress="txtInput(event);"
-				tooltiptext="Search topic or Web page"/>
+				tooltiptext="Search topic or Web page (or Ctrl+F/F3 to search in document)"/>
         </vbox>
 		<toolbarbutton id="rhelp-go" class="macro-play-icon"
 		    oncommand="go();" disabled="false" label="Go"
@@ -174,7 +264,7 @@
 		    oncommand="print();" disabled="false" label="Print"
 			tooltiptext="Print this page" persist="buttonstyle" buttonstyle="pictures"/>
     </hbox>
-            
+
     <vbox flex="1">
         <hbox flex="1">
             <browser id="rhelp-browser" type="content-primary"
