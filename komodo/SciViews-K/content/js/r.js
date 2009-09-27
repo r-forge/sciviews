@@ -169,8 +169,10 @@ sv.r.test = function sv_RTest () {
 sv.r.eval = function (cmd) {
 	// If R is not running, start it now
 	if (!sv.r.running) {
+		// Indicate R should be started
+		ko.statusBar.AddMessage("R must be started for this command (R -> Start R)", "Rstart", 5000, true, true);
 		// Indicate that we want to execute this command when R is started
-		sv.r.pendingCmd = cmd;
+		//sv.r.pendingCmd = cmd;
 		// and start R now
 		//sv.command.startR();
 		return null;
@@ -220,10 +222,14 @@ sv.r.evalHidden = function (cmd, earlyExit) {
 sv.r.evalCallback = function (cmd, procfun, context) {
 	// If R is not running, do nothing
 	if (!sv.r.running) {
+		// Indicate R should be started
+		ko.statusBar.AddMessage("R must be started for this command (R -> Start R)", "Rstart", 5000, true, true);
 		// Indicate that we want to execute this command when R is started
-		sv.r.pendingCmd = cmd;
-		sv.r.pendingFun = procfun;
-		sv.r.pendingContext = context;
+		// We don't use this any more if R is not started automatically
+		//... but we keep it for now for a future implementation using okCancel
+		//sv.r.pendingCmd = cmd;
+		//sv.r.pendingFun = procfun;
+		//sv.r.pendingContext = context;
 		// and start R now
 		//sv.command.startR();
 		return null;
