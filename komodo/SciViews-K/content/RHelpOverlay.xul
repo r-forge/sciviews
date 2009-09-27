@@ -53,9 +53,12 @@
     persist="screenX screenY width height"
     style="min-height: 400px; min-width: 300px;">
 
+	<script type="text/javascript" src="chrome://global/content/printUtils.js" />
+
     <script type="text/javascript">
         <![CDATA[
-        var sv;
+
+		var sv;
 		var rHelpBrowser;
 		var rHelpTopic;
 		var rHelpHome;
@@ -95,9 +98,9 @@
 			if (!button.checked) {
 				find();
 			} else {
-				// hide findToolbar:
 				var findToolbar = document.getElementById("FindToolbar");
-				findToolbar.setAttribute("hidden", "true");
+				//findToolbar.setAttribute("hidden", "true");
+				findToolbar.close();
 			}
 		}
 
@@ -108,8 +111,8 @@
 			var findToolbar = document.getElementById("FindToolbar");
 
 			if (!next) {
-				var isShown = findToolbar.getAttribute("hidden") != "true";
-				findToolbar.removeAttribute("hidden");
+				//var isShown = findToolbar.getAttribute("hidden") != "true";
+				findToolbar.open();
 
 				findToolbar._findField.value = rHelpBrowser.docShell.document.getSelection();
 				findToolbar._find(findToolbar._findField.value);
@@ -118,8 +121,8 @@
 			}
 		}
 
-		function printpage() {
-			alert("Print not implemented yet!");
+		function printPage() {
+			PrintUtils.print();
 			// This does not work!
 			//window.print();
 			// This does not work either!
@@ -129,7 +132,7 @@
 			//}
 		}
 
-		function home() {
+		function goHome() {
 			// Change rHelpHome (not set before to display quicker the first time)
 			rHelpHome = sv.prefs.getString("Rhelp.index",
 				"about:blank")
@@ -181,6 +184,12 @@
 				if(aFlag & STATE_STOP) {
 					// This fires when the load finishes
 					self.document.title = aWebProgress.DOMWindow.document.title;
+					document.getElementById("cmd_go_back")
+						.setAttribute("disabled", !rHelpBrowser.webNavigation
+								  .canGoBack)
+					document.getElementById("cmd_go_forward")
+						.setAttribute("disabled", !rHelpBrowser.webNavigation
+								  .canGoForward);
 				}
 			},
 
@@ -200,22 +209,9 @@
 			onSecurityChange: function(aWebProgress, aRequest, aState) { }
 		}
 
-		function keyPressListener (event) {
-			if (event.ctrlKey && event.which == 102) { // Ctrl+F
-				find(false);
-			} else if (event.keyCode == 114) { // F3
-				find(true);
-			} else if (event.keyCode == 8) { // backspace
-				goBack();
-			}
-		}
-
 		function onFindToolbarAttrModified(event) {
 			if (event.attrName == "hidden"
 				&& (!event.newValue || event.newValue == "true")) {
-				//var bc = document.getElementById("cmd_rhelp_findToolbar");
-				//bc.setAttribute("hidden", event.target.hidden);
-				//rhelp-find!!!
 				document.getElementById("rhelp-find").checked = !event.target.hidden;
 			}
 		}
@@ -237,22 +233,33 @@
 			rHelpBrowser.addProgressListener(progressListener,
 			  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 
-			document.addEventListener("keypress", keyPressListener, true);
+			var findToolbar = document.getElementById("FindToolbar");
 
 			// Listen to find toolbar attribute modifications:
+			findToolbar.addEventListener("DOMAttrModified",
+				onFindToolbarAttrModified, true);
 
-			document.getElementById("FindToolbar").
-				addEventListener("DOMAttrModified",
-										 onFindToolbarAttrModified, true);
-
-			/*rHelpBrowser.removeProgressListener(myListener,
-			  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
-			*/
         }
 
 
         ]]>
     </script>
+
+<keyset id="keyset_main">
+    <key id="key_find" key="f" observes="cmd_find" modifiers="accel" />
+    <key id="key_find_next" keycode="VK_F3" command="cmd_find_next" modifiers="" />
+    <key id="key_go_back" keycode="VK_BACK" command="cmd_go_back" modifiers="" />
+    <key id="key_go_home" keycode="VK_HOME" command="cmd_go_home" modifiers="alt" />
+</keyset>
+
+<commandset id="commandset_main">
+  <command id="cmd_find" oncommand="find(false);" />
+  <command id="cmd_find_next" oncommand="find(true);" />
+  <command id="cmd_go_back" oncommand="goBack(true);" disabled="true" />
+  <command id="cmd_go_forward" oncommand="goForward(true);" disabled="true" />
+  <command id="cmd_go_home" oncommand="goHome();" />
+  <command id="cmd_print" oncommand="printPage();" />
+</commandset>
 
     <hbox>
 		<vbox align="stretch" flex="1">
@@ -275,15 +282,14 @@
 			tooltiptext="Search this page (Ctrl-F/F3)"
 			persist="buttonstyle" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-back-button" class="history-back-icon"
-		    oncommand="goBack();" disabled="false" label="Back"
+		    label="Back" command="cmd_go_back"
 			tooltiptext="Back" persist="buttonstyle" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-forward-button" class="history-forward-icon"
-		    oncommand="goForward();" disabled="false" label="Forward"
+		    command="cmd_go_forward" label="Forward"
 			tooltiptext="Forward" persist="buttonstyle" buttonstyle="pictures"/>
-		<toolbarbutton id="rhelp-home" class="open-file-icon"
-		    oncommand="home();" disabled="false" label="Home"
-			tooltiptext="R help index" persist="buttonstyle"
-			buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-home" class="home-icon"
+		    command="cmd_go_home" label="Home"
+			tooltiptext="R help index" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-web" type="menu"
 		     disabled="false" label="Web"
 			tooltiptext="R help on the web" persist="buttonstyle"
@@ -311,9 +317,8 @@
 		</toolbarbutton>
 		<toolbarseparator/>
 		<toolbarbutton id="rhelp-print" class="print-button"
-		    oncommand="printpage();" disabled="false" label="Print"
-			tooltiptext="Print this page" persist="buttonstyle"
-			buttonstyle="pictures"/>
+		    command="cmd_print" disabled="false" label="Print"
+			tooltiptext="Print this page" buttonstyle="pictures"/>
     </hbox>
 
     <vbox flex="1">

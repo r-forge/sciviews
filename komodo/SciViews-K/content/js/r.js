@@ -602,25 +602,36 @@ sv.r.display = function (topic, what) {
 
 // Start R help in the default browser
 sv.r.helpStart = function (start) {
-	var cmd = 'suppressMessages(make.packages.html()); options(htmlhelp = TRUE); ' +
-		'cat(paste("file://", URLencode(tempdir()), "/.R/doc/html/index.html\n", sep = ""))';
-	if (typeof(start) == "undefined" || start == true) {
+
+	if (typeof(start) == "undefined")
+		start = true;
+
+	var isWin = navigator.platform.search(/Win\d+$/) === 0;
+
+	var cmd = 'suppressMessages(make.packages.html()); options(htmlhelp = TRUE); ';
+	cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
+
+
+	if (start === true) {
 		ko.statusBar.AddMessage(sv.translate("R help started... should display" +
 			" in browser soon"), "RhelpStart", 10000, true);
-		var res = sv.r.evalCallback(cmd, function (page) {
-			ko.statusBar.AddMessage("", "RhelpStart");
-			page = sv.tools.strings.removeLastCRLF(page);
-			sv.prefs.setString("Rhelp.index", page, true);
+	}
+
+	var res = sv.r.evalCallback(cmd, function (page) {
+		ko.statusBar.AddMessage("", "RhelpStart");
+		page = sv.tools.strings.removeLastCRLF(page);
+
+		page = sv.tools.file.getfile(page,
+			[(isWin? null : ".R"), "doc", "html", "index.html"])
+
+		page = sv.tools.file.getURI(page);
+		sv.prefs.setString("Rhelp.index", page, true);
+
+		if (start === true) {
 			// Launch the help window
 			sv.command.openHelp(page);
-		});
-	} else { // Just set the home page
-		var res = sv.r.evalCallback(cmd, function (page) {
-			ko.statusBar.AddMessage("", "RhelpStart");
-			page = sv.tools.strings.removeLastCRLF(page);
-			sv.prefs.setString("Rhelp.index", page, true);
-		});
-	}
+		}
+	});
 	return(res);
 }
 
