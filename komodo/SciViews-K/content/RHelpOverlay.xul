@@ -37,6 +37,8 @@
 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/toolbar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/printPreview.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/toolbar.css" type="text/css"?>
@@ -53,8 +55,6 @@
     persist="screenX screenY width height"
     style="min-height: 400px; min-width: 300px;">
 
-	<script type="text/javascript" src="chrome://global/content/printUtils.js" />
-
     <script type="text/javascript">
         <![CDATA[
 
@@ -70,6 +70,13 @@
 		function go() {
 			var page = rHelpTopic.value;
 			rHelpTopic.select();
+
+			//FIXME: java search applet does not work in this browser
+			// perhaps translate address (onLocationChange):
+			// <<R.help.homedir>>/search/SearchEngine.html?SEARCHTERM=<<KEYWORD>>&TITLES=?&KEYWORDS=?&ALIASES=?
+			// to R's help.search("<<KEYWORD>>")
+			// get the results page, possibly convert to html??
+
 			// Try to differenciate an URL from a help topic
 			var isUri = page.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
 
@@ -119,17 +126,6 @@
 			} else {
 				findToolbar._findAgain(event.shiftKey);
 			}
-		}
-
-		function printPage() {
-			PrintUtils.print();
-			// This does not work!
-			//window.print();
-			// This does not work either!
-			//var res = PrintUtils.showPageSetup();
-			//if (res) {
-			//	PrintUtils.print(rHelpBrowser);
-			//}
 		}
 
 		function goHome() {
@@ -242,8 +238,42 @@
         }
 
 
+
+  // calling PrintUtils.printPreview() requires that you have three functions
+  // in the global scope: getPPBrowser(), which returns the browser element in
+  // the window print preview uses, getNavToolbox(), which returns the element
+  // (usually the main toolbox element) before which the print preview toolbar
+  // should be inserted, and getWebNavigation(), which returns the document's
+  // nsIWebNavigation object
+	function getWebNavigation() rHelpBrowser.webNavigation;
+	function getNavToolbox() document.getElementById("nav-toolbar");
+	function getPPBrowser() rHelpBrowser;
+
         ]]>
     </script>
+	<script type="text/javascript" src="chrome://global/content/printUtils.js" />
+<script type="text/javascript">
+
+
+		function printPage() {
+			PrintUtils.print();
+		}
+
+		function printPreview() {
+			function enterPP () {
+				document.getElementById("nav-toolbar").hidden = true;
+			}
+			function exitPP () {
+				document.getElementById("nav-toolbar").hidden = false;
+			}
+
+			PrintUtils.printPreview(enterPP, exitPP);
+		}
+
+
+
+</script>
+
 
 <keyset id="keyset_main">
     <key id="key_find" key="f" observes="cmd_find" modifiers="accel" />
@@ -259,10 +289,14 @@
   <command id="cmd_go_forward" oncommand="goForward(true);" disabled="true" />
   <command id="cmd_go_home" oncommand="goHome();" />
   <command id="cmd_print" oncommand="printPage();" />
+  <command id="cmd_print_preview" oncommand="printPreview();" />
 </commandset>
 
-    <hbox>
-		<vbox align="stretch" flex="1">
+<toolbox id="rhelp-toolbox" class="toolbox-top" mode="icons" defaultmode="icons" iconsize="small">
+	<toolbar type="toolbar" id="nav-toolbar" class="toolbar"
+			 mode="icons" iconsize="small"
+			 defaulticonsize="small">
+<vbox align="stretch" flex="1">
             <textbox id="rhelp-topic" flex="0"
 				emptytext="topic or web page"
 				onkeypress="txtInput(event);"
@@ -290,9 +324,9 @@
 		<toolbarbutton id="rhelp-home" class="home-icon"
 		    command="cmd_go_home" label="Home"
 			tooltiptext="R help index" buttonstyle="pictures"/>
-		<toolbarbutton id="rhelp-web" type="menu"
-		     disabled="false" label="Web"
-			tooltiptext="R help on the web" persist="buttonstyle"
+		<toolbarbutton id="rhelp-web" type="menu" class="r-web-icon"
+		     disabled="false" label="Web" orient="horizontal"
+			tooltiptext="R help on the web"
 			buttonstyle="pictures">
 			<menupopup>
 				<menuitem id="rhelp-menu-sitesearch" label="R Site Search"
@@ -316,11 +350,14 @@
 			</menupopup>
 		</toolbarbutton>
 		<toolbarseparator/>
+		<toolbarbutton id="rhelp-print-preview" class="print-button"
+		    command="cmd_print_preview" label="Print preview"
+			tooltiptext="Print preview" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-print" class="print-button"
-		    command="cmd_print" disabled="false" label="Print"
+		    command="cmd_print" label="Print"
 			tooltiptext="Print this page" buttonstyle="pictures"/>
-    </hbox>
-
+	</toolbar>
+</toolbox>
     <vbox flex="1">
         <hbox flex="1">
             <browser id="rhelp-browser" type="content-primary"
