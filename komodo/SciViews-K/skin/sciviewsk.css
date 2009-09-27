@@ -114,6 +114,10 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/find.png");
 }
 
+.home-icon {
+	list-style-image: url("chrome://sciviewsk/skin/images/house.png");
+}
+
 .r-objects-filter:hover,
 .r-objects-filter:hover:active {
 	list-style-image: url("chrome://sciviewsk/skin/images/filter-a.png");

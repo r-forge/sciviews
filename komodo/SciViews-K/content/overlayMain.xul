@@ -33,7 +33,7 @@
  the terms of any one of the MPL, the GPL or the LGPL.
 
  ***** END LICENSE BLOCK ***** -->
- 
+
 <!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
 	"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
 	<!ENTITY % komodoDTD SYSTEM "chrome://komodo/locale/komodo.dtd">
@@ -63,12 +63,12 @@
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
-	
+
 	<broadcasterset id="broadcasterset_global">
 		<broadcaster id="sv_r_is_running" disabled="false"/>
 	</broadcasterset>
 
-	<commandset id="allcommands"> 
+	<commandset id="allcommands">
 		<command id="Tasks:svAbout"
 			oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
 
@@ -88,6 +88,10 @@
 			<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
 				oncommand="sv.command.openPkgManager();" disabled="true"
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
+
+			<command id="cmd_sv_OpenHelp" key="key_cmd_sv_OpenHelp"
+				oncommand="sv.r.helpStart(true);"
+				desc="R: &helpStart;" label="&helpStart;" accesskey="&helpStart.key;"/>
 			<command id="cmd_sv_BrowseWD" key="key_cmd_sv_BrowseWD"
 				oncommand="sv.r.setwd('current', true);"
 				desc="R: &svBrowseWD;" label="&svBrowseWD;" accesskey="&svBrowseWD.key;"/>
@@ -123,9 +127,9 @@
 			<command id="cmd_sv_RSourcePara" key="key_cmd_sv_RSourcePara"
 				oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
 				desc="R: &rSrcPara;" label="&rSrcPara;" accesskey="&rSrcPara.key;"/>
-			
+
 			<commandset id="cmdset_r_control" commandupdater="true" events="select"
-				oncommandupdate="ko.commands.updateCommandset(this);">	  
+				oncommandupdate="ko.commands.updateCommandset(this);">
 				<command id="cmd_sv_RRunSelection" key="key_cmd_sv_RRunSelection"
 					oncommand="ko.commands.doCommand('cmd_sv_RRunSelection')"
 					desc="R: &rSendSel;" label="&rSendSel;" accesskey="&rSendSel.key;"/>
@@ -134,7 +138,7 @@
 					desc="R: &rSrcSel;" label="&rSrcSel;" accesskey="&rSrcSel.key;"/>
 			</commandset>
 		</commandset>
-	
+
 		<!--<commandset id="cmdset_view_dependent"
 				removeelement="cmd_triggerPrecedingCompletion">
 			<command id="cmd_triggerPrecedingCompletion"
@@ -192,6 +196,8 @@
 				<!--<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
 					class="menuitem"/>-->
 				<menuitem id="r_start_pkg_manager" observes="cmd_sv_OpenPkgManager"
+					class="menuitem"/>
+				<menuitem id="r_start_help" observes="cmd_sv_OpenHelp"
 					class="menuitem"/>
 				<menuitem id="r_browse_wd" observes="cmd_sv_BrowseWD"
 					class="menuitem-iconic r-working-dir-icon"/>

@@ -86,3 +86,6 @@
 
 <!ENTITY RUpdateCharset "Update character set">
 <!ENTITY RUpdateCharset.key "C">
+
+<!ENTITY helpStart "R Help start">
+<!ENTITY helpStart.key "h">

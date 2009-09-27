@@ -390,7 +390,7 @@ if (typeof(sv.command) == 'undefined') {
 		var vmProto = ko.views.viewManager.prototype;
 
 		var cmdsIfRRunning = ['OpenPkgManager', 'BrowseWD', 'quit_R',
-			'update_charset'];
+			 'OpenHelp']; //'update_charset',
 		var cmdsIfRNotRunning = ['start_R'];
 
 		// Make these commands active only when current document language is R
