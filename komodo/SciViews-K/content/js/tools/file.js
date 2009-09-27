@@ -25,7 +25,8 @@
 if (typeof(sv.tools) == 'undefined')
 	sv.tools = {};
 // Define the 'sv.tools.file' namespace
-if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
+if (typeof(sv.tools.file) == 'undefined')
+	sv.tools.file = {};
 
 (function () {
 	// Default file encoding to use
@@ -152,11 +153,14 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = new Object();
 					getService(Components.interfaces.nsIProperties).
 					get(baseDir, Components.interfaces.nsILocalFile);
 			} catch(e) {
+				sv.log.exception(e, "sv.tools.file.getfile: get " + baseDir);
 				file = Components.classes["@mozilla.org/file/local;1"].
 					createInstance(Components.interfaces.nsILocalFile);
 				try {
 					file.initWithPath(baseDir);
 				} catch (e) {
+					sv.log.exception(e,
+						"sv.tools.file.getfile: file.initWithPath(" + baseDir + ")");
 					return null;
 				}
 			}

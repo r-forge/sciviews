@@ -110,6 +110,10 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/toggle_open.png");
 }
 
+.find-icon {
+	list-style-image: url("chrome://sciviewsk/skin/images/find.png");
+}
+
 .r-objects-filter:hover,
 .r-objects-filter:hover:active {
 	list-style-image: url("chrome://sciviewsk/skin/images/filter-a.png");
@@ -162,6 +166,12 @@
 	font-style: italic;
 	color: #800000;
 }
+
+#sciviews_robjects_objects_tree treechildren::-moz-tree-cell-text(default-value) {
+	font-style: italic;
+	color: #800040;
+}
+
 
 #sciviews_robjects_objects_tree treechildren::-moz-tree-cell-text(class-package) {
 	font-weight: bold;

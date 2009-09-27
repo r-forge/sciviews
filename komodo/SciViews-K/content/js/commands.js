@@ -60,7 +60,7 @@ if (typeof(sv.command) == 'undefined') {
 		// env strings: "ENV1=fooJ\nENV2=bar"
 		// gPrefSvc.prefs.getStringPref("runEnv");
 		var defRApp = "r-terminal";
-		var isWin = navigator.platform == "Win32";
+		var isWin = navigator.platform.search(/Win\d+$/) === 0;
 		// Default preferredRApp on Windows is r-gui
 		if (isWin) defRApp = "r-gui";
 		var preferredRApp = sv.prefs.getString("sciviews.preferredRApp",
@@ -189,10 +189,12 @@ if (typeof(sv.command) == 'undefined') {
 			observerSvc.addObserver(this, 'status_message', false);
 			sv.log.debug("R has been started with command: " + command);
 			sv.r.running = true;
-			sv.socket.updateCharset(true);
+			// Sending commands to R does not seem to work, I think it is too early, R is still
+			// starting. This should be in .Rprofile
+			//sv.socket.updateCharset(true);
 			// Possibly refresh the GUI by running SciViews-specific
 			// R task callbacks and make sure R Objects pane is updated
-			sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
+			//sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
 
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');
@@ -335,9 +337,28 @@ if (typeof(sv.command) == 'undefined') {
 			// because:
 			// 1) sv.tools.file.getfile() returns null on Mac OS X
 			// 2) sv.tools.file.getURI() raises an error on Mac OS X
-			//webpage = sv.tools.file.getURI(sv.tools.file.getfile(webpage.replace(/\//g, "\\")));
-			webpage = "file://" + webpage;
-			
+
+			// This should hopefully work on all platforms (it does on Win and Linux)
+			// First, check if "webpage" is an URI already:
+			var isUri = webpage.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
+			// We will need special treatment of backslashes in windows
+			var isWin = navigator.platform.search(/Win\d+$/) === 0;
+
+			try {
+			    if (!isUri) {
+					if (isWin)
+						webpage = webpage.replace(/\//g, "\\");
+					webpage = sv.tools.file.getURI(sv.tools.file.getfile(webpage));
+			    }
+			} catch (e) {
+			    // fallback:
+			    if (!isUri)
+				webpage = "file://" + webpage;
+
+			    sv.log.exception(e, "sv.command.openHelp");
+			}
+
+
 			// We want to display a specific page
 			if (typeof(RHelpWin) == "undefined" || RHelpWin.closed) {
 				sv.log.debug("Starting R help with page " + webpage);

@@ -2,6 +2,7 @@
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
 # Version 0.9.0, 2009-09-20 Ph. Grosjean (phgrosjean@sciviews.org)
 
+# TODO: Include all this as a function in svMisc??
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	.SciViewsReady <- FALSE
@@ -376,6 +377,8 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 				path.expand(getOption("R.initdir")), sep = ""))
 		}
 		rm(koact, Komodo, args, msg)
+		# update
+		invisible(koCmd("sv.socket.updateCharset();"));
 	}
 }
 ### SciViews install end ###

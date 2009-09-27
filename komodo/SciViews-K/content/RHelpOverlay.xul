@@ -43,6 +43,8 @@
 <?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/bindings/views.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/bindings/widgets.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
+
 
 <window
     id="RHelpWindow" title="R Help" onload="rHelpOnLoad();"
@@ -66,7 +68,9 @@
 			var page = rHelpTopic.value;
 			rHelpTopic.select();
 			// Try to differenciate an URL from a help topic
-			if (page.match(/^[a-zA-Z]+:\/\//) != null) {
+			var isUri = page.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
+
+			if (isUri) {
 				// This looks like a URL
 				rHelpBrowser.webNavigation.loadURI(page, null, null, null, null);
 			} else {
@@ -85,10 +89,33 @@
 			rHelpTopic.select();
 			sv.r.search(rHelpTopic.value);
         }
-		
-		function searchpage() {
-			rHelpTopic.select();
-			findInDoc(rHelpTopic.value);
+
+		function onFindCommand (event) {
+			var button = event.target;
+			if (!button.checked) {
+				find();
+			} else {
+				// hide findToolbar:
+				var findToolbar = document.getElementById("FindToolbar");
+				findToolbar.setAttribute("hidden", "true");
+			}
+		}
+
+
+		function find(next) {
+			//rHelpTopic.select();
+			//findInDoc(rHelpTopic.value);
+			var findToolbar = document.getElementById("FindToolbar");
+
+			if (!next) {
+				var isShown = findToolbar.getAttribute("hidden") != "true";
+				findToolbar.removeAttribute("hidden");
+
+				findToolbar._findField.value = rHelpBrowser.docShell.document.getSelection();
+				findToolbar._find(findToolbar._findField.value);
+			} else {
+				findToolbar._findAgain(event.shiftKey);
+			}
 		}
 
 		function printpage() {
@@ -125,7 +152,7 @@
 
 
 		// Browser progress listener:
-		// so far used only to change title
+		// so far used only to change title and location text
 
 		// From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
 		const STATE_START = Components.interfaces.
@@ -174,12 +201,25 @@
 		}
 
 		function keyPressListener (event) {
-			//alert(event.ctrlKey + " * " + event.which);
-			if ((event.ctrlKey && event.which == 102)
-				|| event.keyCode == 114) {
-				findInDoc(rHelpTopic.value, false);
+			if (event.ctrlKey && event.which == 102) { // Ctrl+F
+				find(false);
+			} else if (event.keyCode == 114) { // F3
+				find(true);
+			} else if (event.keyCode == 8) { // backspace
+				goBack();
 			}
 		}
+
+		function onFindToolbarAttrModified(event) {
+			if (event.attrName == "hidden"
+				&& (!event.newValue || event.newValue == "true")) {
+				//var bc = document.getElementById("cmd_rhelp_findToolbar");
+				//bc.setAttribute("hidden", event.target.hidden);
+				//rhelp-find!!!
+				document.getElementById("rhelp-find").checked = !event.target.hidden;
+			}
+		}
+
 
 		self.onload = function () {
             var args = window.arguments;
@@ -199,37 +239,27 @@
 
 			document.addEventListener("keypress", keyPressListener, true);
 
+			// Listen to find toolbar attribute modifications:
+
+			document.getElementById("FindToolbar").
+				addEventListener("DOMAttrModified",
+										 onFindToolbarAttrModified, true);
+
 			/*rHelpBrowser.removeProgressListener(myListener,
 			  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 			*/
         }
 
-		function findInDoc(searchString, findBackwards) {
-			findBackwards = findBackwards? true : false;
 
-			var rhb = rHelpBrowser;
-
-			if (!rhb.fastFind.searchString) {
-				//rHelpBrowser.fastFind.setDocShell(rhb.docShell)
-				rhb.fastFind.init(rhb.docShell);
-			}
-
-			if (searchString) {
-				if (searchString == rhb.fastFind.searchString) {
-					rhb.fastFind.findAgain(findBackwards, false);
-				} else {
-					rhb.fastFind.find(searchString, false);
-				}
-			}
-		}
         ]]>
     </script>
+
     <hbox>
 		<vbox align="stretch" flex="1">
             <textbox id="rhelp-topic" flex="0"
-				emptytext="topic or web page (Ctrl-F/F3 search in doc)"
+				emptytext="topic or web page"
 				onkeypress="txtInput(event);"
-				tooltiptext="Search topic or Web page (or Ctrl-F/F3 to search in document)"/>
+				tooltiptext="Search topic or Web page"/>
         </vbox>
 		<toolbarbutton id="rhelp-go" class="macro-play-icon"
 		    oncommand="go();" disabled="false" label="Go"
@@ -239,11 +269,11 @@
 		    oncommand="search();" disabled="false" label="Search"
 			tooltiptext="Search expression in R help" persist="buttonstyle"
 			buttonstyle="pictures"/>
-		<toolbarbutton id="rhelp-searchpage" class="list-item-down-icon"
-		    oncommand="searchpage();" disabled="false" label="Search in page"
-			tooltiptext="Search expression in this page (Ctrl-F/F3)"
-			persist="buttonstyle" buttonstyle="pictures"/>
 		<spacer flex="1"/>
+		<toolbarbutton id="rhelp-find" class="find-icon"
+		    oncommand="onFindCommand(event);" disabled="false" label="Search in page"
+			tooltiptext="Search this page (Ctrl-F/F3)"
+			persist="buttonstyle" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-back-button" class="history-back-icon"
 		    oncommand="goBack();" disabled="false" label="Back"
 			tooltiptext="Back" persist="buttonstyle" buttonstyle="pictures"/>
@@ -292,4 +322,7 @@
                 src="about:blank" flex="1"/>
         </hbox>
     </vbox>
+		<vbox id="browser-bottombox">
+		<findbar browserid="rhelp-browser" id="FindToolbar" hidden="true"/>
+	</vbox>
 </window>
