@@ -322,25 +322,38 @@ if (typeof(sv.command) == 'undefined') {
 		if (typeof(webpage) == "undefined") {
 			// We are asking for the R help home page
 			if (typeof(RHelpWin) == "undefined" || RHelpWin.closed) {
+				sv.log.debug("Starting R help");
 				sv.r.helpStart(true);
 			} else {
+				sv.log.debug("Displaying R help and going home");
 				RHelpWin.home();
 				RHelpWin.focus();
 			}
 		} else {
 			// Webpage should be of the form: file:///
-			webpage = sv.tools.file.getURI(sv.tools.file.getfile(webpage.replace(/\//g, "\\")));
-
+			// Commented out and replaced by a bad hack (prepending 'file://')
+			// because:
+			// 1) sv.tools.file.getfile() returns null on Mac OS X
+			// 2) sv.tools.file.getURI() raises an error on Mac OS X
+			//webpage = sv.tools.file.getURI(sv.tools.file.getfile(webpage.replace(/\//g, "\\")));
+			webpage = "file://" + webpage;
+			
 			// We want to display a specific page
 			if (typeof(RHelpWin) == "undefined" || RHelpWin.closed) {
-				RHelpWin = window.openDialog(
-					"chrome://sciviewsk/content/RHelpOverlay.xul",
-					"RHelp",
-					"chrome=yes,dependent,resizable=yes,scrollbars=yes,status=no,close,dialog=no",
-					sv, webpage);
+				sv.log.debug("Starting R help with page " + webpage);
+				try {
+					RHelpWin = window.openDialog(
+						"chrome://sciviewsk/content/RHelpOverlay.xul",
+						"RHelp",
+							"chrome=yes,dependent,resizable=yes,scrollbars=yes,status=no,close,dialog=no",
+						sv, webpage);
 				// Recalculate home page for R Help only
+				} catch (e) {
+					sv.log.exception(e, "Unable to display R help", true);
+				}
 				sv.r.helpStart(false);
 			} else {
+				sv.log.debug("Showing R help for page " + webpage);
 				RHelpWin.display(webpage);
 			}
 			RHelpWin.focus();

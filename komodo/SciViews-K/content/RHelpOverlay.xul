@@ -75,7 +75,6 @@
 			}
 		}
 
-
 		function txtInput(aEvent) {
 			if (aEvent.keyCode == KeyEvent.DOM_VK_RETURN) {
 				go();
@@ -86,10 +85,21 @@
 			rHelpTopic.select();
 			sv.r.search(rHelpTopic.value);
         }
+		
+		function searchpage() {
+			rHelpTopic.select();
+			findInDoc(rHelpTopic.value);
+		}
 
-		function print() {
+		function printpage() {
 			alert("Print not implemented yet!");
+			// This does not work!
 			//window.print();
+			// This does not work either!
+			//var res = PrintUtils.showPageSetup();
+			//if (res) {
+			//	PrintUtils.print(rHelpBrowser);
+			//}
 		}
 
 		function home() {
@@ -118,8 +128,10 @@
 		// so far used only to change title
 
 		// From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
-		const STATE_START = Components.interfaces.nsIWebProgressListener.STATE_START;
-		const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
+		const STATE_START = Components.interfaces.
+			nsIWebProgressListener.STATE_START;
+		const STATE_STOP = Components.interfaces.
+			nsIWebProgressListener.STATE_STOP;
 		var progressListener = {
 			QueryInterface: function(aIID) 	{
 				if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
@@ -131,11 +143,13 @@
 
 			onStateChange: function(aWebProgress, aRequest, aFlag, aStatus) {
 				// If you use myListener for more than one tab/window, use
-				// aWebProgress.DOMWindow to obtain the tab/window which triggers the state change
+				// aWebProgress.DOMWindow to obtain the tab/window which
+				// triggers the state change
 				if(aFlag & STATE_START) {
 					// This fires when the load event is initiated
 					rHelpTopic.value = aWebProgress.DOMWindow.document.location;
-					//sv.cmdout.append(">>" + aWebProgress.DOMWindow.document.location);
+					//sv.cmdout.append(">>" +
+					//aWebProgress.DOMWindow.document.location);
 				}
 				if(aFlag & STATE_STOP) {
 					// This fires when the load finishes
@@ -144,26 +158,28 @@
 			},
 
 			onLocationChange: function(aProgress, aRequest, aURI){
-				// This fires when the location bar changes; i.e load event is confirmed
-				// or when the user switches tabs. If you use myListener for more than one tab/window,
-				// use aProgress.DOMWindow to obtain the tab/window which triggered the change.
+				// This fires when the location bar changes; i.e load event is
+				// confirmed or when the user switches tabs. If you use
+				// myListener for more than one tab/window, use
+				// aProgress.DOMWindow to obtain the tab/window which triggered
+				//the change.
 			},
 
 			// For definitions of the remaining functions see XULPlanet.com
-			onProgressChange: function(aWebProgress, aRequest, curSelf, maxSelf, curTot, maxTot) { },
-			onStatusChange: function(aWebProgress, aRequest, aStatus, aMessage) { },
+			onProgressChange: function(aWebProgress, aRequest, curSelf,
+				maxSelf, curTot, maxTot) { },
+			onStatusChange: function(aWebProgress, aRequest, aStatus,
+				aMessage) { },
 			onSecurityChange: function(aWebProgress, aRequest, aState) { }
 		}
 
 		function keyPressListener (event) {
 			//alert(event.ctrlKey + " * " + event.which);
-
 			if ((event.ctrlKey && event.which == 102)
 				|| event.keyCode == 114) {
 				findInDoc(rHelpTopic.value, false);
 			}
 		}
-
 
 		self.onload = function () {
             var args = window.arguments;
@@ -178,10 +194,8 @@
 			rHelpBrowser.webNavigation.loadURI(page,
 				null, null, null, null);
 
-
 			rHelpBrowser.addProgressListener(progressListener,
 			  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
-
 
 			document.addEventListener("keypress", keyPressListener, true);
 
@@ -189,7 +203,6 @@
 			  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 			*/
         }
-
 
 		function findInDoc(searchString, findBackwards) {
 			findBackwards = findBackwards? true : false;
@@ -209,22 +222,27 @@
 				}
 			}
 		}
-
-
         ]]>
     </script>
     <hbox>
 		<vbox align="stretch" flex="1">
-            <textbox id="rhelp-topic" flex="0" emptytext="topic or web page"
+            <textbox id="rhelp-topic" flex="0"
+				emptytext="topic or web page (Ctrl-F/F3 search in doc)"
 				onkeypress="txtInput(event);"
-				tooltiptext="Search topic or Web page (or Ctrl+F/F3 to search in document)"/>
+				tooltiptext="Search topic or Web page (or Ctrl-F/F3 to search in document)"/>
         </vbox>
 		<toolbarbutton id="rhelp-go" class="macro-play-icon"
 		    oncommand="go();" disabled="false" label="Go"
-			tooltiptext="Show topic or web page" persist="buttonstyle" buttonstyle="pictures"/>
+			tooltiptext="Show topic or web page" persist="buttonstyle"
+			buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-search" class="help-icon"
 		    oncommand="search();" disabled="false" label="Search"
-			tooltiptext="Search expression in R help" persist="buttonstyle" buttonstyle="pictures"/>
+			tooltiptext="Search expression in R help" persist="buttonstyle"
+			buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-searchpage" class="list-item-down-icon"
+		    oncommand="searchpage();" disabled="false" label="Search in page"
+			tooltiptext="Search expression in this page (Ctrl-F/F3)"
+			persist="buttonstyle" buttonstyle="pictures"/>
 		<spacer flex="1"/>
 		<toolbarbutton id="rhelp-back-button" class="history-back-icon"
 		    oncommand="goBack();" disabled="false" label="Back"
@@ -234,10 +252,12 @@
 			tooltiptext="Forward" persist="buttonstyle" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-home" class="open-file-icon"
 		    oncommand="home();" disabled="false" label="Home"
-			tooltiptext="R help index" persist="buttonstyle" buttonstyle="pictures"/>
+			tooltiptext="R help index" persist="buttonstyle"
+			buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-web" type="menu"
 		     disabled="false" label="Web"
-			tooltiptext="R help on the web" persist="buttonstyle" buttonstyle="pictures">
+			tooltiptext="R help on the web" persist="buttonstyle"
+			buttonstyle="pictures">
 			<menupopup>
 				<menuitem id="rhelp-menu-sitesearch" label="R Site Search"
 					accesskey="s"
@@ -261,8 +281,9 @@
 		</toolbarbutton>
 		<toolbarseparator/>
 		<toolbarbutton id="rhelp-print" class="print-button"
-		    oncommand="print();" disabled="false" label="Print"
-			tooltiptext="Print this page" persist="buttonstyle" buttonstyle="pictures"/>
+		    oncommand="printpage();" disabled="false" label="Print"
+			tooltiptext="Print this page" persist="buttonstyle"
+			buttonstyle="pictures"/>
     </hbox>
 
     <vbox flex="1">
