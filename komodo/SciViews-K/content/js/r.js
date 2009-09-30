@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // To cope with versions incompatibilities, we define this:
 // sv.alert(sv.r.RMinVersion); // Display minimum R version required
-// sv.r.sep; // ??? Defined as ";;", Kamil, what is this???
+// sv.r.sep; // Item separator that R should use returning data.
 // sv.r.running; // Is the linked R interpreter currently running?
 // sv.r.test();  // Check if an R interpreter is communicating with us
 //
@@ -23,7 +23,6 @@
 // sv.r.calltip_show(tip);		// Companion functions for sv.r.calltip
 // sv.r.complete(code); // AutoComplete mechanism for R
 // sv.r.display(topic, what); // Display 'topic' according to 'what' type
-// sv.r.helpStart(start); // Start R help in the browser, unless start is false
 // sv.r.help(topic, package); // Get help in R for 'topic', 'package' is optional
 // sv.r.example(topic); // Run example in R for 'topic', 'topic' is optional
 // sv.r.search(topic); // Search R help for 'topic'
@@ -70,7 +69,6 @@
 //
 // sv.r.pkg namespace: /////////////////////////////////////////////////////////
 // sv.r.pkg.repositories(); // Select repositories for installing R packages
-// sv.r.pkg.CRANmirror();   // Select preferred CRAN mirror
 // sv.r.pkg.chooseCRANMirror(andInstall); // replacement for .CRANmirror,
 							// optionally calls .install after execution
 // sv.r.pkg.available();    // List available R packages on selected repository
@@ -93,6 +91,14 @@
 // sv.r.pkg.installSV(); // Install the SciViews-R packages from CRAN
 // sv.r.pkg.installSVrforge(); // Install development versions of SciViews-R
                                // from R-Forge
+// sv.r.pkg.CRANmirror();   // Select preferred CRAN mirror
+
+
+/// REMOVED! use sv.command.openHelp instead
+// sv.r.helpStart(start); // Start R help in the browser, unless start is false
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TODO: in overlay: add "source file" context menu item in the project tab
@@ -600,50 +606,20 @@ sv.r.display = function (topic, what) {
 	return(res);
 }
 
-// Start R help in the default browser
-sv.r.helpStart = function (start) {
-
-	if (typeof(start) == "undefined")
-		start = true;
-
-	var isWin = navigator.platform.search(/Win\d+$/) === 0;
-
-	var cmd = 'suppressMessages(make.packages.html()); options(htmlhelp = TRUE); ';
-	cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
-
-
-	if (start === true) {
-		ko.statusBar.AddMessage(sv.translate("R help started... should display" +
-			" in browser soon"), "RhelpStart", 10000, true);
-	}
-
-	var res = sv.r.evalCallback(cmd, function (page) {
-		ko.statusBar.AddMessage("", "RhelpStart");
-		page = sv.tools.strings.removeLastCRLF(page);
-
-		page = sv.tools.file.getfile(page,
-			[(isWin? null : ".R"), "doc", "html", "index.html"])
-
-		page = sv.tools.file.getURI(page);
-		sv.prefs.setString("Rhelp.index", page, true);
-
-		if (start === true) {
-			// Launch the help window
-			sv.command.openHelp(page);
-		}
-	});
-	return(res);
-}
 
 // Get help in R (HTML format)
 sv.r.help = function (topic, pkg) {
 	var res = false;
+
+	if (typeof(topic) == "undefined" || topic == "")
+		topic = sv.getTextRange("word");
+
+	if (topic == "")
+		ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
+			1000, false);
+
 	if (!topic && !pkg) {
-		if (typeof(topic) == "undefined" || topic == "")
-			topic = sv.getTextRange("word");
-		if (topic == "")
-			ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
-				1000, false);
+		return false;
 	} else {
 		var cmd = '';
 		cmd += pkg? ' package = "' + pkg + '", ' : "";
@@ -655,7 +631,7 @@ sv.r.help = function (topic, pkg) {
 		ko.statusBar.AddMessage(sv.translate("R help asked for \"%S\"", topic),
 			"R", 5000, true);
 	}
-	return(res);
+	return res;
 }
 
 // Run the example for selected item
@@ -721,6 +697,7 @@ sv.r.search_select = function (topics) {
 
 
 // Search R web sites for topic
+// TODO: open results in RHelpWin, do not use R
 sv.r.siteSearch = function (topic) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "")
@@ -733,6 +710,7 @@ sv.r.siteSearch = function (topic) {
 		ko.statusBar.AddMessage("R site search asked for '" + topic + "'",
 			"R", 5000, true);
 	}
+
 	return(res);
 }
 

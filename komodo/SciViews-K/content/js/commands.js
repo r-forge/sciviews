@@ -20,6 +20,23 @@ if (typeof(sv.command) == 'undefined') {
 // sv.command object constructor
 (function () {
 	var RHelpWin;  // A reference to the R Help Window
+	var _this = this;
+
+	function _getWindowByURI(uri) {
+		var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']
+			.getService(Components.interfaces.nsIWindowMediator);
+		en = wm.getEnumerator("");
+
+		if (uri) {
+			var win;
+			while (en.hasMoreElements()) {
+				win = en.getNext();
+				if (win.location.href == uri)
+					return win;
+			}
+		}
+		return null;
+	}
 
 	// private methods
 	function _keepCheckingR (stopMe) {
@@ -313,72 +330,94 @@ if (typeof(sv.command) == 'undefined') {
 	}
 
 	this.openPkgManager = function () {
-		window.openDialog(
-			"chrome://sciviewsk/content/pkgManagerOverlay.xul",
-			"RPackageManager",
-			"chrome=yes,dependent,centerscreen,resizable=yes,scrollbars=yes,status=no",
-			sv);
-	}
+		var rPkgMgrXulUri = "chrome://sciviewsk/content/pkgManagerOverlay.xul";
 
-	this.openHelp = function (webpage) {
-		if (typeof(webpage) == "undefined") {
-			// We are asking for the R help home page
-			if (typeof(RHelpWin) == "undefined" || RHelpWin.closed) {
-				sv.log.debug("Starting R help");
-				sv.r.helpStart(true);
-			} else {
-				sv.log.debug("Displaying R help and going home");
-				RHelpWin.home();
-				RHelpWin.focus();
+		var rPkgMgr = _getWindowByURI(rPkgMgrXulUri);
+		if (!rPkgMgr || rPkgMgr.closed) {
+			try {
+				rPkgMgr = window.openDialog(rHelpXulUri, "RHelp",
+				"chrome=yes,dependent,resizable=yes," +
+				"scrollbars=yes,status=no,close,dialog=no", sv, uri);
+
+			} catch (e) {
 			}
 		} else {
-			// Webpage should be of the form: file:///
-			// Commented out and replaced by a bad hack (prepending 'file://')
-			// because:
-			// 1) sv.tools.file.getfile() returns null on Mac OS X
-			// 2) sv.tools.file.getURI() raises an error on Mac OS X
-
-			// This should hopefully work on all platforms (it does on Win and Linux)
-			// First, check if "webpage" is an URI already:
-			var isUri = webpage.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
-			// We will need special treatment of backslashes in windows
-			var isWin = navigator.platform.search(/Win\d+$/) === 0;
-
-			try {
-			    if (!isUri) {
-					if (isWin)
-						webpage = webpage.replace(/\//g, "\\");
-					webpage = sv.tools.file.getURI(sv.tools.file.getfile(webpage));
-			    }
-			} catch (e) {
-			    // fallback:
-			    if (!isUri)
-				webpage = "file://" + webpage;
-
-			    sv.log.exception(e, "sv.command.openHelp");
-			}
-
-
-			// We want to display a specific page
-			if (typeof(RHelpWin) == "undefined" || RHelpWin.closed) {
-				sv.log.debug("Starting R help with page " + webpage);
-				try {
-					RHelpWin = window.openDialog(
-						"chrome://sciviewsk/content/RHelpOverlay.xul",
-						"RHelp",
-							"chrome=yes,dependent,resizable=yes,scrollbars=yes,status=no,close,dialog=no",
-						sv, webpage);
-				// Recalculate home page for R Help only
-				} catch (e) {
-					sv.log.exception(e, "Unable to display R help", true);
-				}
-				sv.r.helpStart(false);
-			} else {
-				sv.log.debug("Showing R help for page " + webpage);
-				RHelpWin.display(webpage);
-			}
-			RHelpWin.focus();
+			rPkgMgr.display(uri);
 		}
+		rPkgMgr.focus();
+	}
+
+	this.helpStartURI = "";
+
+	this.openHelp = function (uri) {
+		sv.cmdout.append(uri);
+
+
+	    // We will need special treatment of in windows
+	    var isWin = navigator.platform.search(/Win\d+$/) === 0;
+
+	    if (!_this.helpStartURI) {
+			var cmd = 'suppressMessages(make.packages.html()); options(htmlhelp = TRUE); ';
+			cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
+
+
+			var res = sv.r.evalCallback(cmd, function (path) {
+				path = sv.tools.strings.removeLastCRLF(path);
+				path = sv.tools.file.getfile(path,
+					[(isWin? null : ".R"), "doc", "html", "index.html"]);
+
+				path = sv.tools.file.getURI(path);
+				_this.helpStartURI = path;
+				_this.openHelp(path);
+				//alert(_this.helpStartURI);
+			});
+			return;
+		}
+		if (!uri)
+			uri = _this.helpStartURI;
+
+		// Webpage should be of the form: file:///
+		// Commented out and replaced by a bad hack (prepending 'file://')
+		// because:
+		// 1) sv.tools.file.getfile() returns null on Mac OS X
+		// 2) sv.tools.file.getURI() raises an error on Mac OS X
+
+		// This should hopefully work on all platforms (it does on Win and Linux)
+		// First, check if "uri" is an URI already:
+		var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
+
+		try {
+			if (!isUri) {
+				if (isWin)
+					uri = uri.replace(/\//g, "\\");
+				uri = sv.tools.file.getURI(sv.tools.file.getfile(uri));
+			}
+		} catch (e) {
+			// fallback:
+			if (!isUri)
+			uri = "file://" + uri;
+
+			sv.log.exception(e, "sv.command.openHelp");
+		}
+
+		var rHelpXulUri = "chrome://sciviewsk/content/RHelpOverlay.xul";
+		RHelpWin = _getWindowByURI(rHelpXulUri);
+
+		if (!RHelpWin || RHelpWin.closed) {
+			sv.log.debug("Starting R help with page " + uri);
+			try {
+				RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
+				"chrome=yes,dependent,resizable=yes," +
+				"scrollbars=yes,status=no,close,dialog=no", sv, uri);
+
+			} catch (e) {
+				sv.log.exception(e, "Unable to display R help", true);
+			}
+		} else {
+			sv.log.debug("Showing R help for page " + uri);
+			RHelpWin.go(uri);
+		}
+		RHelpWin.focus();
 	}
 
 	this.setControllers = function () {

@@ -90,7 +90,7 @@
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
 
 			<command id="cmd_sv_OpenHelp" key="key_cmd_sv_OpenHelp"
-				oncommand="sv.r.helpStart(true);"
+				oncommand="sv.command.openHelp();"
 				desc="R: &helpStart;" label="&helpStart;" accesskey="&helpStart.key;"/>
 			<command id="cmd_sv_BrowseWD" key="key_cmd_sv_BrowseWD"
 				oncommand="sv.r.setwd('current', true);"
