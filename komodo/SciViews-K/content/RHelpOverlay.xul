@@ -37,15 +37,16 @@
 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/toolbar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/toolbarbutton.css" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/printPreview.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/toolbar.css" type="text/css"?>
+<!--<?xml-stylesheet href="chrome://komodo/skin/toolbar.css" type="text/css"?>-->
 <?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/bindings/views.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/bindings/widgets.css" type="text/css"?>
 <?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/test.css" type="text/css"?>
 
 
 <window
@@ -58,82 +59,85 @@
     <script type="text/javascript">
         <![CDATA[
 
-		var sv;
-		var rHelpBrowser;
-		var rHelpTopic;
-		var rHelpHome;
+	var sv;
+	var rHelpBrowser;
+	var rHelpTopic;
+	var rHelpHome;
 
-        function display(page) {
-			rHelpBrowser.webNavigation.loadURI(page, null, null, null, null);
+	function go(uri) {
+
+		if (uri) {
+			rHelpTopic.value = uri;
+		} else {
+			uri = rHelpTopic.value;
 		}
+		rHelpTopic.select();
 
-		function go() {
-			var page = rHelpTopic.value;
-			rHelpTopic.select();
+		if (!uri)
+			return;
 
-			//FIXME: java search applet does not work in this browser
-			// perhaps translate address (onLocationChange):
-			// <<R.help.homedir>>/search/SearchEngine.html?SEARCHTERM=<<KEYWORD>>&TITLES=?&KEYWORDS=?&ALIASES=?
-			// to R's help.search("<<KEYWORD>>")
-			// get the results page, possibly convert to html??
+		//FIXME: java search applet does not work in this browser
+		// perhaps translate address (onLocationChange):
+		// <<R.help.homedir>>/search/SearchEngine.html?SEARCHTERM=<<KEYWORD>>&TITLES=?&KEYWORDS=?&ALIASES=?
+		// to R's help.search("<<KEYWORD>>")
+		// get the results page, possibly convert to html??
 
-			// Try to differenciate an URL from a help topic
-			var isUri = page.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
+		// Try to differenciate an URL from a help topic
+		var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
 
-			if (isUri) {
-				// This looks like a URL
-				rHelpBrowser.webNavigation.loadURI(page, null, null, null, null);
-			} else {
-				// Look for this 'topic' web page
-				sv.r.help(rHelpTopic.value);
-			}
+		if (isUri) {
+			// This looks like a URL
+			rHelpBrowser.webNavigation.loadURI(uri, null, null, null, null);
+		} else {
+			// Look for this 'topic' web page
+			sv.r.help(uri);
 		}
+	}
 
-		function txtInput(aEvent) {
-			if (aEvent.keyCode == KeyEvent.DOM_VK_RETURN) {
-				go();
-			}
+	function txtInput(aEvent) {
+		if (aEvent.keyCode == KeyEvent.DOM_VK_RETURN) {
+			go();
 		}
+	}
 
-		function search() {
-			rHelpTopic.select();
-			sv.r.search(rHelpTopic.value);
-        }
+	function search() {
+		rHelpTopic.select();
+		sv.r.search(rHelpTopic.value);
+	}
 
-		function onFindCommand (event) {
-			var button = event.target;
-			if (!button.checked) {
-				find();
-			} else {
-				var findToolbar = document.getElementById("FindToolbar");
-				//findToolbar.setAttribute("hidden", "true");
-				findToolbar.close();
-			}
-		}
-
-
-		function find(next) {
-			//rHelpTopic.select();
-			//findInDoc(rHelpTopic.value);
+	function onFindCommand (event) {
+		var button = event.target;
+		if (!button.checked) {
+			find();
+		} else {
 			var findToolbar = document.getElementById("FindToolbar");
-
-			if (!next) {
-				//var isShown = findToolbar.getAttribute("hidden") != "true";
-				findToolbar.open();
-
-				findToolbar._findField.value = rHelpBrowser.docShell.document.getSelection();
-				findToolbar._find(findToolbar._findField.value);
-			} else {
-				findToolbar._findAgain(event.shiftKey);
-			}
+			//findToolbar.setAttribute("hidden", "true");
+			findToolbar.close();
 		}
+	}
 
-		function goHome() {
-			// Change rHelpHome (not set before to display quicker the first time)
-			rHelpHome = sv.prefs.getString("Rhelp.index",
-				"about:blank")
-			rHelpBrowser.webNavigation.loadURI(rHelpHome,
-				null, null, null, null);
+
+	function find(next) {
+		//rHelpTopic.select();
+		//findInDoc(rHelpTopic.value);
+		var findToolbar = document.getElementById("FindToolbar");
+
+		if (!next) {
+			//var isShown = findToolbar.getAttribute("hidden") != "true";
+			findToolbar.open();
+
+			findToolbar._findField.value = rHelpBrowser.docShell.document.getSelection();
+			findToolbar._find(findToolbar._findField.value);
+		} else {
+			findToolbar._findAgain(event.shiftKey);
+		}
+	}
+
+	function goHome() {
+		// Change rHelpHome (not set before to display quicker the first time)
+		rHelpHome = sv.command.helpStartURI;
+		rHelpBrowser.webNavigation.loadURI(rHelpHome,
+			null, null, null, null);
 		}
 
         function goBack() {
@@ -150,128 +154,112 @@
         }
 
 
-		// Browser progress listener:
-		// so far used only to change title and location text
+	// Browser progress listener:
+	// so far used only to change title and location text
 
-		// From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
-		const STATE_START = Components.interfaces.
-			nsIWebProgressListener.STATE_START;
-		const STATE_STOP = Components.interfaces.
-			nsIWebProgressListener.STATE_STOP;
-		var progressListener = {
-			QueryInterface: function(aIID) 	{
-				if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
-					aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
-					aIID.equals(Components.interfaces.nsISupports))
-						return this;
-					throw Components.results.NS_NOINTERFACE;
-			},
+	// From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
+	const STATE_START = Components.interfaces.
+		nsIWebProgressListener.STATE_START;
+	const STATE_STOP = Components.interfaces.
+		nsIWebProgressListener.STATE_STOP;
+	var progressListener = {
+		QueryInterface: function(aIID) 	{
+			if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
+				aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
+				aIID.equals(Components.interfaces.nsISupports))
+					return this;
+				throw Components.results.NS_NOINTERFACE;
+		},
 
-			onStateChange: function(aWebProgress, aRequest, aFlag, aStatus) {
-				// If you use myListener for more than one tab/window, use
-				// aWebProgress.DOMWindow to obtain the tab/window which
-				// triggers the state change
-				if(aFlag & STATE_START) {
-					// This fires when the load event is initiated
-					rHelpTopic.value = aWebProgress.DOMWindow.document.location;
-					//sv.cmdout.append(">>" +
-					//aWebProgress.DOMWindow.document.location);
-				}
-				if(aFlag & STATE_STOP) {
-					// This fires when the load finishes
-					self.document.title = aWebProgress.DOMWindow.document.title;
-					document.getElementById("cmd_go_back")
-						.setAttribute("disabled", !rHelpBrowser.webNavigation
-								  .canGoBack)
-					document.getElementById("cmd_go_forward")
-						.setAttribute("disabled", !rHelpBrowser.webNavigation
-								  .canGoForward);
-				}
-			},
-
-			onLocationChange: function(aProgress, aRequest, aURI){
-				// This fires when the location bar changes; i.e load event is
-				// confirmed or when the user switches tabs. If you use
-				// myListener for more than one tab/window, use
-				// aProgress.DOMWindow to obtain the tab/window which triggered
-				//the change.
-			},
-
-			// For definitions of the remaining functions see XULPlanet.com
-			onProgressChange: function(aWebProgress, aRequest, curSelf,
-				maxSelf, curTot, maxTot) { },
-			onStatusChange: function(aWebProgress, aRequest, aStatus,
-				aMessage) { },
-			onSecurityChange: function(aWebProgress, aRequest, aState) { }
-		}
-
-		function onFindToolbarAttrModified(event) {
-			if (event.attrName == "hidden"
-				&& (!event.newValue || event.newValue == "true")) {
-				document.getElementById("rhelp-find").checked = !event.target.hidden;
+		onStateChange: function(aWebProgress, aRequest, aFlag, aStatus) {
+			// If you use myListener for more than one tab/window, use
+			// aWebProgress.DOMWindow to obtain the tab/window which
+			// triggers the state change
+			if(aFlag & STATE_START) {
+				// This fires when the load event is initiated
+				rHelpTopic.value = aWebProgress.DOMWindow.document.location;
+				//sv.cmdout.append(">>" +
+				//aWebProgress.DOMWindow.document.location);
 			}
+			if(aFlag & STATE_STOP) {
+				// This fires when the load finishes
+				self.document.title = aWebProgress.DOMWindow.document.title;
+				document.getElementById("cmd_go_back")
+					.setAttribute("disabled", !rHelpBrowser.webNavigation
+							  .canGoBack)
+				document.getElementById("cmd_go_forward")
+					.setAttribute("disabled", !rHelpBrowser.webNavigation
+							  .canGoForward);
+			}
+		},
+
+		onLocationChange: function(aProgress, aRequest, aURI){
+			// This fires when the location bar changes; i.e load event is
+			// confirmed or when the user switches tabs. If you use
+			// myListener for more than one tab/window, use
+			// aProgress.DOMWindow to obtain the tab/window which triggered
+			//the change.
+		},
+
+		// For definitions of the remaining functions see XULPlanet.com
+		onProgressChange: function(aWebProgress, aRequest, curSelf,
+			maxSelf, curTot, maxTot) { },
+		onStatusChange: function(aWebProgress, aRequest, aStatus,
+			aMessage) { },
+		onSecurityChange: function(aWebProgress, aRequest, aState) { }
+	}
+
+	function onFindToolbarAttrModified(event) {
+		if (event.attrName == "hidden"
+			&& (!event.newValue || event.newValue == "true")) {
+			document.getElementById("rhelp-find").checked = !event.target.hidden;
 		}
+	}
 
 
-		self.onload = function () {
-            var args = window.arguments;
-			sv = args[0];
-			var page = rHelpHome;
-			if (typeof(args[1]) != "undefined") page = args[1];
-			rHelpTopic = document.getElementById("rhelp-topic");
+	self.onload = function () {
+	    var args = window.arguments;
+	    sv = args[0];
+	    var page = rHelpHome;
+	    if (typeof(args[1]) != "undefined") page = args[1];
+	    rHelpTopic = document.getElementById("rhelp-topic");
 
-			rHelpTopic.clickSelectsAll = true;
+	    rHelpTopic.clickSelectsAll = true;
 
-			rHelpBrowser = document.getElementById("rhelp-browser");
-			rHelpBrowser.webNavigation.loadURI(page,
-				null, null, null, null);
+	    rHelpBrowser = document.getElementById("rhelp-browser");
+	    rHelpBrowser.webNavigation.loadURI(page,
+		    null, null, null, null);
 
-			rHelpBrowser.addProgressListener(progressListener,
-			  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+	    rHelpBrowser.addProgressListener(progressListener,
+	      Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 
-			var findToolbar = document.getElementById("FindToolbar");
+	    var findToolbar = document.getElementById("FindToolbar");
 
-			// Listen to find toolbar attribute modifications:
-			findToolbar.addEventListener("DOMAttrModified",
-				onFindToolbarAttrModified, true);
+	    // Listen to find toolbar attribute modifications:
+	    findToolbar.addEventListener("DOMAttrModified",
+		    onFindToolbarAttrModified, true);
 
-        }
+	}
 
-
-
-  // calling PrintUtils.printPreview() requires that you have three functions
-  // in the global scope: getPPBrowser(), which returns the browser element in
-  // the window print preview uses, getNavToolbox(), which returns the element
-  // (usually the main toolbox element) before which the print preview toolbar
-  // should be inserted, and getWebNavigation(), which returns the document's
-  // nsIWebNavigation object
+	// required by PrintUtils.printPreview()
 	function getWebNavigation() rHelpBrowser.webNavigation;
 	function getNavToolbox() document.getElementById("nav-toolbar");
 	function getPPBrowser() rHelpBrowser;
 
-        ]]>
+]]>
     </script>
 	<script type="text/javascript" src="chrome://global/content/printUtils.js" />
 <script type="text/javascript">
+	function printPage() {
+		PrintUtils.print();
+	}
 
-
-		function printPage() {
-			PrintUtils.print();
-		}
-
-		function printPreview() {
-			function enterPP () {
-				document.getElementById("nav-toolbar").hidden = true;
-			}
-			function exitPP () {
-				document.getElementById("nav-toolbar").hidden = false;
-			}
-
-			PrintUtils.printPreview(enterPP, exitPP);
-		}
-
-
-
+	function printPreview() {
+		function enterPP ()	document.getElementById("nav-toolbar").hidden = true;
+		function exitPP ()	document.getElementById("nav-toolbar").hidden = false;
+		
+		PrintUtils.printPreview(enterPP, exitPP);
+	}
 </script>
 
 
@@ -331,22 +319,22 @@
 			<menupopup>
 				<menuitem id="rhelp-menu-sitesearch" label="R Site Search"
 					accesskey="s"
-					oncommand="display('http://finzi.psych.upenn.edu/search.html');"/>
+					oncommand="go('http://finzi.psych.upenn.edu/search.html');"/>
 				<menuitem id="rhelp-menu-cran" label="CRAN"
 					accesskey="c"
-					oncommand="display('http://cran.r-project.org/');"/>
+					oncommand="go('http://cran.r-project.org/');"/>
 				<menuitem id="rhelp-menu-wiki" label="R wiki"
 					accesskey="w"
-					oncommand="display('http://wiki.r-project.org/');"/>
+					oncommand="go('http://wiki.r-project.org/');"/>
 				<menuitem id="rhelp-menu-bioconductor" label="Bioconductor"
 					accesskey="b"
-					oncommand="display('http://www.bioconductor.org/');"/>
+					oncommand="go('http://www.bioconductor.org/');"/>
 				<menuitem id="rhelp-menu-graph" label="Graph Gallery"
 					accesskey="g"
-					oncommand="display('http://addictedtor.free.fr/graphiques/');"/>
+					oncommand="go('http://addictedtor.free.fr/graphiques/');"/>
 				<menuitem id="rhelp-menu-forge" label="R-Forge"
 					accesskey="f"
-					oncommand="display('http://r-forge.r-project.org/');"/>
+					oncommand="go('http://r-forge.r-project.org/');"/>
 			</menupopup>
 		</toolbarbutton>
 		<toolbarseparator/>
