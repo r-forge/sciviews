@@ -11,7 +11,7 @@
 //
 // sv.r.eval(cmd); // Evaluate 'cmd' in R
 // sv.r.evalHidden(cmd, earlyExit); // Evaluate 'cmd' in R in a hidden way
-// sv.r.evalCallback(cmd, procfun); // Evaluate 'cmd' in R and call 'procfun'
+// sv.r.evalCallback(cmd, procfun, ...); // Evaluate 'cmd' in R and call 'procfun'
 // sv.r.escape(cmd); // Escape R multiline mode, 'cmd' to run then
 // sv.r.setwd(); // Set the working dir (choose or set to current buffer)
 // sv.r.run(); // Run current selection or line in R and goto next line
@@ -93,11 +93,8 @@
                                // from R-Forge
 // sv.r.pkg.CRANmirror();   // Select preferred CRAN mirror
 
-
 /// REMOVED! use sv.command.openHelp instead
 // sv.r.helpStart(start); // Start R help in the browser, unless start is false
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -224,8 +221,9 @@ sv.r.evalHidden = function (cmd, earlyExit) {
 //   " koCmd('alert(\"koCmd is back\");')", earlyExit = true);
 
 // Evaluate R expression and call procfun in Komodo with the result as argument
-// context might be used to pass more data as the second argument of procfun
-sv.r.evalCallback = function (cmd, procfun, context) {
+// all additional arguments will be passed to procfun,
+// result will be stored in procfun.value
+sv.r.evalCallback = function (cmd, procfun) {
 	// If R is not running, do nothing
 	if (!sv.r.running) {
 		// Indicate R should be started
@@ -240,10 +238,12 @@ sv.r.evalCallback = function (cmd, procfun, context) {
 		//sv.command.startR();
 		return null;
 	}
+	var args = Array.apply(null, arguments);
+	args.splice(0, 1, "<<<h>>>" + cmd, false, null);
+
 	// Evaluate a command in hidden mode (contextual help, calltip, etc.)
 	// and call 'procfun' at the end of the evaluation
-	var res = sv.socket.rCommand("<<<h>>>" + cmd,
-		false, null, procfun, context);
+	var res = sv.socket.rCommand.apply(sv.socket, args);
 	return(res);
 }
 
@@ -654,7 +654,7 @@ sv.r.example = function (topic) {
 // Search R help for topic
 sv.r.search = function (topic, internal) {
 	var res = false;
-	if (typeof(topic) == "undefined" | topic == "") {
+	if (!topic) {
 		topic = sv.getTextRange("word");
 		// Ask for the search string
 		topic = ko.dialogs.prompt(sv.translate("Search R objects using a regular" +
@@ -662,7 +662,7 @@ sv.r.search = function (topic, internal) {
 			sv.translate("Pattern"), topic,
 			sv.translate("Search R help"), "okRsearchPattern");
 	}
-	if (topic != null & topic != "") {
+	if (topic) {
 		// Get list of matching items and evaluate it with sv.r.search_select()
 		res = sv.r.evalCallback('cat(apropos("' + topic + '"), sep = "' +
 			sv.r.sep + '")', sv.r.search_select);
@@ -697,22 +697,41 @@ sv.r.search_select = function (topics) {
 
 
 // Search R web sites for topic
-// TODO: open results in RHelpWin, do not use R
-sv.r.siteSearch = function (topic) {
+sv.r.siteSearch = function (topic, idxname) {
 	var res = false;
-	if (typeof(topic) == "undefined" | topic == "")
+	if (!topic)
 		topic = sv.getTextRange("word");
-	if (topic == "") {
-		ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
-			1000, false);
-	} else {
-		res = sv.r.evalHidden('RSiteSearch("' + topic + '")', earlyExit = true);
-		ko.statusBar.AddMessage("R site search asked for '" + topic + "'",
-			"R", 5000, true);
+	topic = topic.trim();
+
+
+	if (!idxname)
+		idxname = ["Rhelp08", "functions", "views"];
+	else {
+		var idxsep = "&idxname=";
+		var idxnameAllow = ["Rhelp08", "Rhelp01", "Rhelp02", "functions",
+		"views", "R-devel", "R-sig-mixed-models"];
+
+		for (var i in idxname)
+			if (idxnameAllow.indexOf(idxname[i]) == -1)
+				idxname.splice(i, 1);
 	}
 
-	return(res);
+	if (!topic) {
+		ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
+			1000, false);
+		return;
+	}
+
+	idxname = idxsep + idxname.join(idxsep);
+
+	var url = "http://search.r-project.org/cgi-bin/namazu.cgi?query=" + topic +
+	"&max=20&result=normal&sort=score" + idxname;
+
+	sv.command.openHelp(url);
+
 }
+
+
 
 // List available datasets ("loaded" or not defined = loaded packages, or "all")
 sv.r.dataList = function (which) {
