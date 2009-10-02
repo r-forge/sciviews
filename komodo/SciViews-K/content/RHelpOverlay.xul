@@ -41,12 +41,11 @@
 <?xml-stylesheet href="chrome://global/skin/printPreview.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
-<!--<?xml-stylesheet href="chrome://komodo/skin/toolbar.css" type="text/css"?>-->
 <?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/bindings/views.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/bindings/widgets.css" type="text/css"?>
 <?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
-<?xml-stylesheet href="chrome://sciviewsk/skin/test.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/rhelpwin.css" type="text/css"?>
 
 
 <window
@@ -125,9 +124,9 @@
 		if (!next) {
 			//var isShown = findToolbar.getAttribute("hidden") != "true";
 			findToolbar.open();
-
 			findToolbar._findField.value = rHelpBrowser.docShell.document.getSelection();
 			findToolbar._find(findToolbar._findField.value);
+			findToolbar._findField.focus();
 		} else {
 			findToolbar._findAgain(event.shiftKey);
 		}
@@ -257,7 +256,7 @@
 	function printPreview() {
 		function enterPP ()	document.getElementById("nav-toolbar").hidden = true;
 		function exitPP ()	document.getElementById("nav-toolbar").hidden = false;
-		
+
 		PrintUtils.printPreview(enterPP, exitPP);
 	}
 </script>

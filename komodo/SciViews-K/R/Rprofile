@@ -146,6 +146,10 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 							R.Version()$minor, ") connected", sep = ""))
 					}
 					rm(koact)
+
+					# set charset in komodo:
+					koCmd(paste("sv.socket.charset = '", localeToCharset()[1], "';", sep=""));
+
 				} else {
 					cat("R is not SciViews ready, install latest svMisc, svSocket & svGUI packages\n")
 				}
@@ -163,7 +167,7 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	system("komodo", wait = FALSE)
 
 	# Make sure to use Komodo as your R editor
-	
+
 }
 
 ### SciViews install end ###

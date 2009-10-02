@@ -178,7 +178,6 @@ if (typeof(sv.command) == 'undefined') {
 	// application being terminated. A more straightforward way would be to use
 	// runService.RunAndNotify but this wouldn't allow to start app in a console
 	// window. So we have to do this trick here.
-	// This is not used for anything yet.
 	function AppTerminateObserver (command) {
 		this.register(command);
 	};
@@ -350,10 +349,7 @@ if (typeof(sv.command) == 'undefined') {
 	this.helpStartURI = "";
 
 	this.openHelp = function (uri) {
-		sv.cmdout.append(uri);
-
-
-	    // We will need special treatment of in windows
+	    // We will need special treatment in windows
 	    var isWin = navigator.platform.search(/Win\d+$/) === 0;
 
 	    if (!_this.helpStartURI) {
@@ -369,7 +365,6 @@ if (typeof(sv.command) == 'undefined') {
 				path = sv.tools.file.getURI(path);
 				_this.helpStartURI = path;
 				_this.openHelp(path);
-				//alert(_this.helpStartURI);
 			});
 			return;
 		}
@@ -381,6 +376,7 @@ if (typeof(sv.command) == 'undefined') {
 		// because:
 		// 1) sv.tools.file.getfile() returns null on Mac OS X
 		// 2) sv.tools.file.getURI() raises an error on Mac OS X
+		// Any ideas why??
 
 		// This should hopefully work on all platforms (it does on Win and Linux)
 		// First, check if "uri" is an URI already:
@@ -395,7 +391,7 @@ if (typeof(sv.command) == 'undefined') {
 		} catch (e) {
 			// fallback:
 			if (!isUri)
-			uri = "file://" + uri;
+				uri = "file://" + uri;
 
 			sv.log.exception(e, "sv.command.openHelp");
 		}
