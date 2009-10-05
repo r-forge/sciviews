@@ -137,8 +137,7 @@ if (typeof(sv.socket) == 'undefined')
 			pump.init(stream, -1, -1, 0, 0, false);
 			pump.asyncRead(dataListener, null);
 		} catch (e) {
-			sv.log.error("sv.socket.rClient() raises an unknown error\n");
-			//sv.log.exception(e, "sv.socket.rClient() raises an unknown error");
+			sv.log.exception(e, "sv.socket.rClient() raises an unknown error");
 			return(e);
 		}
 		return(null);
@@ -314,11 +313,11 @@ if (typeof(sv.socket) == 'undefined')
 				classes["@mozilla.org/network/server-socket;1"]
 				.createInstance(Components.interfaces.nsIServerSocket);
 			var port = sv.prefs.getString("sciviews.server.socket", "7052");
-			_serverSocket.init(port, sv.socket.serverIsLocal, -1);
+			_serverSocket.init(port, this.serverIsLocal, -1);
 			_serverSocket.asyncListen(listener);
 			_serverStarted = true;
 		} catch(e) {
-			sv.log.exception(e, "SciViews-K cannot open a server socket on port" +
+			sv.log.exception(e, "SciViews-K cannot open a server socket on port " +
 				port + ".\nMake sure the port is not already used by another" +
 					" Komodo instance" + "\nor choose another port in the" +
 					" preferences and restart Komodo", false);

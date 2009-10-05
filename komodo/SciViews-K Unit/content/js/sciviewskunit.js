@@ -41,7 +41,7 @@ if (typeof(sv.r) == 'undefined') {
 // Define the 'sv.r.unit' namespace
 if (typeof(sv.r.unit) == 'undefined') sv.r.unit = {
 	version: 0.7,
-	release: 0,
+	release: 1,
 	debug: true
 };
 

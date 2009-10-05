@@ -399,7 +399,7 @@ function (message, title = "Message", type = c("ok",
     ### should look how to implement it!
     res <- tkmessageBox(message = message, title = title, type = type,
         default = tkdefault, icon = icon)
-    return(as.character(res))
+    return(tclvalue(res))
 }
 
 "guiDlgOpen" <-
@@ -466,7 +466,7 @@ parent = 0, GUI = getOption("guiWidgets"))
     # Use tkOpenFile()
     ### TODO: parent argument is defined, but not used yet here...
     ### should look how to implement it!
-    res <- as.character(tkgetOpenFile(title = title, initialfile = defaultFile,
+    res <- tclvalue(tkgetOpenFile(title = title, initialfile = defaultFile,
         initialdir = defaultDir, multiple = multi, filetypes = filters))
 	if (length(res) == 1 && res == "") res <- character(0)
     return(res)
@@ -562,7 +562,7 @@ GUI = getOption("guiWidgets"))
     # Use tkSaveFile()
     ### TODO: parent argument is defined, but not used yet here...
     ### should look how to implement it!
-    res <- as.character(tkgetSaveFile(title = title, initialfile = defaultFile,
+    res <- tclvalue(tkgetSaveFile(title = title, initialfile = defaultFile,
         initialdir = defaultDir, defaultextension = defaultExt,
         filetypes = filters))
     return(res)

@@ -153,7 +153,9 @@ if (typeof(sv.tools.file) == 'undefined')
 					getService(Components.interfaces.nsIProperties).
 					get(baseDir, Components.interfaces.nsILocalFile);
 			} catch(e) {
-				sv.log.exception(e, "sv.tools.file.getfile: get " + baseDir);
+				// I don't want to log an exception here, since I try another
+				// method just below!
+				//sv.log.exception(e, "sv.tools.file.getfile: get " + baseDir);
 				file = Components.classes["@mozilla.org/file/local;1"].
 					createInstance(Components.interfaces.nsILocalFile);
 				try {
