@@ -4,10 +4,11 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>sciviewskunit@sciviews.org</em:id>
         <em:name>SciViews-K Unit</em:name>
-        <em:version>0.7.0</em:version>
+        <em:version>0.7.1</em:version>
         <em:description>SciViews-K Unit - Interface to the svUnit R package</em:description>
         <em:creator>Philippe Grosjean</em:creator>
         <em:homepageURL>http://sciviews.org/SciViews-K</em:homepageURL>
+        <em:iconURL>chrome://sciviewsk/skin/images/appicon.png</em:iconURL>
         <em:type>2</em:type> <!-- type=extension -->
 
         <em:targetApplication>

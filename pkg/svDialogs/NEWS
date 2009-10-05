@@ -1,5 +1,11 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-41
+
+* When the path contained spaces, guiDlgOpen() and guiDlgSave() returned them in
+  pieces.
+
+
 == Changes in svDialogs 0.9-40
 
 This is the first version distributed on R-forge. It is completely refactored
