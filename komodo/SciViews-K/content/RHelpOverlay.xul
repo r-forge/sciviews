@@ -49,205 +49,309 @@
 
 
 <window
-    id="RHelpWindow" title="R Help" onload="rHelpOnLoad();"
+    id="RHelpWindow" title="R Help"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     width="600" height="400" screenX="20" screenY="20"
     persist="screenX screenY width height"
     style="min-height: 400px; min-width: 300px;">
 
-    <script type="text/javascript">
-        <![CDATA[
+<script type="text/javascript">
+<![CDATA[
 
-	var sv;
-	var rHelpBrowser;
-	var rHelpTopic;
-	var rHelpHome;
+//FIXME: rHelpBrowser.homePage is not always set at startup
 
-	function go(uri) {
+var sv;
+var rHelpBrowser;
+var rHelpTopic;
+//var rHelpHome; // perhaps redundant, same as rHelpBrowser.homePage
 
-		if (uri) {
-			rHelpTopic.value = uri;
-		} else {
-			uri = rHelpTopic.value;
-		}
-		rHelpTopic.select();
+function go(uri) {
+	// these are still undefined when calling .go on load event,
+	// so define them here:
 
-		if (!uri)
-			return;
+	rHelpBrowser = document.getElementById("rhelp-browser");
 
-		//FIXME: java search applet does not work in this browser
-		// perhaps translate address (onLocationChange):
-		// <<R.help.homedir>>/search/SearchEngine.html?SEARCHTERM=<<KEYWORD>>&TITLES=?&KEYWORDS=?&ALIASES=?
-		// to R's help.search("<<KEYWORD>>")
-		// get the results page, possibly convert to html??
-
-		// Try to differenciate an URL from a help topic
-		var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
-
-		if (isUri) {
-			// This looks like a URL
-			rHelpBrowser.webNavigation.loadURI(uri, null, null, null, null);
-		} else {
-			// Look for this 'topic' web page
-			sv.r.help(uri);
-		}
-	}
-
-	function txtInput(aEvent) {
-		if (aEvent.keyCode == KeyEvent.DOM_VK_RETURN) {
-			go();
-		}
-	}
-
-	function search() {
-		rHelpTopic.select();
-		sv.r.search(rHelpTopic.value);
-	}
-
-	function onFindCommand (event) {
-		var button = event.target;
-		if (!button.checked) {
-			find();
-		} else {
-			var findToolbar = document.getElementById("FindToolbar");
-			//findToolbar.setAttribute("hidden", "true");
-			findToolbar.close();
-		}
+	if (uri === "" || uri == "@home@") {
+		rHelpBrowser.goHome();
+		return;
 	}
 
 
-	function find(next) {
-		//rHelpTopic.select();
-		//findInDoc(rHelpTopic.value);
+	rHelpTopic = document.getElementById("rhelp-topic");
+	// In case the window was not yet fully loaded.
+	if (!rHelpTopic) {
+		self.addEventListener("load", function(event) {
+			go(uri);
+		}, false);
+		return;
+	}
+	//alert(uri);
+
+	if (uri) {
+		rHelpTopic.value = uri;
+	} else {
+		uri = rHelpTopic.value;
+	}
+	rHelpTopic.select();
+
+
+
+	//FIXME: java search applet does not work in this browser
+	// perhaps translate address (onLocationChange):
+	// <<R.help.homedir>>/search/SearchEngine.html?SEARCHTERM=<<KEYWORD>>&TITLES=?&KEYWORDS=?&ALIASES=?
+	// to R's help.search("<<KEYWORD>>"), then get the results data and convert to html.
+
+	// Try to differenciate an URL from a help topic
+	var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
+
+	if (isUri) {
+		// This looks like a URL
+		rHelpBrowser.webNavigation.loadURI(uri, null, null, null, null);
+	} else {
+		// Look for this 'topic' web page
+		sv.r.help(uri);
+	}
+}
+
+function txtInput(aEvent) {
+	if (aEvent.keyCode == KeyEvent.DOM_VK_RETURN) {
+		go();
+	}
+}
+
+function search(topic) {
+	if (!topic)		return;
+
+	rHelpTopic.select();
+	sv.r.search(topic);
+}
+
+function onFindCommand (event) {
+	var button = event.target;
+	if (!button.checked) {
+		find();
+	} else {
 		var findToolbar = document.getElementById("FindToolbar");
-
-		if (!next) {
-			//var isShown = findToolbar.getAttribute("hidden") != "true";
-			findToolbar.open();
-			findToolbar._findField.value = rHelpBrowser.docShell.document.getSelection();
-			findToolbar._find(findToolbar._findField.value);
-			findToolbar._findField.focus();
-		} else {
-			findToolbar._findAgain(event.shiftKey);
-		}
+		findToolbar.close();
 	}
+}
 
-	function goHome() {
-		// Change rHelpHome (not set before to display quicker the first time)
-		rHelpHome = sv.command.helpStartURI;
-		rHelpBrowser.webNavigation.loadURI(rHelpHome,
-			null, null, null, null);
+
+function find(next) {
+	//rHelpTopic.select();
+	//findInDoc(rHelpTopic.value);
+	var findToolbar = document.getElementById("FindToolbar");
+
+	if (!next) {
+		//var isShown = findToolbar.getAttribute("hidden") != "true";
+		findToolbar.open();
+		findToolbar._findField.value = rHelpBrowser.contentWindow.getSelection();
+		findToolbar._find(findToolbar._findField.value);
+		findToolbar._findField.focus();
+	} else {
+		findToolbar._findAgain(event.shiftKey);
+	}
+}
+
+// Browser progress listener:
+// so far used only to change title and location text
+
+// From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
+const STATE_START = Components.interfaces.
+	nsIWebProgressListener.STATE_START;
+const STATE_STOP = Components.interfaces.
+	nsIWebProgressListener.STATE_STOP;
+var progressListener = {
+	QueryInterface: function(aIID) 	{
+		if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
+			aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
+			aIID.equals(Components.interfaces.nsISupports))
+				return this;
+			throw Components.results.NS_NOINTERFACE;
+	},
+
+	onStateChange: function(aWebProgress, aRequest, aFlag, aStatus) {
+		// If you use myListener for more than one tab/window, use
+		// aWebProgress.DOMWindow to obtain the tab/window which
+		// triggers the state change
+
+		if(aFlag & STATE_START) {
+			// This fires when the load event is initiated
+			document.getElementById("cmd_stop")
+				.setAttribute("disabled", false);
+
 		}
+		if(aFlag & STATE_STOP) {
+			// This fires when the load finishes
+			self.document.title = aWebProgress.DOMWindow.document.title;
+			rHelpTopic.value = aWebProgress.DOMWindow.document.location;
 
-        function goBack() {
-            var webNavigation = rHelpBrowser.webNavigation;
-			if (webNavigation.canGoBack)
-				webNavigation.goBack();
+			document.getElementById("cmd_stop")
+				.setAttribute("disabled", true);
 
-        }
+			document.getElementById("cmd_go_back")
+				.setAttribute("disabled", !rHelpBrowser.webNavigation
+						  .canGoBack)
+			document.getElementById("cmd_go_forward")
+				.setAttribute("disabled", !rHelpBrowser.webNavigation
+						  .canGoForward);
+		}
+	},
 
-        function goForward() {
-            var webNavigation = rHelpBrowser.webNavigation;
-            if (webNavigation.canGoForward)
-               webNavigation.goForward();
-        }
+	onLocationChange: function(aProgress, aRequest, aURI){
+		// This fires when the location bar changes; i.e load event is
+		// confirmed or when the user switches tabs. If you use
+		// myListener for more than one tab/window, use
+		// aProgress.DOMWindow to obtain the tab/window which triggered
+		//the change.
+		//try {
+		//	sv.cmdout.append("onLocationChange, aURI = " + aURI.spec)
+		//} catch(e) {}
+
+	},
+
+	// For definitions of the remaining functions see XULPlanet.com
+	onProgressChange: function(aWebProgress, aRequest, curSelf,
+		maxSelf, curTot, maxTot) { },
+	onStatusChange: function(aWebProgress, aRequest, aStatus,
+		aMessage) { },
+	onSecurityChange: function(aWebProgress, aRequest, aState) { }
+}
+
+function onFindToolbarAttrModified(event) {
+	if (event.attrName == "hidden"
+		&& (!event.newValue || event.newValue == "true")) {
+		document.getElementById("rhelp-find").checked = !event.target.hidden;
+	}
+}
+
+// this does not work yet.
+// display formatted search results in a help window
+function rHelpSearch(topic) {
+	if (!topic)	return;
+
+	var cmd = 'svtmp <- help.search("' + topic + '")[];' +
+		'svtmp$matches <- cbind(svtmp$matches, Path = apply(svtmp$matches[, c(1,3)], 1, function(z) c(help(z[1],  package = z[2]))));' +
+		'cat(svtmp$pattern, "\n");' +  'write.table(svtmp$matches, sep=";", row.names = F, col.names = F, quote = F); rm(svtmp)';
+
+	//var win = sv.command.openHelp("chrome://sciviewsk/content/rsearch.html");
+	//var rHelpBrowser;
+
+	sv.r.evalCallback(cmd, function(data) {
+		//var rhb = document.getElementById("rhelp-browser");
+
+		rHelpBrowser.webNavigation.loadURI("chrome://sciviewsk/content/rsearch.html",
+					null, null, null, null);
+
+		var doc = rHelpBrowser.docShell.document;
+
+		var out = doc.getElementById("results");
+
+		while (out.childNodes.length) out.removeChild(out.firstChild);
+
+		d = data.split(/[\r\n]+/);
+		var uri;
+		out.innerHTML += '<p>Search text was: "' + d[0] + '"</p>';
+		var prevPkg = "";
+		var fnList, li, el, p;
+		var pkgList = doc.createElement("div");
+
+		for (var i = 1; i < d.length; i++) {
+			var di = d[i].split(/\s*;\s*/);
+			var li = doc.createElement("li");
+
+			curPkg = di[2];
+			if (curPkg != prevPkg) {
+				if (fnList) pkgList.appendChild(fnList);
+
+				p = doc.createElement("p");
+				el = doc.createElement("a");
+				el.appendChild(doc.createTextNode("Package: " + curPkg));
+				el.setAttribute("href", "file://" + di[3] + "/html/00Index.html");
+				p.appendChild(el);
 
 
-	// Browser progress listener:
-	// so far used only to change title and location text
-
-	// From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
-	const STATE_START = Components.interfaces.
-		nsIWebProgressListener.STATE_START;
-	const STATE_STOP = Components.interfaces.
-		nsIWebProgressListener.STATE_STOP;
-	var progressListener = {
-		QueryInterface: function(aIID) 	{
-			if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
-				aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
-				aIID.equals(Components.interfaces.nsISupports))
-					return this;
-				throw Components.results.NS_NOINTERFACE;
-		},
-
-		onStateChange: function(aWebProgress, aRequest, aFlag, aStatus) {
-			// If you use myListener for more than one tab/window, use
-			// aWebProgress.DOMWindow to obtain the tab/window which
-			// triggers the state change
-			if(aFlag & STATE_START) {
-				// This fires when the load event is initiated
-				rHelpTopic.value = aWebProgress.DOMWindow.document.location;
-				//sv.cmdout.append(">>" +
-				//aWebProgress.DOMWindow.document.location);
+				pkgList.appendChild(p);
+				fnList = doc.createElement("ol");
 			}
-			if(aFlag & STATE_STOP) {
-				// This fires when the load finishes
-				self.document.title = aWebProgress.DOMWindow.document.title;
-				document.getElementById("cmd_go_back")
-					.setAttribute("disabled", !rHelpBrowser.webNavigation
-							  .canGoBack)
-				document.getElementById("cmd_go_forward")
-					.setAttribute("disabled", !rHelpBrowser.webNavigation
-							  .canGoForward);
-			}
-		},
+			prevPkg = curPkg;
+			li = doc.createElement("li");
 
-		onLocationChange: function(aProgress, aRequest, aURI){
-			// This fires when the location bar changes; i.e load event is
-			// confirmed or when the user switches tabs. If you use
-			// myListener for more than one tab/window, use
-			// aProgress.DOMWindow to obtain the tab/window which triggered
-			//the change.
-		},
+			el = li.appendChild(doc.createElement("a"));
+			el.setAttribute("href", "file://" + di[4]);
+			el.appendChild(doc.createTextNode(di[0]));
 
-		// For definitions of the remaining functions see XULPlanet.com
-		onProgressChange: function(aWebProgress, aRequest, curSelf,
-			maxSelf, curTot, maxTot) { },
-		onStatusChange: function(aWebProgress, aRequest, aStatus,
-			aMessage) { },
-		onSecurityChange: function(aWebProgress, aRequest, aState) { }
-	}
-
-	function onFindToolbarAttrModified(event) {
-		if (event.attrName == "hidden"
-			&& (!event.newValue || event.newValue == "true")) {
-			document.getElementById("rhelp-find").checked = !event.target.hidden;
+			li.appendChild(el);
+			li.appendChild(doc.createTextNode(" - " + di[1]));
+			fnList.appendChild(li);
 		}
-	}
+		pkgList.appendChild(fnList);
+		doc.body.appendChild(pkgList);
+	});
+}
+
+function _getHomePage(browser, goTo) {
+	var isWin = navigator.platform.search(/Win\d+$/) === 0;
+
+	// Temporarily commented out, as this seems to make R not responging sometimes.
+	//var cmd = 'suppressMessages(make.packages.html()); options(htmlhelp = TRUE); ';
+	var cmd = 'options(htmlhelp = TRUE); ';
+	cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
+
+	var res = sv.r.evalCallback(cmd, function (path) {
+		path = sv.tools.strings.removeLastCRLF(path);
+		path = sv.tools.file.getfile(path,
+			[(isWin? null : ".R"), "doc", "html", "index.html"]);
+		path = sv.tools.file.getURI(path);
+
+		browser.homePage = sv.helpStartURI = path;
+
+		if (goTo)		go(path);
+	});
+}
 
 
-	self.onload = function () {
-	    var args = window.arguments;
-	    sv = args[0];
-	    var page = rHelpHome;
-	    if (typeof(args[1]) != "undefined") page = args[1];
-	    rHelpTopic = document.getElementById("rhelp-topic");
+function windowOnLoad (event) {
+	// DOMContentLoaded is fired also for HTML content
+	if (event.target != self.document)
+		return;
 
-	    rHelpTopic.clickSelectsAll = true;
+	var args = window.arguments;
+	sv = args[0];
+	if (typeof(args[1]) != "undefined") page = args[1];
 
-	    rHelpBrowser = document.getElementById("rhelp-browser");
-	    rHelpBrowser.webNavigation.loadURI(page,
-		    null, null, null, null);
+	rHelpTopic = document.getElementById("rhelp-topic");
+	rHelpTopic.clickSelectsAll = true;
 
-	    rHelpBrowser.addProgressListener(progressListener,
-	      Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+	rHelpBrowser = document.getElementById("rhelp-browser");
 
-	    var findToolbar = document.getElementById("FindToolbar");
 
-	    // Listen to find toolbar attribute modifications:
-	    findToolbar.addEventListener("DOMAttrModified",
-		    onFindToolbarAttrModified, true);
+	rHelpBrowser.addProgressListener(progressListener,
+	  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 
-	}
+	var findToolbar = document.getElementById("FindToolbar");
 
-	// required by PrintUtils.printPreview()
-	function getWebNavigation() rHelpBrowser.webNavigation;
-	function getNavToolbox() document.getElementById("nav-toolbar");
-	function getPPBrowser() rHelpBrowser;
+	// Listen to find toolbar attribute modifications:
+	findToolbar.addEventListener("DOMAttrModified",
+		onFindToolbarAttrModified, false);
+
+	go(page? page : "about:blank");
+
+	_getHomePage(rHelpBrowser, !page);
+}
+
+// this is fired earlier than load event, so all required variables
+// will be defined
+self.addEventListener("DOMContentLoaded", windowOnLoad, false);
+
+// required by PrintUtils.printPreview()
+function getWebNavigation() rHelpBrowser.webNavigation;
+function getNavToolbox() document.getElementById("nav-toolbar");
+function getPPBrowser() rHelpBrowser;
 
 ]]>
-    </script>
-	<script type="text/javascript" src="chrome://global/content/printUtils.js" />
+</script>
+<script type="text/javascript" src="chrome://global/content/printUtils.js" />
 <script type="text/javascript">
 	function printPage() {
 		PrintUtils.print();
@@ -261,9 +365,8 @@
 	}
 </script>
 
-
 <keyset id="keyset_main">
-    <key id="key_find" key="f" observes="cmd_find" modifiers="accel" />
+    <key id="key_find" key="F" observes="cmd_find" modifiers="accel" />
     <key id="key_find_next" keycode="VK_F3" command="cmd_find_next" modifiers="" />
     <key id="key_go_back" keycode="VK_BACK" command="cmd_go_back" modifiers="" />
     <key id="key_go_home" keycode="VK_HOME" command="cmd_go_home" modifiers="alt" />
@@ -272,9 +375,18 @@
 <commandset id="commandset_main">
   <command id="cmd_find" oncommand="find(false);" />
   <command id="cmd_find_next" oncommand="find(true);" />
-  <command id="cmd_go_back" oncommand="goBack(true);" disabled="true" />
-  <command id="cmd_go_forward" oncommand="goForward(true);" disabled="true" />
-  <command id="cmd_go_home" oncommand="goHome();" />
+  <command id="cmd_go" oncommand="go();" disabled="false"
+		   label="Go" tooltiptext="Show topic or web page" />
+  <command id="cmd_search" oncommand="search(document.getElementById('rhelp-topic').value);" disabled="false" label="Search"
+	       tooltiptext="Search expression in R help" />
+  <command id="cmd_go_back" oncommand="rHelpBrowser.goBack();" disabled="true"
+		   label="Back" tooltiptext="Back"/>
+  <command id="cmd_go_forward" oncommand="rHelpBrowser.goForward();" disabled="true"
+		   label="Forward" tooltiptext="Forward"/>
+  <command id="cmd_go_home" oncommand="rHelpBrowser.goHome();"
+		    label="Home" tooltiptext="R help index"/>
+  <command id="cmd_stop" oncommand="rHelpBrowser.stop();"
+		    label="Stop" tooltiptext="Stop"/>
   <command id="cmd_print" oncommand="printPage();" />
   <command id="cmd_print_preview" oncommand="printPreview();" />
 </commandset>
@@ -287,38 +399,34 @@
             <textbox id="rhelp-topic" flex="0"
 				emptytext="topic or web page"
 				onkeypress="txtInput(event);"
-				tooltiptext="Search topic or Web page"/>
+				tooltiptext="Search topic or Web page"
+				/>
         </vbox>
-		<toolbarbutton id="rhelp-go" class="macro-play-icon"
-		    oncommand="go();" disabled="false" label="Go"
-			tooltiptext="Show topic or web page" persist="buttonstyle"
-			buttonstyle="pictures"/>
-		<toolbarbutton id="rhelp-search" class="help-icon"
-		    oncommand="search();" disabled="false" label="Search"
-			tooltiptext="Search expression in R help" persist="buttonstyle"
-			buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-go" class="go-icon"
+			command="cmd_go" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-search" class="search-icon"
+			command="cmd_search" buttonstyle="pictures"/>
 		<spacer flex="1"/>
 		<toolbarbutton id="rhelp-find" class="find-icon"
 		    oncommand="onFindCommand(event);" disabled="false" label="Search in page"
 			tooltiptext="Search this page (Ctrl-F/F3)"
-			persist="buttonstyle" buttonstyle="pictures"/>
+			buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-back-button" class="history-back-icon"
-		    label="Back" command="cmd_go_back"
-			tooltiptext="Back" persist="buttonstyle" buttonstyle="pictures"/>
+		    command="cmd_go_back" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-forward-button" class="history-forward-icon"
-		    command="cmd_go_forward" label="Forward"
-			tooltiptext="Forward" persist="buttonstyle" buttonstyle="pictures"/>
+		    command="cmd_go_forward" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-home" class="home-icon"
-		    command="cmd_go_home" label="Home"
-			tooltiptext="R help index" buttonstyle="pictures"/>
+		    command="cmd_go_home" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-stop-button" class="stop-icon"
+		    command="cmd_stop" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-web" type="menu" class="r-web-icon"
-		     disabled="false" label="Web" orient="horizontal"
-			tooltiptext="R help on the web"
-			buttonstyle="pictures">
+		    disabled="false" label="Web" orient="horizontal"
+			tooltiptext="R help on the web" buttonstyle="pictures">
 			<menupopup>
 				<menuitem id="rhelp-menu-sitesearch" label="R Site Search"
 					accesskey="s"
 					oncommand="go('http://finzi.psych.upenn.edu/search.html');"/>
+<!--	 TODO: if CRAN mirror was set in R, go directly there, eg.	go('@CRAN@')		-->
 				<menuitem id="rhelp-menu-cran" label="CRAN"
 					accesskey="c"
 					oncommand="go('http://cran.r-project.org/');"/>

@@ -7,6 +7,7 @@
 // sv.command.setMenuRApp(el); 	// Set up 'R application' submenu (checked item
 								// and hide incompatible items.
 // sv.command.startR();			// Start the preferred R app and connect to it
+// TODO: sv.command.quitR(saveWorkspace)
 // sv.command.openPkgManager(); // Open the package manager window
 // sv.command.openHelp(webpage);// Open the R Help window at this web page
 // sv.command.setControllers(); // Set controllers for R related commands
@@ -295,6 +296,7 @@ if (typeof(sv.command) == 'undefined') {
 								break;
 							}
 						} else { // Windows, RGui & RTerm always available?
+								 // (assuming R is installed, yes.)
 							showItem = true;
 							break;
 						}
@@ -346,74 +348,56 @@ if (typeof(sv.command) == 'undefined') {
 		rPkgMgr.focus();
 	}
 
-	this.helpStartURI = "";
-
+// sv.command.openHelp - returns reference to the RHelpWindow
 	this.openHelp = function (uri) {
-	    // We will need special treatment in windows
+		// We will need special treatment in windows
 	    var isWin = navigator.platform.search(/Win\d+$/) === 0;
 
-	    if (!_this.helpStartURI) {
-			var cmd = 'suppressMessages(make.packages.html()); options(htmlhelp = TRUE); ';
-			cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
+		if (uri) {
+			// local paths should be of the form: file:///
+			// Philippe, any ideas why sv.tools.file.getfile() returns null on Mac OS X?
 
-
-			var res = sv.r.evalCallback(cmd, function (path) {
-				path = sv.tools.strings.removeLastCRLF(path);
-				path = sv.tools.file.getfile(path,
-					[(isWin? null : ".R"), "doc", "html", "index.html"]);
-
-				path = sv.tools.file.getURI(path);
-				_this.helpStartURI = path;
-				_this.openHelp(path);
-			});
-			return;
-		}
-		if (!uri)
-			uri = _this.helpStartURI;
-
-		// Webpage should be of the form: file:///
-		// Commented out and replaced by a bad hack (prepending 'file://')
-		// because:
-		// 1) sv.tools.file.getfile() returns null on Mac OS X
-		// 2) sv.tools.file.getURI() raises an error on Mac OS X
-		// Any ideas why??
-
-		// This should hopefully work on all platforms (it does on Win and Linux)
-		// First, check if "uri" is an URI already:
-		var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
-
-		try {
-			if (!isUri) {
-				if (isWin)
-					uri = uri.replace(/\//g, "\\");
-				uri = sv.tools.file.getURI(sv.tools.file.getfile(uri));
+			// This should hopefully work on all platforms (it does on Win and Linux)
+			// First, check if "uri" is an URI already:
+			var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
+			try {
+				if (!isUri) {
+					if (isWin)
+						uri = uri.replace(/\//g, "\\");
+					uri = sv.tools.file.getURI(sv.tools.file.getfile(uri));
+				}
+			} catch (e) {
+				// fallback:
+				if (!isUri)
+					uri = "file://" + uri;
 			}
-		} catch (e) {
-			// fallback:
-			if (!isUri)
-				uri = "file://" + uri;
-
-			sv.log.exception(e, "sv.command.openHelp");
+		} else {
+			uri = ""; // home page will be shown
 		}
 
+		// First, open the window with blank page:
 		var rHelpXulUri = "chrome://sciviewsk/content/RHelpOverlay.xul";
 		RHelpWin = _getWindowByURI(rHelpXulUri);
 
+
 		if (!RHelpWin || RHelpWin.closed) {
 			sv.log.debug("Starting R help with page " + uri);
-			try {
-				RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
+
+			// try/catch here somehow prevented from storing window reference in RHelpWin. No idea why...
+			RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
 				"chrome=yes,dependent,resizable=yes," +
 				"scrollbars=yes,status=no,close,dialog=no", sv, uri);
 
-			} catch (e) {
-				sv.log.exception(e, "Unable to display R help", true);
-			}
 		} else {
-			sv.log.debug("Showing R help for page " + uri);
+			//sv.log.debug("Showing R help for page " + uri);
+			//alreadyOpen = true;
 			RHelpWin.go(uri);
 		}
 		RHelpWin.focus();
+
+
+
+		return RHelpWin;
 	}
 
 	this.setControllers = function () {
