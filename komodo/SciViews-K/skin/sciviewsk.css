@@ -102,6 +102,11 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/filter.png");
 }
 
+.r-objects-filter:hover,
+.r-objects-filter:hover:active {
+	list-style-image: url("chrome://sciviewsk/skin/images/filter-a.png");
+}
+
 .robjects-fold-all-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/toggle_close.png");
 }
@@ -118,14 +123,50 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/house.png");
 }
 
+.home-icon:hover,
+.home-icon:hover:active {
+	list-style-image: url("chrome://sciviewsk/skin/images/house_a.png");
+}
+
 .r-web-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/world_link.png");
 }
 
-.r-objects-filter:hover,
-.r-objects-filter:hover:active {
-	list-style-image: url("chrome://sciviewsk/skin/images/filter-a.png");
+.go-icon {
+	list-style-image: url("chrome://sciviewsk/skin/images/play_green.png");
 }
+
+.go-icon:hover,
+.go-icon:hover:active {
+	list-style-image: url("chrome://sciviewsk/skin/images/play_blue.png");
+}
+
+.search-icon {
+	list-style-image: url("chrome://sciviewsk/skin/images/lightbulb.png");
+}
+
+.search-icon:hover,
+.search-icon:hover:active {
+	list-style-image: url("chrome://sciviewsk/skin/images/lightbulb_off.png");
+}
+
+
+.stop-icon {
+	list-style-image: url("chrome://sciviewsk/skin/images/stop.png");
+}
+
+.stop-icon:hover,
+.stop-icon:hover:active {
+	list-style-image: url("chrome://sciviewsk/skin/images/stop_a.png");
+}
+
+.stop-icon[disabled="true"],
+.stop-icon[disabled="true"]:hover,
+.stop-icon[disabled="true"]:hover:active {
+	list-style-image: url("chrome://sciviewsk/skin/images/stop_disabled.png");
+}
+
+
 
 .r-escape-icon[disabled="true"],
 .r-escape-icon[disabled="true"]:hover,
