@@ -293,9 +293,8 @@ function rHelpSearch(topic) {
 function _getHomePage(browser, goTo) {
 	var isWin = navigator.platform.search(/Win\d+$/) === 0;
 
-	// Temporarily commented out, as this seems to make R not responging sometimes.
-	//var cmd = 'suppressMessages(make.packages.html()); options(htmlhelp = TRUE); ';
-	var cmd = 'options(htmlhelp = TRUE); ';
+	var cmd = 'suppressMessages(make.packages.html()); ';
+	cmd += 'options(htmlhelp = TRUE); ';
 	cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
 
 	var res = sv.r.evalCallback(cmd, function (path) {
