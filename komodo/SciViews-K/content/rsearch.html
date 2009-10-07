@@ -27,10 +27,63 @@ var rHelpXulUri = "chrome://sciviewsk/content/RHelpOverlay.xul";
 
 var rHelpWin, sv;
 
+function buildResults() {
+		if (!sv._lastHelpSearchContent)
+			return;
+
+		var doc = document;
+		var out = doc.getElementById("results");
+
+		while (out.childNodes.length) out.removeChild(out.firstChild);
+
+		var data = sv._lastHelpSearchContent.split(/[\r\n]+/);
+		out.innerHTML += '<p>Search text was: "' + data[0] + '"</p>';
+
+		var prevPkg = "", fnList, li, el, p, pkgList;
+
+		pkgList = doc.createElement("div");
+
+		for (var i = 1; i < data.length; i++) {
+			var di = data[i].split(/\s*;\s*/);
+			var li = doc.createElement("li");
+
+			curPkg = di[2];
+			if (curPkg != prevPkg) {
+				if (fnList) pkgList.appendChild(fnList);
+
+				p = doc.createElement("p");
+				el = doc.createElement("a");
+				el.appendChild(doc.createTextNode("Package: " + curPkg));
+				el.setAttribute("href", "file://" + di[3] + "/html/00Index.html");
+				p.appendChild(el);
+
+
+				pkgList.appendChild(p);
+				fnList = doc.createElement("ol");
+			}
+			prevPkg = curPkg;
+			li = doc.createElement("li");
+
+			el = li.appendChild(doc.createElement("a"));
+			el.setAttribute("href", "file://" + di[4]);
+			el.appendChild(doc.createTextNode(di[0]));
+
+			li.appendChild(el);
+			li.appendChild(doc.createTextNode(" - " + di[1]));
+			fnList.appendChild(li);
+		}
+		pkgList.appendChild(fnList);
+		doc.body.appendChild(pkgList);
+}
+
+
 function init() {
 	rHelpWin = _getWindowByURI(rHelpXulUri);
 	sv = rHelpWin.sv;
+
+	buildResults();
 }
+
 
 </script>
 </head>

@@ -47,14 +47,12 @@
 <?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
 <?xml-stylesheet href="chrome://sciviewsk/skin/rhelpwin.css" type="text/css"?>
 
-
 <window
     id="RHelpWindow" title="R Help"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     width="600" height="400" screenX="20" screenY="20"
     persist="screenX screenY width height"
     style="min-height: 400px; min-width: 300px;">
-
 <script type="text/javascript">
 <![CDATA[
 
@@ -70,13 +68,10 @@ function go(uri) {
 	// so define them here:
 
 	rHelpBrowser = document.getElementById("rhelp-browser");
-
 	if (uri === "" || uri == "@home@") {
 		rHelpBrowser.goHome();
 		return;
 	}
-
-
 	rHelpTopic = document.getElementById("rhelp-topic");
 	// In case the window was not yet fully loaded.
 	if (!rHelpTopic) {
@@ -94,12 +89,6 @@ function go(uri) {
 	}
 	rHelpTopic.select();
 
-
-
-	//FIXME: java search applet does not work in this browser
-	// perhaps translate address (onLocationChange):
-	// <<R.help.homedir>>/search/SearchEngine.html?SEARCHTERM=<<KEYWORD>>&TITLES=?&KEYWORDS=?&ALIASES=?
-	// to R's help.search("<<KEYWORD>>"), then get the results data and convert to html.
 
 	// Try to differenciate an URL from a help topic
 	var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
@@ -175,13 +164,13 @@ var progressListener = {
 		// aWebProgress.DOMWindow to obtain the tab/window which
 		// triggers the state change
 
-		if(aFlag & STATE_START) {
+		if (aFlag & STATE_START) {
 			// This fires when the load event is initiated
 			document.getElementById("cmd_stop")
 				.setAttribute("disabled", false);
-
 		}
-		if(aFlag & STATE_STOP) {
+
+		if (aFlag & STATE_STOP) {
 			// This fires when the load finishes
 			self.document.title = aWebProgress.DOMWindow.document.title;
 			rHelpTopic.value = aWebProgress.DOMWindow.document.location;
@@ -204,9 +193,14 @@ var progressListener = {
 		// myListener for more than one tab/window, use
 		// aProgress.DOMWindow to obtain the tab/window which triggered
 		//the change.
-		//try {
-		//	sv.cmdout.append("onLocationChange, aURI = " + aURI.spec)
-		//} catch(e) {}
+
+		// This redirects result page from html search form to rHelpSearch results:
+		//FIXME: on the results page, when .goBack is invoked, page will be redirected again
+		if (aProgress.DOMWindow.document.location.href
+					.search(/search\/SearchEngine\.html\?.*SEARCHTERM=([a-z0-9+%]*)(?=&|$)/) != -1) {
+
+				rHelpSearch(RegExp.$1);
+		}
 
 	},
 
@@ -234,59 +228,11 @@ function rHelpSearch(topic) {
 		'svtmp$matches <- cbind(svtmp$matches, Path = apply(svtmp$matches[, c(1,3)], 1, function(z) c(help(z[1],  package = z[2]))));' +
 		'cat(svtmp$pattern, "\n");' +  'write.table(svtmp$matches, sep=";", row.names = F, col.names = F, quote = F); rm(svtmp)';
 
-	//var win = sv.command.openHelp("chrome://sciviewsk/content/rsearch.html");
-	//var rHelpBrowser;
-
 	sv.r.evalCallback(cmd, function(data) {
-		//var rhb = document.getElementById("rhelp-browser");
+		sv._lastHelpSearchContent = data;
 
 		rHelpBrowser.webNavigation.loadURI("chrome://sciviewsk/content/rsearch.html",
 					null, null, null, null);
-
-		var doc = rHelpBrowser.docShell.document;
-
-		var out = doc.getElementById("results");
-
-		while (out.childNodes.length) out.removeChild(out.firstChild);
-
-		d = data.split(/[\r\n]+/);
-		var uri;
-		out.innerHTML += '<p>Search text was: "' + d[0] + '"</p>';
-		var prevPkg = "";
-		var fnList, li, el, p;
-		var pkgList = doc.createElement("div");
-
-		for (var i = 1; i < d.length; i++) {
-			var di = d[i].split(/\s*;\s*/);
-			var li = doc.createElement("li");
-
-			curPkg = di[2];
-			if (curPkg != prevPkg) {
-				if (fnList) pkgList.appendChild(fnList);
-
-				p = doc.createElement("p");
-				el = doc.createElement("a");
-				el.appendChild(doc.createTextNode("Package: " + curPkg));
-				el.setAttribute("href", "file://" + di[3] + "/html/00Index.html");
-				p.appendChild(el);
-
-
-				pkgList.appendChild(p);
-				fnList = doc.createElement("ol");
-			}
-			prevPkg = curPkg;
-			li = doc.createElement("li");
-
-			el = li.appendChild(doc.createElement("a"));
-			el.setAttribute("href", "file://" + di[4]);
-			el.appendChild(doc.createTextNode(di[0]));
-
-			li.appendChild(el);
-			li.appendChild(doc.createTextNode(" - " + di[1]));
-			fnList.appendChild(li);
-		}
-		pkgList.appendChild(fnList);
-		doc.body.appendChild(pkgList);
 	});
 }
 
@@ -376,7 +322,7 @@ function getPPBrowser() rHelpBrowser;
   <command id="cmd_find_next" oncommand="find(true);" />
   <command id="cmd_go" oncommand="go();" disabled="false"
 		   label="Go" tooltiptext="Show topic or web page" />
-  <command id="cmd_search" oncommand="search(document.getElementById('rhelp-topic').value);" disabled="false" label="Search"
+  <command id="cmd_search" oncommand="rHelpSearch(document.getElementById('rhelp-topic').value);" disabled="false" label="Search"
 	       tooltiptext="Search expression in R help" />
   <command id="cmd_go_back" oncommand="rHelpBrowser.goBack();" disabled="true"
 		   label="Back" tooltiptext="Back"/>
