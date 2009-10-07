@@ -336,14 +336,13 @@ if (typeof(sv.command) == 'undefined') {
 		var rPkgMgr = _getWindowByURI(rPkgMgrXulUri);
 		if (!rPkgMgr || rPkgMgr.closed) {
 			try {
-				rPkgMgr = window.openDialog(rHelpXulUri, "RHelp",
+				rPkgMgr = window.openDialog(rPkgMgrXulUri, "RPkgMgr",
 				"chrome=yes,dependent,resizable=yes," +
-				"scrollbars=yes,status=no,close,dialog=no", sv, uri);
+				"scrollbars=yes,status=no,close,dialog=no", sv);
 
 			} catch (e) {
+				sv.log.exception(e, "Error opening package manager window");
 			}
-		} else {
-			rPkgMgr.display(uri);
 		}
 		rPkgMgr.focus();
 	}
@@ -394,9 +393,6 @@ if (typeof(sv.command) == 'undefined') {
 			RHelpWin.go(uri);
 		}
 		RHelpWin.focus();
-
-
-
 		return RHelpWin;
 	}
 
