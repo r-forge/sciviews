@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2">
+<title>JavaScript Shell 1.4</title>
+
+<script type="text/javascript">
+
+function _getWindowByURI(uri) {
+	var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']
+		.getService(Components.interfaces.nsIWindowMediator);
+	en = wm.getEnumerator("");
+
+	if (uri) {
+		var win;
+		while (en.hasMoreElements()) {
+			win = en.getNext();
+			if (win.location.href == uri)
+				return win;
+		}
+	}
+	return null;
+}
+
+
+var rHelpXulUri = "chrome://sciviewsk/content/RHelpOverlay.xul";
+
+var rHelpWin, sv;
+
+function init() {
+	rHelpWin = _getWindowByURI(rHelpXulUri);
+	sv = rHelpWin.sv;
+}
+
+</script>
+</head>
+
+<body onload="init();">
+<h1>Search results:</h1>
+<div id="results"></div>
+</body>
+</html>
