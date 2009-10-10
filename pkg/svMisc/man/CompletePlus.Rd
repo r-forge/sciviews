@@ -42,7 +42,6 @@ simplify = FALSE, types = c("arguments", "functions", "packages"))
 \examples{
 \dontrun{
 CompletePlus("dn")
-CompletePlus("rnorm(10, me")
 }
 }
 \keyword{ utilities }

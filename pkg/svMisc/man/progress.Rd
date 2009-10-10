@@ -59,8 +59,6 @@ init = (value == 0), console = TRUE, gui = TRUE)
 widget, or to display such a progress widget in the status bar of your main
 window. }
 
-\seealso{ \code{\link[utils]{txtProgressBar}}, \code{\link[utils]{tkProgressBar}} }
-
 \examples{
 # 1) A simple progress indicator in percent
 for (i in 0:101) {
