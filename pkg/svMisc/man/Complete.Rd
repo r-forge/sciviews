@@ -68,8 +68,7 @@ Attributes:\cr
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> & Kamil Barton }
 
-\seealso{ \code{\link{CompletePlus}}, \code{\link{CallTip}},
-  \code{\link[utils]{rc.settings()}} }
+\seealso{ \code{\link{CompletePlus}}, \code{\link{CallTip}} }
 \examples{
     ## a data.frame
     data(iris)

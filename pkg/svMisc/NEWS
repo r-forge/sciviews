@@ -1,5 +1,11 @@
 = svMisc News
 
+== Changes in svMisc 0.9-54
+
+* Cosmetic changes in Rd files to make them compatible with R 2.11 (devel). A
+  part of the example of CompletePlus() is eliminated because it raises an error.
+  
+
 == Changes in svMisc 0.9-53
 
 * Complete() now sorts items alphabetically and does not return completions

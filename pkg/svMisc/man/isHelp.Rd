@@ -32,8 +32,6 @@ isHelp(topic, package = NULL, lib.loc = NULL)
   This code is largely inspired from the first part of \code{example()}.
 }
 
-\seealso{ \code{\link[base]{help}}, \code{\link[base]{example}} }
-
 \examples{
 isHelp("help")		# Help and example
 isHelp("Rtangle")	# Help but no example
