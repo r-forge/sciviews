@@ -40,8 +40,6 @@ simplify = FALSE, types = c("arguments", "functions", "packages"))
 \seealso{ \code{\link{Complete}}, \code{\link{descFun}} }
 
 \examples{
-\dontrun{
 CompletePlus("dn")
-}
 }
 \keyword{ utilities }

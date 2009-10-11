@@ -57,3 +57,4 @@ export(	addActions,
 		write.objList)
 
 S3method(print, objList)
+
