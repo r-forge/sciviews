@@ -1,4 +1,4 @@
-# These are all hidden functions for the moment, except desArgs() and descFun()!
+# These are all hidden functions for the moment, except descArgs() and descFun()!
 "descFun" <-
 function (fun, package, lib.loc = NULL)
 {
@@ -40,21 +40,88 @@ function (fun, package, lib.loc = NULL)
 	return(res)
 }
 
-"descData" <-
-function (data, columns, package = NULL, lib.loc = NULL)
+"descData" <- function (data, columns, package = NULL, lib.loc = NULL)
 	character(length(columns))
 
-"descSlots" <-
-function (object, slots, package = NULL, lib.loc = NULL)
+# TODO: this might be possible (but hard, so not now)
+"descSlots" <- function (object, slots, package = NULL, lib.loc = NULL)
 	character(length(slots))
 
 "descSquare" <-
 function (completions, package = NULL)
 	character(length(completions))
 
-"descArgs" <-
-function (fun, args = NULL, package = NULL, lib.loc = NULL)
-{
+#' is this R >= 2.10.0
+R_2_10_0 <- function( ){
+	v <- R.Version()
+	major <- as.numeric( v$major )
+	minor <- as.numeric( v$minor )
+	major > 2 || ( major == 2 && minor >= 10.0 )
+}
+
+#' version of descArgs for R >= 2.10.0 and its new help system
+#' ultimately the original version should be deleted
+"descArgs_R_2_10_0" <- function (fun, args = NULL, package = NULL, lib.loc = NULL){
+	if( !R_2_10_0() ) stop("cannot use this implementation, needs R >= 2.10.0")
+	
+	# we cannot just call help normally because otherwise it thinks
+	# we are looking for package "package" so we create a call and eval it
+	help.call <- call( "help", fun, lib.loc = lib.loc, help_type = "text" )
+	if( !is.null(package) ) help.call[["package"]] <- package
+	file <- eval( help.call )
+	
+	# this is borrowed from utils::print.help_files_with_topic
+	path <- dirname(file)
+    dirpath <- dirname(path)
+    pkgname <- basename(dirpath)
+    RdDB <- file.path(path, pkgname)
+    
+    if(!file.exists(paste(RdDB, "rdx", sep="."))){
+    	return( character( length(args) ) )
+    }
+    
+    rd <- tools:::fetchRdDB(RdDB, basename(file))
+    
+    # this is not exported from tools
+    RdTags <- function(Rd) {
+    	res <- sapply(Rd, attr, "Rd_tag")
+    	if (!length(res)) res <- character(0)
+    	res
+    }
+    tags <- gsub( "\\", "", RdTags( rd ), fixed = TRUE ) 
+    
+    if( ! any( tags == "arguments" ) ) return( character(length(args)) )
+    
+    arguments <- rd[[ which( tags == "arguments" )[1] ]]
+    items <- arguments[ RdTags( arguments ) == "\\item" ]
+    descriptions <- do.call( rbind, lapply( items, function(item){
+    	names <- strsplit( item[[1]][[1]] , "\\s*,\\s*", perl = TRUE )[[1]]
+    	content <- paste( rapply( item[-1] , as.character), collapse = "" )
+    	
+    	cbind( names, rep.int(content, length(names) ) )
+    } ) )
+    
+    if( is.null( args ) ){
+    	structure( descriptions[,2], names = descriptions[,1] )
+    } else {
+    	sapply( args, function(a){
+    		if( a %in% descriptions[,1] ){
+    			descriptions[ which(descriptions[,1] == a)[1] , 2 ]
+    		} else ""
+    	} )
+    }
+    
+}
+
+"descArgs" <- function (fun, args = NULL, package = NULL, lib.loc = NULL){
+	
+	# use the new help system if this is R >= 2.10.0
+	if( R_2_10_0() ){
+		return( descArgs_R_2_10_0( fun, args = args, package = package, lib.loc = lib.loc ) )
+	}
+	
+	# otherwise, use the old version (that depends on text rendered help files)
+	
 	# Start from the text version of the online help instead of the .Rd file
 	if (is.null(package)) {
 		File <- as.character(help(fun,
@@ -63,11 +130,16 @@ function (fun, args = NULL, package = NULL, lib.loc = NULL)
 		File <- as.character(help(fun, package = parse(text = package),
 			lib.loc = lib.loc, chmhelp = FALSE, htmlhelp = FALSE))
 	}
-	if (length(File) == 0) return(rep("", length(args)))
+	if (length(File) == 0) return(character(length(args)))
 
 	# doing the same as help to extract the file if it is in a zip
 	File <- zip.file.extract(File, "Rhelp.zip")
 
+	# if the file could not be extracted, return empties
+	if( !file.exists( File ) ){
+		return(rep("", length(args)))
+	}
+	
 	# guess the encoding (from print.help_files_with_topic)
 	first <- readLines( File, n = 1)
 	enc <- if (length(grep("\\(.*\\)$", first)) > 0) {
