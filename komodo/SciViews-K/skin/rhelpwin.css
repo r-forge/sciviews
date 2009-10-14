@@ -31,15 +31,14 @@ toolbarbutton {
 
 /*/* Bug 45096: These are evil. It is the reason why, for example, rxx.xul puts*/
 /* * bogus spaces around toolbarbutton labels to get some spacing. This should be*/
-/* * removed once the impact on other bits is understood. */*/
+/* * removed once the impact on other bits is understood. */
 /*.toolbarbutton-text {*/
 /*    margin: 0px;*/
 /*    padding: 0px;*/
-/*}*/
+/*}
 /*.toolbarbutton-icon {*/
 /*    -moz-margin-end: 0px;*/
-/*}*/
-/**/
+/*}
 /*.toolbar-box {*/
 /*    padding: 2px 4px;*/
 /*}*/
@@ -67,6 +66,8 @@ toolbarbutton.toolbar-landscape-page .toolbarbutton-text {
   -moz-image-region: rect(16px 16px 32px 0px);
 }
 
+
+
 .history-forward-icon {
   list-style-image: url("chrome://komodo/skin/images/browser_buttons.png");
   -moz-image-region: rect(0px 32px 16px 16px);
@@ -81,16 +82,16 @@ toolbarbutton.toolbar-landscape-page .toolbarbutton-text {
 }
 
 
-.print-button {
+.print-icon {
   list-style-image : url("chrome://komodo/skin/images/print_button.png");
 }
 
-.print-button[disabled="true"],
-.print-button[disabled="true"]:hover,
-.print-button[disabled="true"]:hover:active {
+.print-icon[disabled="true"],
+.print-icon[disabled="true"]:hover,
+.print-icon[disabled="true"]:hover:active {
   list-style-image : url("chrome://komodo/skin/images/print_button_disabled.png");
 }
 
-.print-button:hover {
+.print-icon:hover {
   list-style-image : url("chrome://komodo/skin/images/print_button_hover.png");
 }

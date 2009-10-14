@@ -331,7 +331,7 @@ if (typeof(sv.command) == 'undefined') {
 	}
 
 	this.openPkgManager = function () {
-		var rPkgMgrXulUri = "chrome://sciviewsk/content/pkgManagerOverlay.xul";
+		var rPkgMgrXulUri = "chrome://sciviewsk/content/RPkgManager.xul";
 
 		var rPkgMgr = _getWindowByURI(rPkgMgrXulUri);
 		if (!rPkgMgr || rPkgMgr.closed) {
@@ -375,7 +375,7 @@ if (typeof(sv.command) == 'undefined') {
 		}
 
 		// First, open the window with blank page:
-		var rHelpXulUri = "chrome://sciviewsk/content/RHelpOverlay.xul";
+		var rHelpXulUri = "chrome://sciviewsk/content/RHelpWindow.xul";
 		RHelpWin = _getWindowByURI(rHelpXulUri);
 
 
