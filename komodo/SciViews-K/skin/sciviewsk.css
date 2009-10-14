@@ -166,6 +166,20 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/stop_disabled.png");
 }
 
+.reload-icon {
+  list-style-image: url("chrome://sciviewsk/skin/images/arrow_refresh.png");
+}
+
+.reload-icon:hover {
+  list-style-image : url("chrome://sciviewsk/skin/images/arrow_refresh_hover.png");
+}
+
+.reload-icon[disabled="true"],
+.reload-icon[disabled="true"]:hover,
+.reload-icon[disabled="true"]:hover:active {
+  list-style-image : url("chrome://sciviewsk/skin/images/arrow_refresh_disabled.png");
+}
+
 
 
 .r-escape-icon[disabled="true"],

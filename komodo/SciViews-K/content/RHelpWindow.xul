@@ -56,12 +56,13 @@
 <script type="text/javascript">
 <![CDATA[
 
-//FIXME: rHelpBrowser.homePage is not always set at startup
+
+//TODO: context menu, running examples and selected R code from help pages
 
 var sv;
 var rHelpBrowser;
 var rHelpTopic;
-//var rHelpHome; // perhaps redundant, same as rHelpBrowser.homePage
+
 
 function go(uri) {
 	// these are still undefined when calling .go on load event,
@@ -104,7 +105,11 @@ function go(uri) {
 
 function txtInput(aEvent) {
 	if (aEvent.keyCode == KeyEvent.DOM_VK_RETURN) {
-		go();
+		if (aEvent.ctrlKey) {
+			rHelpSearch(rHelpTopic.value);
+		} else {
+			go();
+		}
 	}
 }
 
@@ -168,6 +173,9 @@ var progressListener = {
 			// This fires when the load event is initiated
 			document.getElementById("cmd_stop")
 				.setAttribute("disabled", false);
+
+			document.getElementById("cmd_stop").hidden = false;
+			document.getElementById("cmd_reload").hidden = true;
 		}
 
 		if (aFlag & STATE_STOP) {
@@ -177,6 +185,9 @@ var progressListener = {
 
 			document.getElementById("cmd_stop")
 				.setAttribute("disabled", true);
+
+			document.getElementById("cmd_stop").hidden = true;
+			document.getElementById("cmd_reload").hidden = false;
 
 			document.getElementById("cmd_go_back")
 				.setAttribute("disabled", !rHelpBrowser.webNavigation
@@ -219,21 +230,13 @@ function onFindToolbarAttrModified(event) {
 	}
 }
 
-// this does not work yet.
 // display formatted search results in a help window
 function rHelpSearch(topic) {
 	if (!topic)	return;
 
-	var cmd = 'svtmp <- help.search("' + topic + '")[];' +
-		'svtmp$matches <- cbind(svtmp$matches, Path = apply(svtmp$matches[, c(1,3)], 1, function(z) c(help(z[1],  package = z[2]))));' +
-		'cat(svtmp$pattern, "\n");' +  'write.table(svtmp$matches, sep=";", row.names = F, col.names = F, quote = F); rm(svtmp)';
-
-	sv.r.evalCallback(cmd, function(data) {
-		sv._lastHelpSearchContent = data;
-
-		rHelpBrowser.webNavigation.loadURI("chrome://sciviewsk/content/rsearch.html",
-					null, null, null, null);
-	});
+	rHelpBrowser.webNavigation.loadURI("chrome://sciviewsk/content/rsearch.html?" + encodeURIComponent(topic),
+					rHelpBrowser.webNavigation.LOAD_FLAGS_NONE,
+					null, null, null);
 }
 
 function _getHomePage(browser, goTo) {
@@ -255,6 +258,28 @@ function _getHomePage(browser, goTo) {
 	});
 }
 
+
+var browserUtils = {};
+
+(function() {
+
+this.purgeCache = function() {
+	var cacheService = Components.classes["@mozilla.org/network/cache-service;1"]
+		.getService(Components.interfaces.nsICacheService);
+
+	cacheService.evictEntries(Components.interfaces.nsICache.STORE_ANYWHERE);
+}
+
+this.purgeHistory = function() {
+	if (rHelpBrowser.docShell.sessionHistory.count) {
+		rHelpBrowser.docShell
+			.sessionHistory.PurgeHistory(rHelpBrowser.docShell.sessionHistory.count);
+	}
+}
+
+
+
+}).apply(browserUtils);
 
 function windowOnLoad (event) {
 	// DOMContentLoaded is fired also for HTML content
@@ -297,6 +322,7 @@ function getPPBrowser() rHelpBrowser;
 ]]>
 </script>
 <script type="text/javascript" src="chrome://global/content/printUtils.js" />
+<script type="text/javascript" src="chrome://global/content/contentAreaUtils.js" />
 <script type="text/javascript">
 	function printPage() {
 		PrintUtils.print();
@@ -308,6 +334,30 @@ function getPPBrowser() rHelpBrowser;
 
 		PrintUtils.printPreview(enterPP, exitPP);
 	}
+
+	// modified "prefbarSavePage" from prefbar extension for Firefox
+	function savePage() {
+		var title = window._content.document.title;
+		var uri = window._content.location;
+		var doc = window._content.document;
+		var rchar = "_";
+
+		// We want to use cached data because the document is currently visible.
+		var dispHeader = null;
+		try {
+			dispHeader =
+				doc.defaultView
+				.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+				.getInterface(Components.interfaces.nsIDOMWindowUtils)
+				.getDocumentMetadata("content-disposition");
+		} catch (ex) {
+			// Failure to get a content-disposition is ok
+		}
+
+		internalSave(uri, doc, null, dispHeader,
+					 doc.contentType, false, null, null);
+	}
+
 </script>
 
 <keyset id="keyset_main">
@@ -322,18 +372,26 @@ function getPPBrowser() rHelpBrowser;
   <command id="cmd_find_next" oncommand="find(true);" />
   <command id="cmd_go" oncommand="go();" disabled="false"
 		   label="Go" tooltiptext="Show topic or web page" />
-  <command id="cmd_search" oncommand="rHelpSearch(document.getElementById('rhelp-topic').value);" disabled="false" label="Search"
-	       tooltiptext="Search expression in R help" />
+  <command id="cmd_search" oncommand="rHelpSearch(document.getElementById('rhelp-topic').value);"
+		   disabled="false" label="Search"
+		   tooltiptext="Search expression in R help" />
   <command id="cmd_go_back" oncommand="rHelpBrowser.goBack();" disabled="true"
-		   label="Back" tooltiptext="Back"/>
+		   label="Back" tooltiptext="Back" />
   <command id="cmd_go_forward" oncommand="rHelpBrowser.goForward();" disabled="true"
-		   label="Forward" tooltiptext="Forward"/>
+		   label="Forward" tooltiptext="Forward" />
   <command id="cmd_go_home" oncommand="rHelpBrowser.goHome();"
-		    label="Home" tooltiptext="R help index"/>
-  <command id="cmd_stop" oncommand="rHelpBrowser.stop();"
-		    label="Stop" tooltiptext="Stop"/>
-  <command id="cmd_print" oncommand="printPage();" />
-  <command id="cmd_print_preview" oncommand="printPreview();" />
+		    label="Home" tooltiptext="R help index" />
+  <command id="cmd_stop" oncommand="rHelpBrowser.stop(rHelpBrowser.webNavigation.STOP_ALL);"
+		    label="Stop" tooltiptext="Stop" />
+  <command id="cmd_reload" oncommand="rHelpBrowser.reload();"
+		    label="Reload page" tooltiptext="Reload page" />
+  <command id="cmd_print" oncommand="printPage();" label="Print" desc="Print this page" />
+  <command id="cmd_print_preview" oncommand="printPreview();"
+		   label="Print preview" desc="Display page print preview" accesskey="r" />
+  <command id="cmd_print_setup" oncommand="PrintUtils.showPageSetup();"
+		   label="Page setup" desc="Page setup" />
+  <command id="cmd_save_page" oncommand="savePage();"
+		   label="Save page" desc="Save page" accesskey="s" />
 </commandset>
 
 <toolbox id="rhelp-toolbox" class="toolbox-top" mode="icons" defaultmode="icons" iconsize="small">
@@ -364,6 +422,8 @@ function getPPBrowser() rHelpBrowser;
 		    command="cmd_go_home" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-stop-button" class="stop-icon"
 		    command="cmd_stop" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-reload-button" class="reload-icon"
+		    command="cmd_reload" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-web" type="menu" class="r-web-icon"
 		    disabled="false" label="Web" orient="horizontal"
 			tooltiptext="R help on the web" buttonstyle="pictures">
@@ -390,12 +450,24 @@ function getPPBrowser() rHelpBrowser;
 			</menupopup>
 		</toolbarbutton>
 		<toolbarseparator/>
-		<toolbarbutton id="rhelp-print-preview" class="print-button"
-		    command="cmd_print_preview" label="Print preview"
-			tooltiptext="Print preview" buttonstyle="pictures"/>
-		<toolbarbutton id="rhelp-print" class="print-button"
-		    command="cmd_print" label="Print"
-			tooltiptext="Print this page" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-menu" type="menu" label="File/Tools" orient="horizontal">
+			<menupopup>
+				<menuitem id="rhelp-save-page" class="menuitem-iconic save-buffer-icon"
+						  command="cmd_save_page" />
+				<menuseparator />
+				<menuitem id="rhelp-print-preview" command="cmd_print_preview" />
+				<menuitem id="rhelp-print-setup" command="cmd_print_setup" />
+				<menuitem id="rhelp-print" class="menuitem-iconic print-icon"
+						  command="cmd_print" />
+				<menuseparator />
+				<menuitem id="rhelp-menu-purge-history"
+						  label="Purge history"	accesskey="h"
+						  oncommand="browserUtils.purgeHistory();"/>
+				<menuitem id="rhelp-menu-purge-cache"
+						  label="Purge browser cache" accesskey="c"
+						  oncommand="browserUtils.purgeCache();"/>
+			</menupopup>
+		</toolbarbutton>
 	</toolbar>
 </toolbox>
     <vbox flex="1">

@@ -113,7 +113,7 @@ sv.misc.sessionScript = function (script) {
     // Make sure lists of session files are refreshed
     sv.r.refreshSession();
 }
-    
+
 // sv.misc.sessionReport(name); // Create or open a .odt report from session
 sv.misc.sessionReport = function (rep) {
     if (typeof(rep) == "undefined") {
@@ -207,87 +207,117 @@ sv.misc.closeAllOthers = function () {
  * Modified by: Shane Caraveo
  *              Todd Whiteman
  *              Philippe Grosjean
+ *              Kamil Bartoñ
  */
-sv.misc.colorPicker_system = function (color) {
-    var sysUtils = Components.classes['@activestate.com/koSysUtils;1'].
-        getService(Components.interfaces.koISysUtils);
-    if (!color)
-        color = "#000000";
-    newcolor = sysUtils.pickColor(color);
-    if (newcolor) {
-       var scimoz = ko.views.manager.currentView.scimoz;
-       scimoz.replaceSel(newcolor);
-       scimoz.anchor = scimoz.currentPos;
-    }
+
+
+sv.misc.colorPicker = {};
+
+(function() {
+
+var os_prefix = window.navigator.platform.substring(0, 3).toLowerCase();
+
+if ((os_prefix == "win") || (os_prefix == "mac")) {
+
+	function _colorPicker_system (color) {
+		var sysUtils = Components.classes['@activestate.com/koSysUtils;1'].
+			getService(Components.interfaces.koISysUtils);
+		if (!color)
+			color = "#000000";
+		// sysUtils.pickColor seems to be broken, does not return any value
+		// which is strange, because it is only wrapper for .pickColorWithPositioning,
+		// Moreover, positioning does not seem to work anyway.
+		var newcolor = sysUtils.pickColorWithPositioning(color, -1, -1);
+		if (newcolor) {
+		   var scimoz = ko.views.manager.currentView.scimoz;
+		   scimoz.replaceSel(newcolor);
+		   scimoz.anchor = scimoz.currentPos;
+		}
+	}
+
+	this.pickColor = function () {
+		var currentView = ko.views.manager.currentView;
+		if (currentView) {
+			currentView.scintilla.focus();
+			var color = sv.getTextRange("word", false, true, null, "#");
+			try {
+				color = "#" + color.match(/[0-9A-F]{6}/i)[0].toLowerCase();
+			} catch(e) {
+				color = "#ffffff";
+			}
+
+			_colorPicker_system(color);
+		}
+	}
+
+
+
+} else {
+
+	function _colorPicker_onchange (event, cp) {
+		var scimoz = ko.views.manager.currentView.scimoz;
+		scimoz.insertText(scimoz.currentPos, cp.color);
+		// Move cursor position to end of the inserted color
+		// Note: currentPos is a byte offset, so we need to correct the length
+		var newCurrentPos = scimoz.currentPos + ko.stringutils.bytelength(cp.color);
+		scimoz.currentPos = newCurrentPos;
+		// Move the anchor as well, so we don't have a selection
+		scimoz.anchor = newCurrentPos;
+		// for some reason we get the event twice, removing
+		// onselect fixes the problem.  Tried to solve it
+		// by canceling the event below, but it went on anyway
+		cp.removeAttribute('onselect');
+		cp.parentNode.hidePopup();
+
+		event.preventDefault();
+		event.stopPropagation();
+		event.cancelBubble = true;
+		_colorPicker_remove();
+	}
+
+	function _colorPicker_remove () {
+		// remove the popup from the document. This cleans up so
+		// we can change the macro code if needed
+		var p = document.getElementById('popup_colorpicker');
+		if (p)
+			p.parentNode.removeChild(p);
+	}
+
+	function _colorPicker_init () {
+		_colorPicker_remove();
+		var p = document.createElement('popup');
+		p.setAttribute('id', 'popup_colorpicker');
+		var cp = document.createElement('colorpicker');
+		cp.colorChanged = _colorPicker_onchange;
+		cp.setAttribute('onselect', 'this.colorChanged(event, this);');
+		p.appendChild(cp);
+		document.documentElement.appendChild(p);
+	}
+
+	this.pickColor = function () {
+		var currentView = ko.views.manager.currentView;
+		if (currentView) {
+			currentView.scintilla.focus();
+			_colorPicker_init();
+			var scimoz = currentView.scimoz;
+			var pos = scimoz.currentPos;
+			var x = scimoz.pointXFromPosition(pos);
+			var y = scimoz.pointYFromPosition(pos);
+			var boxObject = currentView.boxObject;
+			var cp = document.getElementById('popup_colorpicker');
+			cp.showPopup(currentView.scintilla,
+				x + boxObject.x, y + boxObject.y,
+				'colorpicker',"topleft","topleft");
+		}
+	}
 }
 
-sv.misc.colorPicker_onchange = function (event, cp) {
-    var scimoz = ko.views.manager.currentView.scimoz;
-    scimoz.insertText(scimoz.currentPos, cp.color);
-    // Move cursor position to end of the inserted color
-    // Note: currentPos is a byte offset, so we need to correct the length
-    var newCurrentPos = scimoz.currentPos + ko.stringutils.bytelength(cp.color);
-    scimoz.currentPos = newCurrentPos;
-    // Move the anchor as well, so we don't have a selection
-    scimoz.anchor = newCurrentPos;
-    // for some reason we get the event twice, removing
-    // onselect fixes the problem.  Tried to solve it
-    // by canceling the event below, but it went on anyway
-    cp.removeAttribute('onselect');
-    cp.parentNode.hidePopup();
+}).apply(sv.misc.colorPicker);
 
-    event.preventDefault();
-    event.stopPropagation();
-    event.cancelBubble = true;
-    sv.misc.colorPicker_remove();
-}
 
-sv.misc.colorPicker_remove = function () {
-    // remove the popup from the document. This cleans up so
-    // we can change the macro code if needed
-    var p = document.getElementById('popup_colorpicker');
-    if (p)
-        p.parentNode.removeChild(p);
-}
-
-sv.misc.colorPicker_init = function () {
-    sv.misc.colorPicker_remove();
-    var p = document.createElement('popup');
-    p.setAttribute('id', 'popup_colorpicker');
-    var cp = document.createElement('colorpicker');
-    cp.colorChanged = sv.misc.colorPicker_onchange;
-    cp.setAttribute('onselect', 'this.colorChanged(event, this);');
-    p.appendChild(cp);
-    document.documentElement.appendChild(p);
-}
-
-sv.misc.colorPicker = function () {
-    var currentView = ko.views.manager.currentView;
-    if (currentView) {
-        currentView.scintilla.focus();
-        var os_prefix = window.navigator.platform.substring(0, 3).toLowerCase();
-        if ((os_prefix == "win") || (os_prefix == "mac")) {
-            var color = null;
-            try {
-                color = ko.interpolate.interpolate(window, ["%s"], [])[0];
-            } catch(e) {
-                // No selection, ignore this error.
-            }
-            sv.misc.colorPicker_system(color);
-        } else {
-            init_colorpicker();
-            var scimoz = currentView.scimoz;
-            var pos = scimoz.currentPos;
-            var x = scimoz.pointXFromPosition(pos);
-            var y = scimoz.pointYFromPosition(pos);
-            var boxObject = currentView.boxObject;
-            var cp = document.getElementById('popup_colorpicker');
-            cp.showPopup(currentView.scintilla,
-                x + boxObject.x, y + boxObject.y,
-                'colorpicker',"topleft","topleft");
-        }
-    }
-}
+// Results similiar to following two functions can be achieved with:
+// ko.commands.doCommand('cmd_lineTranspose')
+// Remove these?
 
 // Move Line Down, adapted by Ph. Grosjean from code by "mircho"
 sv.misc.moveLineDown = function () {
@@ -383,11 +413,14 @@ sv.misc.swapQuotes = function() {
 }
 
 // Copy the path of current file to the clipboard
-sv.misc.pathToClipboard = function () {
+sv.misc.pathToClipboard = function (unix) {
     var ch = Components.classes["@mozilla.org/widget/clipboardhelper;1"].
         getService(Components.interfaces.nsIClipboardHelper);
     try {
-        ch.copyString(ko.views.manager.currentView.document.file.path);
+        var path = ko.views.manager.currentView.document.file.path;
+		if (unix)
+			path = path.replace(/\\/g, "/");
+		ch.copyString(path);
     } catch(e) {
         sv.alert("Copy path to clipboard",
             "Unable to copy file path to clipboard (unsaved file?)")
@@ -395,26 +428,24 @@ sv.misc.pathToClipboard = function () {
 }
 
 // Copy the UNIX version (using '/' as sep) path of current file to the clipboard
-sv.misc.unixPathToClipboard = function () {
-    var ch = Components.classes["@mozilla.org/widget/clipboardhelper;1"].
-        getService(Components.interfaces.nsIClipboardHelper);
-    try {
-        ch.copyString(ko.views.manager.currentView.document.file.path.
-            replace(/\\/g, "/"));
-    } catch(e) {
-        sv.alert("Copy path to clipboard",
-            "Unable to copy file path to clipboard (unsaved file?)")
-    }
-}
+sv.misc.unixPathToClipboard = function () sv.misc.pathToClipboard(true);
 
 // Stamp the current text with date - time
-// Use preferences -> Internationalization -> Date & Time format to change it!
-sv.misc.timeStamp = function () {
+sv.misc.timeStamp = function (format) {
     try {
         var ke = ko.views.manager.currentView.scimoz;
-        var strTime = ko.interpolate.interpolateStrings('%date');
-        ke.replaceSel(strTime);
+
+		// Adapted from setDateFormatExample() in "chrome://komodo/content/pref/pref-intl.js"
+		var timeSvc = Components.classes["@activestate.com/koTime;1"]. getService(Components.interfaces.koITime);
+		var secsNow = timeSvc.time();
+		var timeTupleNow = timeSvc.localtime(secsNow, new Object());
+		if (!format)
+			format = sv.prefs.getString("defaultDateFormat");
+		var timeStr = timeSvc.strftime(format, timeTupleNow.length, timeTupleNow);
+		ke.replaceSel(timeStr);
     } catch(e) {
         sv.log.exception(e, "sv.misc.timeStamp() error");
     }
 }
+
+

@@ -95,24 +95,7 @@ sv.alert = function (header, text) {
 //sv.alert("Message");
 
 // Gets current selection, or word under the cursor in the active buffer
-sv.getText = function () {
-	var kv = ko.views.manager.currentView;
-	if (!kv) return("");
-	kv.setFocus();
-	var scimoz = kv.scimoz;
-	var txt = ke.selText;
-	// If selection is empty, get the word under the cursor
-
-	if (txt == "") {
-		// this should be set for every R document by default. but how?
-		var wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.";
-		scimoz.setWordChars(wordChars);
-		var start = scimoz.wordStartPosition(scimoz.currentPos, true);
-		var end = scimoz.wordEndPosition(scimoz.currentPos, true);
-		return scimoz.getTextRange(start, end);
-	}
-	return(txt);
-}
+sv.getText = function (includeChars) sv.getTextRange("word", false, false, null, includeChars);
 
 // NOT USED ANYMORE
 //// Get current line of text in the active buffer
@@ -148,7 +131,7 @@ sv.getText = function () {
 
 // Select a part of text in the current buffer and return it
 // differs from sv.getPart that it does not touch the selection
-sv.getTextRange = function (what, gotoend, select, range) {
+sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 	var currentView = ko.views.manager.currentView;
 	if (!currentView) {
@@ -173,11 +156,36 @@ sv.getTextRange = function (what, gotoend, select, range) {
 	   break;
 	case "word":
 	   if (pStart == pEnd) { // only return word if no selection
+			if (!includeChars && currentView.languageObj.name == "R")
+				includeChars = ".";
+
+			var wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_" + includeChars;
+
+			function wordCharTest(s) {
+				return (s.charCodeAt(0) > 0x80) ||
+					wordChars.indexOf(s) > -1;
+			}
+
+
+			for (pStart = scimoz.positionBefore(curPos);
+				 (pStart > -1) && wordCharTest(scimoz.getWCharAt(pStart));
+				 pStart = scimoz.positionBefore(pStart)) {
+				};
+
+			pStart += 1;
+
+			for (pEnd = scimoz.currentPos;
+				 (pEnd < scimoz.length) && wordCharTest(scimoz.getWCharAt(pEnd));
+				 pEnd = scimoz.positionAfter(pEnd)) {
+			}
+
 			// TODO: this should be set for every R document by default. but how?
-			var wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.";
-			scimoz.setWordChars(wordChars);
-			pStart = scimoz.wordStartPosition(curPos, true);
-			pEnd = scimoz.wordEndPosition(curPos, true);
+			//if (includeChars) {
+			//	var wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + includeChars;
+			//	scimoz.setWordChars(wordChars);
+			//}
+			//pStart = scimoz.wordStartPosition(curPos, true);
+			//pEnd = scimoz.wordEndPosition(curPos, true);
 	   }
 	   break;
 	case "function":
@@ -323,7 +331,7 @@ sv.getTextRange = function (what, gotoend, select, range) {
 			scimoz.setSel(pStart, pEnd);
 		}
 	}
-	if (typeof (range) == "object") {
+	if ((typeof range == "object") && (range != null)) {
 		range.value = {start: pStart, end: pEnd};
 	}
 	return(text);
@@ -768,3 +776,4 @@ sv.checkToolbox = function () {
 // Ensure we check the toolbox is installed once the extension is loaded
 //addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
 //addEventListener("load", sv.checkToolbox, false);
+//@
