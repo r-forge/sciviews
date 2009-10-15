@@ -216,6 +216,11 @@ if (typeof(sv.tools.file) == 'undefined')
 	}
 
 	this.getURI = function(file) {
+		if (typeof file == "string") {
+			file = this.getfile(file);
+		}
+		if (!file)	return null;
+
 		var ios = Components.classes["@mozilla.org/network/io-service;1"].
                     getService(Components.interfaces.nsIIOService);
 		var URL = ios.newFileURI(file);
@@ -227,7 +232,7 @@ if (typeof(sv.tools.file) == 'undefined')
 		var fileSvc = Components.classes["@activestate.com/koFileService;1"]
 			.getService(Components.interfaces.koIFileService);
 		var file = fileSvc.getFileFromURI(uri);
-		file.open(0);
+		file.open('r');
 		var res = file.readfile();
 		file.close();
 		return res;

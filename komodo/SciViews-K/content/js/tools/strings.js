@@ -34,16 +34,17 @@ sv.tools.strings.removeLastCRLF = function (str) {
 // changes a string to a regular expression
 sv.tools.strings.toRegex = function (str) {
 	// brackets
-	str = str.replace(/([\(\)\[\]])/g, "\\$1");
-
-	// TODO: anything else
+	str = str.replace(/([\]\(\\\*\+\?\|\{\[\(\)\^\$\.\#])/g, "\\$1")
+		.replace(/\t/g, "\\t")	//.replace(/ /, "\\s")
+		.replace(/\n/g, "\\n")	.replace(/\r/g, "\\r")
+		.replace(/\f/g, "\\f");
 	return(str);
 }
 
 // Get filename or last directory name in a file path
 sv.tools.strings.filename = function (str) {
 	// Under Windows, replace \ by /
-	if (navigator.platform.indexOf("Win") > -1) {
+	if (navigator.platform.indexOf("Win") == 0) {
 		str = str.replace(/[\\]/g, "/");
 	}
 	// Remove last trailing '/'
@@ -55,24 +56,35 @@ sv.tools.strings.filename = function (str) {
 }
 
 
+sv.tools.strings.addslashes = function(str) {
+	// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+	return str.replace(/([\\"'])/g, "\\$1").replace(/\x00/g, "\\0").replace(/\u0000/g, "\\0");
+}
+
+
+sv.tools.strings.trim = function (str, which) {
+	if (!which) which == "both";
+	var rx;
+	switch(which) {
+		case "left": rx = /^\s+/g; break;
+		case "right": rx = /\s+$/g; break;
+		default: rx = /^\s+|\s+$/g; break;
+	}
+	return str.replace(rx, '');
+}
+
 //// Additional methods to String objects //////////////////////////////////////
 // Trim function for String
-String.prototype.trim = function () {
-	return this.replace(/^\s+|\s+$/g, '');
-}
+String.prototype.trim = function() sv.tools.strings.trim(this);
 
 // Right trim
-String.prototype.rtrim = function () {
-	return this.replace(/\s+$/, '');
-}
+String.prototype.rtrim = function() sv.tools.strings.trim(this, "right");
 
 // Left trim
-String.prototype.ltrim = function () {
-	return this.replace(/^\s+/, '');
-}
+String.prototype.ltrim = function() sv.tools.strings.trim(this, "left");
 
 // Add slashes
-String.prototype.addslashes = function () {
-	// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	return this.replace(/([\\"'])/g, "\\$1").replace(/\x00/g, "\\0");
-}
+String.prototype.addslashes = function () sv.tools.strings.addslashes(this);
+
+// Escape string for regular expression
+String.prototype.regExpEscape = function() sv.tools.strings.toRegex(this);

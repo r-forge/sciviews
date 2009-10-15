@@ -64,7 +64,7 @@ var rHelpBrowser;
 var rHelpTopic;
 
 
-function go(uri) {
+function go(uri, loadFlags) {
 	// these are still undefined when calling .go on load event,
 	// so define them here:
 
@@ -81,7 +81,6 @@ function go(uri) {
 		}, false);
 		return;
 	}
-	//alert(uri);
 
 	if (uri) {
 		rHelpTopic.value = uri;
@@ -96,7 +95,7 @@ function go(uri) {
 
 	if (isUri) {
 		// This looks like a URL
-		rHelpBrowser.webNavigation.loadURI(uri, null, null, null, null);
+		rHelpBrowser.webNavigation.loadURI(uri, loadFlags, null, null, null);
 	} else {
 		// Look for this 'topic' web page
 		sv.r.help(uri);
@@ -234,7 +233,8 @@ function onFindToolbarAttrModified(event) {
 function rHelpSearch(topic) {
 	if (!topic)	return;
 
-	rHelpBrowser.webNavigation.loadURI("chrome://sciviewsk/content/rsearch.html?" + encodeURIComponent(topic),
+	rHelpBrowser.webNavigation.loadURI("chrome://sciviewsk/content/rsearch.html?" +
+					encodeURIComponent(topic),
 					rHelpBrowser.webNavigation.LOAD_FLAGS_NONE,
 					null, null, null);
 }

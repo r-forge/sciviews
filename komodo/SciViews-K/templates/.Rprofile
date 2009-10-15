@@ -2,10 +2,18 @@
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
 # Version 0.9.0, 2009-09-20 Ph. Grosjean (phgrosjean@sciviews.org)
 
-# TODO: Include all this as a function in svMisc??
+#TODO: Include all this as a function in svMisc??
+#TODO: [KB] Fix problem with installing sv* packages when not running R as root.
+#      R tries to install them forever, and finally crashes my Ubuntu (Bug #685)
+
 # Make sure we don't process this twice in case of duplicate items in .Rprofile
+svStart <- function(){
+# [KB] Wrapped this in a function, so we can be sure it does not leave any garbage or
+#      overwrites user's objects.
+
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
-	.SciViewsReady <- FALSE
+
+	assign(".SciViewsReady", FALSE, .GlobalEnv)
 	minVersion <- c(R = "2.8.0", svMisc = "0.9-53", svSocket = "0.9-48", svGUI = "0.9-46")
 
 	# First of all, check R version... redefine compareVersion() because it is
@@ -31,12 +39,9 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 	} else res <- TRUE
 
 	# Load main R packages
-	if (res) res <- require(methods, quietly = TRUE)
-	if (res) res <- require(datasets, quietly = TRUE)
-	if (res) res <- require(utils, quietly = TRUE)
-	if (res) res <- require(grDevices, quietly = TRUE)
-	if (res) res <- require(graphics, quietly = TRUE)
-	if (res) res <- require(stats, quietly = TRUE)
+	res <- all(sapply(c("methods", "datasets", "utils", "grDevices", "graphics", "stats"),
+				  function(x) require(x, quietly = TRUE, character.only = TRUE)))
+
 
 	# Get environment variables
 	if (res) {
@@ -142,87 +147,53 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 		# Load packages svMisc, svSocket & svGUI (possibly after installing
 		# or upgrading them). User is supposed to agree with this install
 		# from the moment he tries to start and configure R from Komodo Edit
+
+		pkgs <- c("svMisc", "svSocket", "svGUI")
 		ext <- switch(.Platform$pkgType,
 			mac.binary = "\\.tgz",
 			win.binary = "\\.zip",
 			"\\.tar.gz")
 
-		## svMisc
-		file <- dir(pattern = paste("svMisc", ext, sep = ".+"))
-		file <- sort(file)[length(file)]	# Keep newest one found
-		desc <- system.file("DESCRIPTION", package = "svMisc")
-		if (desc == "") {
-			cat("Installing missing package 'svMisc'\n")
-			if (length(file)) {
-				install.packages(file, repos = NULL) # or use "http://R-Forge.R-project.org"
-				res <- require(svMisc, quietly = TRUE)
-			} else res <- FALSE
-		} else { # Check version
-			if ((compareVersion(packageDescription("svMisc", fields = "Version"),
-				minVersion["svMisc"]) < 0)) {
-				cat("Updating package 'svMisc'\n")
+		res <- sapply(pkgs, function(pkgName) {
+			file <- dir(pattern = paste(pkgName, ext, sep = ".+"))
+			file <- sort(file)[length(file)]	# Keep newest one found
+			desc <- system.file("DESCRIPTION", package = pkgName)
+			if (desc == "") {
+				cat("Installing missing package", sQuote(pkgName), "\n")
 				if (length(file)) {
-					install.packages(file, repos = NULL)
-					res <- require(svMisc, quietly = TRUE)
+					install.packages(file, repos = NULL) # or use "http://R-Forge.R-project.org"
+					res <- require(pkgName, quietly = TRUE, character.only = TRUE)
 				} else res <- FALSE
-			} else res <- require(svMisc, quietly = TRUE)
-		}
-
-		## svSocket
-		file <- dir(pattern = paste("svSocket", ext, sep = ".+"))
-		file <- sort(file)[length(file)]	# Keep newest one
-		desc <- system.file("DESCRIPTION", package = "svSocket")
-		if (desc == "") {
-			cat("Installing missing package 'svSocket'\n")
-			if (length(file)) {
-				install.packages(file, repos = NULL)
-				res[2] <- require(svSocket, quietly = TRUE)
-			} else res[2] <- FALSE
-		} else { # Check version
-			if ((compareVersion(packageDescription("svSocket", fields = "Version"),
-				minVersion["svSocket"]) < 0)) {
-				cat("Updating package 'svSocket'\n")
-				if (length(file)) {
-					install.packages(file, repos = NULL)
-					res[2] <- require(svSocket, quietly = TRUE)
-				} else res[2] <- FALSE
-			} else res[2] <- require(svSocket, quietly = TRUE)
-		}
-
-		## svGUI
-		file <- dir(pattern = paste("svGUI", ext, sep = ".+"))
-		file <- sort(file)[length(file)]	# Keep newest one
-		desc <- system.file("DESCRIPTION", package = "svGUI")
-		res[3] <- TRUE
-		if (desc == "") {
-			cat("Installing missing package 'svGUI'\n")
-			if (length(file)) {
-				install.packages(file, repos = NULL)
-			} else res[3] <- FALSE
-		} else { # Check version
-			if ((compareVersion(packageDescription("svGUI", fields = "Version"),
-				minVersion["svGUI"]) < 0)) {
-				cat("Updating package 'svGUI'\n")
-				if (length(file)) {
-					install.packages(file, repos = NULL)
-				} else res[3] <- FALSE
+			} else { # Check version
+				if ((compareVersion(packageDescription(pkgName, fields = "Version"),
+					minVersion[pkgName]) < 0)) {
+					cat("Updating package", sQuote(pkgName), "\n")
+					if (length(file)) {
+						install.packages(file, repos = NULL)
+						res <- require(pkgName, quietly = TRUE, character.only = TRUE)
+					} else res <- FALSE
+				} else res <- require(pkgName, quietly = TRUE, character.only = TRUE)
 			}
-		}
-		rm(desc, ext, file)
+			return(res)
+		})
+
+		rm(ext)
 		# Try starting the R socket server now
 		if (inherits(try(startSocketServer(port = getOption("ko.serve")),
 			silent = TRUE), "try-error")) {
+
 			cat("Impossible to start the SciViews R socket server\n(socket",
 				getOption("ko.serve"), "already in use?)\n")
 			cat("Solve the problem, then type: require(svGUI)\n")
 			cat("or choose a different port for the server in Komodo\n")
+
 		} else {
 			# Finally, load svGUI
-			if (res[3]) res[3] <- require(svGUI, quietly = TRUE)
+			if (res["svGUI"]) res["svGUI"] <- require("svGUI", quietly = TRUE)
 
 			if (all(res)) {
 				cat("R is SciViews ready!\n")
-				.SciViewsReady <- TRUE
+				assign(".SciViewsReady", TRUE, .GlobalEnv)
 
 				# Indicate what we have as default packages
 				options(defaultPackages = c("datasets", "utils", "grDevices",
@@ -245,24 +216,15 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 
 		# A custom pager consists in displaying the file in Komodo
 		svPager <- function (files, header, title, delete.file) {
-			# Note: header and title are NOT used here!
-			# Create full path for files in current directory
-			nodir <- dirname(files) == "."
-			files[nodir] <- file.path(getwd(), files[nodir])
-			# Make sure that files exists
-			if (!all(file.exists(files)))
-				warning("One or more files are not found on the disk!")
-			# We display those files using options(editor) settings
-			cmds <- paste('"', getOption("editor"), '" ', files, sep = "")
-			for (cmd in cmds) {
-				res <- try(system(cmd), silent = TRUE)
-				if (inherits(res, "try-error"))
-					warning("Error running ", cmd)
+			files <- gsub("\\", "\\\\", files[1], fixed = TRUE)
+			koCmd(paste("sv.r.pager(", files, ",", title ,")", sep="\""))
+			if (delete.file) {
+				koCmd(paste("window.setTimeout(try { sv.tools.file.getfile(", files, ").remove(false); } catch(e) {}, 10000);", sep="\""))
 			}
-			# Do we delete these files?
-			# FIXME: if we delete the file, Komodo will not be able to read it
-			# so, currently, we don't delete the file (but need something else!)
-			#if (delete.file) unlink(files)
+		}
+
+		svBrowser <- function(url) {
+			koCmd(paste("sv.command.openHelp(", gsub("\\", "\\\\", url, fixed = TRUE), ")", sep="\""))
 		}
 
 		# Look if and where komodo is installed
@@ -283,8 +245,7 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 					"otherwise, R cannot find it!", sep="\n")
 			} else {
 				# Change the editor and the pager to Komodo
-				options(editor = Komodo)
-				options(pager = svPager)
+				options(editor = Komodo, browser = svBrowser, pager = svPager)
 			}
 		} else {
 		    # if komodo path was passed in environment
@@ -312,8 +273,7 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 					"You can find it at http://www.activestate.com/Products/komodo_edit.\n")
 			} else {
 				# Change the editor and the pager to Komodo
-				options(editor = Komodo)
-				options(pager = svPager)
+				options(editor = Komodo, browser = svBrowser, pager = svPager)
 			}
 			options(warn = owarn)
 			rm(owarn)
@@ -324,6 +284,7 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 		# to display R help in Komodo Edit (in Windows, chmhelp is the default)
 		if (.Platform$OS.type == "windows") options(chmhelp = FALSE)
 		options(htmlhelp = TRUE)
+
 
 		# Change the working directory to the provided directory
 		setwd(getOption("R.initdir"))
@@ -381,4 +342,14 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 		invisible(koCmd("sv.socket.updateCharset();"));
 	}
 }
+
+
+}
+
+
+
+svStart()
+
+rm(svStart)
+
 ### SciViews install end ###
