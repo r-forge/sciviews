@@ -48,9 +48,13 @@ function displayResults(data) {
 			return;
 
 		var doc = document;
-		var out = doc.getElementById("results");
 
-		while (out.childNodes.length) out.removeChild(out.firstChild);
+		var header = doc.body.appendChild(doc.createElement("h1"));
+		header.textContent = "Search results";
+
+		var out = doc.body.appendChild(doc.createElement("div"));
+
+		//while (out.childNodes.length) out.removeChild(out.firstChild);
 
 
 		data = data.split(/[\r\n]+/);
@@ -104,19 +108,53 @@ function displayResults(data) {
 }
 
 
+function rHelp (topic, pkg) {
+	var res = false;
+
+	if (!topic && !pkg) {
+		return false;
+	} else {
+		var cmd = '';
+		cmd += pkg? ' package = "' + pkg + '", ' : "";
+		cmd += topic? ' topic = "' + topic + '", ' : "";
+		cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
+
+		res = sv.r.evalCallback(cmd, function(path) {
+			rHelpWin.go("file://" + path,
+				Components.interfaces.nsIWebNavigation
+				.LOAD_FLAGS_REPLACE_HISTORY);
+		});
+	}
+	return res;
+}
+
+
 function init() {
 	rHelpWin = _getWindowByURI(rHelpXulUri);
 	sv = rHelpWin.sv;
 
-	askR(decodeURIComponent(document.location.search.replace(/^\?/, "")));
-}
+	var topic = decodeURIComponent(document.location.search.replace(/^\?/, ""));
 
+	if (topic.indexOf("file:") == 0) {
+		topic = topic.substr(5);
+
+		var content = document.createElement("body");
+		content.innerHTML = sv.tools.file.read(topic);
+		rHelpWin.document.title = document.title = content.firstChild.getAttribute("title");
+		document.body = content;
+	} else {
+		var matches = topic.match(/([\w\.\-\_]+)::([\w\.\-\_]+)/i);
+		if (matches) {
+			rHelp(matches[2], matches[1]);
+		} else {
+			askR(topic);
+		}
+
+	}
+}
 
 </script>
 </head>
 
-<body onload="init();">
-<h1>Search results:</h1>
-<div id="results"></div>
-</body>
+<body onload="init();"></body>
 </html>

@@ -363,7 +363,7 @@ if (typeof(sv.command) == 'undefined') {
 				if (!isUri) {
 					if (isWin)
 						uri = uri.replace(/\//g, "\\");
-					uri = sv.tools.file.getURI(sv.tools.file.getfile(uri));
+					uri = sv.tools.file.getURI(uri);
 				}
 			} catch (e) {
 				// fallback:

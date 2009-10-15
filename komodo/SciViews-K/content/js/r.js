@@ -672,6 +672,22 @@ sv.r.search = function (topic, internal) {
 	return(res);
 }
 
+
+sv.r.pager = function(file, title) {
+	var rSearchUrl = "chrome://sciviewsk/content/rsearch.html";
+	var content = sv.tools.file.read(file);
+	//content = content.replace(/([\w\.\-]+)::([\w\.\-]+)/ig, '<a href="javascript:sv.r.help(\'$2\', \'$1\');">$1::$2</a>');
+	content = content.replace(/([\w\.\-]+)::([\w\.\-]+)/ig,
+		'<a href="' + rSearchUrl + '?$1::$2">$1::$2</a>');
+
+	content = "<pre id=\"rPagerTextContent\" title=\"" + title + "\">" + content + "</div>";
+
+	sv.tools.file.write(file, content, sv.socket.charset);
+	sv.command.openHelp(rSearchUrl + "?file:" + file);
+}
+
+
+
 // The callback for sv.r.search
 //TODO: make private
 sv.r.search_select = function (topics) {
@@ -724,6 +740,7 @@ sv.r.siteSearch = function (topic, idxname) {
 
 	idxname = idxsep + idxname.join(idxsep);
 
+	// TODO: make it a pref:
 	var url = "http://search.r-project.org/cgi-bin/namazu.cgi?query=" + topic +
 	"&max=20&result=normal&sort=score" + idxname;
 
@@ -731,9 +748,8 @@ sv.r.siteSearch = function (topic, idxname) {
 
 }
 
-
-
 // List available datasets ("loaded" or not defined = loaded packages, or "all")
+// TODO: display results in RHelp window
 sv.r.dataList = function (which) {
 	var res = false;
 	if (typeof(which) == "undefined" | which == "" | which == "loaded") {
@@ -1183,6 +1199,8 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 		file.create(DIRECTORY_TYPE, 511);
 	}
 	// ... also make sure that Data, Script and Report subdirs exist
+	// [KB] I find this behavior with creating, often unneeded, dirs quite annoying.
+	// TODO: create these directories only when written to.
 	var subdirs = [datadir, scriptdir, reportdir];
     for (var i in subdirs) {
 		if (subdirs[i] != "") {
@@ -1234,9 +1252,11 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
 	dir = sv.r.initSession(dir, datadir, scriptdir, reportdir);
 
 	// Switch to the new session directory in R
-	cmd = cmd + 'setwd("' + dir + '")\noptions(R.initdir = "' + dir + '")\n';
+	cmd = cmd + 'setwd("' + dir.addslashes() + '")\noptions(R.initdir = "'
+	+ dir.addslashes() + '")\n';
 
 	// Do we load .RData and .Rhistory?
+	// TODO: loadhistory APPENDS a history. Make R clear the current history first.
 	if (loadNew) {
 		cmd = cmd + 'if (file.exists(".RData")) load(".RData")\n' +
 					 'if (file.exists(".Rhistory")) loadhistory()\n';
@@ -1251,7 +1271,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
         // Break possible partial multiline command in R from previous session
         // and indicate that we are in a new session now in the R console
         // TODO: report if we load something or not
-        sv.r.escape('cat("Session directory is now ' + dir +
+        sv.r.escape('cat("Session directory is now ' + dir.addslashes() +
             '\n", file = stderr())');
 		// Refresh active objects support
 
