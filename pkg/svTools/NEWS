@@ -1,9 +1,12 @@
 = svTools News
 
+== Changes in svTools 0.0-12
+
+* sidekick is now generic 
+
 == Changes in svTools 0.0-11
 
 * Further clean up of the NAMESPACE and DESCRIPTION files
-
 
 == Changes in svTools 0.0-10
 
