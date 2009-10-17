@@ -17,22 +17,30 @@
 #' sidekick( tf )
 #' unlink( tf )
 #' TODO :make this S3 instead of dispatching
-sidekick <- function( file, encoding = getOption("encoding") ){
-	
-	if( file %of% "function" ){
-		tf <- tempfile( ); on.exit( unlink( tf ) )
-		dump( "file" , tf )
-		file <- tf
-	}
-	
-	if( is.character(file) ){
-		if( file %~% '^rwd:' ){
-			file <- sub( 'rwd:', getwd(), file ) 
-		}
+
+sidekick <- function( x, ... ){
+	UseMethod( "sidekick" )
+}
+
+sidekick.default <- function(x, ... ){
+	.NotYetImplemented()
+}
+
+sidekick.function <- function(x, ...){
+	tf <- tempfile( ); on.exit( unlink( tf ) )
+	dump( "x" , file = tf )
+	sidekick.character( tf, encoding = "unknown", delete.file = TRUE )
+}
+
+sidekick.character <- function(x, encoding = getOption("encoding"), delete.file = FALSE, ... ){
+	if( delete.file ){
+		on.exit( { unlink( x ) } )
 	}
 	
 	### try to parse and return an error if failed
-	p <- try( parse( file, encoding = encoding ), silent = TRUE )
+	f <- file( x, open ="r", encoding = encoding )
+	p <- try( parse( f, srcfile = srcfile(x, encoding) ), silent = TRUE )
+	close(f)
 	if( p %of% "try-error" ){
 		return( list( type = "error", data = parseError( p ) ) )
 	}
@@ -69,7 +77,6 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 	} else {
 		maxId <- max( env[["data"]][, "id"] ) 
 	}
-	
 	isIf <- looksLikeAnIf( p )
 	atts <- attributes( p )
 	descriptions <- as.character( p )
@@ -123,7 +130,7 @@ sidekickParse <- function( p = try( parse(file), silent = TRUE) , top = TRUE, en
 				}
 			}
 		}
-	}
+	}        
 	if( top ){
 		env[["data"]]
 	}

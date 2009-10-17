@@ -1,10 +1,13 @@
-import(utils, tools, codetools, svMisc, operators)
+import(utils, tools, codetools, svMisc, operators )
 
 export(generateRoxygenTemplate)
 export(checkUsageFile)
 
 # sidekick.R
 export(sidekick)
+S3method( sidekick, "function") 
+S3method( sidekick, "default")
+S3method( sidekick, "character")
 
 # errorlist.R
 #export(getErrors)
