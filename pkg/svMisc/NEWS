@@ -1,9 +1,16 @@
 = svMisc News
 
+== Changes in svMisc 0.9-56
+
+* Temporary code to disable index.search() in devel R 2.11 in isHelp() and
+  descFun().
+
+
 == Changes in svMisc 0.9-55
 
 * Implement descArgs using the new help system (parse_Rd), this eliminates
   the need for the workaround of version 0.9-54
+
 
 == Changes in svMisc 0.9-54
 
