@@ -11,7 +11,7 @@
 \usage{
 guiDDEInstall()
 guiCallTip(code, file = NULL, onlyargs = FALSE, width = 60, location = FALSE)
-guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
+guiComplete(code, file = NULL, sep = "|")
 }
 
 \arguments{
@@ -22,8 +22,6 @@ guiComplete(code, file = NULL, givetype = FALSE, sep = "|")
   \item{width}{ Reformat the calltip to with (use 0 for not reformatting it) }
   \item{location}{ If \code{TRUE} then the location (in which package the
     function resides) is appended to the calltip between square brackets }
-  \item{givetype}{ Return also the type of each object in the completion list (possibly
-    to use set a different icon in the list displayed by the external program) }
   \item{sep}{ The separator to use between the item and its type in the list }
 }
 

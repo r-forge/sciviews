@@ -1,5 +1,12 @@
 = svIDE News
 
+== Changes in svIDE 0.9-47
+
+* guiComplete now does not have a givetype argument any more. Extra information
+  is now always returned. This follows changes made in the original Complete()
+  function in svMisc that is called by guiComplete().
+  
+
 == Changes in svIDE 0.9-46
 
 * the trXXX() functions for Tinn-R are eliminated (they are now in their own
