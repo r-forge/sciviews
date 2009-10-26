@@ -283,8 +283,18 @@ function (fun, template = NULL, maxargs = 7, var = "res", width = 40,
     #### TO DO: use syntax for call arg by position!
     # Construct a default template for this function
     if (isHelp(fun)["help"]) {
-        Help <- paste("browseURL('", help(fun, htmlhelp = TRUE), "')", sep = "")
-        # Or simply use: paste("help('", fun, "')", sep = "") to use default help system
+        hlp <- function (...) help(...) # To avoid warning on R CMD check!
+        # help() function is changed in R 2.10!
+        if (exists("getRversion", mode = "function") &&
+            getRversion() >= '2.10') {
+            Help <- paste("browseURL('", hlp(fun, help_type = "html"), "')",
+                sep = "")
+        } else { # This is R <= 2.9.x
+            Help <- paste("browseURL('", hlp(fun, htmlhelp = TRUE), "')",
+                sep = "")
+            # Or simply use: paste("help('", fun, "')", sep = "")
+            # to use default help system
+        }
     } else Help <- NULL
     Tpl <- list(list(fun = fun, var = var, title = "Function assistant",
         message = NULL, help = Help, sep = NULL, width = width,

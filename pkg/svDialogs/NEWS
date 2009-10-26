@@ -1,5 +1,10 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-42
+
+* guiDlgFun() is adapted to the new help system provided in R 2.10.
+
+
 == Changes in svDialogs 0.9-41
 
 * When the path contained spaces, guiDlgOpen() and guiDlgSave() returned them in
