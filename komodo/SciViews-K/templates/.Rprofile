@@ -14,7 +14,7 @@ svStart <- function(){
 if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 
 	assign(".SciViewsReady", FALSE, .GlobalEnv)
-	minVersion <- c(R = "2.8.0", svMisc = "0.9-53", svSocket = "0.9-48", svGUI = "0.9-46")
+	minVersion <- c(R = "2.10.0", svMisc = "0.9-56", svSocket = "0.9-48", svGUI = "0.9-46")
 
 	# First of all, check R version... redefine compareVersion() because it is
 	# not defined in very old R versions... and thus we don't get an explicit
