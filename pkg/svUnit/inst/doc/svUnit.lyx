@@ -978,6 +978,7 @@ R
 \end_layout
 
 \begin_layout R-Chunk
+options(useFancyQuotes = FALSE)
 install.packages("svUnit",repos="http://R-Forge.R-project.org")
 \end_layout
 
