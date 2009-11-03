@@ -104,7 +104,7 @@
 // Define the 'sv.r' namespace
 if (typeof(sv.r) == 'undefined')
 	sv.r = {
-		RMinVersion: "2.7.0",
+		RMinVersion: "2.10.0",
 		sep: ";;"
 	};
 
@@ -624,8 +624,8 @@ sv.r.help = function (topic, pkg) {
 		var cmd = '';
 		cmd += pkg? ' package = "' + pkg + '", ' : "";
 		cmd += topic? ' topic = "' + topic + '", ' : "";
-		cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
-
+		cmd = cmd = 'cat(getHelpURL(help(' + cmd + ' htmlhelp = TRUE)))';
+		// Old version for R < 2.10: cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
 		// TODO: error handling when package does not exists
 		res = sv.r.evalCallback(cmd, sv.command.openHelp);
 		ko.statusBar.AddMessage(sv.translate("R help asked for \"%S\"", topic),

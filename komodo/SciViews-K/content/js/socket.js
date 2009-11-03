@@ -40,7 +40,7 @@ if (typeof(sv.socket) == 'undefined')
 (function () {
 
 	/////// Socket client //////////////////////////////////////////////////////
-	this.svSocketMinVersion = "0.9-44";	// Will be used later for compatibility
+	this.svSocketMinVersion = "0.9-48";	// Will be used later for compatibility
 										// checking between R and Komodo tools
 	this.host = "127.0.0.1";	// Host to connect to (local host only, currently)
 	this.cmdout = true;			// Do we write to 'Command Output'?
