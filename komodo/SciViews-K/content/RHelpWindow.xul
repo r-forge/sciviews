@@ -50,7 +50,7 @@
 <window
     id="RHelpWindow" title="R Help"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    width="600" height="400" screenX="20" screenY="20"
+    width="700" height="500" screenX="20" screenY="20"
     persist="screenX screenY width height"
     style="min-height: 400px; min-width: 300px;">
 <script type="text/javascript">
@@ -233,24 +233,34 @@ function onFindToolbarAttrModified(event) {
 function rHelpSearch(topic) {
 	if (!topic)	return;
 
-	rHelpBrowser.webNavigation.loadURI("chrome://sciviewsk/content/rsearch.html?" +
-					encodeURIComponent(topic),
-					rHelpBrowser.webNavigation.LOAD_FLAGS_NONE,
-					null, null, null);
+	// This is an old code for R < 2.10
+	//rHelpBrowser.webNavigation.loadURI("chrome://sciviewsk/content/rsearch.html?" +
+	//				encodeURIComponent(topic),
+	//				rHelpBrowser.webNavigation.LOAD_FLAGS_NONE,
+	//				null, null, null);
+	rHelpBrowser.webNavigation.loadURI(sv.helpStartURI.replace(/index.html$/,
+		"Search?name=" + encodeURIComponent(topic) + "&title=1&keyword=1&alias=1"),
+		rHelpBrowser.webNavigation.LOAD_FLAGS_NONE, null, null, null);
 }
 
 function _getHomePage(browser, goTo) {
 	var isWin = navigator.platform.search(/Win\d+$/) === 0;
-
-	var cmd = 'suppressMessages(make.packages.html()); ';
-	cmd += 'options(htmlhelp = TRUE); ';
-	cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
-
+    // Everything is changed in R 2.10
+	// Old code...
+	//var cmd = 'suppressMessages(make.packages.html()); ';
+	//cmd += 'options(htmlhelp = TRUE); ';
+	//cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
+    // Make sure that help is started, but do not open a browser
+	var cmd = 'help.start(browser = function(...) return()); ';
+	// return the home page of R 2.10 help system
+	cmd += 'cat("http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = "")';
+    
 	var res = sv.r.evalCallback(cmd, function (path) {
 		path = sv.tools.strings.removeLastCRLF(path);
-		path = sv.tools.file.getfile(path,
-			[(isWin? null : ".R"), "doc", "html", "index.html"]);
-		path = sv.tools.file.getURI(path);
+		// Old treatment for R < 2.10
+		//path = sv.tools.file.getfile(path,
+		//	[(isWin? null : ".R"), "doc", "html", "index.html"]);
+		//path = sv.tools.file.getURI(path);
 
 		browser.homePage = sv.helpStartURI = path;
 
@@ -329,10 +339,16 @@ function getPPBrowser() rHelpBrowser;
 	}
 
 	function printPreview() {
-		function enterPP ()	document.getElementById("nav-toolbar").hidden = true;
-		function exitPP ()	document.getElementById("nav-toolbar").hidden = false;
-
-		PrintUtils.printPreview(enterPP, exitPP);
+		// Print preview does not work on a Mac, use print instead because we
+		// have there a "preview" button available anyway
+		var isMac = navigator.platform.search(/Mac/) === 0;
+		if (isMac) {
+		    PrintUtils.print();
+		} else {
+		    function enterPP ()	document.getElementById("nav-toolbar").hidden = true;
+		    function exitPP ()	document.getElementById("nav-toolbar").hidden = false;
+			PrintUtils.printPreview(enterPP, exitPP);
+		}
 	}
 
 	// modified "prefbarSavePage" from prefbar extension for Firefox
@@ -398,22 +414,6 @@ function getPPBrowser() rHelpBrowser;
 	<toolbar type="toolbar" id="nav-toolbar" class="toolbar"
 			 mode="icons" iconsize="small"
 			 defaulticonsize="small">
-<vbox align="stretch" flex="1">
-            <textbox id="rhelp-topic" flex="0"
-				emptytext="topic or web page"
-				onkeypress="txtInput(event);"
-				tooltiptext="Search topic or Web page"
-				/>
-        </vbox>
-		<toolbarbutton id="rhelp-go" class="go-icon"
-			command="cmd_go" buttonstyle="pictures"/>
-		<toolbarbutton id="rhelp-search" class="search-icon"
-			command="cmd_search" buttonstyle="pictures"/>
-		<spacer flex="1"/>
-		<toolbarbutton id="rhelp-find" class="find-icon"
-		    oncommand="onFindCommand(event);" disabled="false" label="Search in page"
-			tooltiptext="Search this page (Ctrl-F/F3)"
-			buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-back-button" class="history-back-icon"
 		    command="cmd_go_back" buttonstyle="pictures"/>
 		<toolbarbutton id="rhelp-forward-button" class="history-forward-icon"
@@ -449,6 +449,23 @@ function getPPBrowser() rHelpBrowser;
 					oncommand="go('http://r-forge.r-project.org/');"/>
 			</menupopup>
 		</toolbarbutton>
+        <vbox align="stretch" flex="1">
+            <textbox id="rhelp-topic" flex="0"
+				emptytext="topic or web page"
+				onkeypress="txtInput(event);"
+				tooltiptext="Search topic or Web page"
+				/>
+        </vbox>
+		<toolbarbutton id="rhelp-go" class="go-icon"
+			command="cmd_go" buttonstyle="pictures"/>
+		<toolbarbutton id="rhelp-search" class="search-icon"
+			command="cmd_search" buttonstyle="pictures"/>
+		<spacer flex="1"/>
+		<toolbarbutton id="rhelp-find" class="find-icon"
+		    oncommand="onFindCommand(event);" disabled="false" label="Search in page"
+			tooltiptext="Search this page (Ctrl-F/F3)"
+			buttonstyle="pictures"/>
+
 		<toolbarseparator/>
 		<toolbarbutton id="rhelp-menu" type="menu" label="File/Tools" orient="horizontal">
 			<menupopup>
