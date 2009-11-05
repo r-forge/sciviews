@@ -150,6 +150,10 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 	// Depending on 'what', we select different parts of the file
 	// By default, we keep current selection
+
+	if (what == "line/sel")
+		what = (pStart == pEnd)? "line" : "sel";
+
 	switch(what) {
 	case "sel":
 	   // Simply retain current selection
@@ -323,7 +327,7 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 	}
 
 	if (what != "all") {
-		text = scimoz.getTextRange(pStart, pEnd).trim();
+		text = scimoz.getTextRange(pStart, pEnd).replace(/(^[\n\r]+|[\n\r]+$)/, "");
 		if (gotoend) {
 			scimoz.gotoPos(pEnd);
 		}

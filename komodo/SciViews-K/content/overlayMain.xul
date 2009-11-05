@@ -129,6 +129,16 @@
 				oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
 				desc="R: &rSrcPara;" label="&rSrcPara;" accesskey="&rSrcPara.key;"/>
 
+			<command id="cmd_sv_RRunLineOrSelection" key="key_cmd_sv_RRunLineOrSelection"
+				oncommand="ko.commands.doCommand('cmd_sv_RRunLineOrSelection')"
+				desc="R: &rSendLineOrSelection;" label="&rSendLineOrSelection;"
+				accesskey="&rSendLineOrSelection.key;"/>
+
+			<command id="cmd_sv_RSourceLineOrSelection" key="key_cmd_sv_RSourceLineOrSelection"
+				oncommand="ko.commands.doCommand('cmd_sv_RSourceLineOrSelection')"
+				desc="R: &rSrcLineOrSelection;" label="&rSrcLineOrSelection;"
+				accesskey="&rSrcLineOrSelection.key;"/>
+
 			<commandset id="cmdset_r_control" commandupdater="true" events="select"
 				oncommandupdate="ko.commands.updateCommandset(this);">
 				<command id="cmd_sv_RRunSelection" key="key_cmd_sv_RRunSelection"
@@ -154,6 +164,19 @@
 		<menuitem id="menu_sciviewsk" label="SciViews-K" observes="Tasks:svAbout"
 			class="menu-iconic-wide"/>
 	</menupopup>
+
+	<!--<menupopup id="editorContextMenu">-->
+	<!--	<menuseparator id="editor-context-sep-sv"-->
+	<!--	insertafter="context-sep-paste"-->
+	<!--	/>-->
+	<!--	<menuitem id="editor-context-sv-r-send-line-sel"-->
+	<!--			  class="menuitem-iconic r-send-selection-icon"-->
+	<!--			  observes="cmd_sv_RRunLineOrSelection"-->
+	<!--			  oncommand="ko.commands.doCommand('cmd_sv_RRunLineOrSelection')"-->
+	<!--			  insertafter="context-sep-paste"-->
+	<!--			  />-->
+	<!--insertafter="context-sep-paste"-->
+	<!--</menupopup>-->
 
 	<menubar id="menubar_main">
 		<menu id="sciviews_menu" label="R" accesskey="R"
@@ -203,16 +226,22 @@
 				<menuitem id="r_browse_wd" observes="cmd_sv_BrowseWD"
 					class="menuitem-iconic r-working-dir-icon"/>
 				<menuseparator/>
-				<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine"
-					class="menuitem-iconic r-run-line-icon"/>
+				<!--<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine"-->
+				<!--	class="menuitem-iconic r-run-line-icon"/>-->
 				<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll"
 					class="menuitem-iconic r-run-all-icon"/>
 				<menuitem id="r_src_all_menu" observes="cmd_sv_RSourceAll"
 					class="menuitem-iconic r-source-all-icon"/>
-				<menuitem id="r_send_sel_menu" observes="cmd_sv_RRunSelection"
+				<!--<menuitem id="r_send_sel_menu" observes="cmd_sv_RRunSelection"-->
+				<!--	class="menuitem-iconic r-run-selection-icon"/>-->
+				<!--<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection"-->
+				<!--	class="menuitem-iconic r-source-selection-icon"/>-->
+
+				<menuitem id="r_send_line_sel_menu" observes="cmd_sv_RRunLineOrSelection"
 					class="menuitem-iconic r-run-selection-icon"/>
-				<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection"
+				<menuitem id="r_src_line_sel_menu" observes="cmd_sv_RSourceLineOrSelection"
 					class="menuitem-iconic r-source-selection-icon"/>
+
 				<menuitem id="r_send_block_menu" observes="cmd_sv_RRunBlock"
 					class="menuitem-iconic r-run-block-icon"/>
 				<menuitem id="r_src_block_menu" observes="cmd_sv_RSourceBlock"
@@ -228,4 +257,36 @@
 			</menupopup>
 		</menu>
 	</menubar>
+
+
+	<tabbox id="rightTabBox">
+		<tabs id="right_toolbox_tabs">
+			<tab id="rhelp_tab"
+				 label="R Help tabbed"
+				 accesskey="r"
+				 insertafter="toolbox_tab"
+				 oncommand="ko.toolboxes.user.viewMgr.tree.focus();"
+				 onfocus="ko.toolboxes.user.viewMgr.focus();"
+				 hidden="true"
+				 persist="hidden"
+				 />
+		</tabs>
+		<tabpanels id="right_toolbox_tabpanels">
+			<tabpanel id="rhelpviewbox"
+					  flex="1"
+					  insertafter="toolboxviewbox"
+					  hidden="true"
+					  persist="hidden"
+					  >
+				<vbox id="rhelpviewbox-vbox" flex="1">
+				<iframe id="rhelpview-frame"
+						src="about:blank"
+						flex="1"
+						/>
+				</vbox>
+			</tabpanel>
+		</tabpanels>
+	</tabbox>
+
+
 </overlay>

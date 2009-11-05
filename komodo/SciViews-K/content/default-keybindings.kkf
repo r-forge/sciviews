@@ -9,8 +9,8 @@ version 15
 
 binding cmd_sv_RRunAll F5
 binding cmd_sv_RSourceAll Shift+F5
-binding cmd_sv_RRunSelection F6
-binding cmd_sv_RSourceSelection Shift+F6
+binding cmd_sv_RRunLineOrSelection F6
+binding cmd_sv_RSourceLineOrSelection Shift+F6
 binding cmd_sv_RRunBlock F7
 binding cmd_sv_RSourceBlock Shift+F7
 binding cmd_sv_RRunLine F11

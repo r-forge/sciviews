@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>R help: search results</title>
-
+<link rel="stylesheet" href="chrome://sciviewsk/skin/rsearch.css" type="text/css" />
 <script type="text/javascript">
 
 function _getWindowByURI(uri) {
@@ -23,9 +23,6 @@ function _getWindowByURI(uri) {
 	return null;
 }
 
-
-
-var rHelpXulUri = "chrome://sciviewsk/content/RHelpOverlay.xul";
 var rHelpWin, sv;
 
 function askR(topic) {
@@ -43,68 +40,92 @@ function askR(topic) {
 }
 
 
+function appendElem(parent, tagName, textContent, attributes) {
+	var el = document.createElement(tagName);
+
+	if (textContent)
+		el.textContent = textContent;
+
+	if (attributes) {
+		for (i in attributes) {
+			el.setAttribute(i, attributes[i]);
+		}
+	}
+	if (parent) {
+		if (typeof parent == "string")
+			parent = document.getElementById(parent);
+
+		if (parent)
+			parent.appendChild(el);
+	}
+
+	return el;
+}
+
+
+function appendElem(parent, tagName, textContent, attributes) {
+	var el = document.createElement(tagName);
+
+	if (textContent)
+		el.textContent = textContent;
+
+	if (attributes) {
+		for (i in attributes) {
+			el.setAttribute(i, attributes[i]);
+		}
+	}
+	if (parent) {
+		if (typeof parent == "string")
+			parent = document.getElementById(parent);
+
+		if (parent) {
+			if (parent.appendChild)
+				parent.appendChild(el);
+			else if (parent.appendElem)
+				parent.appendElem(el);
+		}
+	}
+	return el;
+}
+
 function displayResults(data) {
 		if (!data)
 			return;
 
 		var doc = document;
-
-		var header = doc.body.appendChild(doc.createElement("h1"));
-		header.textContent = "Search results";
-
-		var out = doc.body.appendChild(doc.createElement("div"));
-
-		//while (out.childNodes.length) out.removeChild(out.firstChild);
-
-
+		appendElem(doc.body, "h1", "Search results");
+		var out = appendElem(doc.body, "div");
 		data = data.split(/[\r\n]+/);
-		var p = doc.createElement("p");
-		p.appendChild(doc.createTextNode('Search text was: "' + data[0].replace(/(^\s+|\s+$)/g, "") + '"'));
-		out.appendChild(p);
 
+		appendElem(out, "p", 'Search text was: "' + sv.tools.strings.trim(data[0]) + '"');
 		if (data.length == 1) {
-			var p = doc.createElement("p");
-			p.appendChild(doc.createTextNode("Nothing found."));
-			out.appendChild(p);
+			appendElem(out, "p", "Nothing found.");
 			return;
 		}
 
-
 		var prevPkg = "", fnList, li, el, p, pkgList;
-
-		pkgList = doc.createElement("div");
+		var resTable = appendElem(out, "table", "", {cellpadding: 2, id: "resultTable"});
 
 		for (var i = 1; i < data.length; i++) {
 			var di = data[i].split(/\s*;\s*/);
-			var li = doc.createElement("li");
 
 			curPkg = di[2];
 			if (curPkg != prevPkg) {
-				if (fnList) pkgList.appendChild(fnList);
-
-				p = doc.createElement("p");
-				el = doc.createElement("a");
-				el.appendChild(doc.createTextNode("Package: " + curPkg));
-				el.setAttribute("href", "file://" + di[3] + "/html/00Index.html");
-				p.appendChild(el);
-
-
-				pkgList.appendChild(p);
-				fnList = doc.createElement("ol");
+				var th = appendElem(appendElem(resTable, "tr"), "th", "",
+					{colspan: 2});
+				appendElem(th, "a", "Package: " + curPkg,
+					{href: "file://" + di[3] + "/html/00Index.html"});
 			}
 			prevPkg = curPkg;
-			li = doc.createElement("li");
 
-			el = li.appendChild(doc.createElement("a"));
-			el.setAttribute("href", "file://" + di[4]);
-			el.appendChild(doc.createTextNode(di[0]));
+			var tr = appendElem(resTable, "tr");
 
-			li.appendChild(el);
-			li.appendChild(doc.createTextNode(" - " + di[1]));
-			fnList.appendChild(li);
+			appendElem(appendElem(tr, "td"),
+				"a", di[0], {href: "file://" + di[4]});
+
+			appendElem(tr, "td", di[1]);
+
 		}
-		pkgList.appendChild(fnList);
-		doc.body.appendChild(pkgList);
 }
 
 
@@ -117,11 +138,12 @@ function rHelp (topic, pkg) {
 		var cmd = '';
 		cmd += pkg? ' package = "' + pkg + '", ' : "";
 		cmd += topic? ' topic = "' + topic + '", ' : "";
-		cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
+		//cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
+		// For R 2.10:
+		cmd = 'cat(getHelpURL(help(' + cmd + ' htmlhelp = TRUE)))';
 
 		res = sv.r.evalCallback(cmd, function(path) {
-			rHelpWin.go("file://" + path,
-				Components.interfaces.nsIWebNavigation
+			rHelpWin.go(path, Components.interfaces.nsIWebNavigation
 				.LOAD_FLAGS_REPLACE_HISTORY);
 		});
 	}
@@ -130,8 +152,10 @@ function rHelp (topic, pkg) {
 
 
 function init() {
-	rHelpWin = _getWindowByURI(rHelpXulUri);
-	sv = rHelpWin.sv;
+	var mainWindow = _getWindowByURI("chrome://komodo/content/komodo.xul");
+
+	sv = mainWindow.sv;
+	rHelpWin = sv.command.RHelpWin;
 
 	var topic = decodeURIComponent(document.location.search.replace(/^\?/, ""));
 
@@ -143,7 +167,7 @@ function init() {
 		rHelpWin.document.title = document.title = content.firstChild.getAttribute("title");
 		document.body = content;
 	} else {
-		var matches = topic.match(/([\w\.\-\_]+)::([\w\.\-\_]+)/i);
+		var matches = topic.match(/([\w\.\-]+)::([\w\.\-\[]+)/i);
 		if (matches) {
 			rHelp(matches[2], matches[1]);
 		} else {

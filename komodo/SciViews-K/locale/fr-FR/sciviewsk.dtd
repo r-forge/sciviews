@@ -59,6 +59,12 @@
 <!ENTITY rSendFun.key "F">
 <!ENTITY rSendLine "Exécuter la ligne courante">
 <!ENTITY rSendLine.key "L">
+
+<!ENTITY rSendLineOrSelection "Send active line/selection">
+<!ENTITY rSendLineOrSelection.key "C">
+<!ENTITY rSrcLineOrSelection "Source active line/selection">
+<!ENTITY rSrcLineOrSelection.key "T">
+
 <!ENTITY rSendPara "Exécuter le paragraphe actuel">
 <!ENTITY rSendPara.key "P">
 <!ENTITY rSendSel "Exécuter la sélection">
