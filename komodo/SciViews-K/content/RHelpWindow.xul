@@ -56,9 +56,6 @@
 <script type="text/javascript">
 <![CDATA[
 
-
-//TODO: context menu, running examples and selected R code from help pages
-
 var sv;
 var rHelpBrowser;
 var rHelpTopic;
@@ -90,7 +87,7 @@ function go(uri, loadFlags) {
 	rHelpTopic.select();
 
 
-	// Try to differenciate an URL from a help topic
+	// Try to differentiate an URL from a help topic
 	var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
 
 	if (isUri) {
@@ -109,6 +106,9 @@ function txtInput(aEvent) {
 		} else {
 			go();
 		}
+	} else {
+		var isUri = rHelpTopic.value.search(/^((f|ht)tps?|chrome|about|file):\/{1,3}/) === 0;
+		rHelpTopic.style.color = isUri? "#000000" : "#8080ff";
 	}
 }
 
@@ -150,10 +150,7 @@ function find(next) {
 // so far used only to change title and location text
 
 // From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
-const STATE_START = Components.interfaces.
-	nsIWebProgressListener.STATE_START;
-const STATE_STOP = Components.interfaces.
-	nsIWebProgressListener.STATE_STOP;
+
 var progressListener = {
 	QueryInterface: function(aIID) 	{
 		if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
@@ -168,7 +165,7 @@ var progressListener = {
 		// aWebProgress.DOMWindow to obtain the tab/window which
 		// triggers the state change
 
-		if (aFlag & STATE_START) {
+		if (aFlag & Components.interfaces.nsIWebProgressListener.STATE_START) {
 			// This fires when the load event is initiated
 			document.getElementById("cmd_stop")
 				.setAttribute("disabled", false);
@@ -177,7 +174,7 @@ var progressListener = {
 			document.getElementById("cmd_reload").hidden = true;
 		}
 
-		if (aFlag & STATE_STOP) {
+		if (aFlag & Components.interfaces.nsIWebProgressListener.STATE_STOP) {
 			// This fires when the load finishes
 			self.document.title = aWebProgress.DOMWindow.document.title;
 			rHelpTopic.value = aWebProgress.DOMWindow.document.location;
@@ -229,6 +226,48 @@ function onFindToolbarAttrModified(event) {
 	}
 }
 
+function rHelpBrowserContextOnShow(event) {
+
+	var selText = sv.tools.strings.trim(window._content.getSelection()
+				.toString());
+
+	if (selText) {
+		var el = document.getElementById("cmd_rsearch_for");
+		el.setAttribute("label", sv.translate("Search R for \"%S\"",
+										  selText.substr(0, 10) + (selText.length > 10? "..." : "")));
+
+		document.getElementById("cmd_rsearch_for").hidden = false;
+		document.getElementById("cmd_run_r_code").hidden = false;
+	} else {
+		document.getElementById("cmd_rsearch_for").hidden = true;
+		document.getElementById("cmd_run_r_code").hidden = true;
+	}
+
+
+
+}
+
+function runSelAsRCode() {
+	var selText = sv.tools.strings.trim(window._content.getSelection()
+										.getRangeAt(0).toString());
+
+	// Looks like R help page, so require package first
+	win = window._content;
+	doc = window._content.document;
+	if (win.document.title.indexOf("R: ") == 0) {
+		var docTables = doc.getElementsByTagName("table");
+		if (docTables.length > 0
+			&& docTables[0].summary.search(/page for (\S+) \{([\w\.]+)\}/) == 0) {
+
+			selText = "require(" + RegExp.$2 + ")\n" + selText;
+
+			//TODO: for remote help files, ask to install package in not available
+		}
+	}
+	sv.r.eval(selText);
+}
+
+
 // display formatted search results in a help window
 function rHelpSearch(topic) {
 	if (!topic)	return;
@@ -238,7 +277,7 @@ function rHelpSearch(topic) {
 	//				encodeURIComponent(topic),
 	//				rHelpBrowser.webNavigation.LOAD_FLAGS_NONE,
 	//				null, null, null);
-	rHelpBrowser.webNavigation.loadURI(sv.helpStartURI.replace(/index.html$/,
+	rHelpBrowser.webNavigation.loadURI(rHelpBrowser.homePage.replace(/index.html$/,
 		"Search?name=" + encodeURIComponent(topic) + "&title=1&keyword=1&alias=1"),
 		rHelpBrowser.webNavigation.LOAD_FLAGS_NONE, null, null, null);
 }
@@ -253,8 +292,8 @@ function _getHomePage(browser, goTo) {
     // Make sure that help is started, but do not open a browser
 	var cmd = 'help.start(browser = function(...) return()); ';
 	// return the home page of R 2.10 help system
-	cmd += 'cat("http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = "")';
-    
+	cmd += 'cat(paste("\n", "http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = ""))';
+
 	var res = sv.r.evalCallback(cmd, function (path) {
 		path = sv.tools.strings.removeLastCRLF(path);
 		// Old treatment for R < 2.10
@@ -262,7 +301,12 @@ function _getHomePage(browser, goTo) {
 		//	[(isWin? null : ".R"), "doc", "html", "index.html"]);
 		//path = sv.tools.file.getURI(path);
 
+		// get just the last line, get rid of the help.start's message
+		path = path.substring(path.lastIndexOf("\n") + 1);
+
 		browser.homePage = sv.helpStartURI = path;
+
+		//alert(browser.homePage);
 
 		if (goTo)		go(path);
 	});
@@ -291,33 +335,61 @@ this.purgeHistory = function() {
 
 }).apply(browserUtils);
 
+function _getWindowByURI(uri) {
+	var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']
+		.getService(Components.interfaces.nsIWindowMediator);
+	en = wm.getEnumerator("");
+
+	if (uri) {
+		var win;
+		while (en.hasMoreElements()) {
+			win = en.getNext();
+			if ((win.location.href == uri) ||
+				(win.location.href.lastIndexOf(uri) == win.location.href.length - uri.length))
+				return win;
+		}
+	}
+	return null;
+}
+
+
 function windowOnLoad (event) {
 	// DOMContentLoaded is fired also for HTML content
 	if (event.target != self.document)
 		return;
 
-	var args = window.arguments;
-	sv = args[0];
-	if (typeof(args[1]) != "undefined") page = args[1];
+	var page;
+
+	if (window.arguments) {
+		var args = window.arguments;
+		sv = args[0];
+		if (typeof(args[1]) != "undefined") page = args[1];
+	} else {
+		var mainWindow = _getWindowByURI("chrome://komodo/content/komodo.xul");
+		sv = mainWindow.sv;
+	}
 
 	rHelpTopic = document.getElementById("rhelp-topic");
 	rHelpTopic.clickSelectsAll = true;
 
 	rHelpBrowser = document.getElementById("rhelp-browser");
 
-
 	rHelpBrowser.addProgressListener(progressListener,
 	  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 
 	var findToolbar = document.getElementById("FindToolbar");
-
 	// Listen to find toolbar attribute modifications:
 	findToolbar.addEventListener("DOMAttrModified",
 		onFindToolbarAttrModified, false);
 
 	go(page? page : "about:blank");
-
 	_getHomePage(rHelpBrowser, !page);
+
+	// Print preview does not work on a Mac, disable that command then
+	var isMac = navigator.platform.search(/Mac/) === 0;
+	document.getElementById("cmd_print_preview")
+		.setAttribute("disabled", isMac);
+	document.getElementById("rhelp-print-preview").hidden = isMac;
 }
 
 // this is fired earlier than load event, so all required variables
@@ -339,16 +411,9 @@ function getPPBrowser() rHelpBrowser;
 	}
 
 	function printPreview() {
-		// Print preview does not work on a Mac, use print instead because we
-		// have there a "preview" button available anyway
-		var isMac = navigator.platform.search(/Mac/) === 0;
-		if (isMac) {
-		    PrintUtils.print();
-		} else {
-		    function enterPP ()	document.getElementById("nav-toolbar").hidden = true;
-		    function exitPP ()	document.getElementById("nav-toolbar").hidden = false;
-			PrintUtils.printPreview(enterPP, exitPP);
-		}
+	    function enterPP ()	document.getElementById("nav-toolbar").hidden = true;
+	    function exitPP ()	document.getElementById("nav-toolbar").hidden = false;
+		PrintUtils.printPreview(enterPP, exitPP);
 	}
 
 	// modified "prefbarSavePage" from prefbar extension for Firefox
@@ -381,6 +446,7 @@ function getPPBrowser() rHelpBrowser;
     <key id="key_find_next" keycode="VK_F3" command="cmd_find_next" modifiers="" />
     <key id="key_go_back" keycode="VK_BACK" command="cmd_go_back" modifiers="" />
     <key id="key_go_home" keycode="VK_HOME" command="cmd_go_home" modifiers="alt" />
+    <key id="key_run_r_code" keycode="R" command="cmd_run_r_code" modifiers="accel" />
 </keyset>
 
 <commandset id="commandset_main">
@@ -408,7 +474,25 @@ function getPPBrowser() rHelpBrowser;
 		   label="Page setup" desc="Page setup" />
   <command id="cmd_save_page" oncommand="savePage();"
 		   label="Save page" desc="Save page" accesskey="s" />
+  <command id="cmd_run_r_code" oncommand="runSelAsRCode();"
+		   label="Run as R code" desc="Execute selected text in R" accesskey="r" />
+  <command id="cmd_rsearch_for" oncommand="rHelpSearch(sv.tools.strings.trim(window._content.getSelection().toString()));"
+		   label="Search R for selection" desc="Search R for selected text" accesskey="S" />
 </commandset>
+
+<popupset>
+	<menupopup id="rHelpBrowserContext"
+			   onpopupshowing="rHelpBrowserContextOnShow(event);">
+		<menuitem id="menu_cmd_run_r_code"
+				  command="cmd_run_r_code"
+				  acceltext="Ctrl+R"
+				  />
+		<menuitem id="menu_cmd_rsearch_for"
+				  command="cmd_rsearch_for"
+				  />
+	</menupopup>
+</popupset>
+
 
 <toolbox id="rhelp-toolbox" class="toolbox-top" mode="icons" defaultmode="icons" iconsize="small">
 	<toolbar type="toolbar" id="nav-toolbar" class="toolbar"
@@ -490,7 +574,9 @@ function getPPBrowser() rHelpBrowser;
     <vbox flex="1">
         <hbox flex="1">
             <browser id="rhelp-browser" type="content-primary"
-                src="about:blank" flex="1"/>
+                src="about:blank" flex="1"
+				context="rHelpBrowserContext"
+				/>
         </hbox>
     </vbox>
 		<vbox id="browser-bottombox">

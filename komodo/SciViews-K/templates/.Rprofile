@@ -217,14 +217,14 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 		# A custom pager consists in displaying the file in Komodo
 		svPager <- function (files, header, title, delete.file) {
 			files <- gsub("\\", "\\\\", files[1], fixed = TRUE)
-			koCmd(paste("sv.r.pager(", files, ",", title ,")", sep="\""))
+			koCmd(sprintf('sv.r.pager("%s", "%s")', files, title))
+
 			if (delete.file) {
-				koCmd(paste("window.setTimeout(try { sv.tools.file.getfile(", files, ").remove(false); } catch(e) {}, 10000);", sep="\""))
+				koCmd(sprintf('window.setTimeout("try { sv.tools.file.getfile(\\"%s\\").remove(false); } catch(e) {}", 10000);', files));
 			}
 		}
-
 		svBrowser <- function(url) {
-			koCmd(paste("sv.command.openHelp(", gsub("\\", "\\\\", url, fixed = TRUE), ")", sep="\""))
+			koCmd(sprintf("sv.command.openHelp(\"%s\")", gsub("\\", "\\\\", url, fixed = TRUE)))
 		}
 
 		# Look if and where komodo is installed
@@ -252,14 +252,20 @@ if (!exists(".SciViewsReady", envir = .GlobalEnv)) {
 			if (file.exists(Sys.getenv("koAppFile"))) {
 				Komodo <-  Sys.getenv("koAppFile")
 			} else {
-				Komodo <- "komodo"	# On Windows, 'komodo' should be enough
+				# On Windows, 'komodo' should be enough
 				# But for reasons that escape me, komodo seems to stip off its own
 				# directory from the path variable. So, I have to restore it from
 				# the Windows registry :-(
+
 				Ret <- tclRequire("registry", warn = TRUE)
 				Path <- tclvalue(.Tcl("registry get {HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment} {Path}"))
-				if (!is.null(Path) && !is.na(Path) && Path != "")
-					Sys.setenv(path = Path)
+				if (!is.null(Path) && !is.na(Path) && Path != "") {
+					Path <- strsplit(Path, ";")[[1]]
+					Path <- Path[sapply(Path, function(x) file.exists(file.path(x, "komodo.exe")))][1]
+					Komodo <- gsub("\\\\+", "\\\\", (file.path(Path, "komodo.exe", fsep = "\\")))
+				} else {
+					Komodo <- "komodo"
+				}
 				rm(Ret, Path)
 			}
 

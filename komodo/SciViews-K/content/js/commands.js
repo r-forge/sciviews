@@ -20,7 +20,7 @@ if (typeof(sv.command) == 'undefined') {
 
 // sv.command object constructor
 (function () {
-	var RHelpWin;  // A reference to the R Help Window
+	this.RHelpWin = null;  // A reference to the R Help Window
 	var _this = this;
 
 	function _getWindowByURI(uri) {
@@ -348,7 +348,10 @@ if (typeof(sv.command) == 'undefined') {
 	}
 
 // sv.command.openHelp - returns reference to the RHelpWindow
+//FIXME: help in tab still buggy
 	this.openHelp = function (uri) {
+		var RHelpWin = _this.RHelpWin;
+
 		// We will need special treatment in windows
 	    var isWin = navigator.platform.search(/Win\d+$/) === 0;
 
@@ -374,27 +377,64 @@ if (typeof(sv.command) == 'undefined') {
 			uri = ""; // home page will be shown
 		}
 
-		// First, open the window with blank page:
+		var rhelpTabbed = sv.prefs.getString("rhelp.tabbed", false) == "true";
+
 		var rHelpXulUri = "chrome://sciviewsk/content/RHelpWindow.xul";
-		RHelpWin = _getWindowByURI(rHelpXulUri);
 
+		// Open R-help in a right tab
+		// FIXME: opening in tab is still buggy
+		if (rhelpTabbed) {
+			// make sure tab is visible and select it:
+			var tabPanel = document.getElementById("rhelpviewbox");
+			var tab = document.getElementById("rhelp_tab");
+			var tabBox = tabPanel.parentNode.parentNode;
+			tabPanel.hidden = false;
+			tab.hidden = false;
+			tabBox.selectedIndex = tabBox.tabs.getIndexOfItem(tab);
 
-		if (!RHelpWin || RHelpWin.closed) {
-			sv.log.debug("Starting R help with page " + uri);
+			var RHelpFrame = document.getElementById("rhelpview-frame");
 
-			// try/catch here somehow prevented from storing window reference in RHelpWin. No idea why...
-			RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
-				"chrome=yes,dependent,resizable=yes," +
-				"scrollbars=yes,status=no,close,dialog=no", sv, uri);
+			RHelpFrame.webNavigation.loadURI(rHelpXulUri, null, null, null, null);
+
+			//RHelpFrame.setAttribute("src", rHelpXulUri);
+			RHelpWin = RHelpFrame.contentWindow;
+			RHelpWin.go(uri);
 
 		} else {
-			//sv.log.debug("Showing R help for page " + uri);
-			//alreadyOpen = true;
-			RHelpWin.go(uri);
+			//alert("open help.");
+			_this.RHelpWin = _getWindowByURI(rHelpXulUri);
+			if (!RHelpWin || RHelpWin.closed) {
+				sv.log.debug("Starting R help with page " + uri);
+
+				// try/catch here somehow prevented from storing window reference in RHelpWin. No idea why...
+				RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
+					"chrome=yes,dependent,resizable=yes," +
+					"scrollbars=yes,status=no,close,dialog=no", sv, uri);
+			} else {
+				RHelpWin.go(uri);
+			}
 		}
+
 		RHelpWin.focus();
+		RHelpWin.close = _this.closeHelp;
+
+		_this.RHelpWin = RHelpWin;
 		return RHelpWin;
 	}
+
+	// close r-help tab:
+	this.closeHelp = function() {
+		var tabPanel = document.getElementById("rhelpviewbox");
+		var tab = document.getElementById("rhelp_tab");
+		var tabBox = tabPanel.parentNode.parentNode;
+
+		tabPanel.hidden = true;
+		tab.hidden = true;
+		tabBox.selectedIndex = ((tabBox.tabs.getIndexOfItem(tab) + 2) % tabBox.tabs.itemCount) - 1;
+		document.getElementById("rhelpview-frame").setAttribute("src", "about:blank");
+		//_this.RHelpWin.closed = true;
+	}
+
 
 	this.setControllers = function () {
 		//sv.log.debug("this.setControllers");
@@ -411,7 +451,8 @@ if (typeof(sv.command) == 'undefined') {
 		// Make these commands active only when current document language is R
 		var cmdsIfIsRView = ["RunAll", "SourceAll", "RunBlock", "RunFunction",
 			"RunLine", "RunPara", "SourceBlock", "SourceFunction", "SourcePara",
-			"TriggerCompletion"];
+			"RunLineOrSelection"];
+
 		// ... and if some text is selected
 		var cmdsIfIsRViewAndSelection = ["RunSelection", "SourceSelection"];
 
@@ -470,9 +511,19 @@ if (typeof(sv.command) == 'undefined') {
 		vmProto.do_cmd_sv_RRunSelection = function () {
 			sv.r.send("sel");
 		};
+
 		vmProto.do_cmd_sv_RSourceSelection = function () {
 			sv.r.source("sel");
 		};
+
+		vmProto.do_cmd_sv_RRunLineOrSelection = function () {
+			sv.r.send("line/sel");
+		};
+
+		vmProto.do_cmd_sv_RSourceLineOrSelection = function () {
+			sv.r.source("line/sel");
+		};
+
 		vmProto.do_cmd_sv_RRunBlock = function () {
 			sv.r.send("block");
 		};
@@ -489,6 +540,28 @@ if (typeof(sv.command) == 'undefined') {
 			sv.command.startR();
 		};
 	}
+
+// Code below is for extra items in editor context menu (eg. "run selection"),
+// Commented out because it is still buggy
+//	function editorContextMenuOnShowing (event) {
+//		//try{
+//
+//		var ids = ["editor-context-sep-sv", "editor-context-sv-r-send-line-sel"];
+//
+//		var langNotR = ko.views.manager.currentView.document.language != "R";
+//		var visibility = langNotR? "collapse" : "visible";
+///*
+//		for (i in ids) {
+//			document.getElementById(ids[i])
+//				.style.visibility = visibility;
+//		}
+//*/
+//		//} catch(e) {}
+//
+//	}
+//var editorContextMenu = document.getElementById("editorContextMenu");
+//editorContextMenu.addEventListener("popupshowing", editorContextMenuOnShowing, false);
+
 
 	// Set default keybindings from file
 	// chrome://sciviewsk/content/default-keybindings.kkf

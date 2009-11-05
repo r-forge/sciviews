@@ -173,14 +173,14 @@ sv.r.eval = function (cmd) {
 	// If R is not running, start it now
 	if (!sv.r.running) {
 		// Indicate R should be started
-		ko.statusBar.AddMessage("R must be started for this command (R -> Start R)", "Rstart", 5000, true, true);
+		ko.statusBar.AddMessage(sv.translate("R must be started for this command (R -> Start R)"), "Rstart", 5000, true, true);
 		// Indicate that we want to execute this command when R is started
 		//sv.r.pendingCmd = cmd;
 		// and start R now
 		//sv.command.startR();
 		return null;
 	}
-	cmd = (new String(cmd)).trim();
+	cmd = cmd.rtrim();
 	// Store the current R command
 	if (sv.socket.prompt == ":> ") {
 		// Special case for q() and quit() => use sv.r.quit() instead
@@ -431,7 +431,7 @@ sv.r.source = function (what) {
 		if (!kv)
 			return false; // No current view, do nothing!
 		kv.setFocus();
-		var ke = kv.scimoz;
+		var scimoz = kv.scimoz;
 		var doc = kv.document;
 
 		var file;
@@ -444,18 +444,17 @@ sv.r.source = function (what) {
 		if (!what)
 			what = "all"; // Default value
 
-		// Special case: if "all" and document saved, source the original file
-		if (what == "all" && !(doc.isUntitled || doc.isDirty)) {
+		// Special case: if "all" and local document is saved, source as the original file
+		if (what == "all" && doc.file.isLocal && !doc.isUntitled && !doc.isDirty) {
 			res = sv.r.eval('source("' + file +  '", encoding = "' +
 				kv.encoding + '")');
 		} else {
-
-			// else, save all or part in the temporary file and source that file
+			// save all or part in the temporary file and source that file
 			// After executing, tell R to delete it.
-			var code = (what == "all")? ke.text : sv.getTextRange(what);
+			var code = sv.getTextRange(what);
 			sv.cmdout.clear();
-			sv.cmdout.append(':> #source("' + file + '*") # unsaved buffer (' +
-				what + ')');
+			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' +
+				what);
 
 			var tempFile = sv.tools.file.temp();
 			sv.tools.file.write(tempFile, code, 'utf-8', false);
@@ -491,7 +490,7 @@ sv.r.send = function (what) {
 		if (!what)
 			what = "all"; // Default value
 
-		var code = sv.getTextRange(what, true);
+		var code = sv.getTextRange(what, what.indexOf("sel") == -1).rtrim();
 		if (code) {
 			// indent multiline commands
 			code = code.replace(/\r?\n/g, "\n   ")
@@ -624,7 +623,7 @@ sv.r.help = function (topic, pkg) {
 		var cmd = '';
 		cmd += pkg? ' package = "' + pkg + '", ' : "";
 		cmd += topic? ' topic = "' + topic + '", ' : "";
-		cmd = cmd = 'cat(getHelpURL(help(' + cmd + ' htmlhelp = TRUE)))';
+		cmd = 'cat(getHelpURL(help(' + cmd + ' htmlhelp = TRUE)))';
 		// Old version for R < 2.10: cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
 		// TODO: error handling when package does not exists
 		res = sv.r.evalCallback(cmd, sv.command.openHelp);
@@ -677,7 +676,7 @@ sv.r.pager = function(file, title) {
 	var rSearchUrl = "chrome://sciviewsk/content/rsearch.html";
 	var content = sv.tools.file.read(file);
 	//content = content.replace(/([\w\.\-]+)::([\w\.\-]+)/ig, '<a href="javascript:sv.r.help(\'$2\', \'$1\');">$1::$2</a>');
-	content = content.replace(/([\w\.\-]+)::([\w\.\-]+)/ig,
+	content = content.replace(/([\w\.\-]+)::([\w\.\-\[]+)/ig,
 		'<a href="' + rSearchUrl + '?$1::$2">$1::$2</a>');
 
 	content = "<pre id=\"rPagerTextContent\" title=\"" + title + "\">" + content + "</div>";
@@ -685,8 +684,6 @@ sv.r.pager = function(file, title) {
 	sv.tools.file.write(file, content, sv.socket.charset);
 	sv.command.openHelp(rSearchUrl + "?file:" + file);
 }
-
-
 
 // The callback for sv.r.search
 //TODO: make private
@@ -1664,9 +1661,6 @@ sv.r.pkg.remove_select = function (pkgs) {
 }
 
 
-
-
-
 // sv.r.pkg.install - install R packages
 // examples:
 // sv.r.pkg.install() // use default CRAN mirror
@@ -1713,7 +1707,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 	}
 
 	// At this point repos should be always set
-	sv.cmdout.append(">> Using " + repos);
+	sv.cmdout.append(sv.translate("Using repository at %S", repos));
 
 	repos = repos.toLowerCase();
 
@@ -1735,6 +1729,9 @@ sv.r.pkg.install = function (pkgs, repos) {
 				var res = false;
 				if (pkgs.trim() != "") {
 					pkgs = pkgs.split(sv.r.sep);
+					// Case insensitive sorting:
+					pkgs.sort(function(a,b) a.toUpperCase() > b.toUpperCase());
+
 					pkgs = ko.dialogs.selectFromList(
 						sv.translate("Install R package"),
 						sv.translate("Select package(s) to install") + ":", pkgs);
