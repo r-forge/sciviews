@@ -60,7 +60,7 @@ if (typeof(sv) == 'undefined') {
 	var sv = {
 		// TODO: set this automatically according to the plugin version
 		version: 0.9,
-		release: 6,
+		release: 7,
 		showVersion: true,
 		checkVersion: function (version) {
 			if (this.version < version) {
@@ -172,11 +172,15 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 
 			for (pStart = scimoz.positionBefore(curPos);
-				 (pStart > -1) && wordCharTest(scimoz.getWCharAt(pStart));
+				 (pStart > 0) && wordCharTest(scimoz.getWCharAt(pStart));
 				 pStart = scimoz.positionBefore(pStart)) {
 				};
 
-			pStart += 1;
+			// PhG: correction for infinite loop if the name is at the beginning
+			// of the document
+			if (pStart != 0 | !wordCharTest(scimoz.getWCharAt(0))) {
+				pStart += 1;
+			}
 
 			for (pEnd = scimoz.currentPos;
 				 (pEnd < scimoz.length) && wordCharTest(scimoz.getWCharAt(pEnd));

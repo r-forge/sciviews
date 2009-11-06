@@ -290,7 +290,7 @@ function _getHomePage(browser, goTo) {
 	//cmd += 'options(htmlhelp = TRUE); ';
 	//cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
     // Make sure that help is started, but do not open a browser
-	var cmd = 'help.start(browser = function(...) return()); ';
+	var cmd = 'invisible(capture.output(suppressMessages(help.start(browser = function(...) return())))); ';
 	// return the home page of R 2.10 help system
 	cmd += 'cat(paste("\n", "http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = ""))';
 

@@ -89,7 +89,6 @@
 			<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
 				oncommand="sv.command.openPkgManager();" disabled="true"
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
-
 			<command id="cmd_sv_OpenHelp" key="key_cmd_sv_OpenHelp"
 				oncommand="sv.command.openHelp();"
 				desc="R: &helpStart;" label="&helpStart;" accesskey="&helpStart.key;"/>

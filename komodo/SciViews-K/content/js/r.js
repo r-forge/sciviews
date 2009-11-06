@@ -1396,7 +1396,7 @@ sv.r.reloadSession = function () {
 		// Switch temporarily to the session directory and try loading
 		// .RData and Rhistory files
 		var dir = sv.prefs.getString("sciviews.session.dir", "");
-		var cmd = 'rm(list = ls(pattern = "\\.active.", all.names = TRUE))\n' +
+		var cmd = 'rm(list = ls(pattern = "[.]active[.]", all.names = TRUE))\n' +
 			'rm(list = ls()); .savdir. <- setwd("' + dir + '")\n' +
 			'if (file.exists(".RData")) load(".RData")\n' +
 			'if (file.exists(".Rhistory")) loadhistory()\n' +
