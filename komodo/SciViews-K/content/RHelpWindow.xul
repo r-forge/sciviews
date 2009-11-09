@@ -231,19 +231,20 @@ function rHelpBrowserContextOnShow(event) {
 	var selText = sv.tools.strings.trim(window._content.getSelection()
 				.toString());
 
-	if (selText) {
-		var el = document.getElementById("cmd_rsearch_for");
-		el.setAttribute("label", sv.translate("Search R for \"%S\"",
-										  selText.substr(0, 10) + (selText.length > 10? "..." : "")));
+	var el = document.getElementById("cmd_rsearch_for");
+	var elLabel;
 
-		document.getElementById("cmd_rsearch_for").hidden = false;
-		document.getElementById("cmd_run_r_code").hidden = false;
+	var nothingSelected = !selText;
+
+	if (nothingSelected) {
+		elLabel = sv.translate("No selection");
 	} else {
-		document.getElementById("cmd_rsearch_for").hidden = true;
-		document.getElementById("cmd_run_r_code").hidden = true;
+		elLabel = sv.translate("Search R for \"%S\"",
+			selText.substr(0, 10) + (selText.length > 10? "..." : ""));
 	}
-
-
+	el.setAttribute("label", elLabel);
+	el.setAttribute("disabled", nothingSelected);
+	document.getElementById("cmd_run_r_code").setAttribute("disabled", nothingSelected);
 
 }
 
@@ -446,7 +447,7 @@ function getPPBrowser() rHelpBrowser;
     <key id="key_find_next" keycode="VK_F3" command="cmd_find_next" modifiers="" />
     <key id="key_go_back" keycode="VK_BACK" command="cmd_go_back" modifiers="" />
     <key id="key_go_home" keycode="VK_HOME" command="cmd_go_home" modifiers="alt" />
-    <key id="key_run_r_code" keycode="R" command="cmd_run_r_code" modifiers="accel" />
+    <key id="key_run_r_code" key="R" command="cmd_run_r_code" modifiers="accel" />
 </keyset>
 
 <commandset id="commandset_main">

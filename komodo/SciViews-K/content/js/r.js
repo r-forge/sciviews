@@ -129,7 +129,7 @@ sv.r.test = function sv_RTest () {
 		if (wasRRunning != isRRunning) {
 			if (isRRunning) {
 				// Remove message in the statusbar
-				ko.statusBar.AddMessage("", "StartR");
+				sv.cmdout.message("");
 				// update character set used by R
 				sv.socket.updateCharset(true);
 				window.setTimeout(function() {
@@ -173,7 +173,8 @@ sv.r.eval = function (cmd) {
 	// If R is not running, start it now
 	if (!sv.r.running) {
 		// Indicate R should be started
-		ko.statusBar.AddMessage(sv.translate("R must be started for this command (R -> Start R)"), "Rstart", 5000, true, true);
+		sv.cmdout.message(sv.translate("R must be started for this command (R -> Start R)"),
+						  5000, true);
 		// Indicate that we want to execute this command when R is started
 		//sv.r.pendingCmd = cmd;
 		// and start R now
@@ -227,7 +228,7 @@ sv.r.evalCallback = function (cmd, procfun) {
 	// If R is not running, do nothing
 	if (!sv.r.running) {
 		// Indicate R should be started
-		ko.statusBar.AddMessage("R must be started for this command (R -> Start R)", "Rstart", 5000, true, true);
+		sv.cmdout.message("R must be started for this command (R -> Start R)", 5000, true);
 		// Indicate that we want to execute this command when R is started
 		// We don't use this any more if R is not started automatically
 		//... but we keep it for now for a future implementation using okCancel
@@ -521,7 +522,7 @@ sv.r.calltip = function (code) {
 //TODO: make private
 sv.r.calltip_show = function (tip) {
 	if (tip != "") {
-		//ko.statusBar.AddMessage(tip, "R", 2000, true);
+		//sv.cmdout.message(tip, 2000, true);
 		var ke = ko.views.manager.currentView.scimoz;
 		ke.callTipCancel();
 		ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
@@ -614,8 +615,7 @@ sv.r.help = function (topic, pkg) {
 		topic = sv.getTextRange("word");
 
 	if (topic == "")
-		ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
-			1000, false);
+		sv.cmdout.message(sv.translate("Selection is empty..."), 1000);
 
 	if (!topic && !pkg) {
 		return false;
@@ -627,8 +627,8 @@ sv.r.help = function (topic, pkg) {
 		// Old version for R < 2.10: cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
 		// TODO: error handling when package does not exists
 		res = sv.r.evalCallback(cmd, sv.command.openHelp);
-		ko.statusBar.AddMessage(sv.translate("R help asked for \"%S\"", topic),
-			"R", 5000, true);
+		sv.cmdout.message(sv.translate("R help asked for \"%S\"", topic),
+						  5000, true);
 	}
 	return res;
 }
@@ -640,12 +640,11 @@ sv.r.example = function (topic) {
 	if (typeof(topic) == "undefined" | topic == "")
 		topic = sv.getTextRange("word");
 	if (topic == "") {
-		ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
-			1000, false);
+		sv.cmdout.message(sv.translate("Selection is empty..."), 1000, false);
 	} else {
 		res = sv.r.eval("example(" + topic + ")");
-		ko.statusBar.AddMessage(sv.translate("R example run for \"%S\"", topic),
-			"R", 5000, true);
+		sv.cmdout.message(sv.translate("R example run for \"%S\"", topic),
+			5000, true);
 	}
 	return(res);
 }
@@ -665,8 +664,8 @@ sv.r.search = function (topic, internal) {
 		// Get list of matching items and evaluate it with sv.r.search_select()
 		res = sv.r.evalCallback('cat(apropos("' + topic + '"), sep = "' +
 			sv.r.sep + '")', sv.r.search_select);
-		ko.statusBar.AddMessage(sv.translate("Searching_R_help_for", topic),
-			"R", 5000, true);
+		sv.cmdout.message(sv.translate("Searching_R_help_for", topic),
+			5000, true);
 	}
 	return(res);
 }
@@ -688,7 +687,7 @@ sv.r.pager = function(file, title) {
 // The callback for sv.r.search
 //TODO: make private
 sv.r.search_select = function (topics) {
-	ko.statusBar.AddMessage("", "R");
+	sv.cmdout.message("");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(topics) == "") {
 		sv.cmdout.message(sv.translate("R help for %S not found.", topics));
@@ -730,8 +729,7 @@ sv.r.siteSearch = function (topic, idxname) {
 	}
 
 	if (!topic) {
-		ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "R",
-			1000, false);
+		sv.cmdout.message(sv.translate("Selection is empty..."), 1000, false);
 		return;
 	}
 
@@ -764,14 +762,14 @@ sv.r.data = function () {
 	res = sv.r.evalCallback('.tmp <- data();' +
 		'cat(paste(.tmp$results[, "Item"], .tmp$results[, "Title"],' +
 		' sep = "\t  -  "), sep = "\n"); rm(.tmp)', sv.r.data_select);
-	ko.statusBar.AddMessage("Listing available R datasets... please wait",
-		"R", 20000, true);
+	sv.cmdout.message(sv.translate("Listing available R datasets... please wait"),
+		20000, true);
 	return(res);
 }
 
 // The callback for sv.r.data
 sv.r.data_select = function (data) {
-	ko.statusBar.AddMessage("", "R");
+	sv.cmdout.message("");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(data) == "") {
 		sv.alert("Problem retrieving the list of R datasets!");
@@ -919,14 +917,14 @@ sv.r.obj = function (objClass) {
 	  '")) paste(x, "\t     ",  sub("[\t\n\r].*$", "", ' +
 	  'comment(get(x))), sep = ""), silent = TRUE))), sep = ",,,")',
 	  sv.r.obj_select);
-	ko.statusBar.AddMessage("Listing available '" + objClass +
-		"'... please wait", "R", 20000, true);
+	sv.cmdout.message("Listing available '" + objClass +
+		"'... please wait", 20000, true);
 	return(res);
 }
 
 // The callback for sv.r.obj
 sv.r.obj_select = function (data) {
-	ko.statusBar.AddMessage("", "R");
+	sv.cmdout.message("");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(data) == "") {
 		sv.alert("Select R objects", "Problem retrieving the list of objects!");
@@ -982,8 +980,7 @@ sv.r.obj_message = function () {
 	// Get currently active 'lm' object
 	var lm = sv.prefs.getString("r.active.lm", "<none>")
 	if (lm == "<lm>") lm = "<none>";
-	ko.statusBar.AddMessage("R session: " + ses + ", data: " + df +
-		", linear model: " + lm, "Rstatus", 0, false);
+	sv.cmdout.message(sv.translate("R session: %S  data: %S linear model: %S", ses, df, lm));
 }
 
 // Select one data frame
@@ -1005,7 +1002,7 @@ sv.r.obj_select_dataframe = function (objname) {
 
 // Callback for sv.r.obj_select_dataframe to refresh the associated MRUs
 sv.r.obj_refresh_dataframe = function (data) {
-	ko.statusBar.AddMessage("", "R");
+	sv.cmdout.message("");
 	// If we got nothing, then the object does not exists any more... clear MRUs
 	if (data == "<<<data>>>") {
 		//var oldobj = sv.prefs.getString("r.active.data.frame", "");
@@ -1081,7 +1078,7 @@ sv.r.obj_select_lm = function (objname) {
 
 // Callback for sv.r.obj_select to refresh the MRUs associated with lm objects
 sv.r.obj_refresh_lm = function (data) {
-	ko.statusBar.AddMessage("", "R");
+	sv.cmdout.message("");
 	// If we got nothing, then the object does not exists any more... clear MRUs
 	if (data == "<<<data>>>") {
 		//var oldobj = sv.prefs.getString("r.active.lm", "");
@@ -1263,8 +1260,8 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
 	// TODO: run first in R; make dirs in R; then change in Komodo!
 	sv.r.evalCallback(cmd, function(data) {
 		// Indicate everything is fine
-		ko.statusBar.AddMessage("R session directory set to '" + dir + "'",
-			"R", 20000, true);
+		sv.cmdout.message(sv.translate("R session directory set to '%S'", dir),
+			20000, true);
         // Break possible partial multiline command in R from previous session
         // and indicate that we are in a new session now in the R console
         // TODO: report if we load something or not
@@ -1435,7 +1432,7 @@ sv.r.quit = function (save) {
 	// Quit R
 	sv.r.eval('q("' + response.toLowerCase() + '")');
 	// Clear the R-relative statusbar message
-	ko.statusBar.AddMessage("", "Rstatus");
+	sv.cmdout.message("");
 	// Clear the objects browser
 	sv.r.objects.clearPackageList();
 }
@@ -1475,8 +1472,8 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 					sv.translate("Select CRAN mirror to use:"), names, "one");
 
 				repos = urls[names.indexOf(items[0])].replace(/\/$/, "");
-				ko.statusBar.AddMessage(sv.translate("Current CRAN mirror is set to %S",
-					repos), "R", 5000, false);
+				sv.cmdout.message(sv.translate("Current CRAN mirror is set to %S",
+					repos), 5000, false);
 
 				sv.r.eval('with(TempEnv(), { repos <- getOption("repos");' +
 						  'repos["CRAN"] <- "' + repos + '"; ' +
@@ -1488,9 +1485,8 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 			}
 			return(res);
 		});
-	ko.statusBar.AddMessage(
-		sv.translate("Retrieving CRAN mirrors list... please wait."), "R",
-		20000, true);
+	sv.cmdout.message(sv.translate("Retrieving CRAN mirrors list... please wait."),
+					  20000, true);
 	return(res);
 }
 
@@ -1499,8 +1495,8 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 sv.r.pkg.available = function () {
 	var res = sv.r.eval('.pkgAvailable <- available.packages()\n' +
 		'as.character(.pkgAvailable[, "Package"])');
-	ko.statusBar.AddMessage("Looking for available R packages... please wait",
-		"R", 5000, true);
+	sv.cmdout.message(sv.translate("Looking for available R packages... please wait"),
+		5000, true);
 	return(res);
 }
 
@@ -1508,16 +1504,16 @@ sv.r.pkg.available = function () {
 sv.r.pkg.installed = function () {
 	var res = sv.r.eval('.pkgInstalled <- installed.packages()\n' +
 		'as.character(.pkgInstalled[, "Package"])');
-	ko.statusBar.AddMessage("Looking for installed R packages... please wait",
-		"R", 5000, true);
+	sv.cmdout.message(sv.translate("Looking for installed R packages... please wait"),
+		5000, true);
 	return(res);
 }
 
 // List new packages in the repositories
 sv.r.pkg.new = function () {
 	var res = sv.r.eval('(.pkgNew <- new.packages())');
-	ko.statusBar.AddMessage("Looking for new R packages... please wait",
-		"R", 5000, true);
+	sv.cmdout.message(sv.translate("Looking for new R packages... please wait"),
+		5000, true);
 	return(res);
 }
 
@@ -1525,24 +1521,23 @@ sv.r.pkg.new = function () {
 sv.r.pkg.old = function () {
 	var res = sv.r.eval('.pkgOld <- old.packages()\n' +
 		'noquote(.pkgOld[, c("Installed", "ReposVer")])');
-	ko.statusBar.AddMessage("Looking for old R packages... please wait",
-		"R", 5000, true);
+	sv.cmdout.message(sv.translate("Looking for old R packages... please wait"),
+		5000, true);
 	return(res);
 }
 
 // Update installed packages
 sv.r.pkg.update = function () {
 	var res = sv.r.eval('update.packages(ask = "graphics")');
-	ko.statusBar.AddMessage("Updating R packages... please wait",
-		"R", 5000, true);
+	sv.cmdout.message(sv.translate("Updating R packages... please wait"), 5000, true);
 	return(res);
 }
 
 // Some statistics about R packages
 sv.r.pkg.status = function () {
 	var res = sv.r.eval('(.pkgStatus <- packageStatus())');
-	ko.statusBar.AddMessage("Compiling R packages status... please wait",
-		"R", 5000, true);
+	sv.cmdout.message(sv.translate("Compiling R packages status... please wait"),
+		5000, true);
 	return(res);
 }
 
@@ -1555,14 +1550,14 @@ sv.r.pkg.loaded = function () {
 // Load one R package
 sv.r.pkg.load = function () {
 	var res = false;
-	ko.statusBar.AddMessage(sv.translate("ListingPackages"),
-		"R", 20000, true);
+	sv.cmdout.message(sv.translate("ListingPackages"),
+		20000, true);
 
 	// Get list of installed R packages that are not loaded yet
 	res = sv.r.evalCallback('.tmp <- .packages(all.available = TRUE);' +
 		'cat(.tmp[!.tmp %in% .packages()], sep = "' + sv.r.sep + '"); rm(.tmp)',
 		function (pkgs) {
-			ko.statusBar.AddMessage("", "R");
+			sv.cmdout.message("");
 			var res = false;
 			if (pkgs.trim() == "") {
 				sv.alert("All installed R packages seem to be already loaded!");
@@ -1594,15 +1589,15 @@ sv.r.pkg.unload = function () {
 	res = sv.r.evalCallback('.tmp <- .packages(); cat(.tmp[!.tmp %in%' +
 		' c(if (exists(".required")) .required else NULL, "base")],' +
 		' sep = "' + sv.r.sep + '"); rm(.tmp)', sv.r.pkg.unload_select);
-	ko.statusBar.AddMessage("Listing loaded R packages... please wait",
-		"R", 20000, true);
+	sv.cmdout.message(sv.translate("Listing loaded R packages... please wait"),
+		20000, true);
 	return(res);
 }
 
 // The callback for sv.r.pkg.unload
 //TODO: make private
 sv.r.pkg.unload_select = function (pkgs) {
-	ko.statusBar.AddMessage("", "R");
+	sv.cmdout.message("");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(pkgs) == "") {
 		sv.alert("None of the loaded packages are safe to unload!");
@@ -1628,17 +1623,17 @@ sv.r.pkg.remove = function () {
 		' "svMisc", "svIDE", "svGUI", "svSocket", "svIO", "svViews",' +
 		' "svWidgets", "svDialogs")], sep = "' + sv.r.sep + '"); rm(.tmp)',
 		sv.r.pkg.remove_select);
-	ko.statusBar.AddMessage("Listing removable R packages... please wait",
-		"R", 20000, true);
+	sv.cmdout.message(sv.translate("Listing removable R packages... please wait"),
+		20000, true);
 	return(res);
 }
 
 // The callback for sv.r.pkg.remove
 sv.r.pkg.remove_select = function (pkgs) {
-	ko.statusBar.AddMessage("", "R");
+	sv.cmdout.message("");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(pkgs) == "") {
-		sv.alert("None of the installed R packages are safe to remove!");
+		sv.alert(sv.translate("None of the installed R packages are safe to remove!"));
 	} else {	// Something is returned
 		var items = pkgs.split(sv.r.sep);
 		// Select the item you want in the list
