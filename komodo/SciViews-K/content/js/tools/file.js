@@ -149,23 +149,30 @@ if (typeof(sv.tools.file) == 'undefined')
 		var file, baseFile;
 		if (baseDir) {
 			try {
-				file = Components.classes["@mozilla.org/file/directory_service;1"].
-					getService(Components.interfaces.nsIProperties).
-					get(baseDir, Components.interfaces.nsILocalFile);
-			} catch(e) {
-				// I don't want to log an exception here, since I try another
-				// method just below!
-				//sv.log.exception(e, "sv.tools.file.getfile: get " + baseDir);
-				file = Components.classes["@mozilla.org/file/local;1"].
-					createInstance(Components.interfaces.nsILocalFile);
 				try {
-					file.initWithPath(baseDir);
-				} catch (e) {
-					sv.log.exception(e,
-						"sv.tools.file.getfile: file.initWithPath(" + baseDir + ")");
-					return null;
+					file = Components.classes["@mozilla.org/file/directory_service;1"]
+						.getService(Components.interfaces.nsIProperties).
+						get(baseDir, Components.interfaces.nsILocalFile);
+				} catch(e) {
+					// if above fails, try Komodo directories too:
+					var dirs = Components.classes['@activestate.com/koDirs;1']
+						.getService(Components.interfaces.koIDirs);
+					baseDir = dirs[baseDir];
+
+				} finally { };
+
+				if (!file) {
+					file = Components.classes["@mozilla.org/file/local;1"].
+							createInstance(Components.interfaces.nsILocalFile);
+					try {
+							file.initWithPath(baseDir);
+					} catch (e) {
+						sv.log.exception(e,
+							"sv.tools.file.getfile: file.initWithPath(" + baseDir + ")");
+						return null;
+					}
 				}
-			}
+			} catch(e) {	}
 		}
 		if (pathComponents && pathComponents.length) {
 			for (i in pathComponents) {
@@ -195,15 +202,15 @@ if (typeof(sv.tools.file) == 'undefined')
 			if (!pathComponents)
 				pathComponents = [];
 			else if (typeof pathComponents == "string") {
-				var pc = [];
-				for (var i = 1; i < arguments.length; i++)
-					if (typeof arguments[i] != "undefined")
-						pc.push(arguments[i]);
+				var pc = Array.apply(null, arguments);
+				pc.shift(1);
 				pathComponents = pc;
 			}
 
-			var pathSep = Components.classes['@activestate.com/koOs;1'].
-				getService(Components.interfaces.koIOs).sep;
+			var os = Components.classes['@activestate.com/koOs;1'].
+				getService(Components.interfaces.koIOs);
+
+			var pathSep = os.sep;
 
 			baseDir = baseDir.replace(/[\\/]+/g, pathSep);
 			if (baseDir[0] == "~") {

@@ -181,8 +181,7 @@ if (typeof(sv.socket) == 'undefined')
 
 		// if exception was returned:
 		if (res && res.name && res.name == "NS_ERROR_OFFLINE") {
-			ko.statusBar.AddMessage("Error: R is unreachable (see log)", "R",
-				5000, true);
+			sv.cmdout.message("Error: R is unreachable (see log)", 5000, true);
 		}
 		return(res);
 
@@ -325,9 +324,9 @@ if (typeof(sv.socket) == 'undefined')
 			// "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame ::
 			// chrome://sciviewsk/content/js/socket.js :: anonymous :: line 285
 		}
-		if (this.debug) sv.log.debug("Socket server started");
-		ko.statusBar.AddMessage("SciViews-K socket server started", "svSock",
-			2000, true);
+		if (this.debug)
+			sv.log.debug("Socket server started");
+		sv.cmdout.message("SciViews-K socket server started", 2000, true);
 	}
 
 	// Stop the SciViews-K socket server
@@ -342,11 +341,9 @@ if (typeof(sv.socket) == 'undefined')
 
 			_serverStarted = false;
 			if (this.debug) sv.log.debug("Socket server stopped");
-			ko.statusBar.AddMessage("SciViews-K socket server stopped",
-				"svSock", 2000, true);
+			sv.cmdout.message("SciViews-K socket server stopped", 2000, true);
 		} else {
-			ko.statusBar.AddMessage("SciViews-K socket server is not started",
-				"svSock", 2000, true);
+			sv.cmdout.message("SciViews-K socket server is not started", 2000, true);
 		}
 	}
 

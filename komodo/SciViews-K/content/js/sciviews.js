@@ -3,8 +3,7 @@
 // Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.version; // Get current SciViews-K version (major.minor)
-// sv.release; // The release (bug fixes). Full version is "version.release"
+// sv.version; // Get current SciViews-K version (major.minor.release)
 // sv.showVersion; // Do we display version in an alert() box or just set it?
 // sv.checkVersion(version); // Check the SciViews-K extension version is fine
 //
@@ -46,43 +45,66 @@
 // Not used any more?
 // sv.checkToolbox(); // Check that the correct SciViews-K toolbox is installed
 
-// Commented out, not used.
-// sv.getLine(); // Get current line in the active buffer
-// sv.getPart(what, resel, clipboard); // Get a part of text in the buffer
-            // or copy it to the clipboard (reset selection if resel == false)
-
-// replaced by sv.getTextRange("word")
-// sv.getText(); // Get current selection, or word under the cursor
-
 ////////////////////////////////////////////////////////////////////////////////
 
-if (typeof(sv) == 'undefined') {
-	var sv = {
-		// TODO: set this automatically according to the plugin version
-		version: 0.9,
-		release: 7,
-		showVersion: true,
-		checkVersion: function (version) {
-			if (this.version < version) {
-				var title = "SciViews-K"
-				var prompt = "Outdated SciViews-K extension..."
-				var text = "One or more macros require the SciViews-K plugin "
-				text += version + ".x"
-				text += " but the currently installed version is "
-				text += this.version + "." + this.release
-				text += ". You should update it."
-				text += " Would you like to open the extension manager"
-				text += " and check for available updates now?"
-				var res = ko.dialogs.yesNo(prompt, "Yes", text, title);
-				if (res == "Yes") ko.launch.openAddonsMgr();
-				return(false);
-			} else return(true);
-		}
-	};
-}
+
+
+if (typeof(sv) == 'undefined') sv = {};
 
 // Create the 'sv.tools' namespace
-if (typeof(sv.tools) == 'undefined') sv.tools = new Object();
+if (typeof(sv.tools) == 'undefined') sv.tools = {};
+
+// IMPORTANT: now sv.version is a "X.X.X" string, and sv.checkVersion accepts only such format
+// please update all macros using sv.checkVersion 
+sv.version = Components.classes["@mozilla.org/extensions/manager;1"]
+				.getService(Components.interfaces.nsIExtensionManager)
+				.getItemForID("sciviewsk@sciviews.org").version;
+sv.showVersion = true;
+
+sv._compareVersion = function (a, b) {
+    if (!a)	return -1;
+    if (!b)	return 1;
+
+	// try is necessary only till I find where is that damn macro causing an error
+	// at startup (-;
+	try {
+		a = a.split(/[.\-]/);
+		for (i in a) a[i] = parseInt(a[i]);
+		b = b.split(/[.\-]/);
+		for (i in b) b[i] = parseInt(b[i]);
+
+		for (k in a) {
+			if (k < b.length) {
+				if (a[k] > b[k])
+					return 1;
+				else if (a[k] < b[k])
+					return -1;
+			} else {
+				return 1;
+			}
+		}
+	   return (b.length > a.length)? -1 : 0;
+	} catch(e) {
+		return 1;
+	}
+}
+
+sv.checkVersion = function (version) {
+	if (sv._compareVersion(sv.version, version) < 0) {
+		var text = sv.translate(
+"One or more macros require the SciViews-K plugin %S, " +
+"but currently installed version is %S. You should update it." +
+"Would you like to open the extension manager and check for updates now?",
+version, this.version);
+
+		var sYes = sv.translate("Yes");
+		var res = ko.dialogs.yesNo(sv.translate("Outdated SciViews-K extension"),
+			sYes, text, "SciViews-K");
+		if (res == sYes) 	ko.launch.openAddonsMgr();
+		return(false);
+	} else
+		return(true);
+}
 
 
 //// Other functions directly defined in the 'sv' namespace ////////////////////
@@ -95,39 +117,8 @@ sv.alert = function (header, text) {
 //sv.alert("Message");
 
 // Gets current selection, or word under the cursor in the active buffer
+//DEPRECATED, use sv.getTextRange
 sv.getText = function (includeChars) sv.getTextRange("word", false, false, null, includeChars);
-
-// NOT USED ANYMORE
-//// Get current line of text in the active buffer
-//sv.getLine = function () {
-//	var kv = ko.views.manager.currentView;
-//	if (!kv) return("");
-//	kv.setFocus();
-//	var ke = kv.scimoz;
-//	// retain these so we can reset the selection after the replacement
-//	var curAnchor = ke.anchor;
-//	var curPos = ke.currentPos;
-//	// Get the text in the current line
-//	ke.home();
-//	ke.lineEndExtend();
-//	var currentLine = ke.selText;
-//	// Reset the selection
-//	ke.setSel(curAnchor, curPos);
-//	// Return the content of the current line
-//	return(currentLine);
-//}
-
-// NOT USED ANYMORE
-// Select a part of text in the current buffer and return it
-//sv.getPart = function (what, resel, clipboard) {
-//	var range;
-//	var text = sv.getTextRange(what, false, !resel, range);
-//	if (clipboard) {
-//		// Copy to clipboard instead of returning the text
-//		ke.copyRange(range.value.start, range.value.end);
-//	}
-//	return(text);
-//}
 
 // Select a part of text in the current buffer and return it
 // differs from sv.getPart that it does not touch the selection
@@ -323,7 +314,6 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
         // This is used by calltip and completion. Returns all text backwards from current
 		// position to the beginning of the current folding level
         pStart = scimoz.positionFromLine(scimoz.getFoldParent(curLine));
-
 	case "all":
 	default:
 	   // Take everything
@@ -561,7 +551,6 @@ sv.translate = function (textId) {
 	}
 }
 
-
 //// Control the command output tab ////////////////////////////////////////////
 if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 
@@ -623,26 +612,36 @@ sv.cmdout.clear = function () {
         sv.log.exception(e, "Problems clearing the Command Output pane", true);
     }
 }
+// Display message on the status bar (default) or command output bar
+sv.cmdout.message = function (msg, timeout, highlight, outputBar) {
+	if (outputBar) {
+		document.getElementById('output_tabpanels').selectedIndex = 0;
+		var runoutputDesc = document.getElementById('runoutput-desc');
+		if (msg == null) msg = "";
 
-// Display message on the command output bar
-sv.cmdout.message = function (msg, timeout) {
-	document.getElementById('output_tabpanels').selectedIndex = 0;
-	var runoutputDesc = document.getElementById('runoutput-desc');
-	if (msg == null) msg = "";
-	runoutputDesc.style.color = "rgb(0, 0, 0)";
-	runoutputDesc.setAttribute("value", msg);
-	window.clearTimeout(runoutputDesc.timeout);
-	if (timeout > 0)
-		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message();",
-            timeout);
+		runoutputDesc.parentNode.style.backgroundColor =
+			(highlight && msg) ? "highlight" : "";
+
+		runoutputDesc.style.color = "rgb(0, 0, 0)";
+		runoutputDesc.setAttribute("value", msg);
+		window.clearTimeout(runoutputDesc.timeout);
+		if (timeout > 0)
+			runoutputDesc.timeout = window.setTimeout("sv.cmdout.message('', 0, null, true);",
+				timeout);
+	} else {
+		ko.statusBar.AddMessage(msg, "SciViews-K info", timeout, highlight);
+	}
 }
 
 
 //// Logging management ////////////////////////////////////////////////////////
-
-
 if (typeof(sv.log) == 'undefined')
-	sv.log = {};
+	sv.log = ko.logging.getLogger("SciViews-K");
+
+
+//const LOG_NOTSET = 0;	//const LOG_DEBUG = 10;	//const LOG_INFO = 20;
+//const LOG_WARN = 30; 	//const LOG_ERROR = 40;	//const LOG_CRITICAL = 50;
+// ko.logging.LOG_*
 
 (function () {
 	var logger = ko.logging.getLogger("SciViews-K");
@@ -701,6 +700,7 @@ if (typeof(sv.log) == 'undefined')
 
 
 
+
 //// Tests... default level do not print debug and infos!
 //sv.log.all(false);
 //alert(sv.log.isAll());
@@ -724,7 +724,6 @@ if (typeof(sv.log) == 'undefined')
 //sv.log.warnStack("Test it warn with stack 2");
 //// Show Komodo log
 //sv.log.show();
-
 
 //// Not used any more? ////////////////////////////////////////////////////////
 // Note: this is bit dangerous in its present form, removes current SciViews-K toolbox
@@ -784,4 +783,3 @@ sv.checkToolbox = function () {
 // Ensure we check the toolbox is installed once the extension is loaded
 //addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
 //addEventListener("load", sv.checkToolbox, false);
-//@

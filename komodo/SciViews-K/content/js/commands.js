@@ -97,8 +97,7 @@ if (typeof(sv.command) == 'undefined') {
 			["extensions", "sciviewsk@sciviews.org", "templates"]);
 		var command, runIn = "no-console";
 
-		ko.statusBar.AddMessage(sv.translate("Starting R... please wait"),
-			"StartR", 10000, true);
+		sv.cmdout.message(sv.translate("Starting R... please wait"), 10000, true);
 		switch (preferredRApp) {
 			case "r-gui":
 				env.push("Rid=Rgui");
@@ -451,7 +450,7 @@ if (typeof(sv.command) == 'undefined') {
 		// Make these commands active only when current document language is R
 		var cmdsIfIsRView = ["RunAll", "SourceAll", "RunBlock", "RunFunction",
 			"RunLine", "RunPara", "SourceBlock", "SourceFunction", "SourcePara",
-			"RunLineOrSelection"];
+			"RunLineOrSelection", "SourceLineOrSelection"];
 
 		// ... and if some text is selected
 		var cmdsIfIsRViewAndSelection = ["RunSelection", "SourceSelection"];
@@ -483,6 +482,7 @@ if (typeof(sv.command) == 'undefined') {
 			}, 100);
 		};
 
+		//TODO: check if R is working before any command is sent, rather than continously
 		_keepCheckingR();
 
 		// This is no longer needed:
