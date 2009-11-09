@@ -86,10 +86,8 @@ if (typeof(sv.tools.file) == 'undefined')
 		var os = Components.classes["@mozilla.org/intl/converter-output-stream;1"]
 			.createInstance(Components.interfaces.nsIConverterOutputStream);
 
-		//PR_CREATE_FILE = 0x08
-		//PR_WRONLY 	 = 0x02
-		//PR_APPEND 	 = 0x10
-		//PR_TRUNCATE 	 = 0x20
+		//PR_CREATE_FILE = 0x08	PR_WRONLY 	 = 0x02
+		//PR_APPEND 	 = 0x10		PR_TRUNCATE 	 = 0x20
 
 		try {
 			file.initWithPath(filename);
@@ -146,6 +144,13 @@ if (typeof(sv.tools.file) == 'undefined')
 
 	// Create nsILocalFile object from array and/or special dir name
 	this.getfile = function (baseDir, pathComponents) {
+		sv.cmdout.append(".getfile: " + baseDir + " + " + pathComponents);
+
+		if (typeof pathComponents != "undefined"
+			&& typeof pathComponents != "object") {
+			throw TypeError ("Second argument must be an array");
+		}
+
 		var file, baseFile;
 		if (baseDir) {
 			try {
@@ -154,12 +159,14 @@ if (typeof(sv.tools.file) == 'undefined')
 						.getService(Components.interfaces.nsIProperties).
 						get(baseDir, Components.interfaces.nsILocalFile);
 				} catch(e) {
+
 					// if above fails, try Komodo directories too:
 					var dirs = Components.classes['@activestate.com/koDirs;1']
 						.getService(Components.interfaces.koIDirs);
-					baseDir = dirs[baseDir];
-
-				} finally { };
+					if (dirs.propertyIsEnumerable(baseDir)) {
+						baseDir = dirs[baseDir];
+					}
+				}
 
 				if (!file) {
 					file = Components.classes["@mozilla.org/file/local;1"].
@@ -253,7 +260,7 @@ if (typeof(sv.tools.file) == 'undefined')
 			dir.initWithPath(dirname);
 			if (dir.exists() && dir.isDirectory()) {
 				var files = dir.directoryEntries;
-				var selfiles = new Array();
+				var selfiles = [];
 				var files;
 				while (files.hasMoreElements()) {
 					file = files.getNext().
@@ -272,6 +279,32 @@ if (typeof(sv.tools.file) == 'undefined')
 			sv.log.exception(e, "Error while listing files " + dirname +
 				" (sv.tools.file.list)", true)
 		}
+		return(null);
 	}
 
+/*
+	// List all files matching a given pattern in directory, python interface
+	this.list = function (dirname, pattern, noext) {
+			var os = Components.classes['@activestate.com/koOs;1']
+				.getService(Components.interfaces.koIOs);
+
+
+			if (os.path.exists(dirname) && os.path.isdir(dirname)) {
+				var files = os.listdir(dirname, {});
+				var selfiles = [], file;
+				for (i in files) {
+					file = files[i];
+					if (os.path.isfile(os.path.join(dirname, file)) && file.search(pattern) != -1) {
+						file = noext? os.path.withoutExtension(file) : file;
+						selfiles.push(file);
+					}
+				}
+				return (selfiles);
+			} else {
+				return null;
+			}
+
+		return(null);
+	}
+*/
 }).apply(sv.tools.file);
