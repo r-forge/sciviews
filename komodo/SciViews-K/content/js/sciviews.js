@@ -636,7 +636,7 @@ sv.cmdout.message = function (msg, timeout, highlight, outputBar) {
 
 //// Logging management ////////////////////////////////////////////////////////
 if (typeof(sv.log) == 'undefined')
-	sv.log = ko.logging.getLogger("SciViews-K");
+	sv.log = {};
 
 
 //const LOG_NOTSET = 0;	//const LOG_DEBUG = 10;	//const LOG_INFO = 20;
