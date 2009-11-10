@@ -1188,13 +1188,11 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	// Look if the session directory exists, or create it
 	var file = sv.tools.file.getfile(localdir);
 
-	if (!file.exists() || !file.isDirectory()) {
+	if (!file || !file.exists() || !file.isDirectory()) {
 		sv.log.debug( "Creating session directory... " );
 		file.create(DIRECTORY_TYPE, 511);
 	}
 	// ... also make sure that Data, Script and Report subdirs exist
-	// [KB] I find this behavior with creating, often unneeded, dirs quite annoying.
-	// TODO: create these directories only when written to.
 	var subdirs = [datadir, scriptdir, reportdir];
     for (var i in subdirs) {
 		if (subdirs[i] != "") {
@@ -1207,7 +1205,6 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	}
 	// refresh lists of data, scripts and reports found in the session
 	sv.r.refreshSession();
-
 	return(dir);
 }
 
@@ -1284,10 +1281,10 @@ sv.r.switchSession = function (inDoc) {
 	var baseDir = "";
 	var sessionDir = "";
 	// Base directory is different on Linux/Mac OS X and Windows
-	if (navigator.platform.indexOf("Win") > -1) {
-		baseDir = "~"
+	if (navigator.platform.indexOf("Win") == 0) {
+		baseDir = "~";
 	} else {
-		baseDir = "~/Documents"
+		baseDir = "~/Documents";
 	}
 	if (inDoc) {
 		// Ask for the session subdirectory

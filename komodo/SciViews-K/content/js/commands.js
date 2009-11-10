@@ -78,7 +78,7 @@ if (typeof(sv.command) == 'undefined') {
 		// env strings: "ENV1=fooJ\nENV2=bar"
 		// gPrefSvc.prefs.getStringPref("runEnv");
 		var defRApp = "r-terminal";
-		var isWin = navigator.platform.search(/Win\d+$/) === 0;
+		var isWin = navigator.platform.indexOf("Win") === 0;
 		// Default preferredRApp on Windows is r-gui
 		if (isWin) defRApp = "r-gui";
 		var preferredRApp = sv.prefs.getString("sciviews.preferredRApp",
@@ -90,11 +90,16 @@ if (typeof(sv.command) == 'undefined') {
 			"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
 			"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
 			"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
-			"koAppFile=" + sv.tools.file.path("CurProcD",
-				["komodo" + (isWin? ".exe" : "")])
+			"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : ""))
 		];
-		var cwd = sv.tools.file.path("ProfD",
-			["extensions", "sciviewsk@sciviews.org", "templates"]);
+
+		// Apply patch (koext_include_R_dir.patch) to <komodoInstallDir>/lib/sdk/pylib/koextlib.py,
+		// to make it include R directory in the .xpi
+		// otherwise the directory can be added manually. Then replace following line:
+		var cwd = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "templates");
+		// with:
+		//var cwd = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R");
+		
 		var command, runIn = "no-console";
 
 		sv.cmdout.message(sv.translate("Starting R... please wait"), 10000, true);

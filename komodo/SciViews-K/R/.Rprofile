@@ -1,5 +1,5 @@
 source("svStart.R")
 
-svStart(trace = TRUE, pkg.dir=".")
+svStart(trace = TRUE, pkg.dir="pkg")
 
 rm(svStart)

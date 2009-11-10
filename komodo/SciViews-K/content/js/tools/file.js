@@ -11,8 +11,10 @@
 								// directory, 1 for file, otherwise 0
 // sv.tools.file.temp(prefix);	// Creates unique temporary file, accessible
 								// by all users, and returns its name
-// sv.tools.file.path(baseDir, ...); 		// Create path from array, and/or
-											// special directory name
+// sv.tools.file.specDir(dirName)	// Translate special directory name
+// sv.tools.file.path(...); 		// Create a file path from concatenated arguments:
+								// - special directory names are translated,
+								// - relative paths are expanded into real paths.
 // sv.tools.file.getfile(baseDir, [pathComponents]);
 								// Create nsILocalFile object from array and/or
 								// special dir name
@@ -62,8 +64,7 @@ if (typeof(sv.tools.file) == 'undefined')
 				} while (cont);
 			}
 		} catch (e) {
-			sv.log.exception(e, "Error while trying to read in " + filename +
-				" (sv.tools.file.read)", true);
+			sv.log.exception(e, "Error while trying to read " + filename, true);
 		}
 		finally {
 			is.close();
@@ -97,8 +98,7 @@ if (typeof(sv.tools.file) == 'undefined')
 		} catch (e) {
 			sv.log.exception(e, "Error while trying to write in " + filename +
 				" (sv.tools.file.write)", true)
-		}
-		finally {
+		} finally {
 			os.close();
 		}
 	}
@@ -132,8 +132,7 @@ if (typeof(sv.tools.file) == 'undefined')
 		var tmpfile = Components.classes["@mozilla.org/file/local;1"].
 			createInstance(Components.interfaces.nsILocalFile);
 
-		if (!prefix)
-			prefix = "svtmp";
+		if (!prefix)	prefix = "svtmp";
 
 		tmpfile.initWithPath(tempDir);
 		tmpfile.append(prefix)
@@ -142,93 +141,72 @@ if (typeof(sv.tools.file) == 'undefined')
 		return tmpfile.path;
 	}
 
-	// Create nsILocalFile object from array and/or special dir name
-	this.getfile = function (baseDir, pathComponents) {
-		sv.cmdout.append(".getfile: " + baseDir + " + " + pathComponents);
 
-		if (typeof pathComponents != "undefined"
-			&& typeof pathComponents != "object") {
-			throw TypeError ("Second argument must be an array");
-		}
+	this.specDir = function(dirName) {
+		var file;
+		if (dirName == "~")
+			dirName = (navigator.platform.indexOf("Win") == 0)? "Pers" : "Home";
 
-		var file, baseFile;
-		if (baseDir) {
+		try {
 			try {
-				try {
-					file = Components.classes["@mozilla.org/file/directory_service;1"]
-						.getService(Components.interfaces.nsIProperties).
-						get(baseDir, Components.interfaces.nsILocalFile);
-				} catch(e) {
-
-					// if above fails, try Komodo directories too:
-					var dirs = Components.classes['@activestate.com/koDirs;1']
-						.getService(Components.interfaces.koIDirs);
-					if (dirs.propertyIsEnumerable(baseDir)) {
-						baseDir = dirs[baseDir];
-					}
-				}
-
-				if (!file) {
-					file = Components.classes["@mozilla.org/file/local;1"].
-							createInstance(Components.interfaces.nsILocalFile);
-					try {
-							file.initWithPath(baseDir);
-					} catch (e) {
-						sv.log.exception(e,
-							"sv.tools.file.getfile: file.initWithPath(" + baseDir + ")");
-						return null;
-					}
-				}
-			} catch(e) {	}
-		}
-		if (pathComponents && pathComponents.length) {
-			for (i in pathComponents) {
-				if (pathComponents[i] == "..")
-					file.initWithFile(file.parent);
-				else if (pathComponents[i] != ".")
-					file.appendRelativePath(pathComponents[i]);
+				file = Components.classes["@mozilla.org/file/directory_service;1"]
+					.getService(Components.interfaces.nsIProperties)
+					.get(dirName, Components.interfaces.nsILocalFile)
+					.path;
+			} catch(e) {
+				// if above fails, try Komodo directories too:
+				var dirs = Components.classes['@activestate.com/koDirs;1']
+					.getService(Components.interfaces.koIDirs);
+				if (dirs.propertyIsEnumerable(dirName))
+					file = dirs[dirName];
 			}
-		}
+
+		} catch(e) {}
+		return file? file : dirName;
+	}
+
+
+	// Create nsILocalFile object from path
+	// concatenates arguments if needed
+	this.getfile = function (path) {
+		path = this.path.apply(this, Array.apply(null, arguments));
+		//return path;
+		var file = Components.classes["@mozilla.org/file/local;1"].
+			createInstance(Components.interfaces.nsILocalFile);
+		file.initWithPath(path);
 		return file;
 	}
 
 	// Concatenate the arguments into a file path.
-	// baseDir - can be a name for special directory, see special directory
-	// reference at https://developer.mozilla.org/En/Code_snippets:File_I/O
-	// eg. "ProfD", "TmpD", "Home", "Pers", "Desk", "Progs"
-	// or leading "~" is expanded to a real path.
+	// First element of a path can be a name of a special directory:
+	// 	eg. "ProfD", "TmpD", "Home", "Pers", "Desk", "Progs". For all possibilities,
+	//	see reference at https://developer.mozilla.org/En/Code_snippets:File_I/O
+	// Additionally, Komodo paths are translated:
+	//  "userDataDir", "supportDir", "hostUserDataDir", "factoryCommonDataDir",
+	//  "commonDataDir, "userCacheDir", "sdkDir", "docDir", "installDir", "mozBinDir",
+	//  "binDir", "pythonExe", "binDBGPDir", "perlDBGPDir" and "pythonDBGPDir".
+	// Leading "~" is expanded to a path of a home directory ("My documents" on windows).
 	// Following arguments can be specified as single array or string
 	// example: sv.tools.file.path("~/workspace/dir1", "dir2", "file1.tmp")
 	// would produce something like that:
 	// "c:\users\bob\MyDocuments\workspace\dir1\dir2\file1.tmp"
 	// "/home/bob/workspace/dir1/dir2/file1.tmp"
-	this.path = function (baseDir, pathComponents) {
-		try {
-			if (!baseDir)
-				return null;
-			if (!pathComponents)
-				pathComponents = [];
-			else if (typeof pathComponents == "string") {
-				var pc = Array.apply(null, arguments);
-				pc.shift(1);
-				pathComponents = pc;
-			}
-
-			var os = Components.classes['@activestate.com/koOs;1'].
-				getService(Components.interfaces.koIOs);
-
-			var pathSep = os.sep;
-
-			baseDir = baseDir.replace(/[\\/]+/g, pathSep);
-			if (baseDir[0] == "~") {
-				pathComponents.unshift(baseDir.replace(/^~[\\/]*/, ""));
-				baseDir = (navigator.platform.
-					indexOf("Win") == 0)? "Pers" : "Home";
-			}
-			return this.getfile(baseDir, pathComponents).path;
-		} catch (e) { return null; }
+	this.path = function (path) {
+		var os = Components.classes['@activestate.com/koOs;1'].
+			getService(Components.interfaces.koIOs);
+		var sep = os.sep;
+		if (typeof path.join == "undefined")
+			path = Array.apply(null, arguments);
+		// 'flatten' the array:
+			var res = [];
+			for(i in path) res = res.concat(path[i]);
+			path = res;
+		path = path.join(sep).replace(/[\\\/]+/g, sep);
+		var dir0 = path.split(sep, 1)[0];
+		path = sv.tools.file.specDir(dir0) + path.substring(dir0.length);
+		path = os.path.abspath(path);
+		return path;
 	}
-
 	this.getURI = function(file) {
 		if (typeof file == "string") {
 			file = this.getfile(file);
@@ -252,50 +230,22 @@ if (typeof(sv.tools.file) == 'undefined')
 		return res;
 	}
 
-	// List all files matching a given pattern in directory
-	this.list = function (dirname, pattern, noext) {
-		try {
-			var dir = Components.classes["@mozilla.org/file/local;1"].
-				createInstance(Components.interfaces.nsILocalFile);
-			dir.initWithPath(dirname);
-			if (dir.exists() && dir.isDirectory()) {
-				var files = dir.directoryEntries;
-				var selfiles = [];
-				var files;
-				while (files.hasMoreElements()) {
-					file = files.getNext().
-						QueryInterface(Components.interfaces.nsILocalFile);
-					if (file.isFile() && file.leafName.search(pattern) > -1) {
-						if (noext) {
-							selfiles.push(file.leafName.replace(pattern, ""));
-						} else {
-							selfiles.push(file.leafName);
-						}
-					}
-				}
-				return(selfiles);
-			}
-		} catch (e) {
-			sv.log.exception(e, "Error while listing files " + dirname +
-				" (sv.tools.file.list)", true)
-		}
-		return(null);
-	}
-
-/*
-	// List all files matching a given pattern in directory, python interface
+	// List all files matching a given pattern in directory,
+	// python interface - ~2x faster than with nsILocalFile
 	this.list = function (dirname, pattern, noext) {
 			var os = Components.classes['@activestate.com/koOs;1']
 				.getService(Components.interfaces.koIOs);
-
 
 			if (os.path.exists(dirname) && os.path.isdir(dirname)) {
 				var files = os.listdir(dirname, {});
 				var selfiles = [], file;
 				for (i in files) {
 					file = files[i];
-					if (os.path.isfile(os.path.join(dirname, file)) && file.search(pattern) != -1) {
-						file = noext? os.path.withoutExtension(file) : file;
+					if (os.path.isfile(os.path.join(dirname, file))
+						&& file.search(pattern) != -1) {
+
+						file = noext? file.substring(0, file.lastIndexOf("."))
+							: file;
 						selfiles.push(file);
 					}
 				}
@@ -306,5 +256,5 @@ if (typeof(sv.tools.file) == 'undefined')
 
 		return(null);
 	}
-*/
+
 }).apply(sv.tools.file);

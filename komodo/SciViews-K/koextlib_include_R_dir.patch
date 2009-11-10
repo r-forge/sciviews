@@ -1,0 +1,13 @@
+# Patch to make koext include R directory in the .xpi. 
+# Apply to <komodoInstallDir>/lib/sdk/pylib/koextlib.py
+--- koextlib_R.py	Tue Nov 10 12:22:09 2009
++++ koextlib.py	Tue Nov 10 12:25:06 2009
+@@ -596,7 +596,7 @@
+         # Remaining hook dirs that are just included verbatim in the XPI.
+         for dname in ("templates", "apicatalogs", "xmlcatalogs", "pylib",
+                       "project-templates", "platform", "defaults", "plugins",
+-                      "searchplugins", "dictionaries", "R"):
++                      "searchplugins", "dictionaries"):
+             if isdir(dname):
+                 xpi_manifest.append(dname)
+     
