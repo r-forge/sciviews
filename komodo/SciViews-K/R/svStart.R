@@ -20,12 +20,16 @@ svStart <- function(
 
 	debugMsg <- if (trace) 	function(...) { cat("DEBUG:", ..., "\n") } else function(...) {};
 
-
 	# Workaround to a strange behavior (Bug?) of R on linux, see top of the file for explanation
 	path0 <- getwd()
 	Rprofile.tmp <- tempfile("Rprofile.", path0)
 	try(file.rename(file.path(path0, ".Rprofile"), Rprofile.tmp))
-	debugMsg(".Rprofile renamed to", Rprofile.tmp)
+	debugMsg(".Rprofile renamed to", basename(Rprofile.tmp))
+
+	on.exit({
+		debugMsg("Restoring .Rprofile")
+		try(file.rename(Rprofile.tmp, file.path(path0, ".Rprofile")))
+	})
 
 
 	# TODO: add a refresh/fix-up mode - unload/reload packages, restart server, etc...
@@ -270,77 +274,93 @@ svStart <- function(
 		# You must issue something similar too under Linux
 		# (see Komodo installation guide) or the script will complain.
 
-		# A custom pager consists in displaying the file in Komodo
-		svPager <- function (files, header, title, delete.file) {
-			files <- gsub("\\", "\\\\", files[1], fixed = TRUE)
-			koCmd(sprintf('sv.r.pager("%s", "%s")', files, title))
-
-			if (delete.file) {
-				koCmd(sprintf('window.setTimeout("try { sv.tools.file.getfile(\\"%s\\").remove(false); } catch(e) {}", 10000);', files));
-			}
-		}
-		svBrowser <- function(url) {
-			koCmd(sprintf("sv.command.openHelp(\"%s\")", gsub("\\", "\\\\", url, fixed = TRUE)))
-		}
-		
 		Komodo <- if (Sys.getenv("koAppFile") != "") Sys.getenv("koAppFile") else ""
-		
+
 		if (Komodo != "") debugMsg("path to Komodo was passed in environment")
 
 		# Look if and where komodo is installed
 		if (.Platform$OS.type == "unix") {
-			if (Komodo == "") {
+			Komodo <- "/usr/local/bin/komodo" # default location
+			if (!file.exists(Komodo)) {
 				Komodo <- system("which komodo", intern = T, ignore.stderr = TRUE)
 				debugMsg("which komodo", "returned", Komodo)
 			}
-		
-			if (length(Komodo) == 0) {
-				Komodo <- system("locate --basename -e --regex ^komodo$ | grep -vF 'INSTALLDIR' | grep -F 'bin/komodo' | tail --lines=1", 
+
+			if (length(Komodo) == 0 || Komodo == "") {
+				Komodo <- system("locate --basename -e --regex ^komodo$ | grep -vF 'INSTALLDIR' | grep -F 'bin/komodo' | tail --lines=1",
 					intern = T, ignore.stderr = TRUE)
-				
 				debugMsg("locate komodo", "returned", Komodo)
 			}
-	
+
 		} else { # Windows
 		    # if komodo path was not passed in environment
-			if (Komodo == "") { 
+			if (Komodo == "") {
+				Komodo <- NULL
 				# On Windows, 'komodo' should be enough
 				# But for reasons that escape me, komodo seems to stip off its own
 				# directory from the path variable. So, I have to restore it from
 				# the Windows registry :-(
-				Ret <- tclRequire("registry", warn = TRUE)
-				Path <- tclvalue(.Tcl("registry get {HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment} {Path}"))
-				if (!is.null(Path) && !is.na(Path) && Path != "") {
-					Path <- strsplit(Path, ";")[[1]]
-					Path <- Path[sapply(Path, function(x) file.exists(file.path(x, "komodo.exe")))][1]
-					Komodo <- gsub("\\\\+", "\\\\", (file.path(Path, "komodo.exe", fsep = "\\")))
-				} 
-				
-				debugMsg("Komodo searched for in registry:", Komodo)
+
+				# Try several ways to get Komodo path from registry.
+				# Tested only on XP. Most likely the keys are different on Vista/Windows7!
+
+				err.null <- function(e) return(NULL)
+
+				key <- "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\komodo.exe"
+				Komodo <- tryCatch(readRegistry(key, hive = "HLM")[["(Default)"]],
+									   error = err.null)
+
+				if (is.null(Komodo) || !file.exists(Komodo)) {
+					key <- "Applications\\komodo.exe\\shell\\open\\command"
+					Komodo <- tryCatch(readRegistry(key, hive = "HCR")[["(Default)"]],
+									   error = err.null)
+					if (!is.null(Komodo))
+						Komodo <- sub(" *\\\"%[1-9\\*].*$", "", Komodo)
+				}
+
+				if (is.null(Komodo) || !file.exists(Komodo)) {
+					key <- "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"
+					Path <- tryCatch(readRegistry(key, hive = "HLM")$Path,
+									 error = err.null)
+					if (!is.null(Path) && !is.na(Path) && Path != "") {
+						Path <- strsplit(Path, ";")[[1]]
+						Path <- Path[sapply(Path,
+							function(x) file.exists(file.path(x, "komodo.exe")))][1]
+						Komodo <- gsub("\\\\+", "\\\\", file.path(Path,
+							"komodo.exe", fsep = "\\"))
+					}
+				}
+				debugMsg("Komodo searched for in registry in", key)
+			}
+			debugMsg("Komodo path is:", Komodo)
+		}
+
+		if (!is.null(Komodo) && Komodo != "" && file.exists(Komodo)){
+			# Change the editor and the pager to Komodo
+			# A custom pager consists in displaying the file in Komodo
+			svPager <- function (files, header, title, delete.file) {
+				files <- gsub("\\", "\\\\", files[1], fixed = TRUE)
+				koCmd(sprintf('sv.r.pager("%s", "%s")', files, title))
+				if (delete.file)
+					koCmd(sprintf('window.setTimeout("try { sv.tools.file.getfile(\\"%s\\").remove(false); } catch(e) {}", 10000);', files));
+			}
+			svBrowser <- function(url) {
+				koCmd(sprintf("sv.command.openHelp(\"%s\")", gsub("\\", "\\\\", url, fixed = TRUE)))
 			}
 
-			#owarn <- getOption("warn")
-			#options(warn = -1)
-			# Try to run Komodo now
-			#res <- try(system(shQuote(Komodo), wait = FALSE), silent = TRUE)
-			#options(warn = owarn)
-			#rm(owarn)
-		}
-		
-		if ((!is.null(Komodo) && Komodo != "") || !file.exists(Komodo)){
-			# Change the editor and the pager to Komodo
+
 			options(editor = Komodo, browser = svBrowser, pager = svPager)
 		} else {
-			Komodo <- NULL	
-			cat("R cannot find Komodo.\n")
+			Komodo <- NULL
+			cat("R cannot find Komodo.")
 			if (.Platform$OS.type == "unix") {
-				cat(	"Komodo is not found by R. Please, follow instructions at",
+				cat(	"Please, follow instructions at",
 					"http://www.sciviews.org/SciViews-K to install it correctly.",
 					"In particular, you must create a symbolic link in /user/local/bin:",
 					"sudo ln -s <KomodoBinLocation>/komodo /usr/local/bin/komodo",
-					"otherwise, R cannot find it!", sep="\n")			
+					"otherwise, R cannot find it!", sep="\n")
 			} else {
-				cat(	"R cannot find Komodo. Please, make sure you install it correctly\n",
+				cat(	"Please, make sure you install it correctly\n",
 					"You can find it at http://www.activestate.com/Products/komodo_edit.\n")
 			}
 		}
@@ -430,13 +450,10 @@ source(file.path(path0, "print.help_files_with_topic.R"))
 				path.expand(getOption("R.initdir")), sep = ""))
 		}
 		# update info in Komodo:
-		invisible(koCmd("sv.socket.updateCharset();"));
-		invisible(koCmd("sv.cmdout.message(\"R is started\", 2000);"));
+		debugMsg("Contacting Komodo with koCmd")
+		invisible(koCmd("sv.socket.updateCharset();"))
+		invisible(koCmd("sv.cmdout.message(\"R is started\", 2000);"))
 	}
-
-	debugMsg("Restoring .Rprofile")
-	try(file.rename(Rprofile.tmp, file.path(path0, ".Rprofile")))
-
 	return(invisible(res))
 }
 
