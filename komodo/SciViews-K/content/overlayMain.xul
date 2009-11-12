@@ -199,12 +199,13 @@
 							app="/Applications/SciViews R64.app" platform="Mac"/>
 						<!--<menuitem id="jgrmac-app" type="checkbox" checked="false" label="JGR"
 							app="/Applications/JGR.app" platform="Mac"/>-->
-						<menuitem id="r-gnome-term" type="checkbox" checked="false" label="R Gnome terminal"
-							app="gnome-terminal" platform="Linux"/>
+						<menuitem id="r-gnome-term" type="checkbox" checked="false"
+								  label="R Gnome terminal"
+							app="gnome-terminal,R" platform="Linux"/>
 						<menuitem id="r-kde-term" type="checkbox" checked="false" label="R KDE terminal"
-							app="konsole" platform="Linux"/>
+							app="konsole,R" platform="Linux"/>
 						<menuitem id="r-xfce4-term" type="checkbox" checked="false" label="R XFCE terminal"
-							app="xfce4-terminal" platform="Linux"/>
+							app="xfce4-terminal,R" platform="Linux"/>
 						<menuitem id="r-gui" type="checkbox" checked="false" label="R GUI"
 							app="Rgui" platform="Win"/>
 						<menuitem id="r-terminal" type="checkbox" checked="false" label="R terminal"
