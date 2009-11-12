@@ -21,6 +21,9 @@
 // sv.tools.file.readURI(uri);	// Read data from an URI
 // sv.tools.file.list(dirname, pattern, noext); // List all files matching
 								// pattern in dirname (with/without extension)
+// sv.tools.file.whereIs(appName);
+								// Tries to find full application path, 
+								// returns null if not found
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.tools' namespace
@@ -165,7 +168,6 @@ if (typeof(sv.tools.file) == 'undefined')
 		return file? file : dirName;
 	}
 
-
 	// Create nsILocalFile object from path
 	// concatenates arguments if needed
 	this.getfile = function (path) {
@@ -256,5 +258,71 @@ if (typeof(sv.tools.file) == 'undefined')
 
 		return(null);
 	}
+
+// TODO: check registry keys for Windows versions other than XP
+if (navigator.platform.indexOf("Win") == 0) {
+	function _findFileInPath(file) {
+		var os = Components.classes['@activestate.com/koOs;1'].
+			getService(Components.interfaces.koIOs);
+		var dirs = os.getenv("PATH").split(os.pathsep);
+		var res = [];
+		for (i in dirs)
+			if (os.path.exists(os.path.join(dirs[i], file))) res.push(dirs[i]);
+		return res.length? res : null;
+	}
+
+	this.whereIs = function(appName) {
+		if (appName.search(/\.exe$/i) == -1)
+			appName += ".exe";
+
+		var reg = Components.classes["@mozilla.org/windows-registry-key;1"]
+			.createInstance(Components.interfaces.nsIWindowsRegKey);
+		var key, path;
+
+		// Special treatment for R* apps:
+		if (appName.match(/^R(?:gui|term|cmd)?\.exe?$/i)) {
+			try {
+				key = "software\\R-core\\R";
+				reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ)
+			} catch(e) {
+				key = "software\\wow6432Node\\r-core\\r";
+				reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ);
+			}
+			if (!reg.hasValue("InstallPath") && reg.hasValue("Current Version")) {
+				reg = reg.openChild(reg.readStringValue("Current Version"),
+									reg.ACCESS_READ);
+			}
+			if (reg.hasValue("InstallPath"))
+				return reg.readStringValue("InstallPath") + "\\bin\\" + appName;
+		}
+
+		var key = "Applications\\" + appName + "\\shell\\Open\\Command";
+		try {
+			reg.open(reg.ROOT_KEY_CLASSES_ROOT, key, reg.ACCESS_READ);
+			path = reg.readStringValue("");
+			path = path.replace(/(^"|"?\s*"%\d.*$)/g, "");
+			return path;
+		} catch(e) {
+			// fallback: look for app in PATH:
+			return _findFileInPath(appName);
+		}
+		return null;
+	}
+} else {
+	// Will it work on Mac too?
+	this.whereIs = function(appName) {
+		var runSvc = Components.
+			classes["@activestate.com/koRunService;1"].
+			getService(Components.interfaces.koIRunService);
+		var err = {}, out = {};
+		var res = runSvc.RunAndCaptureOutput("which " + appName,
+			null, null, null, out, err);
+		var path = out.value.trim();
+		if (!path) return null;
+		return path.split(" ");
+	}
+
+}
+
 
 }).apply(sv.tools.file);

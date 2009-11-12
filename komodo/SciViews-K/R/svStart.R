@@ -266,6 +266,7 @@ svStart <- function(
 	}
 	res <- all(res)	# all packages are loaded
 
+
 	if (res) {
 		# Make sure Komodo is started now
 		# Note: in Mac OS X, you have to create the symbolic link manually
@@ -282,8 +283,8 @@ svStart <- function(
 		if (.Platform$OS.type == "unix") {
 			Komodo <- "/usr/local/bin/komodo" # default location
 			if (!file.exists(Komodo)) {
-				Komodo <- system("which komodo", intern = T, ignore.stderr = TRUE)
-				debugMsg("which komodo", "returned", Komodo)
+				Komodo <- Sys.which("komodo")[1]
+				debugMsg("which", "returned", Komodo)
 			}
 
 			if (length(Komodo) == 0 || Komodo == "") {
@@ -425,8 +426,15 @@ source(file.path(path0, "print.help_files_with_topic.R"))
 						msg <- paste(msg, "[data loaded")
 				} else msg <- paste(msg, "[no data")
 				if (file.exists(".Rhistory")) {
-						loadhistory()
-						msg <- paste(msg, ... = "/history loaded]", sep = "")
+					# On R Tk gui:
+					# "Error in loadhistory(file) : no history mechanism available"
+						history.loaded <- try(loadhistory(), silent = TRUE)
+						if (inherits(history.loaded, "try-error"))  {
+							msg <- paste(msg, "/history cannot be loaded]", sep = "")
+						} else {
+							msg <- paste(msg, "/history loaded]", sep = "")
+						}
+						
 				} else msg <- paste(msg, "/no history]", sep = "")
 		} else msg <- paste(msg, "[data/history not loaded]")
 		cat(msg, "\n", sep = "", file = stderr())

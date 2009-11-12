@@ -95,11 +95,21 @@ if (typeof(sv.command) == 'undefined') {
 
 		// Apply patch (koext_include_R_dir.patch) to <komodoInstallDir>/lib/sdk/pylib/koextlib.py,
 		// to make it include R directory in the .xpi
-		// otherwise the directory can be added manually. Then replace following line:
-		var cwd = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "templates");
+		// otherwise the directory can be added manually.
+		
+		//Until we decide to keep R files in "R" or "templates"
+		if (sv.tools.file.exists(sv.tools.file.path(
+			"ProfD/extensions/sciviewsk@sciviews.org/R/.Rprofile"))) {
+			var cwd = sv.tools.file.path("ProfD", "extensions",
+				 "sciviewsk@sciviews.org", "R");
+		} else {
+			var cwd = sv.tools.file.path("ProfD", "extensions",
+				 "sciviewsk@sciviews.org", "templates");
+		}
+
 		// with:
 		//var cwd = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R");
-		
+
 		var command, runIn = "no-console";
 
 		sv.cmdout.message(sv.translate("Starting R... please wait"), 10000, true);
@@ -128,7 +138,8 @@ if (typeof(sv.command) == 'undefined') {
 				if (!XEnv.has("DISPLAY"))
 					env.push("DISPLAY=:0");
 				delete XEnv;
-				command = "R --quiet --save --gui=Tk";
+				// without forced --interactive R-tk halts on any error!
+				command = "R ---interactive --gui=Tk";
 				// runIn = "no-console";
 				break;
 			case "r-app":
@@ -262,47 +273,38 @@ if (typeof(sv.command) == 'undefined') {
 
 		var isLinux = navigator.platform.toLowerCase().indexOf("linux") > -1;
 		var isMac = navigator.platform.toLowerCase().indexOf("mac") > -1;
-
-		// This will tell whether an app is present on the *nix system
-		function whereis(app) {
-			var runSvc = Components.
-				classes["@activestate.com/koRunService;1"].
-				getService(Components.interfaces.koIRunService);
-			var err = {}, out = {};
-			var res = runSvc.RunAndCaptureOutput("whereis -b " + app,
-				null, null, null, out, err);
-			var path = out.value.substr(app.length + 2);
-			if (!path) return false;
-			return out.value.substr(app.length + 2).split(" ");
-		}
+		var isWin = navigator.platform.toLowerCase().indexOf("win") == 0;
 
 		var validPlatforms, showItem;
 		var platform = navigator.platform;
 		for (var i = 0; i < siblings.length; i++) {
 			try {
 				validPlatforms = siblings[i].getAttribute("platform").
-					split(/\s*[,\s]\s*/);
+					split(/[,\s]+/);
 				showItem = false;
 				for (var j in validPlatforms) {
 					if (platform.indexOf(validPlatforms[j]) > -1) {
 						// On linux, try to determine which terminals are
 						// not available and remove these items from menu
-						if (isLinux) {
-							if (whereis(siblings[i].getAttribute("app"))) {
+
+						var appName = siblings[i].getAttribute("app");
+						if (isLinux || isWin) {
+
+							//!!!!TODO: appName = appName.split(/[, ]+/);
+							//appName = appName.split(/[, ]+/);
+							var res = true;
+							for (var k in appName.split(/[, ]+/))
+								res = res && !!sv.tools.file.whereIs(appName);
+							if (res) {
 								showItem = true;
 								break;
 							}
 						} else if (isMac) {
 							// Check that we find the application
-							var Rapp = siblings[i].getAttribute("app");
-							if (Rapp == "R" || sv.tools.file.exists(Rapp)) {
+							if (appName == "R" || sv.tools.file.exists(appName)) {
 								showItem = true;
 								break;
 							}
-						} else { // Windows, RGui & RTerm always available?
-								 // (assuming R is installed, yes.)
-							showItem = true;
-							break;
 						}
 					}
 				}
@@ -405,7 +407,6 @@ if (typeof(sv.command) == 'undefined') {
 			RHelpWin.go(uri);
 
 		} else {
-			//alert("open help.");
 			_this.RHelpWin = _getWindowByURI(rHelpXulUri);
 			if (!RHelpWin || RHelpWin.closed) {
 				sv.log.debug("Starting R help with page " + uri);
@@ -487,7 +488,8 @@ if (typeof(sv.command) == 'undefined') {
 			}, 100);
 		};
 
-		//TODO: check if R is working before any command is sent, rather than continously
+		//TODO: check if R is working before any command is sent,
+		//rather than continously
 		_keepCheckingR();
 
 		// This is no longer needed:
