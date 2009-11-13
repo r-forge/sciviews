@@ -139,7 +139,7 @@ if (typeof(sv.command) == 'undefined') {
 					env.push("DISPLAY=:0");
 				delete XEnv;
 				// without forced --interactive R-tk halts on any error!
-				command = "R ---interactive --gui=Tk";
+				command = "R --interactive --gui=Tk";
 				// runIn = "no-console";
 				break;
 			case "r-app":
@@ -289,12 +289,12 @@ if (typeof(sv.command) == 'undefined') {
 
 						var appName = siblings[i].getAttribute("app");
 						if (isLinux || isWin) {
-
-							//!!!!TODO: appName = appName.split(/[, ]+/);
-							//appName = appName.split(/[, ]+/);
+							appName = appName.split(/[, ]+/);
 							var res = true;
-							for (var k in appName.split(/[, ]+/))
-								res = res && !!sv.tools.file.whereIs(appName);
+							for (var k in appName)
+							    res = res && !!sv.tools.file.whereIs(appName[k]);
+				
+							
 							if (res) {
 								showItem = true;
 								break;
@@ -309,11 +309,8 @@ if (typeof(sv.command) == 'undefined') {
 					}
 				}
 
-				if (!showItem) {
-					siblings[i].style.display = "none";
-					// This does not work on the Mac, but the following is fine
-					siblings[i].setAttribute("hidden", true);
-				} else {
+				siblings[i].setAttribute("hidden", !showItem);
+				if (showItem) {
 					sv.log.debug("R application supported: " +
 						siblings[i].getAttribute("app"));
 					siblings[i].setAttribute("checked",

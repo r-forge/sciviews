@@ -22,7 +22,7 @@
 // sv.tools.file.list(dirname, pattern, noext); // List all files matching
 								// pattern in dirname (with/without extension)
 // sv.tools.file.whereIs(appName);
-								// Tries to find full application path, 
+								// Tries to find full application path,
 								// returns null if not found
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -272,15 +272,17 @@ if (navigator.platform.indexOf("Win") == 0) {
 	}
 
 	this.whereIs = function(appName) {
-		if (appName.search(/\.exe$/i) == -1)
-			appName += ".exe";
+		// add default extension for executable if none
+		if (appName.search(/\.[^\.]{3}$/) == -1) 	appName += ".exe";
 
 		var reg = Components.classes["@mozilla.org/windows-registry-key;1"]
 			.createInstance(Components.interfaces.nsIWindowsRegKey);
 		var key, path;
 
+		//alert(appName);
+
 		// Special treatment for R* apps:
-		if (appName.match(/^R(?:gui|term|cmd)?\.exe?$/i)) {
+		if (appName.match(/^R(?:gui|term|cmd)?\.exe$/i)) {
 			try {
 				key = "software\\R-core\\R";
 				reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ)
@@ -296,18 +298,26 @@ if (navigator.platform.indexOf("Win") == 0) {
 				return reg.readStringValue("InstallPath") + "\\bin\\" + appName;
 		}
 
-		var key = "Applications\\" + appName + "\\shell\\Open\\Command";
+		var key = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" + appName;
 		try {
-			reg.open(reg.ROOT_KEY_CLASSES_ROOT, key, reg.ACCESS_READ);
+			reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ);
 			path = reg.readStringValue("");
-			path = path.replace(/(^"|"?\s*"%\d.*$)/g, "");
-			return path;
+			return path.replace(/(^"|"$)/g, "");
 		} catch(e) {
-			// fallback: look for app in PATH:
-			return _findFileInPath(appName);
+			var key = "Applications\\" + appName + "\\shell\\Open\\Command";
+			try {
+				reg.open(reg.ROOT_KEY_CLASSES_ROOT, key, reg.ACCESS_READ);
+				path = reg.readStringValue("");
+				path = path.replace(/(^"+|"*\s*"%\d.*$)/g, "");
+				return path;
+			} catch(e) {
+				// fallback: look for app in PATH:
+				return _findFileInPath(appName);
+			}
 		}
 		return null;
 	}
+
 } else {
 	// Will it work on Mac too?
 	this.whereIs = function(appName) {
