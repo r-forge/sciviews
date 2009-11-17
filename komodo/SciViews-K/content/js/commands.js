@@ -90,26 +90,11 @@ if (typeof(sv.command) == 'undefined') {
 			"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
 			"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
 			"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
+			"koDebug=" + String(sv.socket.debug).toUpperCase(),
 			"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : ""))
-		];
-
-		// Apply patch (koext_include_R_dir.patch) to <komodoInstallDir>/lib/sdk/pylib/koextlib.py,
-		// to make it include R directory in the .xpi
-		// otherwise the directory can be added manually.
-		
-		//Until we decide to keep R files in "R" or "templates"
-		if (sv.tools.file.exists(sv.tools.file.path(
-			"ProfD/extensions/sciviewsk@sciviews.org/R/.Rprofile"))) {
-			var cwd = sv.tools.file.path("ProfD", "extensions",
-				 "sciviewsk@sciviews.org", "R");
-		} else {
-			var cwd = sv.tools.file.path("ProfD", "extensions",
-				 "sciviewsk@sciviews.org", "templates");
-		}
-
-		// with:
-		//var cwd = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R");
-
+		];	
+		var cwd = sv.tools.file.path("ProfD", "extensions",
+			"sciviewsk@sciviews.org", "defaults");
 		var command, runIn = "no-console";
 
 		sv.cmdout.message(sv.translate("Starting R... please wait"), 10000, true);
