@@ -1228,10 +1228,10 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
 	// if R is running
 	if (saveOld) {
 		// Save .RData & .Rhistory in the the session directory and clean WS
-		// We need also to restore .required and .SciViewsReady variables
+		// We need also to restore .required variable
 		cmd = 'assignTemp(".required", .required)\nTempEnv()$.Last.sys()\n' +
 			'save.image()\nsavehistory()\nrm(list = ls())\n' +
-			'.required <- getTemp(".required")\n.SciViewsReady <- TRUE\n';
+			'.required <- getTemp(".required")\n';
 
 	} else {
 		// Clear workspace (hint, we don't clear hidden objects!)
