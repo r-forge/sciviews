@@ -2,52 +2,52 @@
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
 # Version 0.9.6, 2009-11-03 Ph. Grosjean (phgrosjean@sciviews.org)
 
-# Bug on Linux (Bug #685): for some strange reason R breaks execution of
-# .Rprofile before an attempt of installation of ANY package, and then starts
-# executing .Rprofile again from the beginning.
-# Since we try to install packages from within .Rprofile, this results in an
-# endless loop, and even sometimes crashes system (!!!).
-# Bug in R or we do something wrong here??
-# Workaround: rename .Rprofile after reading in the code.
+# Bug on Linux (Bug #685): for some strange reason R breaks execution of .Rprofile before an
+# attempt of installation of ANY package, and then starts executing .Rprofile again from
+# the beginning.
+# Since we try to install packages from within .Rprofile, this results in an endless loop,
+# and even sometimes crashes system (!!!).
 
 # TODO: also use value in koDebug to debug server from within R!
 
 "svStart" <-
 function (minVersion = c(R = "2.10.0", svMisc = "0.9-56",
 svSocket = "0.9-48", svGUI = "0.9-46"),
-remote.repos = "http://R-Forge.R-project.org",
-debug = (Sys.getenv("koDebug") == "TRUE")) {
+	remote.repos = "http://R-Forge.R-project.org",
+	# I would keep 'pkg.dir' attribute to give user a possibility of running
+	# svStart manually also from another working dir.
+	pkg.dir = ".",
+	debug = Sys.getenv("koDebug") == "TRUE") {
+
+	# [KB]For some reason checking for existence of svStart or any other variable did not work
+	# for me. Another try: create a semaphore file ("lock-file"), and if it exists jump out the function.
+	# I put "the gatekeeper" code inside the function, because when it was in Rprofile and if
+	# svStart exited prematurely due to some error, the lock-file remained.
+	# Another way would be enclosing svStart in try(), but I think with on.exit
+	# svStart is stand-alone, and can be even be run manually. Which is useful
+	# if something goes wrong at the first run, so user does not have to restart
+	# R, just run svStart again. For this reason svStart could be included in
+	# svGUI rather than here. Philippe, what do you think?
+
+	path0 <- getwd()
+	lockfile <- file.path(path0, "00LOCK")
+	if (file.exists(lockfile)) return (invisible(NULL))
+	file.create(lockfile)
+	on.exit(file.remove(lockfile)) # Clean up
+
 	if (debug) {
-		"debugMsg" <- function (...)
+		"debugMsg" <- function(...) {
 			cat("DEBUG:", ..., "\n")
+		}
 	} else {
-		"debugMsg" <- function (...)
-			return()
+		"debugMsg" <- function(...) {};
 	}
-
-	# Workaround to a strange behavior (Bug?) of R on linux, see top of the file
-	# for explanation
-	# [PhG] The gatekeeper is done in .Rprofile directly now!
-	#path0 <- getwd()
-	#Rprofile.tmp <- tempfile("Rprofile.", path0)
-	#try(file.rename(file.path(path0, ".Rprofile"), Rprofile.tmp))
-	#debugMsg(".Rprofile renamed to", basename(Rprofile.tmp))
-	#on.exit({
-	#	debugMsg("Restoring .Rprofile")
-	#	try(file.rename(Rprofile.tmp, file.path(path0, ".Rprofile")))
-	#})
-
-	# TODO: add a refresh/fix-up mode - unload/reload packages, restart server
-	# remove.packages(installed.packages()[
-	#	grep("^sv", installed.packages()[,1]),1], lib=.libPaths()[2])
-	# [PhG] No need to remove and reinstall: reinstalling always removes
-	#       existing version first
 
 	# Return if any of the sv* packages already loaded and Rserver running
 	if (any(c("package:svGUI", "package:svSocket", "package:svMisc") %in% search())
 	&& existsFunction("getSocketServers")
 	&& !is.na(getSocketServers()["Rserver"])) {
-		return(NA)
+		invisible(return(NA))
 	}
 
 	# First of all, check R version... redefine compareVersion() because it is
@@ -75,10 +75,6 @@ debug = (Sys.getenv("koDebug") == "TRUE")) {
 	} else res <- TRUE
 
 	# Load main R packages (tools added to the list because now required by svMisc)
-	# [KB] do we need "datasets"?
-	# [PhG] yes. We load exactly the same packages R loads by default, in the same
-	#       order. That way, R has a behaviour as close as possible from the
-	#       original version, without SciViews
 	res <- all(sapply(c("methods", "datasets", "utils", "grDevices", "graphics",
 		"stats", "tools"), function(x)
 		require(x, quietly = TRUE, character.only = TRUE)))
@@ -168,7 +164,7 @@ debug = (Sys.getenv("koDebug") == "TRUE")) {
 				}
 				rm(dis)
 			}
-			
+
 			if (res) {
 				res <- suppressPackageStartupMessages(require(tcltk, quietly = TRUE))
 				if (!res) {
@@ -204,12 +200,12 @@ debug = (Sys.getenv("koDebug") == "TRUE")) {
 		debugMsg("Installing packages if needed:")
 		sapply(pkgs, function (pkgName) {
 			debugMsg("Now trying package:", pkgName)
-			file <- dir(path = ".", pattern = paste(pkgName, ext, sep = ".+"))
+			file <- dir(path = pkg.dir, pattern = paste(pkgName, ext, sep = ".+"))
 
 			if (length(file) > 0) {
 				# Better by-version sorting
 				ver <- gsub(paste("(^", pkgName, "_", "|", ext, "$)", sep = ""),
-					"", basename(file))
+							"", basename(file))
 				file <- tail(file[order(sapply(strsplit(ver, "[\\.\\-]"),
 					function (x) sum(as.numeric(x) * (100 ^ -seq_along(x)))))], 1)
 				repos <- NULL
@@ -231,22 +227,23 @@ debug = (Sys.getenv("koDebug") == "TRUE")) {
 			if (!pkgIsInstalled) {
 				cat("Installing missing package", sQuote(pkgName),
 					"into", lib, "\n")
-				try(install.packages(file, lib = lib, repos = repos))
+				try(install.packages(file.path(pkg.dir, file), lib = lib, repos = repos))
 			} else if ((compareVersion(packageDescription(pkgName,
 				fields = "Version"), minVersion[pkgName]) < 0)) {
 				cat("Updating package", sQuote(pkgName), "\n")
-				try(install.packages(file, lib = lib, repos = repos))
+				try(install.packages(file.path(pkg.dir, file), lib = lib, repos = repos))
 			} else {
 				debugMsg("Package", pkgName, "is up to date")
 			}
 		})
 
 		# Do not load svGUI yet
-		res <- sapply(c("svMisc", "svSocket"), function (pkgName)
-			require(pkgName, quietly = TRUE, character.only = TRUE))
+		res <- sapply(c("svMisc", "svSocket"), function(pkgName)
+					  require(pkgName, quietly = TRUE, character.only = TRUE))
 
 		if (!all(res)) {
-			cat("Problem loading package(s):", c("svMisc", "svSocket")[!res], "\n")
+			cat("Problem loading package(s):", paste(c("svMisc", "svSocket")[!res],
+				collapse = ", "), "\n")
 		} else {
 			# Try starting the R socket server now
 			res <- !inherits(try(startSocketServer(port = getOption("ko.serve")),
@@ -288,7 +285,7 @@ debug = (Sys.getenv("koDebug") == "TRUE")) {
 		# (see Komodo installation guide) or the script will complain.
 		if (Sys.getenv("koAppFile") != "") {
 			Komodo <- Sys.getenv("koAppFile")
-		} else Komdo <- ""
+		} else Komodo <- ""
 
 		if (Komodo != "") debugMsg("path to Komodo was passed in environment")
 
@@ -361,7 +358,7 @@ debug = (Sys.getenv("koDebug") == "TRUE")) {
 				if (delete.file)
 					koCmd(sprintf('window.setTimeout("try { sv.tools.file.getfile(\\"%s\\").remove(false); } catch(e) {}", 10000);', files));
 			}
-			
+
 			"svBrowser" <- function (url) {
 				url <- gsub("\\", "\\\\", url, fixed = TRUE)
 				# If the URL starts with '/', I could safely assume a file path
@@ -457,7 +454,7 @@ source("print.help_files_with_topic.R")
 						msg <- paste(msg, "/history cannot be loaded]", sep = "")
 					} else {
 						msg <- paste(msg, "/history loaded]", sep = "")
-					}	
+					}
 				} else msg <- paste(msg, "/no history]", sep = "")
 		} else msg <- paste(msg, "[data/history not loaded]")
 		cat(msg, "\n", sep = "", file = stderr())
