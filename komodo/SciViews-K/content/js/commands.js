@@ -77,12 +77,10 @@ if (typeof(sv.command) == 'undefined') {
 		// runIn = "command-output-window", "new-console",
 		// env strings: "ENV1=fooJ\nENV2=bar"
 		// gPrefSvc.prefs.getStringPref("runEnv");
-		var defRApp = "r-terminal";
 		var isWin = navigator.platform.indexOf("Win") === 0;
 		// Default preferredRApp on Windows is r-gui
-		if (isWin) defRApp = "r-gui";
 		var preferredRApp = sv.prefs.getString("sciviews.preferredRApp",
-			defRApp);
+			isWin? "r-gui" : "r-terminal");
 		var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
 			"SciViewsK"),
 			"koHost=localhost",
