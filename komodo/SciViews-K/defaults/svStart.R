@@ -193,6 +193,8 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 			# If nothing is available to current user, create user library location
 			lib <- Sys.getenv("R_LIBS_USER")[1L]
 			dir.create(lib, recursive = TRUE)
+			# update library paths:
+			.libPaths(lib)
 		} else {
 			lib <- tail(lib[k], 1)
 		}
