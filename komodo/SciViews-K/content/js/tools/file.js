@@ -26,6 +26,9 @@
 								// returns null if not found
 ////////////////////////////////////////////////////////////////////////////////
 
+if (typeof(sv) == 'undefined')
+	var sv = {};
+
 // Define the 'sv.tools' namespace
 if (typeof(sv.tools) == 'undefined')
 	sv.tools = {};
@@ -327,7 +330,9 @@ if (navigator.platform.indexOf("Win") == 0) {
 		var err = {}, out = {};
 		var res = runSvc.RunAndCaptureOutput("which " + appName,
 			null, null, null, out, err);
-		var path = out.value.trim();
+		
+		var path = sv.tools.strings.trim(out.value);
+		
 		if (!path) return null;
 		return path.split(" ");
 	}
