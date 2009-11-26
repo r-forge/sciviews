@@ -215,7 +215,6 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 				# remove directory lock if exists (happens sometimes on linux)
 				if (.Platform$OS.type == "unix") {
 					system(paste("rm -r -f", file.path(lib, "00LOCK")))
-					#suppressWarnings(file.remove(file.path(lib, "00LOCK")))
 				}
 			} else {
 				# No packages found, download from the web
@@ -439,27 +438,34 @@ source("print.help_files_with_topic.R")
 			try(setwd(getOption("R.initdir")), silent = TRUE)
 		})
 
-		msg <- paste("Session directory is", getOption("R.initdir"))
+		msg <- paste("Session directory is", dQuote(getOption("R.initdir")))
+		msg2 <- NULL
+
 		# Do we load .RData and .Rhistory now?
 		if (!"--vanilla" %in% args && !"--no-restore" %in% args &&
 			!"--no.restore-data" %in% args) {
 				if (file.exists(".RData")) {
 					load(".RData")
-					msg <- paste(msg, "[data loaded")
-				} else msg <- paste(msg, "[no data")
+					msg2 <- append(msg2, "data loaded")
+				} else
+					msg2 <- append(msg2, "no data")
+
 				if (file.exists(".Rhistory")) {
 					# On R Tk gui:
 					# "Error in loadhistory(file) : no history mechanism available"
 					# So, do it inside a try()
 					history.loaded <- try(loadhistory(), silent = TRUE)
 					if (inherits(history.loaded, "try-error"))  {
-						msg <- paste(msg, "/history cannot be loaded]", sep = "")
+						msg2 <- append(msg2, "history cannot be loaded")
 					} else {
-						msg <- paste(msg, "/history loaded]", sep = "")
+						msg2 <- append(msg2, "history loaded")
 					}
-				} else msg <- paste(msg, "/no history]", sep = "")
-		} else msg <- paste(msg, "[data/history not loaded]")
-		cat(msg, "\n", sep = "", file = stderr())
+				} else
+					msg2 <- append(msg2, "no history")
+		} else
+			msg2 <- append(msg2, "data and history not loaded")
+
+		cat(msg, " (", paste(msg2, collapse=", "),  ")", "\n", sep = "", file = stderr())
 
 		# Do we reactivate Komodo now?
 		koact <- getOption("ko.activate")

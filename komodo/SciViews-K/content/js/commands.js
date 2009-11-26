@@ -47,6 +47,7 @@ if (typeof(sv.command) == 'undefined') {
 			sv.r.testInterval = window.setInterval(sv.r.test, 5000);
 		}
 		setTimeout(window.updateCommands, 1000, 'r_app_started_closed');
+		//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 	}
 
 	function _isRRunning () {
@@ -72,106 +73,67 @@ if (typeof(sv.command) == 'undefined') {
 				currentView.scimoz.selectionStart) != 0);
 	}
 
-	// Start R, if not already running
-	this.startR = function () {
-		// runIn = "command-output-window", "new-console",
-		// env strings: "ENV1=fooJ\nENV2=bar"
-		// gPrefSvc.prefs.getStringPref("runEnv");
-		var isWin = navigator.platform.indexOf("Win") === 0;
-		// Default preferredRApp on Windows is r-gui
-		var preferredRApp = sv.prefs.getString("sciviews.preferredRApp",
-			isWin? "r-gui" : "r-terminal");
-		var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
-			"SciViewsK"),
-			"koHost=localhost",
-			"koActivate=FALSE",
-			"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
-			"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
-			"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
-			"koDebug=" + String(sv.socket.debug).toUpperCase(),
-			"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : ""))
-		];	
-		var cwd = sv.tools.file.path("ProfD", "extensions",
-			"sciviewsk@sciviews.org", "defaults");
-		var command, runIn = "no-console";
+// Start R
+this.startR = function () {
+	var os = Components.classes['@activestate.com/koOs;1']
+	.getService(Components.interfaces.koIOs);
+	var cwd = sv.tools.file.path("ProfD", "extensions",
+	"sciviewsk@sciviews.org", "defaults");
+	var cmd = sv.prefs.getString("svRApplication");
+	var path = os.path.dirname(sv.prefs.getString("svRDefaultInterpreter"));
+	if (path) path += os.sep;
+	cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
+		.replace("%title%", "SciViews-K");
 
-		sv.cmdout.message(sv.translate("Starting R... please wait"), 10000, true);
-		switch (preferredRApp) {
-			case "r-gui":
-				env.push("Rid=Rgui");
-				command = "Rgui --sdi";
-				break;
-			case "r-xfce4-term":
-				env.push("Rid=R-xfce4-term");
-				command = "xfce4-terminal --title \"SciViews-R\" -x R --quiet";
-				break;
-			case "r-gnome-term":
-				env.push("Rid=R-gnome-term");
-				command = "gnome-terminal --hide-menubar --title=SciViews-R -x R --quiet";
-				break;
-			case "r-kde-term":
-				env.push("Rid=R-kde-term");
-				command = "konsole --nomenubar --notabbar --noframe -T SciViews-R -e R --quiet";
-				break;
-			case "r-tk":
-				env.push("Rid=R-tk");
-				// Set DISPLAY only when not set:
-				var XEnv = Components.classes["@activestate.com/koEnviron;1"]
-					.createInstance(Components.interfaces.koIEnviron);
-				if (!XEnv.has("DISPLAY"))
-					env.push("DISPLAY=:0");
-				delete XEnv;
-				// without forced --interactive R-tk halts on any error!
-				command = "R --interactive --gui=Tk";
-				// runIn = "no-console";
-				break;
-			case "r-app":
-				env.push("Rid=R.app");
-				command = "open -a /Applications/R.app \"" + cwd + "\"";
-				break;
-			case "r64-app":
-				env.push("Rid=R64.app");
-				command = "open -a /Applications/R64.app \"" + cwd + "\"";
-				break;
-			case "svr-app":
-				env.push("Rid=svR.app");
-				command = "open -a \"/Applications/SciViews R.app\" \"" +
-					cwd + "\"";
-				break;
-			case "svr64-app":
-				env.push("Rid=svR64.app");
-				command = "open -a \"/Applications/SciViews R64.app\" \"" +
-					cwd + "\"";
-				break;
-			// This does start, but ignore initial dir and thus SciViews is
-			// not initialized
-			case "jgrmac-app": // TODO: JGR on other platforms too!
-				env.push("Rid=JGR.app");
-				command = "open -a /Applications/JGR.app \"" +
-					cwd + "\"";
-				break;
-			default:
-				env.push("Rid=R");
-				command = "R --quiet";
-				runIn = "new-console";
-		}
-		sv.log.debug("Running: " + command);
+	var id = sv.prefs.getString("svRApplicationId");
 
-		// Debugging garbage...
-		//var command = "CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt";
-		//ko.run.runCommand(window,
-		//	"CMD /C \"SET\" > c:\\env.txt & notepad c:\\env.txt", cwd, {});
-		//var runSvc = Components.classes["@activestate.com/koRunService;1"]
-		//	.getService(Components.interfaces.koIRunService);
-		//var Rapp = runSvc.RunAndNotify(command, cwd, env.join("\n"), null);
-		//ko.run.runCommand(window, command, cwd, env.join("\n"), false,
+	// runIn = "command-output-window", "new-console",
+	// env strings: "ENV1=fooJ\nENV2=bar"
+	// gPrefSvc.prefs.getStringPref("runEnv");
+	var isWin = navigator.platform.indexOf("Win") === 0;
+	// Default preferredRApp on Windows is r-gui
+	var preferredRApp = sv.prefs.getString("svRApplicationId", isWin?
+	"r-gui" : "r-terminal");
+	var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
+	"SciViewsK"),
+		"koHost=localhost",
+		"koActivate=FALSE",
+		"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
+		"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
+		"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
+		"koDebug=" + String(sv.socket.debug).toUpperCase(),
+		"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : ""))
+	];
+	var cwd = sv.tools.file.path("ProfD", "extensions",
+		"sciviewsk@sciviews.org", "defaults");
+	var runIn = "no-console";
 
-		ko.run.runCommand(window, command, cwd, env.join("\n"), false,
-			false, false, runIn, false, false, false);
+	env.push("Rid=" + preferredRApp);
 
-		// Register observer of application termination.
-		this.rObserver = new AppTerminateObserver(command);
-	};
+	switch (preferredRApp) {
+		case "r-tk":
+			env.push("Rid=R-tk");
+			// Set DISPLAY only when not set:
+			var XEnv = Components.classes["@activestate.com/koEnviron;1"]
+				.createInstance(Components.interfaces.koIEnviron);
+			if (!XEnv.has("DISPLAY"))	env.push("DISPLAY=:0");
+			delete XEnv;
+			break;
+		case "r-terminal":
+			runIn = "new-console";
+			break;
+		default:
+	}
+
+	ko.run.runCommand(window, cmd, cwd, env.join("\n"), false,
+		false, false, runIn, false, false, false);
+
+	//return cmd + "\n" + runIn;
+
+	// Register observer of application termination.
+	this.rObserver = new AppTerminateObserver(cmd);
+}
+
 
 	// This will observe status message notification to be informed about
 	// application being terminated. A more straightforward way would be to use
@@ -276,8 +238,8 @@ if (typeof(sv.command) == 'undefined') {
 							var res = true;
 							for (var k in appName)
 							    res = res && !!sv.tools.file.whereIs(appName[k]);
-				
-							
+
+
 							if (res) {
 								showItem = true;
 								break;

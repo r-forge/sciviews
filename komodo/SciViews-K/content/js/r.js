@@ -1425,6 +1425,8 @@ sv.r.quit = function (save) {
 			" the session directory first?", ["Yes", "No", "Cancel"], "No",
 			null, "Exiting R");
 		if (response == "Cancel") { return; }
+	} else {
+		response = save? "yes" : "no";
 	}
 	// Quit R
 	sv.r.eval('q("' + response.toLowerCase() + '")');
@@ -1476,8 +1478,7 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 						  'repos["CRAN"] <- "' + repos + '"; ' +
 						  'options(repos = repos) } )');
 				sv.r.pkg.repos = repos;
-				if (callback)
-					callback();
+				if (callback)	callback(repos);
 
 			}
 			return(res);

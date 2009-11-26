@@ -69,6 +69,15 @@ sv.prefs.mru = function (mru, reset, items, sep) {
 sv.prefs.setString("sciviews.server.socket", "7052", false);
 sv.prefs.setString("sciviews.client.socket", "8888", false);
 sv.prefs.setString("sciviews.client.id", "SciViewsK", false);
+sv.prefs.setString("sciviews.server.host", "127.0.0.1", false);
+
+// R interpreter
+sv.prefs.setString("svRDefaultInterpreter", "", false);
+sv.prefs.setString("svRApplication", "", false);
+sv.prefs.setString("svRApplicationId", "", false);
+sv.prefs.setString("CRANMirror", "", false);
+
+
 
 // This is required by sv.helpContext() for attaching help to snippets (hack!)
 // Create empty preference sets to be used with snippet help system hack
@@ -132,7 +141,7 @@ sv.prefs.mru("sep", true, '" "|";"|","|"\\t"', "|");
 sv.prefs.mru("header", true, 'TRUE|FALSE', "|");
 
 // Various examples of pkgdata (indeed, data frames in datatasets 2.9.1) /////
-sv.prefs.mru("pkgdata", false, 
+sv.prefs.mru("pkgdata", false,
 	'airquality|anscombe|attenu|attitude|beaver1|beaver2|BOD|cars|' +
 	'ChickWeight|chickwts|CO2|DNase|esoph|faithful|Formaldehyde|freeny|' +
 	'Indometh|infert|InsectSprays|iris|LifeCycleSavings|Loblolly|longley|' +

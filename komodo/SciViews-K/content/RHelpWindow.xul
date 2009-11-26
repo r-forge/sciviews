@@ -336,24 +336,6 @@ this.purgeHistory = function() {
 
 }).apply(browserUtils);
 
-function _getWindowByURI(uri) {
-	var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']
-		.getService(Components.interfaces.nsIWindowMediator);
-	en = wm.getEnumerator("");
-
-	if (uri) {
-		var win;
-		while (en.hasMoreElements()) {
-			win = en.getNext();
-			if ((win.location.href == uri) ||
-				(win.location.href.lastIndexOf(uri) == win.location.href.length - uri.length))
-				return win;
-		}
-	}
-	return null;
-}
-
-
 function windowOnLoad (event) {
 	// DOMContentLoaded is fired also for HTML content
 	if (event.target != self.document)
@@ -366,8 +348,13 @@ function windowOnLoad (event) {
 		sv = args[0];
 		if (typeof(args[1]) != "undefined") page = args[1];
 	} else {
-		var mainWindow = _getWindowByURI("chrome://komodo/content/komodo.xul");
-		sv = mainWindow.sv;
+		var p = parent;
+		while (p = p.opener) {
+			if (p.sv) {
+				sv = p.sv;
+				break;
+			}
+		}
 	}
 
 	rHelpTopic = document.getElementById("rhelp-topic");
