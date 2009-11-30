@@ -95,6 +95,9 @@
 			<command id="cmd_sv_BrowseWD" key="key_cmd_sv_BrowseWD"
 				oncommand="sv.r.setwd('current', true);"
 				desc="R: &svBrowseWD;" label="&svBrowseWD;" accesskey="&svBrowseWD.key;"/>
+			<command id="cmd_sv_sessionMgr" key="key_cmd_sv_sessionMgr"
+				oncommand="sv.command.openSessionMgr();"
+				desc="R: &svOpenSessMgr;" label="&svOpenSessMgr;" accesskey="&svOpenSessMgr.key;"/>
 		</commandset>
 
 		<commandset id="cmdset_r_control" commandupdater="true"
@@ -183,7 +186,6 @@
 			<menupopup id="popup_sciviews_main">
 				<menuitem id="r_start_console_menu" observes="cmd_sv_start_R"
 					class="menuitem-iconic r-run-command-icon"/>
-
 				<menuitem id="r_quit_console_menu" observes="cmd_sv_quit_R"
 					class="menuitem-iconic r-quit-command-icon"/>
 				<!--<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
@@ -191,9 +193,12 @@
 				<menuitem id="r_start_pkg_manager" observes="cmd_sv_OpenPkgManager"
 					class="menuitem"/>
 				<menuitem id="r_start_help" observes="cmd_sv_OpenHelp"
-					class="menuitem"/>
+						  class="menuitem-iconic help-icon"/>
 				<menuitem id="r_browse_wd" observes="cmd_sv_BrowseWD"
 					class="menuitem-iconic r-working-dir-icon"/>
+				<menuitem id="r_session_mgr" observes="cmd_sv_sessionMgr"
+					class="menuitem-iconic r-session-dir-icon"/>
+
 				<menuseparator/>
 				<!--<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine"-->
 				<!--	class="menuitem-iconic r-run-line-icon"/>-->

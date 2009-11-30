@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<!DOCTYPE dialog SYSTEM "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+  <!ENTITY % dialogsDTD SYSTEM "chrome://komodo/locale/dialogs.dtd">
+  %dialogsDTD;
+]>
+<!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
+	%sciviewskDTD;
+]>
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
+
+<dialog id="dialog-svsetsession"
+		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+		onload="OnLoad(event)"
+		orient="vertical"
+		flex="1"
+		buttons="accept,extra1,cancel"
+		buttonlabelextra1="Apply"
+		ondialoghelp="return false;"
+		ondialogaccept="return OK();"
+		ondialogcancel="return true;"
+		ondialogextra1="OK();"
+		title="R Session manager"
+		persist="screenX screenY width height"
+		>
+<script type="text/javascript">
+<![CDATA[
+
+
+// Create references to main window objects:
+var mainWin, sv, ko;
+var os = Components.classes['@activestate.com/koOs;1'].getService(Components.interfaces.koIOs);
+
+
+// Populate session directory list, insert preference values into corresponding textboxes
+function OnLoad(event) {
+	var p = parent;
+	while (p = p.opener) {
+		if (!sv && p.sv)	sv = p.sv;
+		if (!ko && p.ko)	ko = p.ko;
+		if (sv && ko) break;
+	}
+	mainWin = p;
+
+	prefName = "sciviews.session.dir";
+	var values = sv.prefs.getString(prefName + ".mru");
+	var prefVal = sv.prefs.getString(prefName);
+	if (values) {
+		values = values.split(os.pathsep);
+		var i = values.indexOf(prefVal);
+		if (i != -1) { // Move current value onto top of list:
+			values.splice(i, 1);
+			values = Array.concat(prefVal, values);
+		}
+		if (values.length > 10)
+			values.splice(10);
+
+		var el = document.getElementById(prefName);
+		var value;
+		for (var j = 0; j < values.length; j++) {
+			value = sv.tools.file.path(values[j]);
+			el.insertItemAt(j, value, value, null);
+		}
+	}
+
+	var prefEls = document.getElementsByAttribute("pref", "true");
+	var prefName, prefVal, el;
+	for (var i = 0; i < prefEls.length; i++) {
+		el = prefEls[i];
+		prefName = el.id;
+		prefVal = sv.prefs.getString(prefName);
+
+		if (el.getAttribute("homesubst") == "true")
+			prefVal = sv.tools.file.path(prefVal);
+
+		if (el.tagName == "menulist") {
+			var mi, values = [];
+			for (var j = 0; j < el.itemCount; j++) {
+				values.push(el.getItemAtIndex(j).value);
+			}
+			if (values.indexOf(prefVal) == -1) {
+				el.insertItemAt(0, prefVal, prefVal, null);
+			}
+		}
+		el.value = prefVal;
+	}
+	selectSessionDir();
+}
+
+
+// Save values as preferences:
+function OK() {
+	var el = document.getElementById("sciviews.session.dir");
+	var mi, values = [];
+	for (var j = 0; j < el.itemCount; j++) {
+		values.push(homeSubst(el.getItemAtIndex(j).value));
+	}
+	sv.prefs.setString("sciviews.session.dir.mru", values.join(os.pathsep));
+
+	var prefEls = document.getElementsByAttribute("pref", "true");
+	var prefIds = [], prefName, prefVal, el;
+	for (var i = 0; i < prefEls.length; i++) {
+		el = prefEls[i];
+		prefVal = el.value;
+		if (el.getAttribute("homesubst") == "true")
+			prefVal = homeSubst(prefVal);
+		sv.prefs.setString(el.id, prefVal);
+	}
+
+	sv.r.setSession (document.getElementById("sciviews.session.dir").value,
+					 document.getElementById("sciviews.session.data").value,
+					 document.getElementById("sciviews.session.scripts").value,
+					 document.getElementById("sciviews.session.reports").value);
+
+	//alert(values.join(os.pathsep));
+	return true;
+}
+
+// Substitute real home path for "~"
+// use sv.tools.file.path for opposite action
+function homeSubst(dir) {
+	var homeMacro = "~";
+	var homedir = sv.tools.file.path(homeMacro);
+	dir = os.path.normpath(dir);
+	var platform = navigator.platform.substring(0,3).toLowerCase();
+
+	if ((platform == "win"
+		&& dir.substr(0, homedir.length).toLowerCase() == homedir.toLowerCase())
+		|| dir.substr(0, homedir.length) == homedir) {
+
+		dir = homeMacro + dir.substr(homedir.length);
+	}
+	return dir;
+}
+
+// Add a directory item into list
+function setDir(id) {
+	var el = document.getElementById(id);
+	var dir = ko.filepicker.getFolder(el.value, "Choose directory for: " + id);
+
+	if (!dir) return false;
+
+
+	var mi;
+	for (var j = 0; j < el.itemCount; j++) {
+		if (el.getItemAtIndex(j).value == dir) {
+			el.removeItemAt(j);
+			break;
+		}
+	}
+	el.insertItemAt(0, dir, dir, null);
+	el.value = dir;
+	selectSessionDir();
+	return true;
+}
+
+function remCurItemFromList() {
+	var el = document.getElementById("sciviews.session.dir");
+	if (!el.itemCount) return;
+	var selInd = el.selectedIndex;
+	el.selectedIndex = (selInd + 1) % el.itemCount;
+	el.removeItemAt(selInd);
+	if (!el.itemCount) {
+		el.value = null;
+	}
+	selectSessionDir();
+}
+
+
+// Select current session directory and read config files, check for existing workspace
+function selectSessionDir(noReadConfig) {
+	var dir = document.getElementById("sciviews.session.dir").value;
+	var cfgFile = sv.tools.file.path(dir, ".svData");
+	// Look if this directory already exists and contains a .svData file
+	var config = {};
+	var hasConfig, hasWorkspace = false;
+
+	hasConfig = sv.tools.file.exists(dir) == 2 &&
+				sv.tools.file.exists(cfgFile) == 1;
+
+	hasWorkspace = sv.tools.file.exists(sv.tools.file.path(dir, ".RData"));
+
+	if (!noReadConfig) {
+		if (hasConfig) {
+			var key, value, cfgName, cfgValue, cfgEls;
+			hasConfig = true;
+
+			var cfg = sv.tools.file.read(cfgFile, "utf-8").split(/\r?\n+/);
+			for (var i in cfg) {
+				key = cfg[i].split(/\s*=\s*/);
+				config[key[0]] = key[1];
+			}
+		}
+
+		cfgEls = document.getElementsByAttribute("config", "*");
+		for (var i= 0; i < cfgEls.length; i++) {
+			cfgName = cfgEls[i].getAttribute("config");
+			if (config.hasOwnProperty(cfgName)) {
+				cfgEls[i].value = config[cfgName];
+			} else {
+				cfgEls[i].value = sv.prefs.getString(cfgEls[i].id);
+			}
+		}
+	}
+
+	printInfo("In this directory: " + (hasConfig? "config file exists" : "no config file") +
+			  ", " + (hasWorkspace? "saved workspace exists": "no workspace") + ".");
+
+	document.getElementById("delete-config-button").disabled = !hasConfig;
+	document.getElementById("delete-workspace-button").disabled = !hasWorkspace;
+}
+
+function printInfo(str) {
+	document.getElementById("info").value = str;
+}
+
+// Save configuration files
+function saveConfig() {
+	var el = document.getElementById("sciviews.session.dir");
+	var dir = el.value;
+	var cfg = [];
+	var cfgEls = document.getElementsByAttribute("config", "*");
+	for (var i= 0; i < cfgEls.length; i++) {
+		cfg.push(cfgEls[i].getAttribute("config") + " = " + sv.tools.strings.trim(cfgEls[i].value));
+	}
+	var cfgFile = sv.tools.file.path(dir, ".svData");
+	sv.tools.file.write(cfgFile, cfg.join("\n"), "utf-8");
+
+	selectSessionDir(true);
+	return false;
+}
+
+function clearFiles(which) {
+	var dir = document.getElementById("sciviews.session.dir").value;
+	var files;
+	switch (which) {
+		case "config":
+			files = [".svData"];
+			break;
+		case "workspace":
+			files = [".RData", ".Rhistory"];
+			break;
+		default:
+	}
+
+	var file;
+	for (i in files) {
+		try {
+			file = sv.tools.file.getfile(dir, files[i]);
+			file.remove(true);
+		} catch(e) {
+			printInfo("Cannot remove file: " + e);
+		}
+	}
+	selectSessionDir();
+	return false;
+}
+
+]]>
+</script>
+<vbox>
+	<!--<description>Session directory is: TODO description here</description>-->
+		<groupbox orient="vertical">
+			<caption label="Session directory:"/>
+			<vbox>
+				<hbox align="center">
+					<menulist id="sciviews.session.dir" oncommand="selectSessionDir();"
+							  pref="true" prefattribute="value" flex="1"
+							  homesubst="true">
+						<menupopup id="sciviews_menu_select_r_application" />
+					</menulist>
+					<button label="Browse..."
+					oncommand="setDir('sciviews.session.dir');"/>
+					<button label="Remove" oncommand="remCurItemFromList('sciviews.session.dir');"/>
+				</hbox>
+				<separator class="thin"/>
+				<label id="info" value="" />
+				<separator class="groove"/>
+				<label value="Subdirectories (relative to session dir)"/>
+				<hbox align="center">
+					<label value="Data:" control="sciviews.session.data" />
+					<textbox id="sciviews.session.data" config="datadir" pref="true"
+							 editable="false" flex="1"/>
+					<label value="Scripts:" control="sciviews.session.scripts" />
+					<textbox id="sciviews.session.scripts" config="scriptdir"
+							 pref="true" flex="1"/>
+					<label value="Reports:" control="sciviews.session.reports" />
+					<textbox id="sciviews.session.reports" config="reportdir"
+							 pref="true" flex="1"/>
+				</hbox>
+				<vbox align="right">
+					<hbox align="center">
+						<button id="save-config-button" label="Save config"
+								oncommand="saveConfig();"/>
+						<button id="delete-config-button"
+								label="Delete config"
+								oncommand="clearFiles('config');"/>
+						<button id="delete-workspace-button"
+								label="Delete R workspace"
+								oncommand="clearFiles('workspace');"/>
+					</hbox>
+				</vbox>
+			</vbox>
+		</groupbox>
+	</vbox>
+</dialog>
