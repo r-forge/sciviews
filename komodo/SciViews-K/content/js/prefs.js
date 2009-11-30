@@ -75,7 +75,7 @@ sv.prefs.setString("sciviews.server.host", "127.0.0.1", false);
 sv.prefs.setString("svRDefaultInterpreter", "", false);
 sv.prefs.setString("svRApplication", "", false);
 sv.prefs.setString("svRApplicationId", "", false);
-sv.prefs.setString("CRANMirror", "", false);
+sv.prefs.setString("CRANMirror", "http://cran.r-project.org/", false);
 
 
 

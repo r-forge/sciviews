@@ -6,6 +6,10 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/folder_home.png");
 }
 
+.r-session-dir-icon {
+	list-style-image: url("chrome://sciviewsk/skin/images/folder_wrench.png");
+}
+
 .r-run-all-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/run_all.png");
 }

@@ -95,3 +95,6 @@
 
 <!ENTITY helpStart "R Help start">
 <!ENTITY helpStart.key "h">
+
+<!ENTITY svOpenSessMgr "Choose session directory">
+<!ENTITY svOpenSessMgr.key "C">

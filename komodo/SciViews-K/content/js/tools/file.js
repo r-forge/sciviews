@@ -60,7 +60,7 @@ if (typeof(sv.tools.file) == 'undefined')
 			fis.init(file, -1, -1, 0);
 			is.init(fis, encoding, 1024, 0xFFFD);
 
-			ret = "";
+			var ret = "";
 			if (is instanceof Components.interfaces.nsIUnicharLineInputStream) {
 				var str = {};
 				var cont;
@@ -206,7 +206,7 @@ if (typeof(sv.tools.file) == 'undefined')
 			var res = [];
 			for(i in path) res = res.concat(path[i]);
 			path = res;
-		path = path.join(sep).replace(/[\\\/]+/g, sep);
+		path = os.path.normpath(path.join(sep));
 		var dir0 = path.split(sep, 1)[0];
 		path = sv.tools.file.specDir(dir0) + path.substring(dir0.length);
 		path = os.path.abspath(path);
@@ -330,9 +330,9 @@ if (navigator.platform.indexOf("Win") == 0) {
 		var err = {}, out = {};
 		var res = runSvc.RunAndCaptureOutput("which " + appName,
 			null, null, null, out, err);
-		
+
 		var path = sv.tools.strings.trim(out.value);
-		
+
 		if (!path) return null;
 		return path.split(" ");
 	}

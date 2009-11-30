@@ -178,18 +178,20 @@
 		  <columns>
 			<column flex="1"/> <column flex="2"/> <column flex="1"/> <column
 			flex="2"/>
-		  </columns> <rows>
+		  </columns>
+		  <rows>
 			<row align="center">
 				  <label value="Server port #:" control="sciviews.client.socket" />
 				  <textbox id="sciviews.client.socket" pref="true" width="50" />
 				  <label value="Host to connect to:" control="sciviews.server.host" />
 				  <textbox id="sciviews.server.host" pref="true" width="150"
 						   disabled="true"/>
-			</row> <row align="center">
+			</row>
+			<row align="center">
 				  <label value="Client port #:" control="sciviews.server.socket" />
 				  <textbox id="sciviews.server.socket" pref="true" width="50" />
-				  <label value="Client Id:" control="sciviews.client.id" /> <textbox
-				  id="sciviews.client.id" pref="true" width="150" />
+				  <label value="Client Id:" control="sciviews.client.id" />
+				  <textbox id="sciviews.client.id" pref="true" width="150" />
 			</row>
 		  </rows>
 		</grid>

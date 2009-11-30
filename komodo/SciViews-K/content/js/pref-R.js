@@ -241,7 +241,8 @@ function PrefR_UpdateCranMirrors(localOnly) {
 	var value = menuList.value? menuList.value : sv.prefs.getString("CRANMirror");
 	menuList.removeAllItems();
 	for (i in arrData) {
-		menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
+		if (arrData[i][0])
+			menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
 	}
 	menuList.value = value;
 	return true;

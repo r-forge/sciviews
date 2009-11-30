@@ -1445,6 +1445,9 @@ if (typeof(sv.r.pkg) == 'undefined') sv.r.pkg = new Object();
 sv.r.pkg.repositories = function () {
 	var res = sv.r.eval('setRepositories(TRUE)');
 	return(res);
+
+//on Linux, try reading data from: "<HOME>/.R/repositories", "/usr/lib/R/etc/repositories", "usr/local/lib/R/etc/repositories"
+//on Windows, "<HOME>/.R/repositories", "<R_installPath>/etc/repositories"
 }
 
 // Select CRAN mirror, with optional callback
@@ -1477,7 +1480,7 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 				sv.r.eval('with(TempEnv(), { repos <- getOption("repos");' +
 						  'repos["CRAN"] <- "' + repos + '"; ' +
 						  'options(repos = repos) } )');
-				sv.r.pkg.repos = repos;
+				cran = sv.prefs.setString("CRANMirror", repos);
 				if (callback)	callback(repos);
 
 			}
@@ -1673,12 +1676,14 @@ sv.r.pkg.install = function (pkgs, repos) {
 	var res = false;
 	var reset = repos === true;
 
+	var defaultRepos = sv.prefs.getString("CRANMirror", "http://cran.r-project.org/");
+
 	function _installCallback() {
-			sv.r.pkg.install(pkgs, sv.r.pkg.repos, true);
+			sv.r.pkg.install(pkgs, defaultRepos, true);
 	};
 
-	if (!repos && sv.r.pkg.repos) {
-		repos = sv.r.pkg.repos;
+	if (!repos && defaultRepos) {
+		repos = defaultRepos;
 	} else if (reset && allowCCM) {
 		res = sv.r.pkg.chooseCRANMirror(_installCallback);
 		return;
@@ -1690,8 +1695,8 @@ sv.r.pkg.install = function (pkgs, repos) {
 				if (cran == "@CRAN@") {
 					res = sv.r.pkg.chooseCRANMirror(_installCallback);
 				} else {
-					sv.r.pkg.repos = cran;
-					res = sv.r.pkg.install(pkgs, sv.r.pkg.repos, true);
+					sv.prefs.setString("CRANMirror", cran);
+					res = sv.r.pkg.install(pkgs, cran, true);
 				}
 				return;
 			}

@@ -26,7 +26,7 @@ if (typeof(sv.command) == 'undefined') {
 	function _getWindowByURI(uri) {
 		var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']
 			.getService(Components.interfaces.nsIWindowMediator);
-		en = wm.getEnumerator("");
+		var en = wm.getEnumerator("");
 
 		if (uri) {
 			var win;
@@ -37,6 +37,27 @@ if (typeof(sv.command) == 'undefined') {
 			}
 		}
 		return null;
+	}
+
+	//Get reference to a window, opening it if is closed
+	function _getWindowRef(uri, name, features, focus) {//, ...
+		var win = _getWindowByURI(uri);
+		if (!win || win.closed) {
+			try {
+				var args = Array.apply(null, arguments);
+				args = args.slice(0,3).concat(args.slice(4));
+				//return(args);
+
+				if (!features)
+					args[2] = "chrome,modal,titlebar";
+
+				win = window.openDialog.apply(null, args);
+			} catch (e) {
+				alert(e);
+				sv.log.exception(e, "Error opening window: " + uri);
+			}
+		}
+		if (focus) win.focus();
 	}
 
 	// private methods
@@ -279,21 +300,23 @@ this.startR = function () {
 	}
 
 	this.openPkgManager = function () {
-		var rPkgMgrXulUri = "chrome://sciviewsk/content/RPkgManager.xul";
-
-		var rPkgMgr = _getWindowByURI(rPkgMgrXulUri);
-		if (!rPkgMgr || rPkgMgr.closed) {
-			try {
-				rPkgMgr = window.openDialog(rPkgMgrXulUri, "RPkgMgr",
-				"chrome=yes,dependent,resizable=yes," +
-				"scrollbars=yes,status=no,close,dialog=no", sv);
-
-			} catch (e) {
-				sv.log.exception(e, "Error opening package manager window");
-			}
-		}
-		rPkgMgr.focus();
+		var win = _getWindowRef("chrome://sciviewsk/content/RPkgManager.xul",
+					"RPkgMgr",
+					"chrome=yes,dependent" +
+					"scrollbars=yes,status=no,close,dialog=no",
+					true,
+					sv);
+		return win;
 	}
+
+	this.openSessionMgr = function() {
+		var win = _getWindowRef("chrome://sciviewsk/content/sessions.xul",
+					"RSessionMgr",
+					"chrome,modal,titlebar,close,centerscreen",
+					true);
+		return win;
+	}
+
 
 // sv.command.openHelp - returns reference to the RHelpWindow
 //FIXME: help in tab still buggy
@@ -382,7 +405,6 @@ this.startR = function () {
 		//_this.RHelpWin.closed = true;
 	}
 
-
 	this.setControllers = function () {
 		//sv.log.debug("this.setControllers");
 		// Allow some commands only when R is running...
@@ -392,7 +414,7 @@ this.startR = function () {
 		var vmProto = ko.views.viewManager.prototype;
 
 		var cmdsIfRRunning = ['OpenPkgManager', 'BrowseWD', 'quit_R',
-			 'OpenHelp']; //'update_charset',
+			 'OpenHelp', 'sessionMgr']; //'update_charset',
 		var cmdsIfRNotRunning = ['start_R'];
 
 		// Make these commands active only when current document language is R
@@ -520,8 +542,12 @@ this.startR = function () {
 			.classes["@activestate.com/koKeybindingSchemeService;1"]
 			.getService(Components.interfaces.koIKeybindingSchemeService);
 
+		//gKeybindingMgr.keybindingSchemeService
+
 		var svSchemeDefault = sv.tools.file
 			.readURI("chrome://sciviewsk/content/default-keybindings.kkf");
+
+		//gKeybindingMgr.currentScheme.name
 		var currentSchemeName = sv.prefs.getString("keybinding-scheme");
 
 		// Perhaps this should be redone for each scheme?
@@ -530,6 +556,8 @@ this.startR = function () {
 		//keybindingSvc.getSchemeNames(schemeNames, {});
 		//schemeNames = schemeNames.value;
 		var sch = keybindingSvc.getScheme(currentSchemeName);
+
+		//gKeybindingMgr.parseConfiguration
 
 		var bindingRx = /[\r\n]+(# *SciViews|binding cmd_sv_.*)/g;
 		if (clearOnly != true) {
@@ -552,6 +580,8 @@ this.startR = function () {
 			// Temporarily delete SciViews keybindings
 			sch.data = sch.data.replace(bindingRx, "");
 
+
+			//var usedbys = this.usedBy([keysequence]);
 			// Check for key conflicts
 			var svKeysCurrentOther = _getSvKeys (sch.data, "");
 			var currKeyArr = [];
@@ -580,12 +610,16 @@ this.startR = function () {
 				"SciViews keybindings have been updated in \"" +
 				currentSchemeName + "\" scheme.");
 		} else {
+			//gKeybindingMgr.removeCommandsWithPrefix("cmd_sv_");
 			sch.data = sch.data.replace(bindingRx, "");
 			sv.log.debug("SciViews keybindings have been cleared in \"" +
 				currentSchemeName + "\" scheme.");
 		}
 		sch.save();
-		sv.log.debug("You may need to restart Komodo.");
+		//gKeybindingMgr.saveAndApply();
+		//gKeybindingMgr.saveCurrentConfiguration();
+
+		//sv.log.debug("You may need to restart Komodo.");
 
 		// A (temporary) hack to allow for R autocompletion/calltips to be
 		// triggered with the same key-shortcut as for other languages.

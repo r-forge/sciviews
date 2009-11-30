@@ -66,10 +66,18 @@ function go(uri, loadFlags) {
 	// so define them here:
 
 	rHelpBrowser = document.getElementById("rhelp-browser");
-	if (uri === "" || uri == "@home@") {
-		rHelpBrowser.goHome();
-		return;
+
+	switch (uri) {
+		case  "":
+		case "@home@":
+			rHelpBrowser.goHome();
+			return;
+		case "@CRAN@":
+			uri = sv.prefs.getString("CRANMirror");
+			if (!uri || uri.indexOf("ftp:/") === 0)
+				uri = "http://cran.r-project.org/";
 	}
+
 	rHelpTopic = document.getElementById("rhelp-topic");
 	// In case the window was not yet fully loaded.
 	if (!rHelpTopic) {
@@ -129,20 +137,18 @@ function onFindCommand (event) {
 	}
 }
 
-
-function find(next) {
+function find(next, backwards) {
 	//rHelpTopic.select();
 	//findInDoc(rHelpTopic.value);
 	var findToolbar = document.getElementById("FindToolbar");
 
 	if (!next) {
-		//var isShown = findToolbar.getAttribute("hidden") != "true";
-		findToolbar.open();
+		findToolbar.open(0); //  aMode = 0 : full search
 		findToolbar._findField.value = rHelpBrowser.contentWindow.getSelection();
 		findToolbar._find(findToolbar._findField.value);
 		findToolbar._findField.focus();
 	} else {
-		findToolbar._findAgain(event.shiftKey);
+		findToolbar._findAgain(backwards);
 	}
 }
 
@@ -336,7 +342,7 @@ this.purgeHistory = function() {
 
 }).apply(browserUtils);
 
-function windowOnLoad (event) {
+function OnLoad (event) {
 	// DOMContentLoaded is fired also for HTML content
 	if (event.target != self.document)
 		return;
@@ -382,7 +388,7 @@ function windowOnLoad (event) {
 
 // this is fired earlier than load event, so all required variables
 // will be defined
-self.addEventListener("DOMContentLoaded", windowOnLoad, false);
+self.addEventListener("DOMContentLoaded", OnLoad, false);
 
 // required by PrintUtils.printPreview()
 function getWebNavigation() rHelpBrowser.webNavigation;
@@ -439,7 +445,7 @@ function getPPBrowser() rHelpBrowser;
 
 <commandset id="commandset_main">
   <command id="cmd_find" oncommand="find(false);" />
-  <command id="cmd_find_next" oncommand="find(true);" />
+  <command id="cmd_find_next" oncommand="find(true, event.shiftKey);" />
   <command id="cmd_go" oncommand="go();" disabled="false"
 		   label="Go" tooltiptext="Show topic or web page" />
   <command id="cmd_search" oncommand="rHelpSearch(document.getElementById('rhelp-topic').value);"
@@ -506,7 +512,7 @@ function getPPBrowser() rHelpBrowser;
 <!--	 TODO: if CRAN mirror was set in R, go directly there, eg.	go('@CRAN@')		-->
 				<menuitem id="rhelp-menu-cran" label="CRAN"
 					accesskey="c"
-					oncommand="go('http://cran.r-project.org/');"/>
+					oncommand="go('@CRAN@');"/>
 				<menuitem id="rhelp-menu-wiki" label="R wiki"
 					accesskey="w"
 					oncommand="go('http://wiki.r-project.org/');"/>
