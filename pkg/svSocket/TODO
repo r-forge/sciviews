@@ -1,5 +1,9 @@
 = svSocket To Do list
 
+* Rework the mechanism to add history item to R from within Komodo
+
+* Eliminate the need to poll R regularly (for menu items activating/deactivating)
+
 * svSocket-package.Rd man page
 
 * Easy redefinition of options(width = ...) to adjust width of output to the
