@@ -292,7 +292,8 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 
 		# Look if and where komodo is installed
 		if (.Platform$OS.type == "unix") {
-			Komodo <- "/usr/local/bin/komodo" # default location
+			if (Komodo == "")
+				Komodo <- "/usr/local/bin/komodo" # default location
 			if (!file.exists(Komodo)) {
 				Komodo <- Sys.which("komodo")[1]
 				debugMsg("which", "returned", Komodo)
