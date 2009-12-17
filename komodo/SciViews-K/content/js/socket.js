@@ -179,6 +179,10 @@ if (typeof(sv.socket) == 'undefined')
 		var res = this.rClient(this.host, port, id + cmd + "\n",
 			listener, echo, echofun);
 
+		// BUG: (windows/linux?) if network connection is turned off while komodo is
+		// running, navigator.onLine is set to false, and we get an
+		// NS_ERROR_OFFLINE here, even if the socket connection with R is on:
+
 		// if exception was returned:
 		if (res && res.name && res.name == "NS_ERROR_OFFLINE") {
 			sv.cmdout.message("Error: R is unreachable (see log)", 5000, true);

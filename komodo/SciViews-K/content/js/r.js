@@ -1262,8 +1262,8 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
         // Break possible partial multiline command in R from previous session
         // and indicate that we are in a new session now in the R console
         // TODO: report if we load something or not
-        sv.r.escape('cat("Session directory is now ' + dir.addslashes() +
-            '\n", file = stderr())');
+        sv.r.escape('cat("Session directory is now", dQuote("' + dir.addslashes() +
+            '"), "\\n", file = stderr())');
 		// Refresh active objects support
 
         // We most probably need to update the R Objects browser and active objs
@@ -1676,7 +1676,9 @@ sv.r.pkg.install = function (pkgs, repos) {
 	var res = false;
 	var reset = repos === true;
 
-	var defaultRepos = sv.prefs.getString("CRANMirror", "http://cran.r-project.org/");
+	var defaultRepos = sv.prefs.getString("CRANMirror");
+	if (defaultRepos == "None") defaultRepos = "";
+		//defaultRepos = "http://cran.r-project.org/";
 
 	function _installCallback() {
 			sv.r.pkg.install(pkgs, defaultRepos, true);
@@ -1720,7 +1722,8 @@ sv.r.pkg.install = function (pkgs, repos) {
 	// then callback again
 	if (!pkgs && repos != "local") {
 		sv.cmdout.message(sv.translate("Listing available packages..."), 5000);
-		res = sv.r.evalCallback('cat(available.packages()[,1], sep="' +
+		res = sv.r.evalCallback('cat(available.packages(contriburl=contrib.url("'
+								+ repos + '", getOption("pkgType")))[,1], sep="' +
 			sv.r.sep + '")', function (pkgs) {
 				sv.cmdout.message("");
 
