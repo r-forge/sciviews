@@ -60,7 +60,6 @@ var sv;
 var rHelpBrowser;
 var rHelpTopic;
 
-
 function go(uri, loadFlags) {
 	// these are still undefined when calling .go on load event,
 	// so define them here:

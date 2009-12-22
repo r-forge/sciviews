@@ -818,4 +818,7 @@ extensionLib.prototype._keys = function(obj) {
   <boolean id="import_recursive">1</boolean>
   <string id="import_type">useFolders</string>
 </preference-set>
+<preference-set idref="6200c0ed-45ec-4f46-a159-284803d65c04/content/js/rinterpolationquery.js">
+  <string id="spellcheckLangID">en-US</string>
+</preference-set>
 </project>

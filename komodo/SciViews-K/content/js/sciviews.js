@@ -464,7 +464,10 @@ sv.helpContext = function () {
 				content = content.replace(/[\n\r]/g, '\t');
 
 				// Look for a string defining the URL for associated help file
-				// This is something like: [[%pref:URL|R|RWiki-help:<value>]]
+				// This is something like: [[%ask|pref:URL|R|RWiki-help:<value>]]
+				
+				// To ease search, replace all [[%ask by [[%pref
+				content = content.replace(/\[\[%ask:/g, '[[%pref:');
 
 				// Look for URL-help
 				var help = content.replace(/^.*\[\[%pref:URL-help:([^\]]*)]].*$/,
