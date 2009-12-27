@@ -56,6 +56,7 @@ if (typeof(sv.socket) == 'undefined')
 
 	// The main socket client function to connect to R socket server
 	this.rClient = function (host, port, outputData, listener, echo, echofun) {
+
 		try {
 			var transportService = Components.
 				classes["@mozilla.org/network/socket-transport-service;1"]
@@ -82,12 +83,12 @@ if (typeof(sv.socket) == 'undefined')
 
 			var dataListener = {
 				data: "",
-				onStartRequest: function(request, context) { this.data = ""; },
+				onStartRequest: function(request, context) { _this.data = ""; },
 				onStopRequest: function(request, context, status) {
 					instream.close();
 					outstream.close();
-					this.data = sv.tools.strings.removeLastCRLF(this.data);
-					listener.finished(this.data);
+					_this.data = sv.tools.strings.removeLastCRLF(_this.data);
+					listener.finished(_this.data);
 				},
 				onDataAvailable: function(request, context,
 					inputStream, offset, count) {
@@ -104,11 +105,11 @@ if (typeof(sv.socket) == 'undefined')
 
 					// Determine if we have a prompt at the end
 					if (chunk.search(/\+\s+$/) > -1) {
-						this.prompt = ":+ ";
+						_this.prompt = ":+ ";
 						// remove endline from prompt if it is a continuation
 						chunk = chunk.rtrim() + " ";
 					} else if (chunk.search(/>\s+$/) > -1) {
-						this.prompt = ":> ";
+						_this.prompt = ":> ";
 					}
 
 					// Do we need to close the connection
@@ -120,7 +121,7 @@ if (typeof(sv.socket) == 'undefined')
 						// Eliminate the last carriage return after the prompt
 						chunk = chunk.replace(/(\r?\n\f|\s+$)/, "");
 					}
-					this.data += chunk;
+					_this.data += chunk;
 					// Do we "echo" these results somewhere?
 					if (echo) {
 						if (echofun == null) {
@@ -132,7 +133,7 @@ if (typeof(sv.socket) == 'undefined')
 			}
 
 			var pump = Components.
-			classes["@mozilla.org/network/input-stream-pump;1"].
+				classes["@mozilla.org/network/input-stream-pump;1"].
 				createInstance(Components.interfaces.nsIInputStreamPump);
 			pump.init(stream, -1, -1, 0, 0, false);
 			pump.asyncRead(dataListener, null);
@@ -176,7 +177,7 @@ if (typeof(sv.socket) == 'undefined')
 		var port = sv.prefs.getString("sciviews.client.socket", "8888");
 		var id = "<<<id=" +
 			sv.prefs.getString("sciviews.client.id", "SciViewsK") + ">>>";
-		var res = this.rClient(this.host, port, id + cmd + "\n",
+		var res = _this.rClient(_this.host, port, id + cmd + "\n",
 			listener, echo, echofun);
 
 		// BUG: (windows/linux?) if network connection is turned off while komodo is
@@ -188,7 +189,6 @@ if (typeof(sv.socket) == 'undefined')
 			sv.cmdout.message("Error: R is unreachable (see log)", 5000, true);
 		}
 		return(res);
-
 	}
 	//Test: sv.socket.rCommand("<<<q>>>cat('library = '); str(library)");
 

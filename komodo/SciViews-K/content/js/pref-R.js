@@ -11,9 +11,7 @@
 // TODO: use 'R' simply as default R (terminal on Win/Mac, or ? on Linux)
 
 /* TODO: prefs to include:
- * session directory ??? (dir, datadir, scriptdir, reportdir)
  * address for remote R (sv.socket.host)? (if not localhost - disable source* commands)
- * default CRAN mirror updated also by sv.r.pkg.chooseCRANMirror
  * R help: show in tab (sidebar - another TODO) or in separate window
  * R Site search url (%S replaced by topic)
  */
@@ -23,6 +21,57 @@
 // populate the interpreter list (depending on the platform).
 
 var sv;
+
+
+// for editable menulists: append new element if necessarry.
+function editMenulist(el) {
+	var curValue = sv.tools.strings.trim(el.value);
+	if (!curValue) return;
+	var values = [], val;
+	for (var j = 0; j < el.itemCount; j++) {
+		val = el.getItemAtIndex(j).value;
+		if (val == curValue) {
+			el.selectedIndex = j;
+			return;
+		}
+		values.push(val);
+	}
+	el.appendItem(curValue, curValue, null);
+}
+
+function menuListSetValues(attribute) {
+	if (!attribute) attribute = 'values';
+	var ml = document.getElementsByTagName('menulist');
+	var el, values;
+	for (var i = 0; i < ml.length; i++) {
+		el = ml[i];
+		if (el.hasAttribute(attribute)) {
+			values = el.getAttribute(attribute).split(/\s+/);
+			for (var k in values) {
+			   el.appendItem(values[k], values[k], null);
+			}
+		}
+	}
+}
+
+function menuListGetValues(attribute) {
+	if (!attribute) attribute = 'values';
+	var ml = document.getElementsByTagName('menulist');
+	var el, values;
+	for (var i = 0; i < ml.length; i++) {
+		el = ml[i];
+		if (el.hasAttribute(attribute)) {
+			values = [];
+			for (var k = 0; k < el.itemCount; k++) {
+				values.push(el.getItemAtIndex(k).value);
+			}
+			el.setAttribute(attribute, values.join(" "));
+		}
+	}
+}
+
+
+
 
 function PrefR_menulistSetValue(menuList, value, attr, vdefault) {
 	var n = menuList.itemCount;
@@ -57,6 +106,8 @@ function PrefR_OnLoad() {
 	if (!PrefR_UpdateCranMirrors(true))
 		PrefR_UpdateCranMirrors(false);
 
+	menuListSetValues();
+
 	parent.hPrefWindow.onpageload();
 }
 
@@ -75,6 +126,24 @@ function OnPreferencePageOK(prefset) {
 	prefset.setStringPref("svRApplicationId",
 					  document.getElementById('svRApplication')
 					  .selectedItem.id);
+
+	var outDec = document.getElementById('r.csv.dec').value;
+	var outSep = document.getElementById('r.csv.sep').value;
+
+	prefset.setStringPref("r.csv.dec.arg", '"' + outDec +'"');
+	prefset.setStringPref("r.csv.sep.arg", '"' + outSep +'"');
+
+	//alert(sv.tools.strings.addslashes(outDec));
+
+	if	(sv.r.running) {
+		sv.r.eval('options(OutDec = "' + outDec + '", ' +
+						'OutSep = "' + outSep + '")', true);
+	}
+
+
+
+	menuListGetValues();
+
 	return true;
 }
 
@@ -249,7 +318,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
 }
 
 // From: http://www.bennadel.com/index.cfm?dax=blog:1504.view
-function CSVToArray( strData, strDelimiter ){
+function CSVToArray(strData, strDelimiter){
 	strDelimiter = (strDelimiter || ",");
 	var objPattern = new RegExp((
 			// Delimiters.

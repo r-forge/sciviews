@@ -32,6 +32,8 @@
 
  ***** END LICENSE BLOCK ***** -->
 
+<!-- SciViews-K preference page -->
+
 <?xml-stylesheet href="chrome://global/skin" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
@@ -196,5 +198,36 @@
 		  </rows>
 		</grid>
 	</groupbox>
+	<groupbox orient="vertical">
+		<caption label="Data output"/>
+		<grid>
+		<columns>
+			<column flex="3"/> <column flex="3"/> <column flex="3"/>
+		</columns>
+			<rows>
+				<row align="center">
+					<label value="Decimal separator" control="r.csv.dec" />
+					<menulist pref="true" id="r.csv.dec"
+						values=", ." persist="values"
+						>
+						<menupopup />
+					</menulist>
+
+					<label value="CSV field separator" control="r.csv.sep" />
+					<menulist pref="true" id="r.csv.sep"
+							  editable="true"
+							  <!--oninput="this.value = this.value[0];"-->
+							  onkeyup="if (event.keyCode == 13) editMenulist(this);"
+							  onblur="editMenulist(this);"
+							  values=", ; \t" persist="values"
+							  >
+						<menupopup />
+					</menulist>
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+
+
 </vbox>
 </window>

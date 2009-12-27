@@ -222,12 +222,13 @@ if ((os_prefix == "win") || (os_prefix == "mac")) {
 	function _colorPicker_system (color) {
 		var sysUtils = Components.classes['@activestate.com/koSysUtils;1'].
 			getService(Components.interfaces.koISysUtils);
-		if (!color)
-			color = "#000000";
+		if (!color)		color = "#000000";
 		// sysUtils.pickColor seems to be broken, does not return any value
 		// which is strange, because it is only wrapper for .pickColorWithPositioning,
 		// Moreover, positioning does not seem to work anyway.
 		var newcolor = sysUtils.pickColorWithPositioning(color, -1, -1);
+		//Note pickColor was fixed in Komodo 5.2.3
+
 		if (newcolor) {
 		   var scimoz = ko.views.manager.currentView.scimoz;
 		   scimoz.replaceSel(newcolor);
@@ -406,7 +407,7 @@ sv.misc.swapQuotes = function() {
             scimoz.setSel(curAnchor, curPos);
         }
     } catch (e) {
-        sv.log.exception(e, "sv.misc.showConfig() error");
+        sv.log.exception(e, "sv.misc.swapQuotes() error");
     } finally {
         ko.views.manager.currentView.scimoz.endUndoAction();
     }
@@ -436,7 +437,8 @@ sv.misc.timeStamp = function (format) {
         var ke = ko.views.manager.currentView.scimoz;
 
 		// Adapted from setDateFormatExample() in "chrome://komodo/content/pref/pref-intl.js"
-		var timeSvc = Components.classes["@activestate.com/koTime;1"]. getService(Components.interfaces.koITime);
+		var timeSvc = Components.classes["@activestate.com/koTime;1"]
+			.getService(Components.interfaces.koITime);
 		var secsNow = timeSvc.time();
 		var timeTupleNow = timeSvc.localtime(secsNow, new Object());
 		if (!format)
@@ -447,5 +449,3 @@ sv.misc.timeStamp = function (format) {
         sv.log.exception(e, "sv.misc.timeStamp() error");
     }
 }
-
-

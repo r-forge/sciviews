@@ -1,8 +1,41 @@
 <?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+
+ The contents of this file are subject to the Mozilla Public License
+ Version 1.1 (the "License"); you may not use this file except in
+ compliance with the License. You may obtain a copy of the License at
+ http://www.mozilla.org/MPL/
+
+ Software distributed under the License is distributed on an "AS IS"
+ basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ License for the specific language governing rights and limitations
+ under the License.
+
+ The Original Code is SciViews-K by Philippe Grosjean et al.
+
+ Contributor(s):
+   Kamil Barton
+ 
+ Alternatively, the contents of this file may be used under the terms of
+ either the GNU General Public License Version 2 or later (the "GPL"), or
+ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ in which case the provisions of the GPL or the LGPL are applicable instead
+ of those above. If you wish to allow use of your version of this file only
+ under the terms of either the GPL or the LGPL, and not to allow others to
+ use your version of this file under the terms of the MPL, indicate your
+ decision by deleting the provisions above and replace them with the notice
+ and other provisions required by the GPL or the LGPL. If you do not delete
+ the provisions above, a recipient may use your version of this file under
+ the terms of any one of the MPL, the GPL or the LGPL.
+
+ ***** END LICENSE BLOCK ***** -->
+
+<!-- SciViews-K's R-session manager dialog box -->
+
 <!DOCTYPE dialog SYSTEM "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
-  <!ENTITY % dialogsDTD SYSTEM "chrome://komodo/locale/dialogs.dtd">
+<!ENTITY % dialogsDTD SYSTEM "chrome://komodo/locale/dialogs.dtd">
   %dialogsDTD;
-]>
 <!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
 	%sciviewskDTD;
 ]>
@@ -27,6 +60,9 @@
 <script type="text/javascript">
 <![CDATA[
 
+//TODO: Move this code to /content/js/sessions.js
+//TODO
+
 
 // Create references to main window objects:
 var mainWin, sv, ko;
@@ -42,45 +78,48 @@ function OnLoad(event) {
 		if (sv && ko) break;
 	}
 	mainWin = p;
-
-	prefName = "sciviews.session.dir";
-	var values = sv.prefs.getString(prefName + ".mru");
-	var prefVal = sv.prefs.getString(prefName);
-	if (values) {
-		values = values.split(os.pathsep);
-		var i = values.indexOf(prefVal);
-		if (i != -1) { // Move current value onto top of list:
-			values.splice(i, 1);
-			values = Array.concat(prefVal, values);
-		}
-		if (values.length > 10)
-			values.splice(10);
-
-		var el = document.getElementById(prefName);
-		var value;
-		for (var j = 0; j < values.length; j++) {
-			value = sv.tools.file.path(values[j]);
-			el.insertItemAt(j, value, value, null);
-		}
-	}
+	var sf = sv.tools.file;
 
 	var prefEls = document.getElementsByAttribute("pref", "true");
-	var prefName, prefVal, el;
+	var prefName, prefVal, prefSettings, prefHomeSubst, prefExistingOnly,
+		el, value, values, listContentPref;
 	for (var i = 0; i < prefEls.length; i++) {
 		el = prefEls[i];
 		prefName = el.id;
 		prefVal = sv.prefs.getString(prefName);
+		prefSettings = el.getAttribute("prefsettings");
+		if (el.hasAttribute("prefsettings")) {
+			prefSettings = el.getAttribute("prefsettings").split(" ");
+		}
+		prefHomeSubst = prefSettings.indexOf("home-subst") != -1;
+		prefExistingOnly = prefSettings.indexOf("existing-only") != -1;
 
-		if (el.getAttribute("homesubst") == "true")
-			prefVal = sv.tools.file.path(prefVal);
+		if (prefHomeSubst)
+			prefVal = sf.path(prefVal);
 
 		if (el.tagName == "menulist") {
-			var mi, values = [];
-			for (var j = 0; j < el.itemCount; j++) {
-				values.push(el.getItemAtIndex(j).value);
-			}
-			if (values.indexOf(prefVal) == -1) {
-				el.insertItemAt(0, prefVal, prefVal, null);
+
+			listContentPref = el.hasAttribute("contentpref")?
+				el.getAttribute("contentpref") : prefName + ".mru";
+
+			values = sv.prefs.getString(listContentPref);
+			if (values) {
+				//TODO: allow for other separators
+				values = values.split(os.pathsep);
+
+				var k = values.indexOf(
+					prefHomeSubst? homeSubst(prefVal) : prefVal);
+				// Move current value onto top of list:
+				if (k != -1) values.splice(k, 1);
+				values = Array.concat(prefVal, values);
+
+				if (values.length > 10)		values.splice(10);
+
+				for (var j = 0; j < values.length; j++) {
+					value = sf.path(values[j]);
+					if (!prefExistingOnly || sf.exists(value))
+						el.insertItemAt(j, value, value, null);
+				}
 			}
 		}
 		el.value = prefVal;
@@ -103,17 +142,17 @@ function OK() {
 	for (var i = 0; i < prefEls.length; i++) {
 		el = prefEls[i];
 		prefVal = el.value;
-		if (el.getAttribute("homesubst") == "true")
+		if (el.getAttribute("prefsettings").indexOf("home-subst") != -1)
 			prefVal = homeSubst(prefVal);
 		sv.prefs.setString(el.id, prefVal);
 	}
 
-	sv.r.setSession (document.getElementById("sciviews.session.dir").value,
-					 document.getElementById("sciviews.session.data").value,
-					 document.getElementById("sciviews.session.scripts").value,
-					 document.getElementById("sciviews.session.reports").value);
+	function _getVal(id) document.getElementById(id).value;
+	sv.r.setSession (_getVal("sciviews.session.dir"),
+					 _getVal("sciviews.session.data"),
+					 _getVal("sciviews.session.scripts"),
+					 _getVal("sciviews.session.reports"));
 
-	//alert(values.join(os.pathsep));
 	return true;
 }
 
@@ -204,8 +243,8 @@ function selectSessionDir(noReadConfig) {
 		}
 	}
 
-	printInfo("In this directory: " + (hasConfig? "config file exists" : "no config file") +
-			  ", " + (hasWorkspace? "saved workspace exists": "no workspace") + ".");
+	printInfo("This directory contains " + (hasConfig? "a config file" : "no config file") +
+			  " (\".svConfig\") and " + (hasWorkspace? "saved workspace": "no workspace") + ".");
 
 	document.getElementById("delete-config-button").disabled = !hasConfig;
 	document.getElementById("delete-workspace-button").disabled = !hasWorkspace;
@@ -257,6 +296,35 @@ function clearFiles(which) {
 	return false;
 }
 
+
+function saveWorkspace() {
+	//TODO: if R is not running copy .RData file to "dir"
+	if (!sv.r.running) return;
+
+	var sf = sv.tools.file;
+	var addslashes = sv.tools.strings.addslashes;
+	var dir = sf.path(document.getElementById("sciviews.session.dir").value);
+
+	var rDataFile = sf.path(dir, ".RData");
+	var rHistoryFile = sf.path(dir, ".Rhistory");
+	if (!sf.exists(rDataFile) || ko.dialogs.okCancel(
+			sv.translate("Do you really want to overwrite exising workspace file"
+						 + "in \"%S\" with current workspace?", dir),
+				"Cancel", null, sv.translate("Save current workspace")
+		) == "OK") {
+			sv.r.evalCallback('save.image("' + addslashes(rDataFile) + '")',
+				selectSessionDir);
+
+		if (!sf.exists(rHistoryFile) || ko.dialogs.okCancel(
+			sv.translate("Do you want to overwrite current history file in \"%S\"", dir),
+				"Cancel", null, sv.translate("Save current history")
+		) == "OK") {
+			sv.r.evalHidden('savehistory("' + addslashes(rDataFile) + '")');
+		}
+
+	}
+}
+
 ]]>
 </script>
 <vbox>
@@ -267,8 +335,8 @@ function clearFiles(which) {
 				<hbox align="center">
 					<menulist id="sciviews.session.dir" oncommand="selectSessionDir();"
 							  pref="true" prefattribute="value" flex="1"
-							  homesubst="true">
-						<menupopup id="sciviews_menu_select_r_application" />
+							  prefsettings="dir existing-only home-subst">
+						<menupopup />
 					</menulist>
 					<button label="Browse..."
 					oncommand="setDir('sciviews.session.dir');"/>
@@ -299,6 +367,9 @@ function clearFiles(which) {
 						<button id="delete-workspace-button"
 								label="Delete R workspace"
 								oncommand="clearFiles('workspace');"/>
+						<button id="delete-workspace-button"
+								label="Save current workspace here"
+								oncommand="saveWorkspace();"/>
 					</hbox>
 				</vbox>
 			</vbox>
