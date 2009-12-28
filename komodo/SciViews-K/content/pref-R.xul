@@ -199,7 +199,7 @@
 		</grid>
 	</groupbox>
 	<groupbox orient="vertical">
-		<caption label="Data output"/>
+		<caption label="Data input and output"/>
 		<grid>
 		<columns>
 			<column flex="3"/> <column flex="3"/> <column flex="3"/>
@@ -214,9 +214,12 @@
 					</menulist>
 
 					<label value="CSV field separator" control="r.csv.sep" />
+
+							  <!--PhG: this raises an error when included in the <menulist ...> tag hereunder! oninput="this.value = this.value[0];"-->
+
 					<menulist pref="true" id="r.csv.sep"
 							  editable="true"
-							  <!--oninput="this.value = this.value[0];"-->
+
 							  onkeyup="if (event.keyCode == 13) editMenulist(this);"
 							  onblur="editMenulist(this);"
 							  values=", ; \t" persist="values"
