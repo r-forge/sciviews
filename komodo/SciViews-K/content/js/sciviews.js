@@ -3,6 +3,9 @@
 // Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
+// _(); // A fake function used only to tag strings to be translated in projects
+//         and toolbox macros
+//
 // sv.version; // Get current SciViews-K version (major.minor.release)
 // sv.showVersion; // Do we display version in an alert() box or just set it?
 // sv.checkVersion(version); // Check the SciViews-K extension version is fine
@@ -47,7 +50,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
+// This function is used to tag strings to be translated in projects/toolbox
+_ = function(str) { return(str) }
 
 if (typeof(sv) == 'undefined') sv = {};
 
