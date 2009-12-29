@@ -2,10 +2,10 @@ Package: svIDE
 Type: Package
 Title: SciViews GUI API - IDE and code editor functions
 Depends: R (>= 2.6.0)
-Imports: utils, tcltk, svMisc
+Imports: utils, tcltk, svMisc, XML
 Description: Function for the GUI API to interact with external IDE/code editors
-Version: 0.9-47
-Date: 2009-10-26
+Version: 0.9-48
+Date: 2009-12-29
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL (>= 2)

@@ -1,4 +1,4 @@
-import(utils, tcltk, svMisc)
+import(utils, tcltk, svMisc, XML)
 
 export(createCallTipFile,
        createSyntaxFile,
@@ -7,4 +7,8 @@ export(createCallTipFile,
        guiCallTip,
 	   guiComplete,
        guiDDEInstall,
-	   Source)
+	   Source,
+	   kpf2pot,
+	   kpz2pot,
+	   kpfTranslate,
+	   kpzTranslate)
