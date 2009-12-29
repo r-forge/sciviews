@@ -63,6 +63,10 @@
 // sv.r.clearSession();   // Clear session's .RData and .Rhistory files
 // sv.r.reloadSession();  // Reload .RData nd .Rhistory files from session dir
 // sv.r.quit(save); // Quit R (ask to save in save in not defined)
+// sv.r.kpf2pot(kpfFile); // Create a translation (.pot) file for a project
+// sv.r.kpz2pot(kpzFile); // Create a translation (.pot) file for a package
+// sv.r.kpfTranslate(kpfFile); // Translate a project
+// sv.r.kpzTranslate(kpzFile); // Translate a package
 //
 // Note: sv.r.objects is implemented in robjects.js
 //       sv.r.console functions are implemented in rconsole.js
@@ -266,7 +270,6 @@ sv.r.escape = function (cmd) {
 }
 
 // Set the current working directory (to current buffer dir, or ask for it)
-// TODO: make it update sv.prefs.setSession?
 sv.r.setwd = function (dir, ask, type) {
 	// TODO: simplify this:
 	// for compatibility with previous versions
@@ -436,7 +439,7 @@ sv.r.source = function (what) {
 		var doc = kv.document;
 
 		var file;
-		if (!doc.isUntitled) {
+		if (!doc.isUntitled && doc.file) {
 			file = doc.file.path.addslashes();
 		} else {
 			file = doc.baseName;
@@ -445,17 +448,18 @@ sv.r.source = function (what) {
 		if (!what)
 			what = "all"; // Default value
 
-		// Special case: if "all" and local document is saved, source as the original file
-		if (what == "all" && doc.file.isLocal && !doc.isUntitled && !doc.isDirty) {
+		// Special case: if "all" and local document is saved,
+		// source as the original file
+		if (what == "all" && doc.file && doc.file.isLocal &&
+			!doc.isUntitled && !doc.isDirty) {
 			res = sv.r.eval('source("' + file +  '", encoding = "' +
 				kv.encoding + '")');
 		} else {
-			// save all or part in the temporary file and source that file
+			// Save all or part in the temporary file and source that file.
 			// After executing, tell R to delete it.
 			var code = sv.getTextRange(what);
 			sv.cmdout.clear();
-			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' +
-				what);
+			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' + what);
 
 			var tempFile = sv.tools.file.temp();
 			sv.tools.file.write(tempFile, code, 'utf-8', false);
@@ -471,7 +475,7 @@ sv.r.source = function (what) {
 		}
 	} catch(e) {
 		sv.log.exception(e, "Unknown error while sourcing R code in"
-			+ " sv.r.source().", true);
+			+ " sv.r.source():\n\n (" + e + ")", true);
 	}
 	return res;
 }
@@ -670,7 +674,6 @@ sv.r.search = function (topic, internal) {
 	return(res);
 }
 
-
 sv.r.pager = function(file, title) {
 	var rSearchUrl = "chrome://sciviewsk/content/rsearch.html";
 	var content = sv.tools.file.read(file);
@@ -707,7 +710,6 @@ sv.r.search_select = function (topics) {
 	return(res);
 }
 
-
 // Search R web sites for topic
 sv.r.siteSearch = function (topic, idxname) {
 	var res = false;
@@ -740,7 +742,6 @@ sv.r.siteSearch = function (topic, idxname) {
 	"&max=20&result=normal&sort=score" + idxname;
 
 	sv.command.openHelp(url);
-
 }
 
 // List available datasets ("loaded" or not defined = loaded packages, or "all")
@@ -1435,6 +1436,82 @@ sv.r.quit = function (save) {
 	// Clear the objects browser
 	sv.r.objects.clearPackageList();
 }
+
+// Create a translation (.pot) file for a project
+sv.r.kpf2pot = function (kpfFile) {
+	try {
+		// Ask for the filename if not provided
+		if (typeof(kpfFile) == "undefined") {
+			var title = 'Select a Komodo project file (.kpf) to make .pot file';
+			var Filters = [];
+			Filters.push("Komodo Project");
+			kpfFile = ko.filepicker.openFile("", "project.kpf", title,
+				null, Filters);
+		}
+		if (kpfFile == null) return;	// User clicked cancel
+		sv.r.eval('require(svIDE); (kpf2pot("' + kpfFile + '"))');
+	} catch(e) {
+		sv.log.exception(e, "Unknown error while creating .pot file with"
+			+ " sv.r.kpf2pot(). (" + e + ")", true);
+	}	
+}
+
+// Create a translation (.pot) file for a package
+sv.r.kpz2pot = function (kpzFile) {
+	try {
+		// Ask for the filename if not provided
+		if (typeof(kpzFile) == "undefined") {
+			var title = 'Select a Komodo package file (.kpz) to make .pot file';
+			var Filters = [];
+			Filters.push("Komodo Package");
+			kpzFile = ko.filepicker.openFile("", "package.kpz", title,
+				null, Filters);
+		}
+		if (kpzFile == null) return;	// User clicked cancel
+		sv.r.eval('require(svIDE); (kpz2pot("' + kpzFile + '"))');
+	} catch(e) {
+		sv.log.exception(e, "Unknown error while creating .pot file with"
+			+ " sv.r.kpz2pot(). (" + e + ")", true);
+	}
+}
+
+// Translate a project
+sv.r.kpfTranslate = function (kpfFile) {
+	try {
+		// Ask for the filename if not provided
+		if (typeof(kpfFile) == "undefined") {
+			var title = 'Select a Komodo project file (.kpf) to translate';
+			var Filters = [];
+			Filters.push("Komodo Project");
+			kpfFile = ko.filepicker.openFile("", "project.kpf", title,
+				null, Filters);
+		}
+		if (kpfFile == null) return;	// User clicked cancel
+		sv.r.eval('require(svIDE); (kpfTranslate("' + kpfFile + '"))');
+	} catch(e) {
+		sv.log.exception(e, "Unknown error while translating a project file with"
+			+ " sv.r.kpfTranslate(). (" + e + ")", true);
+	}	
+} 
+
+// Translate a package
+sv.r.kpzTranslate = function (kpzFile) {
+	try {
+		// Ask for the filename if not provided
+		if (typeof(kpzFile) == "undefined") {
+			var title = 'Select a Komodo package file (.kpz) to translate';
+			var Filters = [];
+			Filters.push("Komodo Package");
+			kpzFile = ko.filepicker.openFile("", "package.kpz", title,
+				null, Filters);
+		}
+		if (kpzFile == null) return;	// User clicked cancel
+		sv.r.eval('require(svIDE); (kpzTranslate("' + kpzFile + '"))');
+	} catch(e) {
+		sv.log.exception(e, "Unknown error while translating package file with"
+			+ " sv.r.kpzTranslate(). (" + e + ")", true);
+	}		
+} 
 
 
 //// Define the 'sv.r.pkg' namespace ///////////////////////////////////////////

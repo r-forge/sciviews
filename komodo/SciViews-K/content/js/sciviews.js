@@ -686,6 +686,13 @@ if (typeof(sv.log) == 'undefined')
 
 	this.all = function (debug) {
 		logger.setLevel(!!debug);
+		if (logger.getEffectiveLevel() == 1) {
+			ko.statusBar.AddMessage("SciViews error logging set to debug level",
+				"svLog", 3000, true);
+		} else {
+			ko.statusBar.AddMessage("SciViews error logging set to level " +
+				logger.getEffectiveLevel(), "svLog", 3000, true);
+		}
 	}
 
 	this.isAll = function () {
@@ -693,13 +700,17 @@ if (typeof(sv.log) == 'undefined')
 	}
 
 	this.show = function () {
+		var os = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs);
 		try {
-			var logFile = sv.tools.file.path("ProfD", ["..", "pystderr.log"]);
+			appdir = ko.interpolate.interpolateStrings('%(path:hostUserDataDir)');
+			var logFile = os.path.join(appdir,'pystderr.log');
 			var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
-			window.openDialog('chrome://komodo/content/tail/tail.xul',"_blank",
-				winOpts,logFile);
+			window.openDialog('chrome://komodo/content/tail/tail.xul',
+				"_blank",winOpts,logFile);
 		} catch(e) {
-			this.exception(e, "Unable to display the Komodo error log!", true);
+			this.exception(e,
+				"Unable to display the Komodo error log (" + e + ")", true);
 		}
 	}
 
