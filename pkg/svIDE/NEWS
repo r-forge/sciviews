@@ -1,5 +1,12 @@
 = svIDE News
 
+== Changes in svIDE 0.9-48
+
+* Addition of kpf2pot(), kpz2pot(), kpfTranslate() and kpzTranslate() to allow
+  translation of Komodo project or package using poEdit. Introduces a new
+  dependency on XML R package on CRAN.
+
+
 == Changes in svIDE 0.9-47
 
 * guiComplete now does not have a givetype argument any more. Extra information
