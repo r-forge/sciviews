@@ -1,21 +1,21 @@
 // SciViews-K miscellaneous functions
 // Define the 'sv.misc' namespace
-// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org) & K. Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.misc.sessionData(data);     // Create or open a .csv dataset from session
-// sv.misc.sessionScript(script); // Create or open a .R script from session
-// sv.misc.sessionReport(rep);    // Create or open a .odt report from session
-// sv.misc.closeAllOthers();      // Close all buffer except current one
-// sv.misc.colorPicker();         // Invoke a color picker dialog box
-// sv.misc.moveLineDown();        // Move current line down
-// sv.misc.moveLineUp();          // Move current line up
-// sv.misc.searchBySel();         // Search next using current selection
-// sv.misc.showConfig();          // Show Komodo configuration page
-// sv.misc.swapQuotes();          // Swap single and double quotes in selection
-// sv.misc.pathToClipboard();     // Copy file path to clipboard
-// sv.misc.unixPathToClipboard(); // Copy UNIX file path to clipboard
-// sv.misc.timeStamp();           // Stamp text with current date/time
+// sv.misc.sessionData(data);       // Create/open a .csv dataset from session
+// sv.misc.sessionScript(script);   // Create/open a .R script from session
+// sv.misc.sessionReport(rep);      // Create/open a .odt report from session
+// sv.misc.closeAllOthers();        // Close all buffer except current one
+// sv.misc.colorPicker.pickColor(); // Invoke a color picker dialog box
+// sv.misc.moveLineDown();          // Move current line down
+// sv.misc.moveLineUp();            // Move current line up
+// sv.misc.searchBySel();           // Search next using current selection
+// sv.misc.showConfig();            // Show Komodo configuration page
+// sv.misc.swapQuotes();            // Swap single/double quotes in selection
+// sv.misc.pathToClipboard();       // Copy file path to clipboard
+// sv.misc.unixPathToClipboard();   // Copy UNIX file path to clipboard
+// sv.misc.timeStamp();             // Stamp text with current date/time
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.misc' namespace
@@ -91,7 +91,7 @@ sv.misc.sessionData = function (data) {
     sv.r.refreshSession();
 }
 
-// sv.misc.sessionScript(name); // Create or open a .R script from session
+// Create or open a .R script from session
 sv.misc.sessionScript = function (script) {
     if (typeof(script) == "undefined") {
         script = ko.dialogs.prompt(
@@ -114,7 +114,7 @@ sv.misc.sessionScript = function (script) {
     sv.r.refreshSession();
 }
 
-// sv.misc.sessionReport(name); // Create or open a .odt report from session
+// Create or open a .odt report from session
 sv.misc.sessionReport = function (rep) {
     if (typeof(rep) == "undefined") {
         rep = ko.dialogs.prompt(
@@ -176,18 +176,17 @@ sv.misc.sessionReport = function (rep) {
 // Close all buffers except current one (an start page)
 sv.misc.closeAllOthers = function () {
     try {
-        var view = ko.views.manager.currentView;
-        if (view) {
-            var curr_uri = view.document.file.URI;
-            var views = ko.views.manager.topView.getDocumentViews(true);
-            for (var i = views.length - 1; i >= 0; i--) {
-                // Exclude the Start Page from "Close All".
+        var currentView = ko.views.manager.currentView;
+        if (currentView) {
+			currentView.scintilla.focus();
+			var views = ko.views.manager.topView.getDocumentViews(true);
+			for (var i = views.length - 1; i >= 0; i--) {
                 var thisView = views[i];
-                if (thisView.getAttribute("type") != "startpage"
-                    && thisView.document.file
-                    && thisView.document.file.URI != curr_uri) {
-                    if (! thisView.close()) {
-                    return false;
+				// Exclude the Start Page from "Close All".
+				if (thisView.getAttribute("type") != "startpage"
+                    && thisView != currentView) {
+                    if (!thisView.close()) {
+						return false;
                     }
                 }
             }
@@ -207,10 +206,8 @@ sv.misc.closeAllOthers = function () {
  * Modified by: Shane Caraveo
  *              Todd Whiteman
  *              Philippe Grosjean
- *              Kamil Bartoñ
+ *              Kamil Barton
  */
-
-
 sv.misc.colorPicker = {};
 
 (function() {
@@ -224,7 +221,8 @@ if ((os_prefix == "win") || (os_prefix == "mac")) {
 			getService(Components.interfaces.koISysUtils);
 		if (!color)		color = "#000000";
 		// sysUtils.pickColor seems to be broken, does not return any value
-		// which is strange, because it is only wrapper for .pickColorWithPositioning,
+		// which is strange, because it is only wrapper for
+		// .pickColorWithPositioning,
 		// Moreover, positioning does not seem to work anyway.
 		var newcolor = sysUtils.pickColorWithPositioning(color, -1, -1);
 		//Note pickColor was fixed in Komodo 5.2.3
@@ -246,12 +244,9 @@ if ((os_prefix == "win") || (os_prefix == "mac")) {
 			} catch(e) {
 				color = "#ffffff";
 			}
-
 			_colorPicker_system(color);
 		}
 	}
-
-
 
 } else {
 
@@ -260,11 +255,12 @@ if ((os_prefix == "win") || (os_prefix == "mac")) {
 		scimoz.insertText(scimoz.currentPos, cp.color);
 		// Move cursor position to end of the inserted color
 		// Note: currentPos is a byte offset, so we need to correct the length
-		var newCurrentPos = scimoz.currentPos + ko.stringutils.bytelength(cp.color);
+		var newCurrentPos = scimoz.currentPos +
+			ko.stringutils.bytelength(cp.color);
 		scimoz.currentPos = newCurrentPos;
 		// Move the anchor as well, so we don't have a selection
 		scimoz.anchor = newCurrentPos;
-		// for some reason we get the event twice, removing
+		// For some reason we get the event twice, removing
 		// onselect fixes the problem.  Tried to solve it
 		// by canceling the event below, but it went on anyway
 		cp.removeAttribute('onselect');
@@ -315,11 +311,6 @@ if ((os_prefix == "win") || (os_prefix == "mac")) {
 
 }).apply(sv.misc.colorPicker);
 
-
-// Results similiar to following two functions can be achieved with:
-// ko.commands.doCommand('cmd_lineTranspose')
-// Remove these?
-
 // Move Line Down, adapted by Ph. Grosjean from code by "mircho"
 sv.misc.moveLineDown = function () {
     var currentView = ko.views.manager.currentView;
@@ -358,7 +349,7 @@ sv.misc.searchBySel = function () {
         var ke = currentView.scimoz;
         var searchText = ke.selText;
         if (!searchText.length) {
-            // use last pattern used
+            // Use last pattern used
             searchText = ko.mru.get("find-patternMru");
         }
 
@@ -428,7 +419,7 @@ sv.misc.pathToClipboard = function (unix) {
     }
 }
 
-// Copy the UNIX version (using '/' as sep) path of current file to the clipboard
+// Copy UNIX version (using '/' as sep) path of current file to the clipboard
 sv.misc.unixPathToClipboard = function () sv.misc.pathToClipboard(true);
 
 // Stamp the current text with date - time
@@ -436,14 +427,16 @@ sv.misc.timeStamp = function (format) {
     try {
         var ke = ko.views.manager.currentView.scimoz;
 
-		// Adapted from setDateFormatExample() in "chrome://komodo/content/pref/pref-intl.js"
+		// Adapted from setDateFormatExample() in
+		// chrome://komodo/content/pref/pref-intl.js
 		var timeSvc = Components.classes["@activestate.com/koTime;1"]
 			.getService(Components.interfaces.koITime);
 		var secsNow = timeSvc.time();
 		var timeTupleNow = timeSvc.localtime(secsNow, new Object());
 		if (!format)
 			format = sv.prefs.getString("defaultDateFormat");
-		var timeStr = timeSvc.strftime(format, timeTupleNow.length, timeTupleNow);
+		var timeStr = timeSvc.strftime(format, timeTupleNow.length,
+			timeTupleNow);
 		ke.replaceSel(timeStr);
     } catch(e) {
         sv.log.exception(e, "sv.misc.timeStamp() error");

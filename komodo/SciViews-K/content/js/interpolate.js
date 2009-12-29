@@ -48,19 +48,21 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 	log.info("interpolate.interpolate(editor, strings=["+strings+
                           "], bracketedStrings=["+bracketedStrings+"], queryTitle='"+
                           queryTitle+"', viewData)");
-    viewData = ko.interpolate.getViewData(editor, viewData);
+	viewData = ko.interpolate.getViewData(editor, viewData);
 
     var lastErrorSvc = Components.classes["@activestate.com/koLastErrorService;1"]
                        .getService(Components.interfaces.koILastErrorService);
 
     // PhG: interpolation step 0: eliminate [[%tr:...]] used to tag strings
 	// to be translated
-	var brStr = bracketedStrings[0];
-	// Replace [[%tr:some string]] by some string
-	brStr = brStr.replace(/\[\[%tr:([^\]\]]+)\]\]/g, "$1");
-	// Replace [[%ask:x:%tr:x-value]] by [[%ask:x:x-value]]
-	brStr = brStr.replace(/%tr:/g, "");
-	bracketedStrings[0] = brStr;
+	try {
+		var brStr = bracketedStrings[0];
+		// Replace [[%tr:some string]] by some string
+		brStr = brStr.replace(/\[\[%tr:([^\]\]]+)\]\]/g, "$1");
+		// Replace [[%ask:x:%tr:x-value]] by [[%ask:x:x-value]]
+		brStr = brStr.replace(/%tr:/g, "");
+		bracketedStrings[0] = brStr;
+	} catch(e) {}
 	
 	// Interpolation step 1: get queries.
     var queriesCountObj = new Object();
