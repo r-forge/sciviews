@@ -1364,11 +1364,15 @@ sv.r.objects = {};
 						return;
 					case 45: // Insert
 					case 32: // Space
-						sv.log.debug("Insert");
+						//sv.log.debug("Insert");
 						break;
 					case 65: // Ctrl + A
-						if (event.ctrlKey){
-							_this.selection.selectAll();
+					case 97: // Ctrl + a
+						if (event.ctrlKey) {
+							if (event.shiftKey) {
+								_this.selectAllSiblings(_this.selection.currentIndex, false);
+							} else
+								_this.selection.selectAll();
 						}
 					case 0:
 						return;
@@ -1400,7 +1404,7 @@ sv.r.objects = {};
 				return;
 			default:
 		}
-		sv.log.debug("event.type = " + event.type);
+
 		// Default action: insert selected names
 		_this.insertName(event.ctrlKey, event.shiftKey);
 
@@ -1512,6 +1516,19 @@ sv.r.objects = {};
 				return;
 		}
 	}
+
+	this.selectAllSiblings = function(idx, augment) {
+		var startIndex = _this.visibleData[idx].parentIndex + 1;
+		var curLvl = _this.visibleData[idx].level;
+		var endIndex;
+		for (endIndex = startIndex;
+			 endIndex < _this.visibleData.length &&
+			 _this.visibleData[endIndex].level >= curLvl;
+			 endIndex++) { }
+		endIndex--;
+		_this.selection.rangedSelect(startIndex, endIndex, augment)
+	}
+
 
 	//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragdrop",
 	//		"nsDragAndDrop.drop(event, sv.r.objects.packageListObserver);"

@@ -32,7 +32,7 @@
 
 <!ENTITY sciviews.robjects.insName "Insert name into text">
 <!ENTITY sciviews.robjects.insFullName "Insert full name into text">
-<!ENTITY sciviews.robjects.rmObj "Remove objects">
+<!ENTITY sciviews.robjects.rmObj "Insert remove code">
 <!ENTITY sciviews.robjects.loadPkg "Load package">
 <!ENTITY sciviews.robjects.detach "Detach package">
 <!ENTITY sciviews.robjects.clrFilter "Clear filter text">
@@ -46,6 +46,15 @@
 <!ENTITY sciviews.robjects.plot "Plot">
 <!ENTITY sciviews.robjects.print "Print">
 <!ENTITY sciviews.robjects.summary "Summary">
+
+<!ENTITY sciviews.robjects.deleteNow "Delete immediately">
+<!ENTITY sciviews.robjects.deleteNow.acc "D">
+<!ENTITY sciviews.robjects.insertQuoted "Insert special">
+<!ENTITY sciviews.robjects.insertQuoted.acc "Q">
+<!ENTITY sciviews.robjects.selectAll "Select all">
+<!ENTITY sciviews.robjects.selectAll.acc "A">
+<!ENTITY sciviews.robjects.selectSiblings "Select current level">
+<!ENTITY sciviews.robjects.selectSiblings.acc "L">
 
 <!ENTITY sciviews.robjects.filterEmptyText "Filter objects...">
 
