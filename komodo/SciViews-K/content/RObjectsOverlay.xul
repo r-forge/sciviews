@@ -56,9 +56,25 @@
 				command="robjects_cmd_insertfullname" acceltext="Ins"/>
 			<menuitem id="menu_robjects_cmd_insertname"
 				command="robjects_cmd_insertname" acceltext="Ctrl+Ins"/>
+			<menuitem id="menu_robjects_cmd_insertquoted"
+				command="robjects_cmd_insertquoted" acceltext="Shift+Ins"/>
+
+			<menuseparator keep="false" intoplevel="true"/>
+
 			<menuitem id="menu_robjects_cmd_removeobj"
 				command="robjects_cmd_removeobj" acceltext="Del"
-				key="key_cmd_delete" class="menuitem-iconic list-item-remove-icon"/>
+				key="key_cmd_delete" />
+			<menuitem id="menu_robjects_cmd_deletenow"
+				command="robjects_cmd_deletenow" class="menuitem-iconic list-item-remove-icon"
+				acceltext="Shift+Del"/>
+
+			<menuseparator keep="false" intoplevel="true"/>
+
+			<menuitem id="menu_robjects_cmd_selectall"
+				command="robjects_cmd_selectall" acceltext="Ctrl+A"/>
+			<menuitem id="menu_robjects_cmd_selectsiblings"
+				command="robjects_cmd_selectsiblings" acceltext="Ctrl+Shift+A"/>
+
 			<!--<menuitem id="menu_robjects_cmd_attach" command="robjects_cmd_attach"/>
 			<menuitem id="menu_robjects_cmd_detach" command="robjects_cmd_detach"/>-->
 			<menuseparator keep="false" intoplevel="true"/>
@@ -104,6 +120,18 @@
 				oncommand="sv.r.objects.do('names');" accesskey="N"/>
 			<command id="robjects_cmd_help" label="&sciviews.robjects.help;"
 				oncommand="sv.r.objects.do('help');" accesskey="H"/>
+
+			<command id="robjects_cmd_deletenow" label="&sciviews.robjects.deleteNow;"
+				oncommand="sv.r.objects.removeSelected(true);" accesskey="&sciviews.robjects.deleteNow.acc;"/>
+			<command id="robjects_cmd_insertquoted" label="&sciviews.robjects.insertQuoted;"
+				oncommand="sv.r.objects.insertName(false, true);" accesskey="&sciviews.robjects.insertQuoted.acc;"/>
+			<command id="robjects_cmd_selectall" label="&sciviews.robjects.selectAll;"
+				oncommand="sv.r.objects.selection.selectAll();" accesskey="&sciviews.robjects.selectAll.acc;"/>
+			<command id="robjects_cmd_selectsiblings" label="&sciviews.robjects.selectSiblings;"
+				oncommand="sv.r.objects.selectAllSiblings(sv.r.objects.selection.currentIndex);"
+					 accesskey="&sciviews.robjects.selectSiblings.acc;"/>
+
+
 		</commandset>
 	</commandset>
 

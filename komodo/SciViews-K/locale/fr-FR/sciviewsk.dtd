@@ -47,6 +47,15 @@
 <!ENTITY sciviews.robjects.print "Contenu" >
 <!ENTITY sciviews.robjects.summary "Résumé" >
 
+<!ENTITY sciviews.robjects.deleteNow "Delete immediately">
+<!ENTITY sciviews.robjects.deleteNow.acc "D">
+<!ENTITY sciviews.robjects.insertQuoted "Insert special">
+<!ENTITY sciviews.robjects.insertQuoted.acc "Q">
+<!ENTITY sciviews.robjects.selectAll "Select all">
+<!ENTITY sciviews.robjects.selectAll.acc "A">
+<!ENTITY sciviews.robjects.selectSiblings "Select current level">
+<!ENTITY sciviews.robjects.selectSiblings.acc "L">
+
 <!ENTITY sciviews.robjects.filterEmptyText "Filtrer les objets..." >
 
 <!ENTITY pkgMgr "Maintenance de package">
