@@ -42,7 +42,8 @@ if (typeof(sv.socket) == 'undefined')
 	/////// Socket client //////////////////////////////////////////////////////
 	this.svSocketMinVersion = "0.9-48";	// Will be used later for compatibility
 										// checking between R and Komodo tools
-	this.host = "127.0.0.1";	// Host to connect to (local host only, currently)
+	//this.host = "127.0.0.1";	// Host to connect to (local host only, currently)
+	//host address is now controlled by the preference value "sciviews.server.host"
 	this.cmdout = true;			// Do we write to 'Command Output'?
 	this.prompt = ":> ";		// The prompt, could be changed to continue prompt
 	this.cmd = "";				// The command to send to R
@@ -56,6 +57,18 @@ if (typeof(sv.socket) == 'undefined')
 
 	// The main socket client function to connect to R socket server
 	this.rClient = function (host, port, outputData, listener, echo, echofun) {
+
+		// workaround for NS_ERROR_OFFLINE returned by 'createTransport' when
+		// there is no network connection (happens only when network goes down while Komodo
+		// is running)
+		// this code is based on 'toggleOfflineStatus' function in:
+		// chrome://browser/content/browser.js
+		if (!navigator.onLine) {
+			    var ioService = Components.classes["@mozilla.org/network/io-service;1"].
+					getService(Components.interfaces.nsIIOService2);
+				ioService.offline = false;
+				//ioService.manageOfflineStatus = false;
+		}
 
 		try {
 			var transportService = Components.
@@ -175,18 +188,21 @@ if (typeof(sv.socket) == 'undefined')
 		}
 		// TODO: deal with error checking for this command
 		var port = sv.prefs.getString("sciviews.client.socket", "8888");
+		var host = sv.prefs.getString("sciviews.server.host", "127.0.0.1");
+
 		var id = "<<<id=" +
 			sv.prefs.getString("sciviews.client.id", "SciViewsK") + ">>>";
-		var res = _this.rClient(_this.host, port, id + cmd + "\n",
+		var res = _this.rClient(host, port, id + cmd + "\n",
 			listener, echo, echofun);
 
 		// BUG: (windows/linux?) if network connection is turned off while komodo is
 		// running, navigator.onLine is set to false, and we get an
 		// NS_ERROR_OFFLINE here, even if the socket connection with R is on:
+		// KB: This should be fixed now.
 
 		// if exception was returned:
 		if (res && res.name && res.name == "NS_ERROR_OFFLINE") {
-			sv.cmdout.message("Error: R is unreachable (see log)", 5000, true);
+			sv.cmdout.message("Error: Komodo went offline!", 5000, true);
 		}
 		return(res);
 	}
