@@ -124,9 +124,10 @@ sv.r.objects = {};
 
 	// This should be changed if new icons are added
 	var iconTypes = ['array', 'character', 'data.frame', 'Date', 'dist',
-		'empty', 'factor', 'function', 'glm', 'integer', 'list', 'lm', 'lme',
-		'logical', 'matrix', 'numeric', 'object', 'objects', 'package',
-		'standardGeneric', 'S3', 'S4', 'ts', 'environment', 'formula'];
+		'empty', 'factor', 'function', 'glm', 'htest', 'integer', 'list',
+		'lm', 'lme', 'logical', 'matrix', 'nls', 'numeric', 'object', 'objects',
+		'package', 'standardGeneric', 'S3', 'S4', 'ts', 'environment',
+		'formula'];
 
 	// Reference to parent object for private functions
 	var _this = this;

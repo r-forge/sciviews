@@ -1,11 +1,124 @@
-// SciViews-K interpolation function
+// SciViews-K interpolation function, and other rewritten Komodo functions
 // Copyright (c) 2009, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
+// svWindowPatcher() and svWindowObserver() allow for patching Komodo windows
+//   when it is not possible to change stuff hardwired in the XUL template
+//   of the window otherwise (like for the iconpicker's icons families)
 // ko.interpolate.interpolate();  	// A reworked version of the Komodo function
 //   with more features needed by R code snippets (contextual help, description,
 //   tooltips, ...)
 ////////////////////////////////////////////////////////////////////////////////
+
+// Some Komodo windows hardwire content that we would like to change for
+// SciViews-K, like the iconpicker window that statically defines the list of
+// available icon families. This is not very nice since we want to add a new
+// family there!
+// The only solution I found (there must be others, for sure) to change this
+// is to add a window opening listener that adds a loading listener to the
+// window and change stuff if it is the targetted window
+
+var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+	.getService(Components.interfaces.nsIWindowMediator);
+
+// This function patches targetted Komodo windows after they load
+function svWindowPatcher () {
+	var win = wm.getMostRecentWindow(null);
+	var XUL = win.location.href;
+	// If this is the iconpicker window, patch it now
+	if (XUL == "chrome://komodo/content/dialogs/iconpicker.xul") {
+		// We want to add a new iconset family to this dialog box
+		var iframe = win.document.getElementById("iframe");
+		iframe.setAttribute("src",
+			"chrome://sciviewsk/skin/icons/Applications.html");
+		var families = win.document.getElementById("icon-families");
+		// We change the two existing families
+		var firstfam = families.firstChild.firstChild;
+		firstfam.setAttribute("label", "Applications");
+		firstfam.setAttribute("src",
+			"chrome://sciviewsk/skin/icons/Applications.html");
+		var nextfam = families.firstChild.lastChild;
+		nextfam.setAttribute("label", "Arrows");
+		nextfam.setAttribute("src",
+			"chrome://sciviewsk/skin/icons/Arrows.html");
+		// Add other icon families
+		var family = <menuitem label="Books and Notes"
+			src="chrome://sciviewsk/skin/icons/BooksAndNotes.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Bullets and Signs"
+			src="chrome://sciviewsk/skin/icons/BulletsAndSigns.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Communication"
+			src="chrome://sciviewsk/skin/icons/Communication.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Computing"
+			src="chrome://sciviewsk/skin/icons/Computing.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Database and Network"
+			src="chrome://sciviewsk/skin/icons/DatabaseAndNetwork.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Drawing"
+			src="chrome://sciviewsk/skin/icons/Drawing.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Files and Folders"
+			src="chrome://sciviewsk/skin/icons/FilesAndFolders.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Hardware"
+			src="chrome://sciviewsk/skin/icons/Hardware.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Miscellaneous"
+			src="chrome://sciviewsk/skin/icons/Miscellaneous.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Multimedia"
+			src="chrome://sciviewsk/skin/icons/Multimedia.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="SciViews"
+			src="chrome://sciviewsk/skin/icons/SciViews.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Text and Tables"
+			src="chrome://sciviewsk/skin/icons/TextAndTables.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Time and Money"
+			src="chrome://sciviewsk/skin/icons/TimeAndMoney.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		family = <menuitem label="Tools"
+			src="chrome://sciviewsk/skin/icons/Tools.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		
+		// Keep Open Office family, but place it at the end of the list
+		family = <menuitem label="[Open Office Icons]"
+			src="chrome://openoffice/content/industrial.html"/>;
+		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		
+		// Add a pointer to the icon makers web sites (required by fugue and
+		// diagona icons)
+		var label = win.document.getElementById("iconlabel");
+		label.setAttribute("value",
+			"Many icons are from http://www.famfamfam.com/ and http://www.pinvoke.com/");
+		//var desc = <description>
+        //	Icons mainly from the FamFamFam Silk series
+		//	(http://www.famfamfam.com/lab/icons/silk/), from Pinvoke Fugue or
+		//	Diagona series (http://www.pinvoke.com/), or adapted/created for
+		//	SciViews-K and distributed under a Creative Commons Attribution 2.5
+		//	or 3.0 License (see readme.txt files).
+		//</description>;
+		//sv.tools.e4x2dom.appendTo(family, win.document);
+	}
+}
+
+// This function listen to Mozilla windows opening
+function svWindowObserver() {
+	this.observe = function(aSubject, aTopic, aData) {
+		if (aTopic == "domwindowopened") {
+			wm.getMostRecentWindow(null)
+				.addEventListener("load", svWindowPatcher, false);
+		}
+   }
+}
+ 
+var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
+    .getService(Components.interfaces.nsIWindowWatcher);
+ww.registerNotification(new svWindowObserver());
 
 /**
   *  * Interpolate '%'-escape codes in the given list(s) of strings.
