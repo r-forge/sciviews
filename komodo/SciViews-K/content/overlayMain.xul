@@ -83,10 +83,6 @@
 			<command id="cmd_sv_quit_R" key="key_cmd_sv_quit_R"
 				oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
 				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
-			<!--<command id="cmd_sv_update_charset" key="key_cmd_sv_update_charset"
-				oncommand="ko.commands.doCommand('cmd_sv_update_charset');"
-				desc="R: &RUpdateCharset;" label="&RUpdateCharset;"
-				accesskey="&RUpdateCharset.key;"/>-->
 			<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
 				oncommand="sv.command.openPkgManager();" disabled="true"
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
@@ -131,17 +127,14 @@
 			<command id="cmd_sv_RSourcePara" key="key_cmd_sv_RSourcePara"
 				oncommand="ko.commands.doCommand('cmd_sv_RSourcePara')"
 				desc="R: &rSrcPara;" label="&rSrcPara;" accesskey="&rSrcPara.key;"/>
-
 			<command id="cmd_sv_RRunLineOrSelection" key="key_cmd_sv_RRunLineOrSelection"
 				oncommand="ko.commands.doCommand('cmd_sv_RRunLineOrSelection')"
 				desc="R: &rSendLineOrSelection;" label="&rSendLineOrSelection;"
 				accesskey="&rSendLineOrSelection.key;"/>
-
 			<command id="cmd_sv_RSourceLineOrSelection" key="key_cmd_sv_RSourceLineOrSelection"
 				oncommand="ko.commands.doCommand('cmd_sv_RSourceLineOrSelection')"
 				desc="R: &rSrcLineOrSelection;" label="&rSrcLineOrSelection;"
 				accesskey="&rSrcLineOrSelection.key;"/>
-
 			<commandset id="cmdset_r_control" commandupdater="true" events="select"
 				oncommandupdate="ko.commands.updateCommandset(this);">
 				<command id="cmd_sv_RRunSelection" key="key_cmd_sv_RRunSelection"
@@ -192,7 +185,7 @@
 				<!--<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
 					class="menuitem"/>-->
 				<menuitem id="r_start_pkg_manager" observes="cmd_sv_OpenPkgManager"
-					class="menuitem"/>
+					class="menuitem-iconic r-pkg-manager"/>
 				<menuitem id="r_start_help" observes="cmd_sv_OpenHelp"
 						  class="menuitem-iconic help-icon"/>
 				<menuitem id="r_browse_wd" observes="cmd_sv_BrowseWD"
@@ -203,6 +196,8 @@
 				<menuseparator/>
 				<!--<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine"-->
 				<!--	class="menuitem-iconic r-run-line-icon"/>-->
+				<menuitem id="r_send_line_sel_menu" observes="cmd_sv_RRunLineOrSelection"
+					class="menuitem-iconic r-run-selection-icon"/>
 				<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll"
 					class="menuitem-iconic r-run-all-icon"/>
 				<menuitem id="r_src_all_menu" observes="cmd_sv_RSourceAll"
@@ -211,12 +206,8 @@
 				<!--	class="menuitem-iconic r-run-selection-icon"/>-->
 				<!--<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection"-->
 				<!--	class="menuitem-iconic r-source-selection-icon"/>-->
-
-				<menuitem id="r_send_line_sel_menu" observes="cmd_sv_RRunLineOrSelection"
-					class="menuitem-iconic r-run-selection-icon"/>
-				<menuitem id="r_src_line_sel_menu" observes="cmd_sv_RSourceLineOrSelection"
-					class="menuitem-iconic r-source-selection-icon"/>
-
+				<!--<menuitem id="r_src_line_sel_menu" observes="cmd_sv_RSourceLineOrSelection"
+					class="menuitem-iconic r-source-selection-icon"/>-->
 				<menuitem id="r_send_block_menu" observes="cmd_sv_RRunBlock"
 					class="menuitem-iconic r-run-block-icon"/>
 				<menuitem id="r_src_block_menu" observes="cmd_sv_RSourceBlock"
@@ -232,7 +223,6 @@
 			</menupopup>
 		</menu>
 	</menubar>
-
 
 	<tabbox id="rightTabBox">
 		<tabs id="right_toolbox_tabs">
@@ -262,6 +252,4 @@
 			</tabpanel>
 		</tabpanels>
 	</tabbox>
-
-
 </overlay>

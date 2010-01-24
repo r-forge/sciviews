@@ -39,42 +39,42 @@
 <!ENTITY sciviews.robjects.filterByDims "Filtrer les dimensions">
 <!ENTITY sciviews.robjects.filterByGroup "Filtrer les groupes">
 <!ENTITY sciviews.robjects.filterByClass "Filtrer les classes">
-<!ENTITY sciviews.robjects.filterByName "Filter les noms" >
-<!ENTITY sciviews.robjects.help "Aide" >
-<!ENTITY sciviews.robjects.names "Noms" >
-<!ENTITY sciviews.robjects.str "Structure" >
-<!ENTITY sciviews.robjects.plot "Graphique" >
-<!ENTITY sciviews.robjects.print "Contenu" >
-<!ENTITY sciviews.robjects.summary "Résumé" >
+<!ENTITY sciviews.robjects.filterByName "Filter les noms">
+<!ENTITY sciviews.robjects.help "Aide">
+<!ENTITY sciviews.robjects.names "Noms">
+<!ENTITY sciviews.robjects.str "Structure">
+<!ENTITY sciviews.robjects.plot "Graphique">
+<!ENTITY sciviews.robjects.print "Contenu">
+<!ENTITY sciviews.robjects.summary "Résumé">
 
-<!ENTITY sciviews.robjects.deleteNow "Delete immediately">
-<!ENTITY sciviews.robjects.deleteNow.acc "D">
-<!ENTITY sciviews.robjects.insertQuoted "Insert special">
-<!ENTITY sciviews.robjects.insertQuoted.acc "Q">
-<!ENTITY sciviews.robjects.selectAll "Select all">
-<!ENTITY sciviews.robjects.selectAll.acc "A">
-<!ENTITY sciviews.robjects.selectSiblings "Select current level">
-<!ENTITY sciviews.robjects.selectSiblings.acc "L">
+<!ENTITY sciviews.robjects.deleteNow "Effacer tout de suite">
+<!ENTITY sciviews.robjects.deleteNow.acc "E">
+<!ENTITY sciviews.robjects.insertQuoted "Insérer avec guillemets">
+<!ENTITY sciviews.robjects.insertQuoted.acc "G">
+<!ENTITY sciviews.robjects.selectAll "Sélectionner tout">
+<!ENTITY sciviews.robjects.selectAll.acc "T">
+<!ENTITY sciviews.robjects.selectSiblings "Sélectionner niveau actuel">
+<!ENTITY sciviews.robjects.selectSiblings.acc "N">
 
 <!ENTITY sciviews.robjects.filterEmptyText "Filtrer les objets..." >
 
-<!ENTITY pkgMgr "Maintenance de package">
+<!ENTITY pkgMgr "Maintenance des packages">
 <!ENTITY pkgMgr.key "M">
-<!ENTITY rSendBlock "Exécuter du bloc marqué">
+<!ENTITY rSendBlock "Exécuter le bloc marqué">
 <!ENTITY rSendBlock.key "B">
-<!ENTITY rSendFile "Exécuter le contenu du fichier">
+<!ENTITY rSendFile "Exécuter le fichier">
 <!ENTITY rSendFile.key "S">
-<!ENTITY rSendFun "Envoyer la fonction sous le curseur">
+<!ENTITY rSendFun "Exécuter la fonction">
 <!ENTITY rSendFun.key "F">
 <!ENTITY rSendLine "Exécuter la ligne courante">
 <!ENTITY rSendLine.key "L">
 
-<!ENTITY rSendLineOrSelection "Send active line/selection">
+<!ENTITY rSendLineOrSelection "Exécuter la line/sélection">
 <!ENTITY rSendLineOrSelection.key "C">
-<!ENTITY rSrcLineOrSelection "Source active line/selection">
+<!ENTITY rSrcLineOrSelection "Sourcer la line/sélection">
 <!ENTITY rSrcLineOrSelection.key "T">
 
-<!ENTITY rSendPara "Exécuter le paragraphe actuel">
+<!ENTITY rSendPara "Exécuter le paragraphe">
 <!ENTITY rSendPara.key "P">
 <!ENTITY rSendSel "Exécuter la sélection">
 <!ENTITY rSendSel.key "S">
@@ -82,9 +82,9 @@
 <!ENTITY rSrcBlock.key "O">
 <!ENTITY rSrcFile "Sourcer le fichier">
 <!ENTITY rSrcFile.key "I">
-<!ENTITY rSrcFun "Sourcer la fonction sous le curseur">
+<!ENTITY rSrcFun "Sourcer la fonction">
 <!ENTITY rSrcFun.key "U">
-<!ENTITY rSrcPara "Sourcer le paragraphe actuel">
+<!ENTITY rSrcPara "Sourcer le paragraphe">
 <!ENTITY rSrcPara.key "A">
 <!ENTITY rSrcSel "Sourcer la sélection">
 <!ENTITY rSrcSel.key "E">
@@ -93,7 +93,7 @@
 <!ENTITY QuitR "Quitter R">
 <!ENTITY QuitR.key "Q">
 
-<!ENTITY svBrowseWD "Sélectionner le répertoire de travail">
+<!ENTITY svBrowseWD "Répertoire de travail">
 <!ENTITY svBrowseWD.key "D">
 
 <!ENTITY svSelectRApp "Application R préférée">
@@ -102,8 +102,8 @@
 <!ENTITY RUpdateCharset "Mise-à-jour du jeu de caractères">
 <!ENTITY RUpdateCharset.key "C">
 
-<!ENTITY helpStart "R Help start">
+<!ENTITY helpStart "Démarrer l'aide de R">
 <!ENTITY helpStart.key "h">
 
-<!ENTITY svOpenSessMgr "Choose session directory">
-<!ENTITY svOpenSessMgr.key "C">
+<!ENTITY svOpenSessMgr "Répertoire de session">
+<!ENTITY svOpenSessMgr.key "S">

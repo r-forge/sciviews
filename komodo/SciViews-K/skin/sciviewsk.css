@@ -2,6 +2,14 @@
 	list-style-image: url("chrome://sciviewsk/skin/images/R.png");
 }
 
+.r-quit-command-icon {
+	list-style-image: url("chrome://sciviewsk/skin/images/quitR.png");
+}
+
+.r-pkg-manager {
+	list-style-image: url("chrome://sciviewsk/skin/images/package_manager.png");
+}
+
 .r-working-dir-icon {
 	list-style-image: url("chrome://sciviewsk/skin/images/folder_home.png");
 }
@@ -15,7 +23,7 @@
 }
 
 .r-run-selection-icon {
-	list-style-image: url("chrome://sciviewsk/skin/images/run_sel.png");
+	list-style-image: url("chrome://sciviewsk/skin/images/run_line.png");
 }
 
 .r-run-block-icon {
@@ -35,7 +43,7 @@
 }
 
 .r-source-all-icon {
-	list-style-image: url("chrome://sciviewsk/skin/images/source_all.png");
+	list-style-image: url("chrome://sciviewsk/skin/images/source.png");
 }
 
 .r-source-selection-icon {
@@ -51,7 +59,7 @@
 }
 
 .r-source-line-icon {
-	list-style-image: url("chrome://sciviewsk/skin/images/source_line.png");
+	list-style-image: url("chrome://sciviewsk/skin/images/source_sel.png");
 }
 
 .r-source-para-icon {
@@ -183,8 +191,6 @@
 .reload-icon[disabled="true"]:hover:active {
   list-style-image : url("chrome://sciviewsk/skin/images/arrow_refresh_disabled.png");
 }
-
-
 
 .r-escape-icon[disabled="true"],
 .r-escape-icon[disabled="true"]:hover,

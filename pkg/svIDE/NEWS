@@ -1,5 +1,11 @@
 = svIDE News
 
+== Changes in svIDE 0.9-49
+
+* Addition of makeIconGallery() to build icon galleries used by SciViews-K and
+  Komodo.
+
+
 == Changes in svIDE 0.9-48
 
 * Addition of kpf2pot(), kpz2pot(), kpfTranslate() and kpzTranslate() to allow

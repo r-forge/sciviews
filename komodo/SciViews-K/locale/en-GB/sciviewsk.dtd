@@ -49,7 +49,7 @@
 
 <!ENTITY sciviews.robjects.deleteNow "Delete immediately">
 <!ENTITY sciviews.robjects.deleteNow.acc "D">
-<!ENTITY sciviews.robjects.insertQuoted "Insert special">
+<!ENTITY sciviews.robjects.insertQuoted "Insert quoted">
 <!ENTITY sciviews.robjects.insertQuoted.acc "Q">
 <!ENTITY sciviews.robjects.selectAll "Select all">
 <!ENTITY sciviews.robjects.selectAll.acc "A">
@@ -60,31 +60,31 @@
 
 <!ENTITY pkgMgr "Package manager">
 <!ENTITY pkgMgr.key "M">
-<!ENTITY rSendBlock "Send marked block">
+<!ENTITY rSendBlock "Run marked block">
 <!ENTITY rSendBlock.key "B">
-<!ENTITY rSendFile "Send file content">
-<!ENTITY rSendFile.key "S">
-<!ENTITY rSendFun "Send function under cursor">
+<!ENTITY rSendFile "Run all file">
+<!ENTITY rSendFile.key "A">
+<!ENTITY rSendFun "Run function">
 <!ENTITY rSendFun.key "F">
-<!ENTITY rSendLine "Send active line">
+<!ENTITY rSendLine "Run active line">
 <!ENTITY rSendLine.key "L">
 
-<!ENTITY rSendLineOrSelection "Send active line/selection">
+<!ENTITY rSendLineOrSelection "Run line/selection">
 <!ENTITY rSendLineOrSelection.key "C">
-<!ENTITY rSrcLineOrSelection "Source active line/selection">
+<!ENTITY rSrcLineOrSelection "Source line/selection">
 <!ENTITY rSrcLineOrSelection.key "T">
 
-<!ENTITY rSendPara "Send current paragraph">
+<!ENTITY rSendPara "Run paragraph">
 <!ENTITY rSendPara.key "P">
-<!ENTITY rSendSel "Send selection">
+<!ENTITY rSendSel "Run selection">
 <!ENTITY rSendSel.key "S">
 <!ENTITY rSrcBlock "Source marked block">
 <!ENTITY rSrcBlock.key "O">
-<!ENTITY rSrcFile "Source file">
+<!ENTITY rSrcFile "Source all file">
 <!ENTITY rSrcFile.key "I">
-<!ENTITY rSrcFun "Source function under cursor">
+<!ENTITY rSrcFun "Source function">
 <!ENTITY rSrcFun.key "U">
-<!ENTITY rSrcPara "Source current paragraph">
+<!ENTITY rSrcPara "Source paragraph">
 <!ENTITY rSrcPara.key "A">
 <!ENTITY rSrcSel "Source selection">
 <!ENTITY rSrcSel.key "E">
@@ -93,7 +93,7 @@
 <!ENTITY QuitR "Quit R">
 <!ENTITY QuitR.key "Q">
 
-<!ENTITY svBrowseWD "Browse for working directory">
+<!ENTITY svBrowseWD "Working directory">
 <!ENTITY svBrowseWD.key "D">
 
 <!ENTITY svSelectRApp "Preferred R application">
@@ -105,5 +105,5 @@
 <!ENTITY helpStart "R Help start">
 <!ENTITY helpStart.key "h">
 
-<!ENTITY svOpenSessMgr "Choose session directory">
+<!ENTITY svOpenSessMgr "Session directory">
 <!ENTITY svOpenSessMgr.key "C">

@@ -11,4 +11,5 @@ export(createCallTipFile,
 	   kpf2pot,
 	   kpz2pot,
 	   kpfTranslate,
-	   kpzTranslate)
+	   kpzTranslate,
+	   makeIconGallery)
