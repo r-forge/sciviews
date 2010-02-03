@@ -118,6 +118,9 @@ sv.prefs.setString("r.csv.dec.arg", '"' + sv.prefs.getString("r.csv.dec", '.') +
 // Should be reset to a more useful value during first use of R
 sv.prefs.setString("r.active.data.frame", "<df>", true);
 sv.prefs.setString("r.active.lm", "<lm>", true);
+sv.prefs.setString("r.active.princomp", "<princomp>", true);
+sv.prefs.setString("r.active.prcomp", "<prcomp>", true);
+sv.prefs.setString("r.active.PCA", "<PCA>", true);
 sv.prefs.mru("var", true, "");
 sv.prefs.mru("var2", true, "");
 sv.prefs.mru("x", true, "");
@@ -170,6 +173,14 @@ sv.prefs.mru("corMethod", true, '"pearson"|"kendall"|"spearman"', "|");
 
 // Var.equal (for t-test)
 sv.prefs.mru("var.equal", true, 'TRUE|FALSE', "|");
+
+// For multivariate stats
+sv.prefs.mru("cor", true, 'TRUE|FALSE', "|"); // princomp()
+sv.prefs.mru("loadings", true, 'TRUE|FALSE', "|");
+sv.prefs.mru("sort.loadings", true, 'TRUE|FALSE', "|");
+sv.prefs.mru("screetype", true, '"barplot"|"lines"', "|");
+sv.prefs.mru("pc.biplot", true, 'TRUE|FALSE', "|");
+sv.prefs.mru("choices", true, '1:2|2:3|c(1, 3)|c(1, 4)|c(2, 4)|c(3, 4)', "|");
 
 //// Various graph parameters //////////////////////////////////////////////////
 // Colors
