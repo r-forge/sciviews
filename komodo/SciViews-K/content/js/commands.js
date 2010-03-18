@@ -111,6 +111,9 @@ this.startR = function () {
 	// runIn = "command-output-window", "new-console",
 	// env strings: "ENV1=fooJ\nENV2=bar"
 	// gPrefSvc.prefs.getStringPref("runEnv");
+	
+	// Reasonable default values are set in prefs.js... but just in case, we
+	// make sure to redefine reasonable default values here
 	var isWin = navigator.platform.indexOf("Win") === 0;
 	// Default preferredRApp on Windows is r-gui
 	var preferredRApp = sv.prefs.getString("svRApplicationId", isWin?

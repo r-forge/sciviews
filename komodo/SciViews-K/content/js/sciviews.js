@@ -748,52 +748,72 @@ if (typeof(sv.log) == 'undefined')
 // without notice, all modifications are lost.
 sv.checkToolbox = function () {
     try {
+		// TODO: determine versions automatically instead of hard-coding it!
+		var svk = "SciViews-K (0.9.12).kpz";
+		var rref = "R reference (0.9.12).kpz";
+		
 		var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
-		pkg += "/XRE/extensions/sciviewsk@sciviews.org/templates/SciViews-K.kpz";
-		var partSvc = Components.classes["@activestate.com/koPartService;1"]
-			.getService(Components.interfaces.koIPartService);
-		var SciViewsK_folders = partSvc.getParts("folder", "name", "SciViews-K",
-			"*", partSvc.currentProject, new Object());
-		if (SciViewsK_folders.length == 0) {
-			// The SciViews-K toolbox is not installed yet... do it now
-			ko.toolboxes.importPackage(pkg);
-		} else {
-			// First, eliminate all SciViews-K toolboxes that are too old
-			var VersionMacro;
-			var SciViewsK_folder;
-			sv.showVersion = false;
-			for (var i = 0; i < SciViewsK_folders.length; i++) {
-				SciViewsK_folder = SciViewsK_folders[i];
-				VersionMacro = SciViewsK_folder.
-                    getChildWithTypeAndStringAttribute(
-					"macro", "name", "Version", true);
-				if (VersionMacro) {
-					ko.projects.executeMacro(VersionMacro);
-					if (SciViewsKtoolboxVersion < sv.version) {
-						// This toolbox is too old for our extension
-						ko.toolboxes.user.removeItem(SciViewsK_folder, true);
-					}
-				} else {
-					// Probably a corrupted SciViews-K toolbox => eliminate it
-					ko.toolboxes.user.removeItem(SciViewsK_folder, true);
-				}
-			}
-			// Recheck how many SciViews-K toolboxes are left
-			SciViewsK_folders = partSvc.getParts("folder", "name", "SciViews-K",
-				"*", partSvc.currentProject, new Object());
-			if (SciViewsK_folders.length == 0) {
-				// Install the new one now
-				ko.toolboxes.importPackage(pkg);
-			} else if (SciViewsK_folders.length > 1) {
-				// There are duplications, keep only last one
-				for (var i = 0; i < (SciViewsK_folders.length - 1); i++) {
-					SciViewsK_folder = SciViewsK_folders[i];
-					ko.toolboxes.user.removeItem(SciViewsK_folder, true);
-				}
-			}
-		}
+		pkg += "/XRE/extensions/sciviewsk@sciviews.org/defaults/";
+		pkg += svk;
+		ko.toolboxes.importPackage(pkg);
+		
+		pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
+		pkg += "/XRE/extensions/sciviewsk@sciviews.org/defaults/";
+		pkg += rref;
+		ko.toolboxes.importPackage(pkg);
+		
+		// Message prompting for removing old or duplicated toolboxes
+		alert("Toolboxes " + svk + " and " + rref + " are installed. Make sure " +
+			"you delete older or replicated versions of these toolboxes. " +
+			"Also restart Komodo to rebuild toolbars.");
+		
+		//// This is old code kept if we want to take something back from it!
+		//var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
+		//pkg += "/XRE/extensions/sciviewsk@sciviews.org/templates/SciViews-K.kpz";
+		//var partSvc = Components.classes["@activestate.com/koPartService;1"]
+		//	.getService(Components.interfaces.koIPartService);
+		//var SciViewsK_folders = partSvc.getParts("folder", "name", "SciViews-K",
+		//	"*", partSvc.currentProject, new Object());
+		//if (SciViewsK_folders.length == 0) {
+		//	// The SciViews-K toolbox is not installed yet... do it now
+		//	ko.toolboxes.importPackage(pkg);
+		//} else {
+		//	// First, eliminate all SciViews-K toolboxes that are too old
+		//	var VersionMacro;
+		//	var SciViewsK_folder;
+		//	sv.showVersion = false;
+		//	for (var i = 0; i < SciViewsK_folders.length; i++) {
+		//		SciViewsK_folder = SciViewsK_folders[i];
+		//		VersionMacro = SciViewsK_folder.
+        //           getChildWithTypeAndStringAttribute(
+		//			"macro", "name", "Version", true);
+		//		if (VersionMacro) {
+		//			ko.projects.executeMacro(VersionMacro);
+		//			if (SciViewsKtoolboxVersion < sv.version) {
+		//				// This toolbox is too old for our extension
+		//				ko.toolboxes.user.removeItem(SciViewsK_folder, true);
+		//			}
+		//		} else {
+		//			// Probably a corrupted SciViews-K toolbox => eliminate it
+		//			ko.toolboxes.user.removeItem(SciViewsK_folder, true);
+		//		}
+		//	}
+		//	// Recheck how many SciViews-K toolboxes are left
+		//	SciViewsK_folders = partSvc.getParts("folder", "name", "SciViews-K",
+		//		"*", partSvc.currentProject, new Object());
+		//	if (SciViewsK_folders.length == 0) {
+		//		// Install the new one now
+		//		ko.toolboxes.importPackage(pkg);
+		//	} else if (SciViewsK_folders.length > 1) {
+		//		// There are duplications, keep only last one
+		//		for (var i = 0; i < (SciViewsK_folders.length - 1); i++) {
+		//			SciViewsK_folder = SciViewsK_folders[i];
+		//			ko.toolboxes.user.removeItem(SciViewsK_folder, true);
+		//		}
+		//	}
+		//}
 	} catch(e) {
-        sv.log.exception(e, "Unable to install/update the SciViews-K toolbox");
+        sv.log.exception(e, "Error while installing the SciViews-K & R reference toolboxes");
     }
 	finally { sv.showVersion = true; }
 }

@@ -50,8 +50,12 @@
  */
 
 var gQueries = null;
-var gSv = null;
 var gHelpWin = null;
+var gIds = new Object();
+var args = new Object();
+var argNames = new Object();
+var sv = null;
+var gOnOK = "";
 
 function OnLoad() {
     var dialog = document.getElementById("dialog-interpolationquery")
@@ -60,6 +64,11 @@ function OnLoad() {
     okButton.setAttribute("accesskey", "o");
     cancelButton.setAttribute("accesskey", "c");
     
+	// PhG added to retrieve default tooltip from prefs
+	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
+		getService(Components.interfaces.koIPrefService);
+	var prefs = prefsSvc.prefs;
+	
     // PhG added to provide further help on R snippets
     var helpButton = dialog.getButton("help");
     helpButton.setAttribute("accesskey", "?");
@@ -73,12 +82,11 @@ function OnLoad() {
         document.title = "Interpolation Query";
     }
     gQueries = window.arguments[0].queries;
-    gSv = window.arguments[0].sv;
+    sv = window.arguments[0].sv;
 
     // Generate UI for the queries.
     var queryRows = document.getElementById("query-rows");
     var q, label, textbox, row, hbox, i;
-    var j = 0;
     try {
         for (i = 0; i < gQueries.length; i++) {
             // Want the following XUL for each query:
@@ -120,7 +128,7 @@ function OnLoad() {
             // for extra features of our R interpolation query dialog box
             // and make sure we return nothing from it
             switch (q.question) {            
-            case "R-desc":
+			case "R-desc":
                 var queryDesc = document.getElementById("query-desc");
                 if (queryDesc.value == "") {
                     queryDesc.value = q.answer;
@@ -135,16 +143,36 @@ function OnLoad() {
                 break;
             
             case "R-tip":
-                // Set the tooltip text of a query box to this string
-                // They must appear in the same order as the querybox themselves
-                var id = "query"+j+"-textbox";
-                var queryTextbox = document.getElementById(id);
-                queryTextbox.setAttribute("tooltiptext", q.answer);
+                // Set the tooltip text of a query box to the provided string
+				var id = gIds[q.answer.match(/^[^:]+(?=:)/)];
+				if (typeof(id) != 'undefined') {
+					// Change the tooltip for this item
+					document.getElementById(id).setAttribute("tooltiptext",
+						q.answer.replace(/^[^:]+:/, ""));
+				}
                 // Make sure we return nothing from here!
                 q.answer = "";
-                j = j+1;
                 break;
             
+			case "R-onfocus":
+                // Set the onfocus action for this textbox
+				var id = gIds[q.answer.match(/^[^:]+(?=:)/)];
+				if (typeof(id) != 'undefined') {
+					// Change the onfocus attribute for this item
+					document.getElementById(id).setAttribute("onfocus",
+						q.answer.replace(/^[^:]+:/, "") + " this.select();");
+				}
+                // Make sure we return nothing from here!
+                q.answer = "";
+                break;
+			
+			case "R-onok":
+                // Set the onok action
+				gOnOK = q.answer;
+                // Make sure we return nothing from here!
+                q.answer = "";
+                break;
+			
             case "R-help":
             case "URL-help":
                 helpButton.setAttribute("hidden", "false");
@@ -158,7 +186,7 @@ function OnLoad() {
                 helpButton.setAttribute("hidden", "false");
                 // Get the RWiki base URL
 				var baseURL = "http:/wiki.r-project.org/rwiki/doku.php?id="
-				baseURL = gSv.prefs.getString("sciviews.rwiki.help.base",
+				baseURL = sv.prefs.getString("sciviews.rwiki.help.base",
 					baseURL);
                 dialog.setAttribute("ondialoghelp",
                     "Help('" + baseURL + q.answer + "');");
@@ -169,10 +197,11 @@ function OnLoad() {
             default:
                 row = document.createElement("row");
                 row.setAttribute("align", "center");
-    
+				
                 label = document.createElement("label");
                 label.setAttribute("id", "query"+i+"-label");
-                label.setAttribute("value", q.question+" =");
+                // PhG: restrict label to first part of 'label-list' pair
+				label.setAttribute("value", q.question.replace(/-.*$/, "")+" =");
                 label.setAttribute("control", "query"+i+"-textbox");
                 label.setAttribute("crop", "end");
                 label.setAttribute("flex", "1");
@@ -180,14 +209,21 @@ function OnLoad() {
     
                 textbox = document.createElement("textbox");
                 textbox.setAttribute("id", "query"+i+"-textbox");
+				// PhG: save the correspondance between q.question and id
+				gIds[q.question] = "query"+i+"-textbox";
                 textbox.setAttribute("style", "min-height: 1.8em;");
                 textbox.setAttribute("flex", "1");
+				
                 if (q.answer) {
                     textbox.setAttribute("value", q.answer);
                 } else {
                     textbox.setAttribute("value", "");
                 }
                 textbox.setAttribute("onfocus", "this.select();");
+				textbox.setAttribute("onblur",
+					"if (this.value != args['" + q.question + "']) args['" +
+					q.question + "'] = this.value;");
+				
     
                 if (q.isPassword) {
                     textbox.setAttribute("type", "password");
@@ -196,8 +232,9 @@ function OnLoad() {
                     textbox.setAttribute("autocompletepopup", "popupTextboxAutoComplete");
                     textbox.setAttribute("autocompletesearch", "mru");
                     if (q.mruName) {
-                        textbox.setAttribute("autocompletesearchparam", 
-                            "dialog-interpolationquery-"+q.mruName+"Mru");
+						textbox.setAttribute("autocompletesearchparam", 
+                            "dialog-interpolationquery-"+
+							q.mruName.replace(/^.*-/, "")+"Mru");
                         textbox.setAttribute("enablehistory", "true");
                     } else {
                         // Disable autocomplete: no mruName given.
@@ -210,9 +247,16 @@ function OnLoad() {
                     textbox.setAttribute("tabscrolling", "false");
                     textbox.setAttribute("ontextentered", "this.focus();");
                 }
-    
-                row.appendChild(textbox); 
+				// PhG: if a default tooltip is defined for this item, set it:
+				if (prefs.hasStringPref("dialog-tip-" + q.question))
+					textbox.setAttribute("tooltiptext",
+						prefs.getStringPref("dialog-tip-" + q.question));	
+                
+				row.appendChild(textbox); 
                 queryRows.appendChild(row);
+				
+				// PhG: add this to the args object
+				args[q.question] = q.answer;
             }
         }
     } catch(ex) {
@@ -229,7 +273,7 @@ function OK() {
     for (var i = 0; i < gQueries.length; i++) {
         var q = gQueries[i];
         // Skip special %ask fields like "R-desc" or "R-tip"
-        if (!q.question.match(/^(R-desc|R-tip|R-help|RWiki-help|URL-help)$/i)) {
+        if (!q.question.match(/^(R-onfocus|R-onok|R-desc|R-tip|R-help|RWiki-help|URL-help)$/i)) {
             var id = "query"+i+"-textbox";
             var queryTextbox = document.getElementById(id);
             if (queryTextbox.value) {
@@ -241,8 +285,12 @@ function OK() {
                 q.answer = "";
             }
         }
-    }    
-    window.arguments[0].retval = "OK";
+    }
+	window.arguments[0].retval = "OK";
+	// Do we have onOK code to execute?
+	if (gOnOK != "") {
+		eval(gOnOK);
+	}
     return true;
 }
 
@@ -260,9 +308,9 @@ function Help(uri) {
     } else {
         // If uri is a R help topic, get the corresponding R HTML help page
         // R must be started and linked to Komodo for this to work
-        if (gSv.r.running) {
+        if (sv.r.running) {
             var cmd = 'cat(getHelpURL(help("' + uri + '", help_type = "html")))';
-            var res = gSv.r.evalCallback(cmd, ShowHelp);
+            var res = sv.r.evalCallback(cmd, ShowHelp);
         } else {
             alert("There is help available for this item, but R must be " +
                   "started to display it. Close this dialog box and select " +

@@ -64,6 +64,7 @@
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/ask.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/interpolate.js"/>
 
 	<broadcasterset id="broadcasterset_global">
@@ -220,6 +221,9 @@
 					class="menuitem-iconic r-run-function-icon"/>
 				<menuitem id="r_src_function_menu" observes="cmd_sv_RSourceFunction"
 					class="menuitem-iconic r-source-function-icon"/>
+				<menuseparator/>
+				<menuitem id="r_install_toolboxes" class="menuitem-iconic-wide"
+                    oncommand="sv.checkToolbox();" label="(Re)install R toolboxes" />
 			</menupopup>
 		</menu>
 	</menubar>

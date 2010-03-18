@@ -960,8 +960,6 @@ sv.r.obj_select = function (data) {
 					//	"objects than 'data.frame'");
 					// Temporary code: at least set pref value
 					sv.prefs.setString("r.active." + objclass, objname, true);
-					// Refresh statusbar message in case an 'lm' object is changed
-					if (objclass == "lm") sv.r.obj_message();
 				}
 			}
 		}
@@ -981,7 +979,8 @@ sv.r.obj_message = function () {
 	// Get currently active 'lm' object
 	var lm = sv.prefs.getString("r.active.lm", "<none>")
 	if (lm == "<lm>") lm = "<none>";
-	sv.cmdout.message(sv.translate("R session: %S  data: %S linear model: %S", ses, df, lm));
+	sv.cmdout.message(sv.translate("R session: %S  data: %S linear model: %S",
+		ses, df, lm));
 }
 
 // Select one data frame
@@ -1008,6 +1007,7 @@ sv.r.obj_refresh_dataframe = function (data) {
 	if (data == "<<<data>>>") {
 		//var oldobj = sv.prefs.getString("r.active.data.frame", "");
 		sv.prefs.setString("r.active.data.frame", "<df>", true); // Default value
+		sv.prefs.setString("r.active.data.frame.d", "<df>$", true);
 		sv.prefs.mru("var", true, "");
 		sv.prefs.mru("var2", true, "");
 		sv.prefs.mru("x", true, "");
@@ -1028,6 +1028,7 @@ sv.r.obj_refresh_dataframe = function (data) {
 	var objclass = item[1];
 	// Make sure r.active.data.frame pref is set to obj
 	sv.prefs.setString("r.active.data.frame", objname, true);
+	sv.prefs.setString("r.active.data.frame.d", objname + "$", true);
 	items.shift(); // Eliminate first item from the array
 	// Create three lists: vars collects all var names, nums and facts do so for
 	// only numeric and factor variables (separate items by "|")
@@ -1061,7 +1062,7 @@ sv.r.obj_refresh_dataframe = function (data) {
 	return(true);
 }
 
-// Select one data frame
+// Select one lm object
 sv.r.obj_select_lm = function (objname) {
 	// Refresh the default lm object in R session
 	res = sv.r.evalCallback(
