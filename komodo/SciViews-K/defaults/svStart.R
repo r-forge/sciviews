@@ -1,6 +1,6 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
-# Version 0.9.6, 2009-11-03 Ph. Grosjean (phgrosjean@sciviews.org)
+# Version 0.9.11, 2010-02-09 Ph. Grosjean (phgrosjean@sciviews.org)
 
 # Bug on Linux (Bug #685): for some strange reason R breaks execution of .Rprofile before an
 # attempt of installation of ANY package, and then starts executing .Rprofile again from
@@ -11,8 +11,8 @@
 # TODO: also use value in koDebug to debug server from within R!
 
 "svStart" <-
-function (minVersion = c(R = "2.10.0", svMisc = "0.9-56",
-svSocket = "0.9-48", svGUI = "0.9-46"),
+function (minVersion = c(R = "2.6.0", svMisc = "0.9-56",
+svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
 	remote.repos = "http://R-Forge.R-project.org",
 	# I would keep 'pkg.dir' attribute to give user a possibility of running
 	# svStart manually also from another working dir.
@@ -29,6 +29,10 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 	# R, just run svStart again. For this reason svStart could be included in
 	# svGUI rather than here. Philippe, what do you think?
 
+	# TODO: if R crashes before this code is done, 00LOCK remains and it is not
+	# possible to initiate SciViews extensions any more! => use a different
+	# mechanism (perhaps, a file in /tmp and/or make sure the 00LOCK file
+	# is deleted when Komodo Edit quits)
 	path0 <- getwd()
 	lockfile <- file.path(path0, "00LOCK")
 	if (file.exists(lockfile)) return (invisible(NULL))
@@ -181,12 +185,17 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 		# Load packages svMisc, svSocket & svGUI (possibly after installing
 		# or upgrading them). User is supposed to agree with this install
 		# from the moment he tries to start and configure R from Komodo Edit
-		pkgs <- c("svMisc", "svSocket", "svGUI")
+		# We now also need ellipse and SciViews
+		pkgs <- c("svMisc", "svSocket", "svGUI", "ellipse", "SciViews")
 		ext <- switch(.Platform$pkgType, # There is a problem on some Macs
 			# => always install from sources there! mac.binary = "\\.tgz",
 			win.binary = "\\.zip", "\\.tar\\.gz")
+		typ <- switch(.Platform$pkgType, # There is a problem on some Macs
+			# => always install from sources there! mac.binary = "\\.tgz",
+			win.binary = "win.binary", "source")
 
-		# Find a library location with write access
+		# Find a library location with write access, usually, last item in the
+		# list is fine
 		lib <- .libPaths()
 		k <- file.access(lib, 2) == 0
 		if (!any(k)) {
@@ -207,9 +216,16 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 			if (length(file) > 0) {
 				# Better by-version sorting
 				ver <- gsub(paste("(^", pkgName, "_", "|", ext, "$)", sep = ""),
-							"", basename(file))
+					"", basename(file))
 				file <- tail(file[order(sapply(strsplit(ver, "[\\.\\-]"),
 					function (x) sum(as.numeric(x) * (100 ^ -seq_along(x)))))], 1)
+				# For some reasons (bug probably?) I cannot install a package in
+				# R 2.10.1 under Mac OS X when the path to the package has spaces
+				# Also, correct a bug here when installing package from a
+				# repository where we are not supposed to prepend a path!
+				# Copy the dfile temporarily to the temp dir
+				sourcefile <- file.path(pkg.dir, file)
+				file <- file.path(tempdir(), file)
 				repos <- NULL
 
 				# remove directory lock if exists (happens sometimes on linux)
@@ -218,21 +234,28 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 				}
 			} else {
 				# No packages found, download from the web
-				repos <- remote.repos
+				sourcefile <- NULL
 				file <- pkgName
+				repos <- remote.repos
 			}
 
 			# desc <- suppressWarnings(system.file("DESCRIPTION", package = pkgName))
 			pkgIsInstalled <- pkgName %in% installed.packages()[, 1]
 
-			if (!pkgIsInstalled) {
-				cat("Installing missing package", sQuote(pkgName),
-					"into", lib, "\n")
-				try(install.packages(file.path(pkg.dir, file), lib = lib, repos = repos))
-			} else if ((compareVersion(packageDescription(pkgName,
-				fields = "Version"), minVersion[pkgName]) < 0)) {
-				cat("Updating package", sQuote(pkgName), "\n")
-				try(install.packages(file.path(pkg.dir, file), lib = lib, repos = repos))
+			if (!pkgIsInstalled || compareVersion(packageDescription(pkgName,
+				fields = "Version"), minVersion[pkgName]) < 0) {
+				if (!pkgIsInstalled) {
+					cat("Installing missing package", sQuote(pkgName),
+						"into", lib, "\n")
+				} else {
+					cat("Updating package", sQuote(pkgName), "\n")
+				}  
+				# Copy the install file to the temporary directory
+				if (!is.null(sourcefile)) try(invisible(file.copy(sourcefile, file)))
+				# Install or update the package
+				try(install.packages(file, lib = lib, repos = repos, type = typ))
+				# Erase the temporary file
+				try(unlink(file))
 			} else {
 				debugMsg("Package", pkgName, "is up to date")
 			}
@@ -257,8 +280,10 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 				cat("or choose a different port for the server in Komodo\n")
 
 			} else {
-				# Finally, load svGUI
+				# Finally, load svGUI, MASS and SciViews
 				res <- require("svGUI", quietly = TRUE)
+				res[2] <- require("MASS", quietly = TRUE)
+				res[3] <- require("SciViews", quietly = TRUE)
 				if (all(res)) {
 					cat("R is SciViews ready!\n")
 					assignTemp(".SciViewsReady", TRUE)
@@ -266,16 +291,15 @@ svSocket = "0.9-48", svGUI = "0.9-46"),
 					# Indicate what we have as default packages
 					options(defaultPackages = c("datasets", "utils",
 						"grDevices", "graphics", "stats", "methods", "tools",
-						"tcltk", "svMisc", "svSocket", "svGUI"))
+						"tcltk", "svMisc", "svSocket", "svGUI", "MASS", "SciViews"))
 				} else {
 					cat("R is not SciViews ready, install latest svMisc,",
-						"svSocket & svGUI packages\n")
+						"svSocket, svGUI, ellipse & SciViews packages\n")
 				}
 			}
 		}
 	}
 	res <- all(res)	# all packages are loaded
-
 
 	if (res) {
 		# Make sure Komodo is started now

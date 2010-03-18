@@ -64,6 +64,11 @@ sv.prefs.mru = function (mru, reset, items, sep) {
 	}
 }
 
+// Simplify storage of default tooltips for arguments in interpolation queries
+sv.prefs.tip = function (arg, tip) {
+	sv.prefs.setString("dialog-tip-" + arg, tip, true);
+}
+
 //// Preferences (default values, or values reset on each start) ///////////////
 // Define default socket ports for the client and server, and other parameters
 sv.prefs.setString("sciviews.server.socket", "7052", false);
@@ -74,7 +79,12 @@ sv.prefs.setString("sciviews.server.host", "127.0.0.1", false);
 // R interpreter
 sv.prefs.setString("svRDefaultInterpreter", "", false);
 sv.prefs.setString("svRApplication", "", false);
-sv.prefs.setString("svRApplicationId", "", false);
+// Default R interpreter Id: use a reasonable default, given the platform
+if (navigator.platform.indexOf("Win") === 0) {
+	sv.prefs.setString("svRApplicationId", "r-gui", false);
+} else {
+	sv.prefs.setString("svRApplicationId", "r-terminal", false);
+}
 sv.prefs.setString("CRANMirror", "http://cran.r-project.org/", false);
 
 
@@ -117,10 +127,9 @@ sv.prefs.setString("r.csv.dec.arg", '"' + sv.prefs.getString("r.csv.dec", '.') +
 // Set default dataset to 'df'
 // Should be reset to a more useful value during first use of R
 sv.prefs.setString("r.active.data.frame", "<df>", true);
+sv.prefs.setString("r.active.data.frame.d", "<df>$", true);
 sv.prefs.setString("r.active.lm", "<lm>", true);
-sv.prefs.setString("r.active.princomp", "<princomp>", true);
-sv.prefs.setString("r.active.prcomp", "<prcomp>", true);
-sv.prefs.setString("r.active.PCA", "<PCA>", true);
+sv.prefs.setString("r.active.pcomp", "<pcomp>", true);
 sv.prefs.mru("var", true, "");
 sv.prefs.mru("var2", true, "");
 sv.prefs.mru("x", true, "");
@@ -174,13 +183,15 @@ sv.prefs.mru("corMethod", true, '"pearson"|"kendall"|"spearman"', "|");
 // Var.equal (for t-test)
 sv.prefs.mru("var.equal", true, 'TRUE|FALSE', "|");
 
-// For multivariate stats
-sv.prefs.mru("cor", true, 'TRUE|FALSE', "|"); // princomp()
+// For multivariate stats with 'pcomp' object in the SciViews package
+sv.prefs.mru("scale", true, 'TRUE|FALSE', "|");
 sv.prefs.mru("loadings", true, 'TRUE|FALSE', "|");
 sv.prefs.mru("sort.loadings", true, 'TRUE|FALSE', "|");
 sv.prefs.mru("screetype", true, '"barplot"|"lines"', "|");
 sv.prefs.mru("pc.biplot", true, 'TRUE|FALSE', "|");
-sv.prefs.mru("choices", true, '1:2|2:3|c(1, 3)|c(1, 4)|c(2, 4)|c(3, 4)', "|");
+sv.prefs.mru("choices", true, '1:2|2:3|c(1, 3)|c(1, 4)|c(2, 4)|3:4', "|");
+sv.prefs.mru("text.pos", true, '1|2|3|4|NULL', "|");
+sv.prefs.mru("labels", false, 'NULL|FALSE|<factor>|list(group = <factor>)', "|");
 
 //// Various graph parameters //////////////////////////////////////////////////
 // Colors
