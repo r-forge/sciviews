@@ -106,7 +106,12 @@ function (fun, args = NULL, package = NULL, lib.loc = NULL)
     arguments <- rd[[which(tags == "arguments")[1]]]
     items <- arguments[RdTags(arguments) == "\\item"]
     descriptions <- do.call(rbind, lapply(items, function (item) {
-    	names <- strsplit(item[[1]][[1]], "\\s*,\\s*", perl = TRUE)[[1]]
+		names <- try(strsplit(item[[1]][[1]], "\\s*,\\s*", perl = TRUE)[[1]],
+			silent = TRUE)
+		if (inherits(names, "try-error")) {
+			# This happens with the "..." argument
+			names <- "..."
+		}
     	content <- paste(rapply(item[-1], as.character), collapse = "")
     	cbind(names, rep.int(content, length(names)))
     }))
