@@ -52,3 +52,13 @@ correct title and look for a method to allow deleting the file
 
 * Update the web site
 
+Not really *named* regions, but an easy way to run portions of code quickly in SciViews-K (http://www.sciviews.org/SciViews-K):
+* R -> Run marked block (or Ctrl+Shift+M) runs code between two bookmarks,
+* R -> Run function (or Ctrl+Shift+F) runs the code of the whole current function (you may prefer R -> Source function in this particular case),
+* R -> Run paragraph (or Ctrl+Shift+H) runs code in the current paragraph ("paragraphs" are consecutives lines or R code separated from other "paragraphs" by empty lines).
+* Named regions of code (+ list "a la TODO list" with 'go to...' and 'run' + code folding on regions):
+#REGION Init
+library(whatever)
+myprint<-function(...){print(...)}
+#ENDREGION
+

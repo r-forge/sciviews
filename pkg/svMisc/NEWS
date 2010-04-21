@@ -3,7 +3,7 @@
 == Changes in svMisc 0.9-57
 
 * A bug in descArgs() with R >= 2.10 did not allowed to gest arguments
-  description for functions usnig the '...' argument. Thanks to Diego Zardetto
+  description for functions using the '...' argument. Thanks to Diego Zardetto
   for pointing this bug.
   
 
