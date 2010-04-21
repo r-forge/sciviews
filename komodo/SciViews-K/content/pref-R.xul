@@ -103,11 +103,11 @@
 						value="xfce4-terminal --title &quot;%title%&quot; -x &quot;%Path%R&quot; --quiet"
 						which="xfce4-terminal,R" platform="Linux"/>
 				<menuitem id="r-app" label="R app"
-						value="open -a &quot;/Applications/SciViews R.app&quot; &quot;%cwd%&quot;"
+						value="open -a &quot;/Applications/R.app&quot; &quot;%cwd%&quot;"
 						app="R.app"
 						which="/Applications/R.app" platform="Mac"/>
 				<menuitem id="r64-app" label="R64 app"
-						value="open -a /Applications/R64.app &quot;%cwd%&quot;"
+						value="open -a &quot;/Applications/R64.app&quot; &quot;%cwd%&quot;"
 						app="R64.app"
 						which="/Applications/R64.app" platform="Mac"/>
 				<menuitem id="svr-app" label="SciViews R app"
