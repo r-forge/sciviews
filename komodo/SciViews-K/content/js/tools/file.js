@@ -204,7 +204,7 @@ if (typeof(sv.tools.file) == 'undefined')
 			path = Array.apply(null, arguments);
 		// 'flatten' the array:
 			var res = [];
-			for(i in path) res = res.concat(path[i]);
+			for(var i in path) res = res.concat(path[i]);
 			path = res;
 		path = os.path.normpath(path.join(sep));
 		var dir0 = path.split(sep, 1)[0];
@@ -244,7 +244,7 @@ if (typeof(sv.tools.file) == 'undefined')
 			if (os.path.exists(dirname) && os.path.isdir(dirname)) {
 				var files = os.listdir(dirname, {});
 				var selfiles = [], file;
-				for (i in files) {
+				for (var i in files) {
 					file = files[i];
 					if (os.path.isfile(os.path.join(dirname, file))
 						&& file.search(pattern) != -1) {
@@ -269,7 +269,7 @@ if (navigator.platform.indexOf("Win") == 0) {
 			getService(Components.interfaces.koIOs);
 		var dirs = os.getenv("PATH").split(os.pathsep);
 		var res = [];
-		for (i in dirs)
+		for (var i in dirs)
 			if (os.path.exists(os.path.join(dirs[i], file))) res.push(dirs[i]);
 		return res.length? res : null;
 	}

@@ -51,15 +51,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // This function is used to tag strings to be translated in projects/toolbox
-_ = function(str) { return(str) }
+var _ = function(str) { return(str) }
 
-if (typeof(sv) == 'undefined') sv = {};
+if (typeof(sv) == 'undefined')
+	var sv = {};
 
 // Create the 'sv.tools' namespace
 if (typeof(sv.tools) == 'undefined') sv.tools = {};
 
 // IMPORTANT: now sv.version is a "X.X.X" string, and sv.checkVersion accepts only such format
-// please update all macros using sv.checkVersion 
+// please update all macros using sv.checkVersion
 sv.version = Components.classes["@mozilla.org/extensions/manager;1"]
 				.getService(Components.interfaces.nsIExtensionManager)
 				.getItemForID("sciviewsk@sciviews.org").version;
@@ -129,9 +130,7 @@ sv.getText = function (includeChars) sv.getTextRange("word", false, false, null,
 sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 	var currentView = ko.views.manager.currentView;
-	if (!currentView) {
-		return "";
-	}
+	if (!currentView) return "";
 
 	currentView.setFocus();
 	var scimoz = currentView.scimoz;
@@ -340,27 +339,43 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 }
 
 // file open dialog, more customizable replacement for ko.filepicker.open
-sv.fileOpen = function (directory, filename, title, filter, multiple) {
+sv.fileOpen = function (directory, filename, title, filter, multiple, save,
+						filterIndex) {
 	const nsIFilePicker = Components.interfaces.nsIFilePicker;
     var fp = Components.classes["@mozilla.org/filepicker;1"]
         .createInstance(nsIFilePicker);
-    if (!title) title = sv.translate("Open file");
-    var mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
+
+	//Dialog should get default system title
+    //if (!title) title = sv.translate(save? "Save file" : "Open file");
+
+	var mode;
+	if (!save)
+	    mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
+	else
+		mode = nsIFilePicker.modeSave;
 
     fp.init(window, title, mode);
+
+	if (typeof filterIndex != "undefined")
+		fp.filterIndex = (typeof filterIndex == "object")?
+			filterIndex.value : filterIndex;
+
+	var filters = [];
+
 	if (filter) {
-        if (typeof(filter) == "string") {
+        if (typeof(filter) == "string")
             filter = filter.split(',');
-        }
         var fi;
         for (var i = 0; i  < filter.length; i++) {
             fi = filter[i].split("|");
             if (fi.length == 1)
                 fi[1] = fi[0];
             fp.appendFilter(fi[0], fi[1]);
+			filters.push(fi[1]);
         }
     }
     fp.appendFilters(nsIFilePicker.filterAll);
+	filters.push('');
 
     if (directory) {
         var lf = Components.classes["@mozilla.org/file/local;1"].
@@ -368,9 +383,8 @@ sv.fileOpen = function (directory, filename, title, filter, multiple) {
         lf.initWithPath(directory);
         fp.displayDirectory = lf;
     }
-    if (filename) {
+    if (filename)
         fp.defaultString = filename;
-    }
 
     var rv = fp.show();
     if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
@@ -386,6 +400,18 @@ sv.fileOpen = function (directory, filename, title, filter, multiple) {
         } else {
             path = fp.file.path;
         }
+
+		// append extension according to active filter
+		if (mode == nsIFilePicker.modeSave) {
+			var os = Components.classes['@activestate.com/koOs;1']
+				.getService(Components.interfaces.koIOs);
+			if (!os.path.getExtension(path)) {
+				var defaultExt = os.path.getExtension(filters[fp.filterIndex]);
+				path += defaultExt;
+			}
+		}
+		if (typeof filterIndex == "object")
+			filterIndex.value = fp.filterIndex;
         return(path);
     }
     return (null);
@@ -469,7 +495,7 @@ sv.helpContext = function () {
 
 				// Look for a string defining the URL for associated help file
 				// This is something like: [[%ask|pref:URL|R|RWiki-help:<value>]]
-				
+
 				// To ease search, replace all [[%ask by [[%pref
 				content = content.replace(/\[\[%ask:/g, '[[%pref:');
 
@@ -717,8 +743,6 @@ if (typeof(sv.log) == 'undefined')
 }).apply(sv.log);
 
 
-
-
 //// Tests... default level do not print debug and infos!
 //sv.log.all(false);
 //alert(sv.log.isAll());
@@ -743,31 +767,40 @@ if (typeof(sv.log) == 'undefined')
 //// Show Komodo log
 //sv.log.show();
 
-//// Not used any more? ////////////////////////////////////////////////////////
-// Note: this is bit dangerous in its present form, removes current SciViews-K toolbox
-// without notice, all modifications are lost.
 sv.checkToolbox = function () {
     try {
-		// TODO: determine versions automatically instead of hard-coding it!
-		var svk = "SciViews-K (0.9.12).kpz";
-		var rref = "R reference (0.9.12).kpz";
-		
-		var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
-		pkg += "/XRE/extensions/sciviewsk@sciviews.org/defaults/";
-		pkg += svk;
-		ko.toolboxes.importPackage(pkg);
-		
-		pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
-		pkg += "/XRE/extensions/sciviewsk@sciviews.org/defaults/";
-		pkg += rref;
-		ko.toolboxes.importPackage(pkg);
-		
+		var path, tbxs;
+		// FIXED: determine versions automatically instead of hard-coding it!
+
+		var os = Components.classes['@activestate.com/koOs;1'].
+			getService(Components.interfaces.koIOs);
+
+		// Find all .kpz files in 'defaults', append/replace version string in filenames,
+		// finally install as toolbox
+		path = sv.tools.file.path("ProfD", "extensions",
+			"sciviewsk@sciviews.org", "defaults");
+		tbxs = sv.tools.file.list(path, "\\.kpz$");
+		var file1, file2;
+		for (var i in tbxs) {
+			file1 = file2 = tbxs[i];
+			file2 = os.path.withoutExtension(file1.replace(/\s*\([\s0-9\.]+\)\s*/, ""));
+			tbxs[i] = file2 + " (" + sv.version + ")";
+			file2 = file2 + " (" + sv.version + ").kpz";
+			file1 = sv.tools.file.path(path, file1);
+			file2 = sv.tools.file.path(path, file2);
+			os.rename(file1, file2);
+			ko.toolboxes.importPackage(file2);
+		}
+
 		// Message prompting for removing old or duplicated toolboxes
-		alert("Toolboxes " + svk + " and " + rref + " are installed. Make sure " +
-			"you delete older or replicated versions of these toolboxes. " +
-			"Also restart Komodo to rebuild toolbars.");
-		
+		sv.alert(sv.translate("Toolboxes %S have been added. " +
+				 "To avoid conflicts, you should remove any previous versions." +
+				 " To update the toolbars, restart Komodo.", "\"" +
+				 tbxs.join("\" and \"") + "\""));
+
 		//// This is old code kept if we want to take something back from it!
+		// Important! this code is dangerous, as it removes current SciViews-K toolbox
+		// without notice, all user modifications are lost!!
 		//var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
 		//pkg += "/XRE/extensions/sciviewsk@sciviews.org/templates/SciViews-K.kpz";
 		//var partSvc = Components.classes["@activestate.com/koPartService;1"]
