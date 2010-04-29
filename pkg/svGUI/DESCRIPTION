@@ -6,8 +6,8 @@ Imports: svMisc, svSocket (>= 0.9-48)
 SystemRequirements: Komodo Edit (http://www.openkomodo.com), SciViews-K (http://www.sciviews.org/SciViews-K)
 Description: Functions to manage the GUI client, like Komodo with the
   SciViews-K extension
-Version: 0.9-46
-Date: 2009-09-17
+Version: 0.9-47
+Date: 2010-04-29
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL (>= 2)
