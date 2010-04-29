@@ -31,10 +31,10 @@
  the terms of any one of the MPL, the GPL or the LGPL.
 
  ***** END LICENSE BLOCK ***** -->
- 
+
 <!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
 "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
- 
+
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
@@ -125,10 +125,10 @@ function reloadList () {
 		var eol = "\n\n\n";
 
 		var cmd = [
-				'ipkg <- as.data.frame(installed.packages(fields = c("Description"))[, c("Package", "Version", "Description", "Depends")])',
-				'ipkg$Loaded <- ipkg$Package %in% .packages()',
-				'ipkg$Required <- ipkg$Package %in% .required',
-				'write.table(ipkg [, c("Package", "Version", "Description", "Loaded", "Required", "Depends")], eol="'
+				'svtmp.ipkg <- as.data.frame(installed.packages(fields = c("Description"))[, c("Package", "Version", "Description", "Depends")])',
+				'svtmp.ipkg$Loaded <- svtmp.ipkg$Package %in% .packages()',
+				'svtmp.ipkg$Required <- svtmp.ipkg$Package %in% .required',
+				'write.table(svtmp.ipkg [, c("Package", "Version", "Description", "Loaded", "Required", "Depends")], eol="'
 				+ addcslashes(eol, "\n") + '", na = "", sep="\\t", quote=FALSE, row.names = FALSE, col.names = FALSE)',
 		];
 
@@ -287,7 +287,7 @@ function getUpdateItem (pkg) {
 
 function pkgFindUpdates () {
 		var sep = ";;";
-		var cmd = 'write.table(updatePkgs()[,-2], sep="' + sep + '", quote=FALSE, na="", eol="\n", row.names = FALSE, col.names = FALSE)';
+		var cmd = 'write.table(svtmp.updatePkgs()[,-2], sep="' + sep + '", quote=FALSE, na="", eol="\n", row.names = FALSE, col.names = FALSE)';
 
 		var theList = document.getElementById("TheList");
 		var theUpdatesList = document.getElementById("TheUpdatesList");
@@ -335,7 +335,7 @@ self.onload = function () {
 		//f1();
 		var args = window.arguments;
 		sv = args[0];
-		var cmd = 'updatePkgs <- function (lib.loc = .libPaths(), repos = getOption("repos"),'
+		var cmd = 'svtmp.updatePkgs <- function (lib.loc = .libPaths(), repos = getOption("repos"),'
 				+	'	  contriburl = contrib.url(repos, type), method,'
 				+	'	  available = available.packages(contriburl = contriburl, method = method),'
 				+	'	  instlib = update[, "LibPath"], ...,'
@@ -351,6 +351,13 @@ self.onload = function () {
 		//reloadList();
 }
 
+
+
+self.onclose = function() {
+    sv.r.evalHidden('rm(svtmp.updatePkgs, svtmp.ipkg)');
+}
+
+
 ]]>
 	</script>
 
@@ -362,7 +369,7 @@ self.onload = function () {
 	</script>
 
 	<hbox>
-		<radiogroup id="pkgPanelButtons" orient="horizontal">
+		<radiogroup id="pkgPanelButtons" orient="horizontal" disabled="true">
 			<radio label="Available"
 				oncommand="document.getElementById('pkgPanels').selectedIndex = 0;"/>
 			<radio label="Installed" selected="true"
@@ -373,6 +380,12 @@ self.onload = function () {
 		<spacer flex = "2"/>
 		<button label="Close" onclick="self.close();"/>
 	</hbox>
+
+	<vbox style="font-weight:bold; background-color: #feac01; border: 1px black solid; margin: 2px; padding: 3px;">
+<description>
+    This package manager is an experimental feature of SciViews-K. It is not fully functional yet.
+</description>
+</vbox>
 
 	<deck id="pkgPanels" flex="1" style="padding: 0px; border: none;"
 		selectedIndex="1" persists="selectedIndex">
@@ -387,7 +400,8 @@ self.onload = function () {
 				</hbox>
 				<hbox align="left" flex="1" maxheight="20">
 					<button label="Find updates" accesskey="F"
-						oncommand="pkgFindUpdates();" align="left"/>
+						oncommand="pkgFindUpdates();" align="left"
+						 disabled="true" />
 					<spacer flex="1"/>
 				</hbox>
 			</vbox>
@@ -402,7 +416,7 @@ self.onload = function () {
 				</hbox>
 				<hbox align="left" flex="1" maxheight="20">
 					<button label="Install updates" accesskey="I" oncommand=""
-						align="left"/>
+						align="left" disabled="disabled"/>
 					<spacer flex="1"/>
 				</hbox>
 			</vbox>

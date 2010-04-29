@@ -46,7 +46,7 @@
 <!ENTITY sciviews.robjects.plot "Graphique">
 <!ENTITY sciviews.robjects.print "Contenu">
 <!ENTITY sciviews.robjects.summary "Résumé">
-
+<!ENTITY sciviews.robjects.write_table "Write to textfile">
 <!ENTITY sciviews.robjects.deleteNow "Effacer tout de suite">
 <!ENTITY sciviews.robjects.deleteNow.acc "E">
 <!ENTITY sciviews.robjects.insertQuoted "Insérer avec guillemets">

@@ -209,6 +209,7 @@ sv.r.eval = function (cmd) {
 	return(res);
 }
 
+
 // Evaluate code in R in a hidden way
 sv.r.evalHidden = function (cmd, earlyExit) {
 	// If R is not running, do nothing
@@ -1210,6 +1211,8 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	return(dir);
 }
 
+
+//TODO: Allow also for dirs outside Home directory (useful on windows)
 // Set a R session dir and corresponding dir preferences both in R and Komodo
 sv.r.setSession = function (dir, datadir, scriptdir, reportdir,
 	saveOld, loadNew) {
@@ -1358,6 +1361,7 @@ sv.r.switchSession = function (inDoc) {
 		}
 	return true;
 	}
+	return false;
 }
 
 // Show the session directory in the file explorer, finder, nautilus, ...
@@ -1866,6 +1870,48 @@ sv.r.pkg.install = function (pkgs, repos) {
 
 // Initialize the default (last used) R session
 sv.r.initSession();
+
+
+/////////////////////////////
+
+sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) {
+	if (!dec) dec = sv.prefs.getString("r.csv.dec");
+	if (!sep) sep = sv.prefs.getString("r.csv.sep");
+
+	if (!fileName) {
+		var filterIndex;
+		switch(sep) {
+			case '\\t':	filterIndex = 1; break;
+			case ';':
+			case ',': 	filterIndex = 0; break;
+			case ' ': 	filterIndex = 2; break;
+			default: 	filterIndex = 3;
+		}
+
+		var dir = sv.prefs.getString("sciviews.session.dir");
+
+		fileName = sv.tools.fileOpen(dir, objName, "",
+					["Comma separated values (*.csv)|*.csv",
+					 "Tab delimited (*.txt)|*.txt",
+					 "Whitespace delimited values (*.txt)|*.txt"
+					 ], false, true, filterIndex);
+
+
+		// TODO: set delimiter basing on filterIndex...
+	}
+
+	var cmd = 'write.table(' + name + ', file="' + fileName.addslashes() + '", dec="' + dec
+		+ '", sep="' + sep + '")';
+	sv.r.eval(cmd);
+	return cmd;
+}
+
+
+
+
+
+
+
 
 // Temp code
 //sv.r.RinterpreterTrial = function (code) {
