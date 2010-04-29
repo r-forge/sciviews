@@ -46,6 +46,7 @@
 <!ENTITY sciviews.robjects.plot "Plot">
 <!ENTITY sciviews.robjects.print "Print">
 <!ENTITY sciviews.robjects.summary "Summary">
+<!ENTITY sciviews.robjects.write_table "Write to textfile">
 
 <!ENTITY sciviews.robjects.deleteNow "Delete immediately">
 <!ENTITY sciviews.robjects.deleteNow.acc "D">

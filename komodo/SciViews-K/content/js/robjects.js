@@ -1224,26 +1224,23 @@ sv.r.objects = {};
 		var currentIndex = _this.selection.currentIndex;
 
 		if (currentIndex != -1) {
-			var isPackage, noDetach, isFunction, inPackage = false;
+			var isPackage, noDetach, isFunction;
 			var item, type, name;
-			item = this.visibleData[currentIndex].origItem;
+			item = _this.visibleData[currentIndex].origItem;
 			type = item.class;
 			name = item.fullName;
 
-			isPackage = type == "package";
 			noDetach = isPackage && (name == ".GlobalEnv" || name == "TempEnv");
 			isFunction = type == "function";
 
-			/*
-			if (!isPackage) {
-				inPackage = item.env && (item.env.indexOf("package:") == 0);
-			}
-			*/
+			var canSaveToFile = ["data.frame", "matrix", "table"].indexOf(item.class) > -1;
 
-			var hasHelp = (isPackage && item.name.indexOf("package:") == 0) ||
-				(!isPackage && item.env.indexOf("package:") == 0);
+			var selItemCount = _this.selection.count;
 
-			//sv.cmdout.append("hasHelp: " + hasHelp + " ");
+			// help can be shown only for one object:
+			var hasHelp = (selItemCount == 1)
+				&& ((isPackage && item.name.indexOf("package:") == 0) ||
+					(!isPackage && item.env.indexOf("package:") == 0));
 
 			document.getElementById("robjects_cmd_removeobj")
 				.setAttribute("disabled", noDetach);
@@ -1260,25 +1257,21 @@ sv.r.objects = {};
 			document.getElementById("robjects_cmd_str")
 				.setAttribute("disabled", isPackage);
 
+			//document.getElementById("robjects_cmd_write_table")
+			//	.setAttribute("disabled", !isDataFrame);
+
 			// disable help option for non-package objects, because usually there is none
 			document.getElementById("robjects_cmd_help")
 				.setAttribute("disabled", !hasHelp);
 		}
 	}
 
-
 	this.do = function (action) {
 		var obj = [];
 		var rows = _this.getSelectedRows();
-		var item, pkg, type, name;
 
-		for (i in rows) {
-			item = this.visibleData[rows[i]].origItem;
-			type = item.class;
-			name = item.fullName;
-			pkg = item.env;
-			obj.push({ name: name, type: type, pkg: pkg });
-		}
+		for (i in rows)
+			obj.push(_this.visibleData[rows[i]].origItem);
 
 		var command;
 
@@ -1287,15 +1280,30 @@ sv.r.objects = {};
 		case 'help':
 			for (i in obj) {
 				// Help only for packages and objects inside a package
-				if (obj[i].pkg.indexOf("package:") == 0) {
-					sv.r.help(obj[i].name, obj[i].pkg.replace(/^package:/, ''));
-				} else if (obj[i].name.indexOf("package:") == 0) {
-					sv.r.help("", obj[i].name.replace(/^package:/, ''));
+				if (obj[i].env.indexOf("package:") == 0) {
+					sv.r.help(obj[i].fullName, obj[i].env.replace(/^package:/, ''));
+				} else if (obj[i].fullName.indexOf("package:") == 0) {
+					sv.r.help("", obj[i].fullName.replace(/^package:/, ''));
 				} else {
-					sv.r.help(obj[i].name);
+					sv.r.help(obj[i].fullName);
 				}
 			}
 		break;
+
+		//TODO: dump data for objects other than 'data.frame'
+		case 'write.table':
+		case 'writeToFile':
+			var cmd = [], expr;
+
+			for (i in obj) {
+				expr = "eval(expression(" + obj[i].fullName +
+					"), envir = as.environment(\"" +
+					obj[i].env.addslashes() + "\"))";
+
+				sv.r.saveDataFrame(expr, '', obj[i].name);
+			}
+		break;
+
 		// Default is to just execute command and display results
 		case 'summary':
 		case 'plot':
@@ -1304,9 +1312,9 @@ sv.r.objects = {};
 		default:
 			var cmd = [];
 			for (i in obj) {
-				cmd.push(action + "(eval(" + obj[i].name +
-					", envir = as.environment(\"" +
-					obj[i].pkg.addslashes() + "\")))");
+				cmd.push(action + "(eval(expression(" + obj[i].fullName +
+					"), envir = as.environment(\"" +
+					obj[i].env.addslashes() + "\")))");
 			}
 			sv.r.eval(cmd.join("\n"));
 		}

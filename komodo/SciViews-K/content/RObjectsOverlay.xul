@@ -84,6 +84,11 @@
 			<menuitem id="menu_robjects_cmd_str" command="robjects_cmd_str"/>
 			<!--<menuitem id="menu_robjects_cmd_args" command="robjects_cmd_args"/>-->
 			<menuitem id="menu_robjects_cmd_names" command="robjects_cmd_names"/>
+
+			<menuitem id="menu_robjects_cmd_write_table"
+					  class="menuitem-iconic save-buffer-icon"
+					  command="robjects_cmd_write_table"/>
+
 			<menuseparator keep="false" intoplevel="true"/>
 			<menuitem id="menu_robjects_cmd_help" command="robjects_cmd_help"/>
 		</menupopup>
@@ -118,6 +123,11 @@
 				oncommand="sv.r.objects.do('str');" accesskey="T"/>
 			<command id="robjects_cmd_names" label="&sciviews.robjects.names;"
 				oncommand="sv.r.objects.do('names');" accesskey="N"/>
+
+			<command id="robjects_cmd_write_table" label="&sciviews.robjects.write_table;"
+				oncommand="sv.r.objects.do('write.table');" accesskey="T"/>
+
+
 			<command id="robjects_cmd_help" label="&sciviews.robjects.help;"
 				oncommand="sv.r.objects.do('help');" accesskey="H"/>
 

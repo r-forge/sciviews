@@ -61,18 +61,21 @@ if (typeof(sv.command) == 'undefined') {
 	}
 
 	// private methods
+	// continuous checking is now disabled - R often hanged 
 	function _keepCheckingR (stopMe) {
-		clearInterval(sv.r.testInterval);
+		/*
+		//clearInterval(sv.r.testInterval);
 		if (!stopMe) {
 			// checking every second may cause problems when R is busy, changed to 5000
-			sv.r.testInterval = window.setInterval(sv.r.test, 5000);
+			//sv.r.testInterval = window.setInterval(sv.r.test, 5000);
 		}
-		setTimeout(window.updateCommands, 1000, 'r_app_started_closed');
+		//sv.r.running = true;
+		//setTimeout(window.updateCommands, 1000, 'r_app_started_closed');
 		//xtk.domutils.fireEvent(window, 'r_app_started_closed');
+		*/
 	}
 
 	function _isRRunning () {
-		//sv.log.debug("is R Running? " + sv.r.running);
 		return sv.r.running;
 	}
 
@@ -101,7 +104,22 @@ this.startR = function () {
 	var cwd = sv.tools.file.path("ProfD", "extensions",
 	"sciviewsk@sciviews.org", "defaults");
 	var cmd = sv.prefs.getString("svRApplication");
-	var path = os.path.dirname(sv.prefs.getString("svRDefaultInterpreter"));
+
+	// trim just in case
+	var path = sv.tools.strings.trim(sv.prefs.getString("svRDefaultInterpreter"));
+
+	if (!path) {
+	    if(ko.dialogs.okCancel(
+		sv.translate("Default R interpreter is not set in " +
+			     "Preferences. Do you want to do it now?"),
+			"OK", null, "SciViews-K") == "OK") {
+		prefs_doGlobalPrefs("svPrefRItem", true);
+	    }
+	    return;
+	}
+
+
+	path = os.path.dirname(path);
 	if (path) path += os.sep;
 	cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
 		.replace("%title%", "SciViews-K");
@@ -111,7 +129,7 @@ this.startR = function () {
 	// runIn = "command-output-window", "new-console",
 	// env strings: "ENV1=fooJ\nENV2=bar"
 	// gPrefSvc.prefs.getStringPref("runEnv");
-	
+
 	// Reasonable default values are set in prefs.js... but just in case, we
 	// make sure to redefine reasonable default values here
 	var isWin = navigator.platform.indexOf("Win") === 0;
@@ -189,7 +207,6 @@ this.startR = function () {
 			this.command = command;
 			observerSvc.addObserver(this, 'status_message', false);
 			sv.log.debug("R has been started with command: " + command);
-			sv.r.running = true;
 			// Sending commands to R does not seem to work, I think it is too early, R is still
 			// starting. This should be in .Rprofile
 			//sv.socket.updateCharset(true);
@@ -197,8 +214,8 @@ this.startR = function () {
 			// R task callbacks and make sure R Objects pane is updated
 			//sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
 
-			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
-			window.updateCommands('r_app_started_closed');
+			// this hopefully will be called from R, when it starts:
+			//_this.updateRStatus(true);
 		},
 		unregister: function () {
 			var observerSvc = Components.
@@ -208,11 +225,19 @@ this.startR = function () {
 
 			sv.log.debug("R has been closed. Command was: " + this.command);
 
-			sv.r.running = false;
-			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
-			window.updateCommands('r_app_started_closed');
+			_this.updateRStatus(false);
 		}
 	};
+
+	this.updateRStatus = function (running) {
+		running = !!running;
+		if (running != sv.r.running) {
+			sv.r.running = !!running;
+			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
+			window.updateCommands('r_app_started_closed');
+			sv.log.debug("R status updated: " + (running? "" : "not ") + "running" );
+		}
+	}
 
 	// Selects the checkbox on selected element, while deselecting others
 	this.getRApp = function (event) {
@@ -457,7 +482,7 @@ this.startR = function () {
 
 		//TODO: check if R is working before any command is sent,
 		//rather than continously
-		_keepCheckingR();
+		//_keepCheckingR();
 
 		// This is no longer needed:
 		// To run it with the same key as autocompletion with other languages

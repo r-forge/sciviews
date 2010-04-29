@@ -72,9 +72,6 @@
 	</broadcasterset>
 
 	<commandset id="allcommands">
-		<command id="Tasks:svAbout"
-			oncommand="alert('SciViews-K (Komodo R Editor) version ' + sv.version + '\na Komodo extension to interact with R\n(see http://www.sciviews.org/SciViews-K)');"/>
-
 		<commandset id="cmdset_rApp" commandupdater="true"
 			oncommandupdate="ko.commands.updateCommandset(this);"
 			events="r_app_started_closed">
@@ -99,7 +96,7 @@
 		</commandset>
 
 		<commandset id="cmdset_r_control" commandupdater="true"
-		  events="current_view_language_changed"
+		  events="current_view_language_changed,r_app_started_closed"
 		  oncommandupdate="ko.commands.updateCommandset(this);">
 			<command id="cmd_sv_RRunAll" key="key_cmd_sv_RRunAll"
 				oncommand="ko.commands.doCommand('cmd_sv_RRunAll')"
