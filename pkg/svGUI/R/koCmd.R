@@ -1,7 +1,8 @@
 "koCmd" <-
 function (cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
-	port = getOption("ko.port"))
+	port = getOption("ko.port"), timeout = 1)
 {
+
     if (is.null(host)) host <- "localhost"	# Default value
 	if (is.null(port)) port <- 7052			# Idem
 	cmd <- gsub("\n", "\\\\n", cmd)
@@ -30,32 +31,16 @@ function (cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
 					rework(data[[n[i]]]), cmd)
 		}
 	}
-	owarn <- getOption("warn")
-	options(warn = -1)	# Eliminate warnings (in case the Komodo server is not available)
-	ret <- try(con <- socketConnection(host = host, port = port, blocking = TRUE),
-		silent = TRUE)
-	options(warn = owarn)	# Restore warnings
-	if (inherits(ret, "try-error")) {
-		data <- "Komodo socket server is not available!"
-		class(data) <- "try-error"
-		return(data)
-	}
+
+	otimeout <- getOption("timeout")
+	options(timeout = timeout) # Default timeout is 60 seconds
+	tryCatch(con <- socketConnection(host = host, port = port, blocking = TRUE),
+			 warning = function(e) {
+				stop(simpleError("Komodo socket server is not available!", quote(koCmd)))
+				})
     writeLines(cmd, con)
     res <- readLines(con)
     close(con)
-	# Did Komodo returned an error?
-	getError <- function(data) {
-		if (length(data) == 2 && data[1] == "" &&
-			substring(data[2], 0, 6) == "Error:") {
-			Err <- substring(data[2], 8)
-			# One can also add clear messages for other errors
-			data <- switch(Err,
-				"2147500037" = "Error: incorrect JavaScript code",
-				paste("Error: an unknown error", Err, "was returned by Komodo")
-			)
-			class(data) <- "try-error"
-		}
-		return(data)
-	}
-    return(getError(res))
+	options(timeout = otimeout)
+    return(res)
 }

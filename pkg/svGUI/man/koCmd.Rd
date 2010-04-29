@@ -12,7 +12,7 @@
 
 \usage{
 koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
-    port = getOption("ko.port"))
+    port = getOption("ko.port"), timeout = 1)
 }
 
 \arguments{
@@ -28,14 +28,16 @@ koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
   \item{port}{ The socket port where the SciViews-K server is listening, by
     default, it is port 7052. Can be changed by setting
     \code{options(ko.port = ....)}. }
+  \item{timeout}{ Number of seconds to wait for response. }
 }
 
 \value{
   Returns the results of the evaluation of the javascript code in Komodo Edit if
   \code{async = FALSE}. Note that \code{async = TRUE} is not supported yet.
 
-  If there is an error, or \code{cmd} is an invalid javascript code, an error
-  is returned with the class \'try-error\' (see last example).
+  If there is an error, or \code{cmd} is an invalid javascript code, 
+  a character string containing javascript error message is returned.
+  (Note: this changed from version 0.9-47, previously a 'try-error' was returned)  
 }
 
 \details{
@@ -98,9 +100,10 @@ koCmd('alert("<<<data>>>");', data = search())
 koCmd('alert("This is R version <<<major>>>.<<<minor>>>");', R.version)
 
 # Sending incorrect javascript instruction
-res <- koCmd('nonexistingJSfunction();')
-res
-if (inherits(res, "try-error")) cat("Error detected!")
+ koCmd('nonexistingJSfunction();')
+# Should return something like:
+# "ReferenceError: nonexistingJSfunction is not defined"
+
 }
 }
 
