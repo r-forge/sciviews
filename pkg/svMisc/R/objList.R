@@ -10,7 +10,7 @@ function (id = "default", envir = .GlobalEnv, object = NULL, all.names = FALSE,
 	# Format envir as character (use only first item provided!)
 	if (!is.environment(envir)){
 		envir <- tryCatch(as.environment(envir), error = function(e) NULL)
-		if (is.null(envir) || inherits(envir, "try-error")) {
+		if (is.null(envir) || inherits(envir, "error")) {
 			envir <- NULL
 			ename <- ""
 		} else {
@@ -28,7 +28,7 @@ function (id = "default", envir = .GlobalEnv, object = NULL, all.names = FALSE,
 	attr(Nothing, "all.info") <- all.info
 	attr(Nothing, "envir") <- ename
 	attr(Nothing, "object") <- object
-	attr(Nothing, "class") <- c("objList", "data.frame")
+	class(Nothing) <- c("objList", "data.frame")
 
 	if (is.null(envir))
 		return(Nothing)
@@ -185,7 +185,8 @@ function (x, sep = NA, eol = "\n", header = !attr(x, "all.info"),
 "lsObj" <-
 function (objname, envir, ...)
 {
-	obj <- try(eval(parse(text = objname)), silent = TRUE)
+	obj <- try(eval(parse(text = objname), envir = as.environment(envir)),
+			   silent = TRUE)
 	if (inherits(obj, "try-error"))
 		return(NULL)
 
