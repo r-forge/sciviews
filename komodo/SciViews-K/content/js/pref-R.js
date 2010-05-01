@@ -117,12 +117,12 @@ function OnPreferencePageLoading(prefset) {
 
 function OnPreferencePageOK(prefset) {
 	prefset = parent.hPrefWindow.prefset;
-    //prefset.setStringPref("svRDefaultInterpreter",
-     //                     document.getElementById("svRDefaultInterpreter")
-	//					  .value);
-    //prefset.setStringPref("svRApplication",
-	//					  document.getElementById('svRApplication')
-	//					  .selectedItem.getAttribute("data"));
+    prefset.setStringPref("svRDefaultInterpreter",
+                         document.getElementById("svRDefaultInterpreter")
+						  .value);
+    prefset.setStringPref("svRApplication",
+						  document.getElementById('svRApplication')
+						  .selectedItem.getAttribute("data"));
 	prefset.setStringPref("svRApplicationId",
 					  document.getElementById('svRApplication')
 					  .selectedItem.id);
