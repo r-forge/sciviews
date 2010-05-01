@@ -6,8 +6,8 @@
 # TODO: also use value in koDebug to debug server from within R!
 
 "svStart" <-
-function (minVersion = c(R = "2.6.0", svMisc = "0.9-56",
-svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
+function (minVersion = c(R = "2.6.0", svMisc = "0.9-57",
+svSocket = "0.9-48", svGUI = "0.9-47", ellipse = "0.3-5", SciViews = "0.9-1"),
 	# NOTE: minVersion is now also used as a list of required packages
 	remote.repos = "http://R-Forge.R-project.org",
 	pkg.dir = ".",

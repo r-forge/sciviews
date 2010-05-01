@@ -794,7 +794,7 @@ sv.checkToolbox = function () {
 
 		// Message prompting for removing old or duplicated toolboxes
 		sv.alert(sv.translate("Toolboxes %S have been added. " +
-				 "To avoid conflicts, you should remove any previous versions." +
+				 "To avoid conflicts, you should remove any previous or duplicated versions." +
 				 " To update the toolbars, restart Komodo.", "\"" +
 				 tbxs.join("\" and \"") + "\""));
 
@@ -854,3 +854,22 @@ sv.checkToolbox = function () {
 // Ensure we check the toolbox is installed once the extension is loaded
 //addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
 //addEventListener("load", sv.checkToolbox, false);
+
+// PhG: there is a bug in the way R starts: at the begining, a dummy '00LOCK'
+// file is created that prevents to config another R process as SciViews socket
+// server. Everytime svStart.R is run, it looks if this '00LOCK' file exists,
+// and if it finds it, it refuses to configure R as a socket server.
+// OK, but what happens if the config of the SciViews R server fails in the
+// middle of the process? Well, '00LOCK' is not removed, and it is not possible
+// any more to configre R (automatically) as a SciViews socket server.
+// To cope with this problem, I make sure '00LOCK' is deleted everytime the
+// SciViews-K plugin is loaded in Komodo Edit. That way, restarting Komodo
+// solves the problem of the remaining '00LOCK' file, in case R failed...
+var lockfilepath = sv.tools.file.path("ProfD", "extensions",
+"sciviewsk@sciviews.org", "defaults", "00LOCK");
+var file = Components.classes["@mozilla.org/file/local;1"].
+	createInstance(Components.interfaces.nsILocalFile);
+try {
+	file.initWithPath(lockfilepath);
+	file.remove(true);
+} catch(e) { }

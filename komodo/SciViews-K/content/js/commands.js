@@ -108,9 +108,11 @@ this.startR = function () {
 	// trim just in case
 	var path = sv.tools.strings.trim(sv.prefs.getString("svRDefaultInterpreter"));
 
-	if (!path || (sv.tools.file.exists(path) != sv.tools.file.TYPE_FILE)) {
+	// PhG: on Mac OS X, R.app is not a file, but a dir!!!
+	//if (!path || (sv.tools.file.exists(path) != sv.tools.file.TYPE_FILE)) {
+	if (!path || (sv.tools.file.exists(path) < 1)) {
 	    if(ko.dialogs.okCancel(
-		sv.translate("Default R interpreter is not set in " +
+		sv.translate("Default R interpreter is not (correctly) set in " +
 			     "Preferences. Do you want to do it now?"),
 			"OK", null, "SciViews-K") == "OK") {
 		prefs_doGlobalPrefs("svPrefRItem", true);

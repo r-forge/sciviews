@@ -2,6 +2,8 @@
 
 == Changes in svMisc 0.9-57
 
+* Small changes to objList() (now look at objects in their correct environment).
+
 * A bug in descArgs() with R >= 2.10 did not allowed to gest arguments
   description for functions using the '...' argument. Thanks to Diego Zardetto
   for pointing this bug.
