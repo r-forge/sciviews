@@ -78,15 +78,25 @@ sv.prefs.setString("sciviews.server.host", "127.0.0.1", false);
 
 // R interpreter
 sv.prefs.setString("svRDefaultInterpreter", "", false);
-sv.prefs.setString("svRApplication", "", false);
+sv.prefs.setString("svRApplication", null, false);
+
+var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
+
 // Default R interpreter Id: use a reasonable default, given the platform
 if (navigator.platform.indexOf("Win") === 0) {
 	sv.prefs.setString("svRApplicationId", "r-gui", false);
+	if (!svRDefaultInterpreter)
+		svRDefaultInterpreter = sv.tools.file.whereIs("Rgui");
+
 } else {
 	sv.prefs.setString("svRApplicationId", "r-terminal", false);
+	if (!svRDefaultInterpreter)
+		svRDefaultInterpreter = sv.tools.file.whereIs("R");
 }
-sv.prefs.setString("CRANMirror", "http://cran.r-project.org/", false);
+sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, false);
 
+sv.prefs.setString("CRANMirror", "http://cran.r-project.org/", false);
+sv.prefs.setString("RHelpCommand", "javascript:sv.r.help(\"%w\")", false);
 
 
 // This is required by sv.helpContext() for attaching help to snippets (hack!)

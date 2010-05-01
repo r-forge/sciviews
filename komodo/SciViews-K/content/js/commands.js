@@ -61,7 +61,7 @@ if (typeof(sv.command) == 'undefined') {
 	}
 
 	// private methods
-	// continuous checking is now disabled - R often hanged 
+	// continuous checking is now disabled - R often hanged
 	function _keepCheckingR (stopMe) {
 		/*
 		//clearInterval(sv.r.testInterval);
@@ -108,7 +108,7 @@ this.startR = function () {
 	// trim just in case
 	var path = sv.tools.strings.trim(sv.prefs.getString("svRDefaultInterpreter"));
 
-	if (!path) {
+	if (!path || (sv.tools.file.exists(path) == sv.tools.file.TYPE_FILE)) {
 	    if(ko.dialogs.okCancel(
 		sv.translate("Default R interpreter is not set in " +
 			     "Preferences. Do you want to do it now?"),
