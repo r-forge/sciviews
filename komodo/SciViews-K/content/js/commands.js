@@ -108,7 +108,7 @@ this.startR = function () {
 	// trim just in case
 	var path = sv.tools.strings.trim(sv.prefs.getString("svRDefaultInterpreter"));
 
-	if (!path || (sv.tools.file.exists(path) == sv.tools.file.TYPE_FILE)) {
+	if (!path || (sv.tools.file.exists(path) != sv.tools.file.TYPE_FILE)) {
 	    if(ko.dialogs.okCancel(
 		sv.translate("Default R interpreter is not set in " +
 			     "Preferences. Do you want to do it now?"),
