@@ -1,41 +1,40 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
 # Version 0.9.11, 2010-02-09 Ph. Grosjean (phgrosjean@sciviews.org)
-
-# Bug on Linux (Bug #685): for some strange reason R breaks execution of .Rprofile before an
-# attempt of installation of ANY package, and then starts executing .Rprofile again from
-# the beginning.
-# Since we try to install packages from within .Rprofile, this results in an endless loop,
-# and even sometimes crashes system (!!!).
+# Version 0.9.15, 2010-05-01 mod by K. Barton
 
 # TODO: also use value in koDebug to debug server from within R!
 
 "svStart" <-
 function (minVersion = c(R = "2.6.0", svMisc = "0.9-56",
 svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
+	# NOTE: minVersion is now also used as a list of required packages
 	remote.repos = "http://R-Forge.R-project.org",
-	# I would keep 'pkg.dir' attribute to give user a possibility of running
-	# svStart manually also from another working dir.
 	pkg.dir = ".",
-	debug = Sys.getenv("koDebug") == "TRUE") {
+	debug = Sys.getenv("koDebug") == "TRUE",
+	pkgsLast = c("svGUI", "ellipse", "SciViews") # to be loaded at end
+	) {
 
-	# [KB]For some reason checking for existence of svStart or any other variable did not work
-	# for me. Another try: create a semaphore file ("lock-file"), and if it exists jump out the function.
-	# I put "the gatekeeper" code inside the function, because when it was in Rprofile and if
-	# svStart exited prematurely due to some error, the lock-file remained.
-	# Another way would be enclosing svStart in try(), but I think with on.exit
-	# svStart is stand-alone, and can be even be run manually. Which is useful
-	# if something goes wrong at the first run, so user does not have to restart
-	# R, just run svStart again. For this reason svStart could be included in
-	# svGUI rather than here. Philippe, what do you think?
+	# needed later for tryCatch'ing:
+	"err.null" <- function (e) return(NULL)
 
 	# TODO: if R crashes before this code is done, 00LOCK remains and it is not
 	# possible to initiate SciViews extensions any more! => use a different
 	# mechanism (perhaps, a file in /tmp and/or make sure the 00LOCK file
 	# is deleted when Komodo Edit quits)
+	# TODO: 00LOCK should be best deleted with StartR command from Komodo
+
 	path0 <- getwd()
 	lockfile <- file.path(path0, "00LOCK")
-	if (file.exists(lockfile)) return (invisible(NULL))
+	if (file.exists(lockfile)) {
+		# We can safely assume that running svStart will not take more that 5 minutes,
+		# if 00LOCK is older, it means something went wrong previously, so we simply disregard it
+		if(difftime(Sys.time(), file.info(lockfile)[,"mtime"], units="mins") < 5) {
+			return (invisible(NULL))
+		} else {
+			file.remove(lockfile)
+		}
+	}
 	file.create(lockfile)
 	on.exit(file.remove(lockfile)) # Clean up
 
@@ -185,8 +184,9 @@ svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
 		# Load packages svMisc, svSocket & svGUI (possibly after installing
 		# or upgrading them). User is supposed to agree with this install
 		# from the moment he tries to start and configure R from Komodo Edit
-		# We now also need ellipse and SciViews
-		pkgs <- c("svMisc", "svSocket", "svGUI", "ellipse", "SciViews")
+		pkgs <- names(minVersion)
+		pkgs <- pkgs[!(pkgs %in% "R")]
+
 		ext <- switch(.Platform$pkgType, # There is a problem on some Macs
 			# => always install from sources there! mac.binary = "\\.tgz",
 			win.binary = "\\.zip", "\\.tar\\.gz")
@@ -246,10 +246,10 @@ svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
 				fields = "Version"), minVersion[pkgName]) < 0) {
 				if (!pkgIsInstalled) {
 					cat("Installing missing package", sQuote(pkgName),
-						"into", lib, "\n")
+						"into", sQuote(lib), "\n")
 				} else {
 					cat("Updating package", sQuote(pkgName), "\n")
-				}  
+				}
 				# Copy the install file to the temporary directory
 				if (!is.null(sourcefile)) try(invisible(file.copy(sourcefile, file)))
 				# Install or update the package
@@ -261,13 +261,16 @@ svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
 			}
 		})
 
+		# Split pkgs to primary and secondary
+		pkgsPrimary <- pkgs[!(pkgs %in% pkgsLast)]
+		pkgsSecondary <- pkgs[pkgs %in% pkgsLast]
+
 		# Do not load svGUI yet
-		res <- sapply(c("svMisc", "svSocket"), function(pkgName)
+		res <- sapply(pkgsPrimary, function(pkgName)
 					  require(pkgName, quietly = TRUE, character.only = TRUE))
 
 		if (!all(res)) {
-			cat("Problem loading package(s):", paste(c("svMisc", "svSocket")[!res],
-				collapse = ", "), "\n")
+			cat("Problem loading package(s):", paste(pkgsPrimary[!res], collapse = ", "), "\n")
 		} else {
 			# Try starting the R socket server now
 			res <- !inherits(try(startSocketServer(port = getOption("ko.serve")),
@@ -281,20 +284,19 @@ svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
 
 			} else {
 				# Finally, load svGUI, MASS and SciViews
-				res <- require("svGUI", quietly = TRUE)
-				res[2] <- require("MASS", quietly = TRUE)
-				res[3] <- require("SciViews", quietly = TRUE)
+				res <- sapply(pkgsSecondary, function(pkgName)
+					  require(pkgName, quietly = TRUE, character.only = TRUE))
+
 				if (all(res)) {
 					cat("R is SciViews ready!\n")
 					assignTemp(".SciViewsReady", TRUE)
 
 					# Indicate what we have as default packages
-					options(defaultPackages = c("datasets", "utils",
-						"grDevices", "graphics", "stats", "methods", "tools",
-						"tcltk", "svMisc", "svSocket", "svGUI", "MASS", "SciViews"))
+					options(defaultPackages =
+							unique(c(getOption("defaultPackages"), "tcltk", pkgs)))
 				} else {
-					cat("R is not SciViews ready, install latest svMisc,",
-						"svSocket, svGUI, ellipse & SciViews packages\n")
+						cat("R is not SciViews ready, install latest",
+						paste(pkgs, collapse=", "), "packages\n")
 				}
 			}
 		}
@@ -339,9 +341,6 @@ svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
 				# from the Windows registry :-(
 
 				# Try several ways to get Komodo path from registry.
-				# Tested only on XP. Most likely the keys are different on
-				# Vista/Windows7!
-				"err.null" <- function (e) return(NULL)
 				key <- "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\komodo.exe"
 				Komodo <-
 					tryCatch(readRegistry(key, hive = "HLM")[["(Default)"]],
@@ -427,9 +426,13 @@ svSocket = "0.9-48", svGUI = "0.9-46", ellipse = "0.3-5", SciViews = "0.9-1"),
 		assignTemp("getHelpURL", function(x, ...) {
 			file <- as.character(x)
 			if (length(file) == 0) return("")
+			# Extension ".html" may be missing 
+			htmlfile <- basename(file)
+			if(substring(htmlfile, nchar(htmlfile) -4) != ".html")
+				htmlfile <- paste(htmlfile, ".html", sep="")
 			return(paste("http://127.0.0.1:", tools:::httpdPort,
 			"/library/", basename(dirname(dirname(file))),
-			"/html/", basename(file), sep = ""))
+			"/html/", htmlfile, sep = ""))
 		})
 
 # print method of object returned by help() is very unflexible for R.app and
@@ -515,7 +518,9 @@ source("print.help_files_with_topic.R")
 		# Update info in Komodo:
 		debugMsg("Contacting Komodo with koCmd")
 		invisible(koCmd("sv.socket.updateCharset();"))
-		invisible(koCmd("sv.cmdout.message(\"R is started\", 2000);"))
+		invisible(koCmd("sv.cmdout.append('R is started');"))
+		invisible(koCmd("sv.command.updateRStatus(true);"))
+
 	}
 	return(invisible(res))
 }
