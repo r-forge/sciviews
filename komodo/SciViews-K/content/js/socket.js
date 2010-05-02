@@ -215,7 +215,7 @@ if (typeof(sv.socket) == 'undefined')
 
 	const nsITransport = Components.interfaces.nsITransport;
 
-	var _serverSocket;				// The SviViews-K socket server object
+	var _serverSocket;				// The SciViews-K socket server object
 	var _serverStarted = false;		// Is the socket server started?
 	var _inputString;				// The string with command send by R
 	var _outputString;				// The string with the result to send to R

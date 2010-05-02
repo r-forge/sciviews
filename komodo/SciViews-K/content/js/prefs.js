@@ -79,7 +79,7 @@ sv.prefs.setString("sciviews.server.host", "127.0.0.1", false);
 // R interpreter
 sv.prefs.setString("svRDefaultInterpreter", "", false);
 sv.prefs.setString("svRApplication", null, false);
-
+sv.prefs.setString("svRQuiet", false, false);
 var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
 
 // Default R interpreter Id: use a reasonable default, given the platform
@@ -97,7 +97,6 @@ sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, false);
 
 sv.prefs.setString("CRANMirror", "http://cran.r-project.org/", false);
 sv.prefs.setString("RHelpCommand", "javascript:sv.r.help(\"%w\")", false);
-
 
 // This is required by sv.helpContext() for attaching help to snippets (hack!)
 // Create empty preference sets to be used with snippet help system hack
@@ -148,7 +147,6 @@ sv.prefs.mru("y", true, "");
 sv.prefs.mru("factor", true, "");
 sv.prefs.mru("factor2", true, "");
 sv.prefs.mru("blockFactor", true, "");
-
 
 //// (re)initialize a series of MRU for snippets' %ask constructs //////////////
 // TODO: defaultMRU for ts, data, table, ...
