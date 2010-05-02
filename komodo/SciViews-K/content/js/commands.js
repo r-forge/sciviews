@@ -120,11 +120,12 @@ this.startR = function () {
 	    return;
 	}
 
-
 	path = os.path.dirname(path);
 	if (path) path += os.sep;
+	var Quiet = " ";
+	if (sv.prefs.getString("svRQuiet")) Quiet = "--quiet ";
 	cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
-		.replace("%title%", "SciViews-K");
+		.replace("%title%", "SciViews-K").replace("%quiet%", Quiet);
 
 	var id = sv.prefs.getString("svRApplicationId");
 
@@ -148,8 +149,6 @@ this.startR = function () {
 		"koDebug=" + String(sv.socket.debug).toUpperCase(),
 		"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : ""))
 	];
-	var cwd = sv.tools.file.path("ProfD", "extensions",
-		"sciviewsk@sciviews.org", "defaults");
 	var runIn = "no-console";
 
 	env.push("Rid=" + preferredRApp);

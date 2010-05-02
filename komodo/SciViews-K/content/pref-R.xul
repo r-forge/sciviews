@@ -43,7 +43,6 @@
 <?xml-stylesheet href="chrome://komodo/skin/tree.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/prefs/prefs.css" type="text/css"?>
 
-
 <window xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
@@ -57,16 +56,10 @@
 
 <box class="kobox-smallheader" title="R interpreter configuration"/>
 <vbox flex="1" class="autoscroll">
+	
 	<groupbox orient="vertical">
 		<caption label="Default R Interpreter"/>
-		<label value="Use this R application:" control="svRDefaultInterpreter" />
-			<hbox>
-				<textbox id="svRDefaultInterpreter" pref="true"
-					 emptytext="No R installation found on the system!"
-					 editable="false" flex="1"/>
-				<button label="Browse..." oncommand="PrefR_setExecutable();"/>
-			</hbox>
-		<vbox flex="1" align="center">
+		<vbox flex="1" id="svRinstallMessage" align="center">
 			<description>
 				SciViews-K needs a valid installation of R on the
 				local machine. If you have not installed R yet, you can
@@ -74,74 +67,131 @@
 			</description>
 			<separator class="thin"/>
 			<button label="&lt;http://cran.r-project.org/&gt;" class="button-link"
-					style="margin-top: -10px; color: rgb(184, 38, 25);"
-					onclick="parent.opener.ko.browse.openUrlInDefaultBrowser('http://cran.r-project.org/');"/>
+				style="margin-top: -10px; color: rgb(184, 38, 25);"
+				onclick="parent.opener.ko.browse.openUrlInDefaultBrowser('http://cran.r-project.org/');"/>
 			<separator class="thin"/>
 		</vbox>
 		<hbox align="center">
 			<label class="label" control="svRApplication" value="Preferred way to run R:"/>
 			<menulist
-					  id="svRApplication" oncommand="PrefR_svRApplicationOnSelect(event);"
-					  pref="true" prefattribute="value"
-					  >
-			<menupopup id="sciviews_menu_select_r_application">
-				<menuitem id="r-none" label=""
+				id="svRApplication" oncommand="PrefR_svRApplicationOnSelect(event);"
+				pref="true" prefattribute="value">
+				<menupopup id="sciviews_menu_select_r_application">
+					<menuitem id="r-none" label=""
 						value="" app="?" which="" platform="Linux,Mac,Win"/>
-				<menuitem id="r-terminal" label="in default terminal"
-						value="&quot;%Path%R&quot; --quiet" which="R"
+					<menuitem id="r-terminal" label="in default terminal"
+						value="&quot;%Path%R&quot; %quiet%" which="R"
 						platform="Linux,Mac"/>
-				<menuitem id="r-terminal" label="in console window"
-						value="&quot;%Path%R.exe&quot; --quiet" app="R.exe"
+					<menuitem id="r-terminal" label="in console window"
+						value="&quot;%Path%R.exe&quot; %quiet%" app="R.exe"
 						which="R" platform="Win"/>
-				<menuitem id="r-gnome-term" label="in Gnome terminal"
-						value="gnome-terminal --hide-menubar --title=%title% -x &quot;%Path%R&quot; --quiet"
+					<menuitem id="r-gnome-term" label="in Gnome terminal"
+						value="gnome-terminal --hide-menubar --title=%title% -x &quot;%Path%R&quot; %quiet%"
 						which="gnome-terminal,R" platform="Linux"/>
-				<menuitem id="r-kde-term" label="in Konsole"
-						value="konsole --workdir &quot;%cwd%&quot; --title %title% -e &quot;%Path%R&quot; --quiet"
+					<menuitem id="r-kde-term" label="in Konsole"
+						value="konsole --workdir &quot;%cwd%&quot; --title %title% -e &quot;%Path%R&quot; %quiet%"
 						which="konsole,R" platform="Linux"/>
-				<menuitem id="r-xfce4-term" label="in XFCE terminal"
-						value="xfce4-terminal --title &quot;%title%&quot; -x &quot;%Path%R&quot; --quiet"
+					<menuitem id="r-xfce4-term" label="in XFCE terminal"
+						value="xfce4-terminal --title &quot;%title%&quot; -x &quot;%Path%R&quot; %quiet%"
 						which="xfce4-terminal,R" platform="Linux"/>
-				<menuitem id="r-app" label="R app"
+					<menuitem id="r-app" label="R app"
 						value="open -a &quot;/Applications/R.app&quot; &quot;%cwd%&quot;"
 						app="R.app"
 						which="/Applications/R.app" platform="Mac"/>
-				<menuitem id="r64-app" label="R64 app"
+					<menuitem id="r64-app" label="R64 app"
 						value="open -a &quot;/Applications/R64.app&quot; &quot;%cwd%&quot;"
 						app="R64.app"
 						which="/Applications/R64.app" platform="Mac"/>
-				<menuitem id="svr-app" label="SciViews R app"
+					<menuitem id="svr-app" label="SciViews R app"
 						value="open -a &quot;/Applications/SciViews R.app&quot; &quot;%cwd%&quot;"
 						app="SciViews R.app"
 						which="/Applications/SciViews R.app" platform="Mac"/>
-				<menuitem id="svr64-app" label="SciViews R64 app"
+					<menuitem id="svr64-app" label="SciViews R64 app"
 						value="open -a &quot;/Applications/SciViews R64.app&quot; &quot;%cwd%&quot;"
 						app="SciViews R64.app"
 						which="/Applications/SciViews R64.app" platform="Mac"/>
-				<menuitem id="r-gui" label="R GUI"
+					<menuitem id="r-gui" label="R GUI"
 						app="Rgui.exe"
-						value="&quot;%Path%Rgui.exe&quot; --sdi"
+						value="&quot;%Path%Rgui.exe&quot; --sdi %quiet%"
 						which="Rgui" platform="Win"/>
-				<menuitem id="r-tk" label="R Tk GUI"
-						value="&quot;%Path%R&quot; --interactive --gui=Tk"
+					<menuitem id="r-tk" label="R Tk GUI"
+						value="&quot;%Path%R&quot; --interactive --gui=Tk %quiet%"
 						which="R" platform="Linux,Mac"/>
-			</menupopup>
+				</menupopup>
 			</menulist>
 		</hbox>
+		<label value="Use this R application:" control="svRDefaultInterpreter" />
+		<hbox>
+			<textbox id="svRDefaultInterpreter" pref="true"
+				emptytext="No R installation found on the system!"
+				oninput="PrefR_svRApplicationOnSelect(event);"
+				editable="false" flex="1"/>
+			<button label="Browse..." oncommand="PrefR_setExecutable();"/>
+		</hbox>
 		<hbox align="center">
-			<checkbox id="sciviews.run.r.quiet" disabled="true" />
+			<checkbox id="svRQuiet" oninput="PrefR_svRApplicationOnSelect(event);"/>
 			<label value="Run R quietly (no initial messages)"
-				   control="sciviews.run.r.quiet" disabled="true"
-				   pref="false" />
+				control="svRQuiet" pref="false" />
 		</hbox>
 		<separator class="thin"/>
 		<vbox>
-<label class="label" control="R_command" crop="end"
-	   value="This command will be used to start R (R -> Start R):"/>
+			<label class="label" control="R_command" crop="end"
+				value="This command will be used to start R (R -> Start R):"/>
 			<textbox id="R_command" value="" class="plain"
-			style="background: none; padding-top: 1px !important; margin-left: 10px !important;" />
+				style="background: none; padding-top: 1px !important; margin-left: 10px !important;" />
 		</vbox>
 	</groupbox>
+	
+	<groupbox orient="vertical">
+		<caption label="Socket connection"/>
+		<grid>
+		  <columns>
+				<column flex="1"/> <column flex="2"/> <column flex="1"/> <column
+					flex="2"/>
+			</columns>
+		  <rows>
+				<row align="center">
+					<label value="Server port #:" control="sciviews.client.socket" />
+					<textbox id="sciviews.client.socket" pref="true" width="50" />
+					<label value="Host to connect to:" control="sciviews.server.host" />
+					<textbox id="sciviews.server.host" pref="true" width="150"
+						disabled="true"/>
+				</row>
+				<row align="center">
+					<label value="Client port #:" control="sciviews.server.socket" />
+					<textbox id="sciviews.server.socket" pref="true" width="50" />
+					<label value="Client Id:" control="sciviews.client.id" />
+					<textbox id="sciviews.client.id" pref="true" width="150" />
+				</row>
+		  </rows>
+		</grid>
+	</groupbox>
+	
+	<groupbox orient="vertical">
+		<caption label="Data input and output"/>
+		<grid>
+			<columns>
+				<column flex="3"/> <column flex="3"/> <column flex="3"/>
+			</columns>
+			<rows>
+				<row align="center">
+					<label value="Decimal separator" control="r.csv.dec"/>
+					<menulist pref="true" id="r.csv.dec"
+						values=", ." persist="values">
+						<menupopup />
+					</menulist>
+					<label value="CSV field separator" control="r.csv.sep" />
+					<menulist pref="true" id="r.csv.sep" editable="true"
+						onkeyup="if (event.keyCode == 13) editMenulist(this);"
+						onblur="editMenulist(this);"
+						values=", ; \t" persist="values">
+						<menupopup />
+					</menulist>
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+
 	<groupbox orient="vertical">
 		<caption label="R configuration"/>
 		<vbox>
@@ -155,14 +205,15 @@
 			</hbox>
 		</vbox>
 	</groupbox>
-	<groupbox orient="vertical">
+	
+	<groupbox orient="vertical" hidden="true">
 		<caption label="Miscellanous"/>
 		<hbox align="top">
 			<label value="Show R help in:" />
 			<radiogroup id="sciviews.rhelp.open_in" disabled="true"
-						pref="false">
+				pref="false">
 				<radio value="window" label="new window" accesskey="E"
-					   selected="true" />
+					selected="true" />
 				<radio value="pane" label="right pane" accesskey="P" />
 			</radiogroup>
 		</hbox>
@@ -170,67 +221,10 @@
 		<hbox align="center">
 			<checkbox id="sciviews.r.auto-start" disabled="true" />
 			<label value="Start R automatically"
-				   control="sciviews.r.auto-start" disabled="true"
-				   pref="false" />
+				control="sciviews.r.auto-start" disabled="true"
+				pref="false" />
 		</hbox>
 	</groupbox>
-	<groupbox orient="vertical">
-		<caption label="Socket connection"/>
-		<grid>
-		  <columns>
-			<column flex="1"/> <column flex="2"/> <column flex="1"/> <column
-			flex="2"/>
-		  </columns>
-		  <rows>
-			<row align="center">
-				  <label value="Server port #:" control="sciviews.client.socket" />
-				  <textbox id="sciviews.client.socket" pref="true" width="50" />
-				  <label value="Host to connect to:" control="sciviews.server.host" />
-				  <textbox id="sciviews.server.host" pref="true" width="150"
-						   disabled="true"/>
-			</row>
-			<row align="center">
-				  <label value="Client port #:" control="sciviews.server.socket" />
-				  <textbox id="sciviews.server.socket" pref="true" width="50" />
-				  <label value="Client Id:" control="sciviews.client.id" />
-				  <textbox id="sciviews.client.id" pref="true" width="150" />
-			</row>
-		  </rows>
-		</grid>
-	</groupbox>
-	<groupbox orient="vertical">
-		<caption label="Data input and output"/>
-		<grid>
-		<columns>
-			<column flex="3"/> <column flex="3"/> <column flex="3"/>
-		</columns>
-			<rows>
-				<row align="center">
-					<label value="Decimal separator" control="r.csv.dec" />
-					<menulist pref="true" id="r.csv.dec"
-						values=", ." persist="values"
-						>
-						<menupopup />
-					</menulist>
-
-					<label value="CSV field separator" control="r.csv.sep" />
-
-							  <!--PhG: this raises an error when included in the <menulist ...> tag hereunder! oninput="this.value = this.value[0];"-->
-
-					<menulist pref="true" id="r.csv.sep"
-							  editable="true"
-
-							  onkeyup="if (event.keyCode == 13) editMenulist(this);"
-							  onblur="editMenulist(this);"
-							  values=", ; \t" persist="values"
-							  >
-						<menupopup />
-					</menulist>
-				</row>
-			</rows>
-		</grid>
-	</groupbox>
-
-
+	
 </vbox>
 </window>

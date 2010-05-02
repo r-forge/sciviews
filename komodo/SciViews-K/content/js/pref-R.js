@@ -8,7 +8,7 @@
 // svPrefR_finishSpecifyingExecutable(path);    // Set R executable
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TODO: use 'R' simply as default R (terminal on Win/Mac, or ? on Linux)
+// TODO: use 'R' simply as default R (terminal on Win/Mac, or on Linux)
 
 /* TODO: prefs to include:
  * address for remote R (sv.socket.host)? (if not localhost - disable source* commands)
@@ -22,8 +22,7 @@
 
 var sv;
 
-
-// for editable menulists: append new element if necessarry.
+// for editable menulists: append new element if necessary
 function editMenulist(el) {
 	var curValue = sv.tools.strings.trim(el.value);
 	if (!curValue) return;
@@ -70,9 +69,6 @@ function menuListGetValues(attribute) {
 	}
 }
 
-
-
-
 function PrefR_menulistSetValue(menuList, value, attr, vdefault) {
 	var n = menuList.itemCount;
 	var item;
@@ -91,23 +87,22 @@ function PrefR_menulistSetValue(menuList, value, attr, vdefault) {
 function PrefR_OnLoad() {
 	// Get the sv object:
 	var p = parent;
-	while (p.opener && (p = p.opener) && !sv) if (p.sv) 	sv = p.sv;
+	while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
 
 	var prefExecutable;
 	var prefset = parent.hPrefWindow.prefset;
 	var prefName = 'svRDefaultInterpreter';
+	document.getElementById("svRQuiet")
+		.setAttribute("checked", sv.prefs.getString("svRQuiet"));
 	if (!prefset.hasStringPref(prefName) || !prefset.getStringPref(prefName)) {
 		prefExecutable = sv.tools.file.whereIs("R");
 		prefset.setStringPref(prefName, prefExecutable);
 	}
 	PrefR_setRAppMenu(document.getElementById("svRApplication"));
-
-	//PrefR_InterfaceUpdate();
 	if (!PrefR_UpdateCranMirrors(true))
 		PrefR_UpdateCranMirrors(false);
-
+	
 	menuListSetValues();
-
 	parent.hPrefWindow.onpageload();
 }
 
@@ -118,32 +113,26 @@ function OnPreferencePageLoading(prefset) {
 function OnPreferencePageOK(prefset) {
 	prefset = parent.hPrefWindow.prefset;
     prefset.setStringPref("svRDefaultInterpreter",
-                         document.getElementById("svRDefaultInterpreter")
-						  .value);
+        document.getElementById("svRDefaultInterpreter").value);
     prefset.setStringPref("svRApplication",
-						  document.getElementById('svRApplication')
-						  .selectedItem.getAttribute("data"));
+		document.getElementById('svRApplication')
+		.selectedItem.getAttribute("value"));
 	prefset.setStringPref("svRApplicationId",
-					  document.getElementById('svRApplication')
-					  .selectedItem.id);
+		document.getElementById('svRApplication').selectedItem.id);
+	prefset.setStringPref("svRQuiet",
+		document.getElementById('svRQuiet')
+		.getAttribute("checked") == "true");
 
 	var outDec = document.getElementById('r.csv.dec').value;
 	var outSep = document.getElementById('r.csv.sep').value;
-
 	prefset.setStringPref("r.csv.dec.arg", '"' + outDec +'"');
 	prefset.setStringPref("r.csv.sep.arg", '"' + outSep +'"');
-
-	//alert(sv.tools.strings.addslashes(outDec));
-
 	if	(sv.r.running) {
 		sv.r.eval('options(OutDec = "' + outDec + '", ' +
-						'OutSep = "' + outSep + '")', true);
+			'OutSep = "' + outSep + '")', true);
 	}
-
-
-
+	
 	menuListGetValues();
-
 	return true;
 }
 
@@ -166,8 +155,15 @@ function PrefR_svRApplicationOnSelect(event) {
 	document.getElementById("svRDefaultInterpreter").value
 		= svRDefaultInterpreter;
 
+	var Quiet = " ";
+	if (document.getElementById("svRQuiet")
+		.getAttribute("checked") == "true") Quiet = "--quiet ";
+
+	var cwd = sv.tools.file.path("ProfD", "extensions",
+		"sciviewsk@sciviews.org", "defaults");
+	
 	data = data.replace("%Path%", path).replace("%title%", "SciViews-K")
-		.replace("%cwd%", os.getcwd());
+		.replace("%cwd%", cwd).replace("%quiet%", Quiet);
 
 	document.getElementById('R_command').value = data;
 	return true;
@@ -183,7 +179,7 @@ function PrefR_setExecutable(path) {
 	}
 
 	PrefR_menulistSetValue(document.getElementById("svRApplication"),
-					 os.path.basename(path), "app",  "R");
+		os.path.basename(path), "app",  "R");
 	document.getElementById("svRDefaultInterpreter").value = os.path.abspath(path);
 	PrefR_svRApplicationOnSelect(null);
 }
@@ -195,12 +191,12 @@ function PrefR_setRAppMenu(menuList) {
 
 	var validPlatforms, showItem;
 	var platform = navigator.platform;
+	var anyItem = false;
 
 	for (var i = menuList.itemCount; i >= 0; i--) {
 		var item = menuList.getItemAtIndex(i);
 		try {
-			validPlatforms = item.getAttribute("platform").
-				split(/[,\s]+/);
+			validPlatforms = item.getAttribute("platform").split(/[,\s]+/);
 			showItem = false;
 			for (var j in validPlatforms) {
 				if (platform.indexOf(validPlatforms[j]) > -1) {
@@ -224,11 +220,17 @@ function PrefR_setRAppMenu(menuList) {
 					}
 				}
 			}
-			if (!showItem)
+			if (!showItem) {
 				menuList.removeItemAt(i);
-		} catch(e) {	}
+			} else {
+				anyItem = true;
+			}
+		} catch(e) { }
 	}
-
+	// If there is at least one item available, hide the message to install R
+	if (anyItem) {
+		document.getElementById("svRinstallMessage").setAttribute("hidden", "true");
+	}
 }
 
 // Get CRAN mirrors list - independently of R
@@ -254,7 +256,8 @@ function PrefR_UpdateCranMirrors(localOnly) {
 	var alreadyCached = false;
 	if (!csvContent) {
 		// First, check if there is serialized version:
-		if (alreadyCached = sv_file.exists(jsonFile)) {
+		alreadyCached = sv_file.exists(jsonFile);
+		if (alreadyCached) {
 			arrData = nativeJSON.decode(sv_file.read(jsonFile));
 			//sv.cmdout.append("Read from: JSON");
 		} else {
@@ -294,7 +297,6 @@ function PrefR_UpdateCranMirrors(localOnly) {
 				arrData[i] = [item[colName], item[colURL]];
 			}
 		}
-		//sv.cmdout.append("New arrData");
 	}
 	if (!arrData)	return false;
 
@@ -302,7 +304,6 @@ function PrefR_UpdateCranMirrors(localOnly) {
 		// If updated from web, or not cached yet,
 		// serialize and save to file for faster later use:
 		sv_file.write(jsonFile, nativeJSON.encode(arrData), 'utf-8');
-		//sv.cmdout.append("Cached now.");
 	}
 
 	// Put arrData into MenuList:
@@ -329,20 +330,21 @@ function CSVToArray(strData, strDelimiter){
 			"([^\"\\" + strDelimiter + "\\r\\n]*))"
 		), "gi");
 	var arrData = [[]];
-	var arrMatches = null;
-	while (arrMatches = objPattern.exec( strData )) {
-		var strMatchedDelimiter = arrMatches[ 1 ];
+	var arrMatches = objPattern.exec(strData);
+	while (arrMatches) {
+		var strMatchedDelimiter = arrMatches[1];
 		if (strMatchedDelimiter.length &&
 			(strMatchedDelimiter != strDelimiter)) {
-			arrData.push( [] );
+			arrData.push([]);
 		}
-		if (arrMatches[ 2 ]){
-			var strMatchedValue = arrMatches[ 2 ].replace(
-				new RegExp( "\"\"", "g" ),	"\"");
+		if (arrMatches[2]) {
+			var strMatchedValue = arrMatches[2]
+				.replace(new RegExp( "\"\"", "g" ),	"\"");
 		} else {
-			var strMatchedValue = arrMatches[ 3 ];
+			var strMatchedValue = arrMatches[3];
 		}
-		arrData[ arrData.length - 1 ].push( strMatchedValue );
+		arrData[arrData.length - 1].push(strMatchedValue);
+		arrMatches = objPattern.exec(strData);
 	}
-	return( arrData );
+	return(arrData);
 }
