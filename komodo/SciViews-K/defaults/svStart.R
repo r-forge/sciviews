@@ -7,12 +7,13 @@
 
 "svStart" <-
 function (minVersion = c(R = "2.6.0", svMisc = "0.9-57",
-svSocket = "0.9-48", svGUI = "0.9-47", ellipse = "0.3-5", SciViews = "0.9-1"),
+svSocket = "0.9-48", svGUI = "0.9-47", MASS = "7.2.0", ellipse = "0.3-5",
+SciViews = "0.9-1"),
 	# NOTE: minVersion is now also used as a list of required packages
 	remote.repos = "http://R-Forge.R-project.org",
 	pkg.dir = ".",
 	debug = Sys.getenv("koDebug") == "TRUE",
-	pkgsLast = c("svGUI", "ellipse", "SciViews") # to be loaded at end
+	pkgsLast = c("svGUI", "ellipse", "MASS", "SciViews") # to be loaded at the end
 	) {
 
 	# needed later for tryCatch'ing:
@@ -283,7 +284,7 @@ svSocket = "0.9-48", svGUI = "0.9-47", ellipse = "0.3-5", SciViews = "0.9-1"),
 				cat("or choose a different port for the server in Komodo\n")
 
 			} else {
-				# Finally, load svGUI, MASS and SciViews
+				# Finally, load svGUI, ellipse, MASS and SciViews
 				res <- sapply(pkgsSecondary, function(pkgName)
 					  require(pkgName, quietly = TRUE, character.only = TRUE))
 
@@ -442,8 +443,12 @@ svSocket = "0.9-48", svGUI = "0.9-47", ellipse = "0.3-5", SciViews = "0.9-1"),
 # browser here! So, no other solution than to be even harsher, and to force
 # rewriting of the print function in base environment!!!
 # (problem emailed to Simon Urbanek on 03/11/2009... I hope he will propose
-# a work-around for this in R 2.10.1!!!)
-source("print.help_files_with_topic.R")
+# a work-around for this in R 2.12!!!)
+if (compareVersion(rVersion, "2.11.0") < 0) {
+	source("print.help_files_with_topic210.R")
+} else {
+	source("print.help_files_with_topic211.R")
+}
 
 		# Change the working directory to the provided directory
 		setwd(getOption("R.initdir"))

@@ -8,15 +8,7 @@ R.
 * There is a bug with the abbrev expansion that prevents correct detection of
 abbrev when the file is not saved or saved with a different extension than .R
 
-* Pager currently display the file in a buffer and does not use title or
-delete.file (file not deleted!). Try using a web browser instead, with
-correct title and look for a method to allow deleting the file
-
 * svIO and svViews in relation to objects explorer
-
-* sv.r.source("all") is buggy + add in menus/toolbars
-
-* A more convenient Help page + rework R Help/R Help Search (external)
 
 * Add R language entry in Help menu
 
@@ -28,14 +20,6 @@ correct title and look for a method to allow deleting the file
 
 * Use JSON to transport objects between R and Komodo
 
-* Avoid restarting a second time when the toolbox is installed + extract dir box
-
-* R does not find Komodo (on Windows, and Linux) + way to reactivate Komodo window
-
-* Problem installing a .xpi file from R in Windows
-
-* setwd() with GUI, allow choosing starting dir for R kernels started from Komodo
-
 * Configuration of R when started from .RData files.
 
 * R reference cards
@@ -46,11 +30,51 @@ correct title and look for a method to allow deleting the file
 
 * R Linter
 
-* Projects in packages (developments and binaries) + SciViews-K Unit features
+* Add SciViews-K Unit features to SciViews-K
 
 * Make the User's and Developer's manuals
 
-* Update the web site
+* Finish the package manager
+
+* R -> Session directory => R Session manager + check / add session dir and previous dir
+
+* Demos/Data/Vignettes in browser => wrong encoding
+
+* Add a PDF plugin in browser
+
+* A csv editor in Komodo + R object editor
+
+* Packages -> install R packages/load R packages => do not select all by default!
+
+* Packages -> Old R packages => no package names appear in the output
+
+* Packages -> remove packages => wrong list
+
+* Packages -> select R repositories/update packages => use Komodo dialog box
+
+* Packages -> unload packages => do not allow unloading required packages
+
+* Debugging, syntax error detection, variable inspection, set breakpoint
+
+* Change detection and outlining of documents
+
+* Source list for all opened files or files in project as well as current file
+
+* List installed and loaded packages in object explorer
+
+* Inspect/modify variable during debugging
+
+* Conditional break point
+
+* Search in manuals + integrate Komodo help
+
+* Debug autocompletion features
+
+* Bug: crash of Komodo on exit on Windows and Linux
+
+* put svStart.R in SciViews package
+
+* Rework method to gray out menus
 
 Not really *named* regions, but an easy way to run portions of code quickly in SciViews-K (http://www.sciviews.org/SciViews-K):
 * R -> Run marked block (or Ctrl+Shift+M) runs code between two bookmarks,
