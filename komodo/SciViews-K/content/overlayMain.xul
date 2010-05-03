@@ -70,9 +70,10 @@
 	<broadcasterset id="broadcasterset_global">
 		<broadcaster id="sv_r_is_running" disabled="false"/>
 	</broadcasterset>
-
+<!-- PhG: commands updating disabled because it does not always work
+          => sometimes, required commands remain disabled!!!! -->
 	<commandset id="allcommands">
-		<commandset id="cmdset_rApp" commandupdater="true"
+		<commandset id="cmdset_rApp" commandupdater="false"
 			oncommandupdate="ko.commands.updateCommandset(this);"
 			events="r_app_started_closed">
 			<command id="cmd_sv_start_R" key="key_cmd_sv_start_R"
@@ -82,7 +83,7 @@
 				oncommand="ko.commands.doCommand('cmd_sv_quit_R');"
 				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
 			<command id="cmd_sv_OpenPkgManager" key="key_cmd_sv_OpenPkgManager"
-				oncommand="sv.command.openPkgManager();" disabled="true"
+				oncommand="sv.command.openPkgManager();" disabled="false"
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
 			<command id="cmd_sv_OpenHelp" key="key_cmd_sv_OpenHelp"
 				oncommand="sv.command.openHelp();"
@@ -95,7 +96,7 @@
 				desc="R: &svOpenSessMgr;" label="&svOpenSessMgr;" accesskey="&svOpenSessMgr.key;"/>
 		</commandset>
 
-		<commandset id="cmdset_r_control" commandupdater="true"
+		<commandset id="cmdset_r_control" commandupdater="false"
 		  events="current_view_language_changed,r_app_started_closed"
 		  oncommandupdate="ko.commands.updateCommandset(this);">
 			<command id="cmd_sv_RRunAll" key="key_cmd_sv_RRunAll"
@@ -133,7 +134,8 @@
 				oncommand="ko.commands.doCommand('cmd_sv_RSourceLineOrSelection')"
 				desc="R: &rSrcLineOrSelection;" label="&rSrcLineOrSelection;"
 				accesskey="&rSrcLineOrSelection.key;"/>
-			<commandset id="cmdset_r_control" commandupdater="true" events="select"
+			
+			<commandset id="cmdset_r_control" commandupdater="false" events="select"
 				oncommandupdate="ko.commands.updateCommandset(this);">
 				<command id="cmd_sv_RRunSelection" key="key_cmd_sv_RRunSelection"
 					oncommand="ko.commands.doCommand('cmd_sv_RRunSelection')"
@@ -180,8 +182,6 @@
 					class="menuitem-iconic r-run-command-icon"/>
 				<menuitem id="r_quit_console_menu" observes="cmd_sv_quit_R"
 					class="menuitem-iconic r-quit-command-icon"/>
-				<!--<menuitem id="r_update_charset" observes="cmd_sv_update_charset"
-					class="menuitem"/>-->
 				<menuitem id="r_start_pkg_manager" observes="cmd_sv_OpenPkgManager"
 					class="menuitem-iconic r-pkg-manager"/>
 				<menuitem id="r_start_help" observes="cmd_sv_OpenHelp"

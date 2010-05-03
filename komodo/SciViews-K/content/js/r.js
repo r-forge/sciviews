@@ -163,7 +163,8 @@ sv.r.test = function sv_RTest () {
 				}
 			}
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
-			window.updateCommands('r_app_started_closed');
+			// PhG: currentky disabled: all menus enabled all the time!
+			//window.updateCommands('r_app_started_closed');
 			sv.log.debug("R state changed: " + wasRRunning + "->" + isRRunning);
 		}
 	}
@@ -189,7 +190,7 @@ sv.r.eval = function (cmd) {
 	// Store the current R command
 	if (sv.socket.prompt == ":> ") {
 		// Special case for q() and quit() => use sv.r.quit() instead
-		if (cmd.search(/^q(?:uit)?\s*\(\s*\)$/) > -1) return(sv.r.quit());
+		if (cmd.search(/^(?:base::)?q(?:uit)?\s*\(\s*\)$/) > -1) return(sv.r.quit());
 		// This is a new command
 		sv.socket.cmd = cmd;
 	} else {
@@ -1435,7 +1436,9 @@ sv.r.quit = function (save) {
 		response = save? "yes" : "no";
 	}
 	// Quit R
-	sv.r.eval('q("' + response.toLowerCase() + '")');
+	// PhG: in R 2.11, R.app 1.33 q() is not usable any more... one has to
+	// be more explicit with base::q()
+	sv.r.eval('base::q("' + response.toLowerCase() + '")');
 	// Clear the R-relative statusbar message
 	sv.cmdout.message("");
 	// Clear the objects browser

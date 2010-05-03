@@ -5,7 +5,7 @@
 # browser here! So, no other solution than to be even harsher, and to force
 # rewriting of the print function in base environment!!!
 # (problem emailed to Simon Urbanek on 03/11/2009... I hope he will propose
-# a work-around for this in R 2.10.1!!!)
+# a work-around for this in R 2.11!!!)
 unlockBinding("print.help_files_with_topic", env = baseenv())
 assign("print.help_files_with_topic",
 function (x, ...)

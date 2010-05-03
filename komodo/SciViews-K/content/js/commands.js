@@ -99,8 +99,6 @@ if (typeof(sv.command) == 'undefined') {
 
 // Start R
 this.startR = function () {
-	var os = Components.classes['@activestate.com/koOs;1']
-	.getService(Components.interfaces.koIOs);
 	var cwd = sv.tools.file.path("ProfD", "extensions",
 	"sciviewsk@sciviews.org", "defaults");
 	var cmd = sv.prefs.getString("svRApplication");
@@ -120,12 +118,16 @@ this.startR = function () {
 	    return;
 	}
 
-	path = os.path.dirname(path);
-	if (path) path += os.sep;
+	// PhG: %Path% has changed: it is now the full application path, like "/usr/bin/R"!
+	// So, the following code should be eliminated!
+	//var os = Components.classes['@activestate.com/koOs;1']
+	//.getService(Components.interfaces.koIOs);
+	//path = os.path.dirname(path);
+	//if (path) path += os.sep;
 	var Quiet = " ";
 	if (sv.prefs.getString("svRQuiet")) Quiet = "--quiet ";
 	cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
-		.replace("%title%", "SciViews-K").replace("%quiet%", Quiet);
+		.replace("%title%", "SciViews-R").replace("%quiet%", Quiet);
 
 	var id = sv.prefs.getString("svRApplicationId");
 
@@ -235,7 +237,9 @@ this.startR = function () {
 		if (running != sv.r.running) {
 			sv.r.running = !!running;
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
-			window.updateCommands('r_app_started_closed');
+			// PhG: these events are disabled for now, because menus are
+			//      sometimes disabled when they shouldn't be!!! Very ennoying!
+			//window.updateCommands('r_app_started_closed');
 			sv.log.debug("R status updated: " + (running? "" : "not ") + "running" );
 		}
 	}
@@ -462,12 +466,14 @@ this.startR = function () {
 			}
 		}
 
-		_setCommandCtrl1(cmdsIfRRunning, _isRRunning, "sv_");
-		_setCommandCtrl1(cmdsIfRNotRunning, function() {
-			return !_isRRunning()}, "sv_");
-		_setCommandCtrl1(cmdsIfIsRView, _RControl_supported, "sv_R");
-		_setCommandCtrl1(cmdsIfIsRViewAndSelection,
-			_RControlSelection_supported, "sv_R");
+// PhG: currently, all menu items remain enabled, because this feature
+//      does not work well, and menus are sometimes disabled when they shouldn't be!
+		//_setCommandCtrl1(cmdsIfRRunning, _isRRunning, "sv_");
+		//_setCommandCtrl1(cmdsIfRNotRunning, function() {
+		//	return !_isRRunning()}, "sv_");
+		//_setCommandCtrl1(cmdsIfIsRView, _RControl_supported, "sv_R");
+		//_setCommandCtrl1(cmdsIfIsRViewAndSelection,
+		//	_RControlSelection_supported, "sv_R");
 
 		vmProto.do_cmd_sv_quit_R = function () {
 			sv.r.quit();

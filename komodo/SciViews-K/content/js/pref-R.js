@@ -89,6 +89,9 @@ function PrefR_OnLoad() {
 	var p = parent;
 	while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
 
+	var os = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs);
+
 	var prefExecutable;
 	var prefset = parent.hPrefWindow.prefset;
 	var prefName = 'svRDefaultInterpreter';
@@ -98,16 +101,22 @@ function PrefR_OnLoad() {
 		prefExecutable = sv.tools.file.whereIs("R");
 		prefset.setStringPref(prefName, prefExecutable);
 	}
+	prefExecutable = sv.prefs.getString("svRDefaultInterpreter")
 	PrefR_setRAppMenu(document.getElementById("svRApplication"));
+	PrefR_menulistSetValue(document.getElementById("svRApplication"),
+		os.path.basename(prefExecutable), "app",  "R");
+	document.getElementById("svRDefaultInterpreter").value = prefExecutable;
+	
 	if (!PrefR_UpdateCranMirrors(true))
 		PrefR_UpdateCranMirrors(false);
 	
 	menuListSetValues();
+	PrefR_svRApplicationUpdate(null);
 	parent.hPrefWindow.onpageload();
 }
 
 function OnPreferencePageLoading(prefset) {
-	PrefR_svRApplicationOnSelect(null);
+	//PrefR_svRApplicationOnSelect(null);
 }
 
 function OnPreferencePageOK(prefset) {
@@ -143,18 +152,45 @@ function PrefR_svRApplicationOnSelect(event) {
 	var data = sel.getAttribute(prefattribute);
 	var app = sel.hasAttribute("app")? sel.getAttribute("app") : "R";
 
-	var os = Components.classes['@activestate.com/koOs;1']
-		.getService(Components.interfaces.koIOs);
+	// PhG: this does not work well. For instance, on Mac OS X, we must
+	//      switch from R in /usr/bin to R.app in /Applications and vice versa
+	// So, we must start with a reasonable default directory for the application
+	// as it can be defined automatically...
+	// And even, for some applications, one cannot change it (disable 'Browse')!	
+	//var os = Components.classes['@activestate.com/koOs;1']
+	//	.getService(Components.interfaces.koIOs);
+	//var path = os.path.normpath(os.path.dirname(
+	//		document.getElementById("svRDefaultInterpreter").value));
+	//if (path) path +=  os.sep;
+	//var svRDefaultInterpreter = path + app;
 
-	var path = os.path.normpath(os.path.dirname(
-			document.getElementById("svRDefaultInterpreter").value));
-	if (path) path +=  os.sep;
-
-	var svRDefaultInterpreter = path + app;
-
+	// PhG: this is the alternative I propose to always get a good starting value
+	var svRDefaultInterpreter = PrefR_locateApp(app);
 	document.getElementById("svRDefaultInterpreter").value
 		= svRDefaultInterpreter;
 
+	// Deleguate to PrefR_svRApplicationUpdate()
+	return PrefR_svRApplicationUpdate(event);
+}
+
+function PrefR_svRApplicationUpdate(event) {
+	var el = document.getElementById("svRApplication");
+	var prefattribute = el.getAttribute("prefattribute");
+	var sel = el.selectedItem;
+	var data = sel.getAttribute(prefattribute);
+	var cmdfield = document.getElementById('R_command');
+	
+	var svRDefaultInterpreter = document
+		.getElementById("svRDefaultInterpreter").value;
+	
+	// Check if svRDefaultInterpreter exists on disk
+	if (!sv.tools.file.exists(svRDefaultInterpreter)) {
+		// Indicate the problem in the command...
+		cmdfield.value = "??? R interpreter '" + svRDefaultInterpreter +
+			"' not found!";
+		return false;
+	}
+	
 	var Quiet = " ";
 	if (document.getElementById("svRQuiet")
 		.getAttribute("checked") == "true") Quiet = "--quiet ";
@@ -162,10 +198,12 @@ function PrefR_svRApplicationOnSelect(event) {
 	var cwd = sv.tools.file.path("ProfD", "extensions",
 		"sciviewsk@sciviews.org", "defaults");
 	
-	data = data.replace("%Path%", path).replace("%title%", "SciViews-K")
-		.replace("%cwd%", cwd).replace("%quiet%", Quiet);
+	// PhG: note that the path here is now the full path, application included!
+	data = data.replace("%Path%", svRDefaultInterpreter)
+		.replace("%title%", "SciViews-R").replace("%cwd%", cwd)
+		.replace("%quiet%", Quiet);
 
-	document.getElementById('R_command').value = data;
+	cmdfield.value = data;
 	return true;
 }
 
@@ -175,13 +213,38 @@ function PrefR_setExecutable(path) {
 			.getService(Components.interfaces.koIOs);
 
 		path = document.getElementById("svRDefaultInterpreter").value;
-		path = ko.filepicker.openExeFile(path);
+		// Special treatment for the .app items: open the parent directory!
+		var defpath = path;
+		if (path.match(/\.app$/) == ".app") defpath = os.path.dirname(path); 
+		path = ko.filepicker.openExeFile(defpath);
 	}
 
 	PrefR_menulistSetValue(document.getElementById("svRApplication"),
 		os.path.basename(path), "app",  "R");
 	document.getElementById("svRDefaultInterpreter").value = os.path.abspath(path);
-	PrefR_svRApplicationOnSelect(null);
+	PrefR_svRApplicationUpdate(null);
+}
+
+// PhG: I use this to get a first guess of the application location
+function PrefR_locateApp(appName) {
+	// 1) Look if app is an existing file
+	if (sv.tools.file.exists(appName)) {
+		return(appName);
+	}
+	// 2) Try to locate the application
+	var appPath = sv.tools.file.whereIs(appName)
+	if (appPath != null) {
+		return(appPath);
+	}
+	// 3) For R.app and the like on the Macintosh, I should really look at the
+	// /Applications directory
+	appName = "/Applications/" + appName;
+	if (sv.tools.file.exists(appName)) {
+		return(appName);
+	} else {
+		// Not found? What else can I do?
+		return("?");
+	}
 }
 
 function PrefR_setRAppMenu(menuList) {

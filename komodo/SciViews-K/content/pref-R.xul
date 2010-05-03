@@ -80,42 +80,42 @@
 					<menuitem id="r-none" label=""
 						value="" app="?" which="" platform="Linux,Mac,Win"/>
 					<menuitem id="r-terminal" label="in default terminal"
-						value="&quot;%Path%R&quot; %quiet%" which="R"
-						platform="Linux,Mac"/>
+						value="&quot;%Path%&quot; %quiet%" app="R"
+						which="R" platform="Linux,Mac"/>
 					<menuitem id="r-terminal" label="in console window"
-						value="&quot;%Path%R.exe&quot; %quiet%" app="R.exe"
+						value="&quot;%Path%&quot; %quiet%" app="R.exe"
 						which="R" platform="Win"/>
-					<menuitem id="r-gnome-term" label="in Gnome terminal"
-						value="gnome-terminal --hide-menubar --title=%title% -x &quot;%Path%R&quot; %quiet%"
+					<menuitem id="r-gnome-term" label="in Gnome terminal" app="R"
+						value="gnome-terminal --hide-menubar --title=%title% -x &quot;%Path%&quot; %quiet%"
 						which="gnome-terminal,R" platform="Linux"/>
-					<menuitem id="r-kde-term" label="in Konsole"
-						value="konsole --workdir &quot;%cwd%&quot; --title %title% -e &quot;%Path%R&quot; %quiet%"
+					<menuitem id="r-kde-term" label="in Konsole" app="R"
+						value="konsole --workdir &quot;%cwd%&quot; --title %title% -e &quot;%Path%&quot; %quiet%"
 						which="konsole,R" platform="Linux"/>
-					<menuitem id="r-xfce4-term" label="in XFCE terminal"
-						value="xfce4-terminal --title &quot;%title%&quot; -x &quot;%Path%R&quot; %quiet%"
+					<menuitem id="r-xfce4-term" label="in XFCE terminal" app="R"
+						value="xfce4-terminal --title &quot;%title%&quot; -x &quot;%Path%&quot; %quiet%"
 						which="xfce4-terminal,R" platform="Linux"/>
 					<menuitem id="r-app" label="R app"
-						value="open -a &quot;/Applications/R.app&quot; &quot;%cwd%&quot;"
+						value="open -a &quot;%Path%&quot; &quot;%cwd%&quot;"
 						app="R.app"
 						which="/Applications/R.app" platform="Mac"/>
 					<menuitem id="r64-app" label="R64 app"
-						value="open -a &quot;/Applications/R64.app&quot; &quot;%cwd%&quot;"
+						value="open -a &quot;%Path%&quot; &quot;%cwd%&quot;"
 						app="R64.app"
 						which="/Applications/R64.app" platform="Mac"/>
 					<menuitem id="svr-app" label="SciViews R app"
-						value="open -a &quot;/Applications/SciViews R.app&quot; &quot;%cwd%&quot;"
+						value="open -a &quot;%Path%&quot; &quot;%cwd%&quot;"
 						app="SciViews R.app"
 						which="/Applications/SciViews R.app" platform="Mac"/>
 					<menuitem id="svr64-app" label="SciViews R64 app"
-						value="open -a &quot;/Applications/SciViews R64.app&quot; &quot;%cwd%&quot;"
+						value="open -a &quot;%Path%&quot; &quot;%cwd%&quot;"
 						app="SciViews R64.app"
 						which="/Applications/SciViews R64.app" platform="Mac"/>
 					<menuitem id="r-gui" label="R GUI"
 						app="Rgui.exe"
-						value="&quot;%Path%Rgui.exe&quot; --sdi %quiet%"
+						value="&quot;%Path%&quot; --sdi %quiet%"
 						which="Rgui" platform="Win"/>
 					<menuitem id="r-tk" label="R Tk GUI"
-						value="&quot;%Path%R&quot; --interactive --gui=Tk %quiet%"
+						value="&quot;%Path%&quot; --interactive --gui=Tk %quiet%" app="R"
 						which="R" platform="Linux,Mac"/>
 				</menupopup>
 			</menulist>
@@ -124,12 +124,12 @@
 		<hbox>
 			<textbox id="svRDefaultInterpreter" pref="true"
 				emptytext="No R installation found on the system!"
-				oninput="PrefR_svRApplicationOnSelect(event);"
+				oninput="PrefR_svRApplicationUpdate(event);"
 				editable="false" flex="1"/>
 			<button label="Browse..." oncommand="PrefR_setExecutable();"/>
 		</hbox>
 		<hbox align="center">
-			<checkbox id="svRQuiet" oninput="PrefR_svRApplicationOnSelect(event);"/>
+			<checkbox id="svRQuiet" oncommand="PrefR_svRApplicationUpdate(event);"/>
 			<label value="Run R quietly (no initial messages)"
 				control="svRQuiet" pref="false" />
 		</hbox>
@@ -138,7 +138,7 @@
 			<label class="label" control="R_command" crop="end"
 				value="This command will be used to start R (R -> Start R):"/>
 			<textbox id="R_command" value="" class="plain"
-				style="background: none; padding-top: 1px !important; margin-left: 10px !important;" />
+				style="background: none; padding-top: 1px !important; margin-left: 10px !important; color: rgb(184, 38, 25)" />
 		</vbox>
 	</groupbox>
 	
