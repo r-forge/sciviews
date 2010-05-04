@@ -412,11 +412,11 @@ if (typeof(sv.socket) == 'undefined')
 		//if (this.debug) sv.log.debug("charsetUpdate");
 		_charsetUpdated = true;
 		// We also make sure that dec and sep are synched in R
-		_this.rCommand('<<<h>>>options(OutDec = ' +
-			sv.prefs.getString("r.csv.dec.arg", ".") +
-			'); options(OutSep = ' +
-			sv.prefs.getString("r.csv.sep.arg", ",") +
-			'); invisible(guiRefresh(force = TRUE)); cat(localeToCharset()[1])',
+		_this.rCommand('<<<h>>>options(OutDec = "' +
+			sv.prefs.getString("r.csv.dec", ".") +
+			'"); options(OutSep = "' +
+			sv.prefs.getString("r.csv.sep", ",") +
+			'"); invisible(guiRefresh(force = TRUE)); cat(localeToCharset()[1])',
 			false, null, function (s) {
 				_this.charset = s;
 				if (this.debug) sv.log.debug(s);
