@@ -26,8 +26,9 @@ sv.prefs.defaults = {
 	svRApplication: "", //????
 	svRApplicationId: "", //????
 	svRQuiet: "", //must be string, otherwise sv.prefs.getString will fail
-	"r.csv.dec.arg": ".",  // TODO: change name, it is not only "csv"
-	"r.csv.sep.arg": ",",
+	svRArgs: "--quiet", //For future use, replaces svRQuiet
+    "r.csv.dec": ".",
+	"r.csv.sep": ",",
 	CRANMirror: "http://cran.r-project.org/",
 	RHelpCommand: "javascript:sv.r.help(\"%w\")"
 
@@ -35,7 +36,6 @@ sv.prefs.defaults = {
 	//sciviews.rhelp.open_in = [tab, window]
 	//sciviews.r.auto-start
 };
-
 
 // Set default preferences:
 sv.prefs.checkAll = function(revert) {
@@ -66,7 +66,6 @@ sv.prefs.checkAll = function(revert) {
 		};
 	}
 }
-
 
 // Get a string preference, or default value
 sv.prefs.getString = function (pref, def) {
@@ -171,18 +170,6 @@ sv.prefs.setString("sciviews.r.help", "internal", false);
 // This is the base path for the R Wiki context help feature sv.helpContext()
 sv.prefs.setString("sciviews.rwiki.help.base",
 	"http:/wiki.r-project.org/rwiki/doku.php?id=", false);
-
-// Record default field and decimal separators for CSV files
-sv.prefs.setString("r.csv.sep", ',', false);
-var sep = sv.prefs.getString("r.csv.sep", ',');
-if (sep == '\t') {
-	sv.prefs.setString("r.csv.sep.arg", '"\\t"', true);
-} else {
-	sv.prefs.setString("r.csv.sep.arg", '"' + sep + '"', true);
-}
-sv.prefs.setString("r.csv.dec", '.', false);
-sv.prefs.setString("r.csv.dec.arg", '"' + sv.prefs.getString("r.csv.dec", '.') +
-	'"', true);
 
 // Set default dataset to 'df'
 // Should be reset to a more useful value during first use of R
