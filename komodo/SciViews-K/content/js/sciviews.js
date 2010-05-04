@@ -13,17 +13,17 @@
 // Various functions defined in the 'sv' namespace directly
 // sv.alert(header, text); // Own alert box; text is optional
 // sv.getTextRange(what, gotoend, select);  // Get a part of text in the buffer,
-                                            // but do not operate on selection
+// but do not operate on selection
 // sv.fileOpen(directory, filename, title, filter, multiple); // file open dlg,
-            // more customizable replacement for ko.filepicker.open()
+// more customizable replacement for ko.filepicker.open()
 
 // sv.browseURI(URI, internal); // Show URI in internal or external browser
 // sv.showFile(path, readonly); // Show a file in Komodo, possibly as read-only
 // sv.helpURL(URL); // Display URL help in the default browser
 // sv.helpContext(); // Get contextual help for selected word in buffer in R or
-                     // for active snippet in toolbox/project (see Help context)
+// for active snippet in toolbox/project (see Help context)
 // sv.translate(textId); // translate messages using data from
-						 // chrome://sciviewsk/locale/main.properties
+// chrome://sciviewsk/locale/main.properties
 //
 // SciViews-K Command Output management ('sv.cmdout' namespace) ////////////////
 // sv.cmdout.append(str, newline, scrollToStart); // Append to Command Output
@@ -33,8 +33,8 @@
 // SciViews-K logging feature ('sv.log' namespace) /////////////////////////////
 // sv.log.logger;           // The SciViews-K Komodo logger object
 // sv.log.exception(e, msg, showMsg); // Log an exception with error message
-                            // and stack. If showMsg == true, also display the
-                            // msg in an alert box (optional)
+// and stack. If showMsg == true, also display the
+// msg in an alert box (optional)
 // sv.log.critical(msg);    // Log a critical error
 // sv.log.error(msg);       // Log an error
 // sv.log.warn(msg);        // Log a warning
@@ -47,6 +47,19 @@
 //
 // Not used any more?
 // sv.checkToolbox(); // Check that the correct SciViews-K toolbox is installed
+
+/*
+FIXME: A loose list:
+Key conflicts in toolbox: (to be removed/changed to unused combinations in SciViews toolbox)
+*Run function (Ctrl+Shift+F) conflicts with "Find in Files..."
+*Run paragraph (Ctrl+Shift+H) <--> "Replace in Files..."
+*Run line and hit enter (Ctrl+Return) <--> "Insert Newline (no favors)"
+*Working dir (current file): F7 <--> "Run marked block"
+*In toolbox: Ctrl+Shift+M (toolbox) and F7 (menu) both defined for "Run marked block"
+*Object structure (Ctrl+Shift+T) <--> Reopen the Last Closed Tab
+*Session in my documents... (Ctrl+Shift+S) <--> Save As... (This one is quite important!)
+
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,13 +75,13 @@ if (typeof(sv.tools) == 'undefined') sv.tools = {};
 // IMPORTANT: now sv.version is a "X.X.X" string, and sv.checkVersion accepts only such format
 // please update all macros using sv.checkVersion
 sv.version = Components.classes["@mozilla.org/extensions/manager;1"]
-				.getService(Components.interfaces.nsIExtensionManager)
-				.getItemForID("sciviewsk@sciviews.org").version;
+	.getService(Components.interfaces.nsIExtensionManager)
+	.getItemForID("sciviewsk@sciviews.org").version;
 sv.showVersion = true;
 
 sv._compareVersion = function (a, b) {
-    if (!a)	return -1;
-    if (!b)	return 1;
+	if (!a)	return -1;
+	if (!b)	return 1;
 
 	// try is necessary only till I find where is that damn macro causing an error
 	// at startup (-;
@@ -81,14 +94,14 @@ sv._compareVersion = function (a, b) {
 		for (k in a) {
 			if (k < b.length) {
 				if (a[k] > b[k])
-					return 1;
+				return 1;
 				else if (a[k] < b[k])
-					return -1;
+				return -1;
 			} else {
 				return 1;
 			}
 		}
-	   return (b.length > a.length)? -1 : 0;
+		return (b.length > a.length)? -1 : 0;
 	} catch(e) {
 		return 1;
 	}
@@ -97,18 +110,18 @@ sv._compareVersion = function (a, b) {
 sv.checkVersion = function (version) {
 	if (sv._compareVersion(sv.version, version) < 0) {
 		var text = sv.translate(
-"One or more macros require the SciViews-K plugin %S, " +
-"but currently installed version is %S. You should update it." +
-"Would you like to open the extension manager and check for updates now?",
-version, this.version);
+		"One or more macros require the SciViews-K plugin %S, " +
+		"but currently installed version is %S. You should update it." +
+		"Would you like to open the extension manager and check for updates now?",
+		version, this.version);
 
 		var sYes = sv.translate("Yes");
 		var res = ko.dialogs.yesNo(sv.translate("Outdated SciViews-K extension"),
-			sYes, text, "SciViews-K");
+		sYes, text, "SciViews-K");
 		if (res == sYes) 	ko.launch.openAddonsMgr();
 		return(false);
 	} else
-		return(true);
+	return(true);
 }
 
 
@@ -146,29 +159,28 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 	// By default, we keep current selection
 
 	if (what == "line/sel")
-		what = (pStart == pEnd)? "line" : "sel";
+	what = (pStart == pEnd)? "line" : "sel";
 
 	switch(what) {
-	case "sel":
-	   // Simply retain current selection
-	   break;
-	case "word":
-	   if (pStart == pEnd) { // only return word if no selection
+		case "sel":
+		// Simply retain current selection
+		break;
+		case "word":
+		if (pStart == pEnd) { // only return word if no selection
 			if (!includeChars && currentView.languageObj.name == "R")
-				includeChars = ".";
+			includeChars = ".";
 
 			var wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_" + includeChars;
 
 			function wordCharTest(s) {
 				return (s.charCodeAt(0) > 0x80) ||
-					wordChars.indexOf(s) > -1;
+				wordChars.indexOf(s) > -1;
 			}
-
 
 			for (pStart = scimoz.positionBefore(curPos);
 				 (pStart > 0) && wordCharTest(scimoz.getWCharAt(pStart));
-				 pStart = scimoz.positionBefore(pStart)) {
-				};
+			pStart = scimoz.positionBefore(pStart)) {
+			};
 
 			// PhG: correction for infinite loop if the name is at the beginning
 			// of the document
@@ -178,27 +190,19 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 			for (pEnd = scimoz.currentPos;
 				 (pEnd < scimoz.length) && wordCharTest(scimoz.getWCharAt(pEnd));
-				 pEnd = scimoz.positionAfter(pEnd)) {
+			pEnd = scimoz.positionAfter(pEnd)) {
 			}
-
-			// TODO: this should be set for every R document by default. but how?
-			//if (includeChars) {
-			//	var wordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + includeChars;
-			//	scimoz.setWordChars(wordChars);
-			//}
-			//pStart = scimoz.wordStartPosition(curPos, true);
-			//pEnd = scimoz.wordEndPosition(curPos, true);
-	   }
-	   break;
-	case "function":
-	   // tricky one: select an entire R function
-	   // this should work even with extremely messy coded ones.
+		}
+		break;
+		case "function":
+		// tricky one: select an entire R function
+		// this should work even with extremely messy coded ones.
 
 		// function declaration pattern:
 		var funcRegExStr = "\\S+\\s*(<-|=)\\s*function\\s*\\(";
 
 		var findSvc = Components.classes['@activestate.com/koFindService;1']
-			 .getService(Components.interfaces.koIFindService);
+		.getService(Components.interfaces.koIFindService);
 
 		// save previous find settings
 		var oldFindPref = {searchBackward: true, matchWord: false,
@@ -217,8 +221,8 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 			//  search for function pattern backwards:
 			findSvc.options.searchBackward = true;
 			findRes = findSvc.find("", // view.document.displayPath
-									scimoz.text, funcRegExStr,
-									scimoz.charPosAtPosition(pos0), 0); //start, end
+			scimoz.text, funcRegExStr,
+			scimoz.charPosAtPosition(pos0), 0); //start, end
 			if (!findRes) break;
 
 			// function declaration start:
@@ -231,9 +235,9 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 			// find first character following the closing brace
 			findSvc.options.searchBackward = false;
 			findRes = findSvc.find("",  //view.document.displayPath
-									scimoz.text, "\\S",
-									scimoz.charPosAtPosition(pos2) + 1,
-									scimoz.charPosAtPosition(scimoz.length));
+			scimoz.text, "\\S",
+			scimoz.charPosAtPosition(pos2) + 1,
+			scimoz.charPosAtPosition(scimoz.length));
 			if (!findRes) break;
 
 			//  beginning of the function body:
@@ -244,7 +248,7 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 			// get first line of the folding block:
 			firstLine = (scimoz.getFoldParent(lineBodyStart) != lineArgsStart)?
-				lineBodyStart : lineArgsStart;
+			lineBodyStart : lineArgsStart;
 
 			// get end of the function body
 			if (scimoz.getWCharAt(pos3 - 1) == "{") {
@@ -253,9 +257,9 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 				pos4 = scimoz.getLineEndPosition(lineBodyStart);
 			}
 
-		// repeat if selected function does not embrace cursor position and if
-		// there are possibly any functions enclosing it:
-		} while (pos4 < curPos && scimoz.getFoldParent(lineArgsStart) != -1);
+			// repeat if selected function does not embrace cursor position and if
+			// there are possibly any functions enclosing it:
+			} while (pos4 < curPos && scimoz.getFoldParent(lineArgsStart) != -1);
 
 		if (pos4 >= curPos) {
 			pStart = pos0;
@@ -265,8 +269,8 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 		// restore previous find settings
 		for (var i in oldFindPref) findSvc.options[i] = oldFindPref[i];
 
-	   break;
-	case "block":
+		break;
+		case "block":
 		// Select all content between two bookmarks
 		var Mark1, Mark2;
 		Mark1 = scimoz.markerPrevious(curLine, 64);
@@ -277,51 +281,51 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 		pStart = scimoz.positionFromLine(Mark1);
 		pEnd = scimoz.getLineEndPosition(Mark2);
 
-	   break;
-	case "para":
-	   // Select the entire paragraph
-	   // go up from curLine until
-	   for (var i = curLine; i >= 0
-			&& scimoz.lineLength(i) > 0
-			&& scimoz.getTextRange(
-			   pStart = scimoz.positionFromLine(i),
-			   scimoz.getLineEndPosition(i)).trim() != "";
-			i--) {		}
+		break;
+		case "para":
+		// Select the entire paragraph
+		// go up from curLine until
+		for (var i = curLine; i >= 0
+		&& scimoz.lineLength(i) > 0
+		&& scimoz.getTextRange(
+		pStart = scimoz.positionFromLine(i),
+		scimoz.getLineEndPosition(i)).trim() != "";
+		i--) {		}
 
-	   for (var i = curLine; i <= scimoz.lineCount
-			&& scimoz.lineLength(i) > 0
-			&& scimoz.getTextRange(scimoz.positionFromLine(i),
-			   pEnd = scimoz.getLineEndPosition(i)).trim() != "";
-			i++) {		}
+		for (var i = curLine; i <= scimoz.lineCount
+		&& scimoz.lineLength(i) > 0
+		&& scimoz.getTextRange(scimoz.positionFromLine(i),
+		pEnd = scimoz.getLineEndPosition(i)).trim() != "";
+		i++) {		}
 
-	   break;
-	case "line":
-		 // Select whole current line
+		break;
+		case "line":
+		// Select whole current line
 		pStart = scimoz.positionFromLine(curLine);
 		pEnd = scimoz.getLineEndPosition(curLine);
-	   break;
-	case "linetobegin":
-	   // Select line content from beginning to anchor
-	   pStart = scimoz.positionFromLine(curLine);
-	   break;
-	case "linetoend":
-	   // Select line from anchor to end of line
-	   pEnd = scimoz.getLineEndPosition(curLine);
-	   break;
-	case "end":
-	   // take text from current line to the end
-	   pStart = scimoz.positionFromLine(curLine);
-	   pEnd = scimoz.textLength;
-	   break;
-    case "codefrag":
+		break;
+		case "linetobegin":
+		// Select line content from beginning to anchor
+		pStart = scimoz.positionFromLine(curLine);
+		break;
+		case "linetoend":
+		// Select line from anchor to end of line
+		pEnd = scimoz.getLineEndPosition(curLine);
+		break;
+		case "end":
+		// take text from current line to the end
+		pStart = scimoz.positionFromLine(curLine);
+		pEnd = scimoz.textLength;
+		break;
+		case "codefrag":
         // This is used by calltip and completion. Returns all text backwards from current
 		// position to the beginning of the current folding level
         pStart = scimoz.positionFromLine(scimoz.getFoldParent(curLine));
-	case "all":
-	default:
-	   // Take everything
-	   text = scimoz.text;
-	}
+		case "all":
+		default:
+		// Take everything
+		text = scimoz.text;
+		}
 
 	if (what != "all") {
 		text = scimoz.getTextRange(pStart, pEnd).replace(/(^[\n\r]+|[\n\r]+$)/, "");
@@ -336,40 +340,40 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 		range.value = {start: pStart, end: pEnd};
 	}
 	return(text);
-}
+	}
 
 // file open dialog, more customizable replacement for ko.filepicker.open
 sv.fileOpen = function (directory, filename, title, filter, multiple, save,
-						filterIndex) {
+filterIndex) {
 	const nsIFilePicker = Components.interfaces.nsIFilePicker;
     var fp = Components.classes["@mozilla.org/filepicker;1"]
-        .createInstance(nsIFilePicker);
+	.createInstance(nsIFilePicker);
 
 	//Dialog should get default system title
     //if (!title) title = sv.translate(save? "Save file" : "Open file");
 
 	var mode;
 	if (!save)
-	    mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
+	mode = multiple? nsIFilePicker.modeOpenMultiple : nsIFilePicker.modeOpen;
 	else
-		mode = nsIFilePicker.modeSave;
+	mode = nsIFilePicker.modeSave;
 
     fp.init(window, title, mode);
 
 	if (typeof filterIndex != "undefined")
-		fp.filterIndex = (typeof filterIndex == "object")?
-			filterIndex.value : filterIndex;
+	fp.filterIndex = (typeof filterIndex == "object")?
+	filterIndex.value : filterIndex;
 
 	var filters = [];
 
 	if (filter) {
         if (typeof(filter) == "string")
-            filter = filter.split(',');
+		filter = filter.split(',');
         var fi;
         for (var i = 0; i  < filter.length; i++) {
             fi = filter[i].split("|");
             if (fi.length == 1)
-                fi[1] = fi[0];
+			fi[1] = fi[0];
             fp.appendFilter(fi[0], fi[1]);
 			filters.push(fi[1]);
         }
@@ -379,12 +383,12 @@ sv.fileOpen = function (directory, filename, title, filter, multiple, save,
 
     if (directory) {
         var lf = Components.classes["@mozilla.org/file/local;1"].
-            createInstance(Components.interfaces.nsILocalFile);
+		createInstance(Components.interfaces.nsILocalFile);
         lf.initWithPath(directory);
         fp.displayDirectory = lf;
     }
     if (filename)
-        fp.defaultString = filename;
+	fp.defaultString = filename;
 
     var rv = fp.show();
     if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) {
@@ -394,7 +398,7 @@ sv.fileOpen = function (directory, filename, title, filter, multiple, save,
             path = new Array();
             while (files.hasMoreElements()) {
                 var file = files.getNext().
-                    QueryInterface(Components.interfaces.nsILocalFile);
+				QueryInterface(Components.interfaces.nsILocalFile);
                 path.push(file.path);
             }
         } else {
@@ -404,14 +408,14 @@ sv.fileOpen = function (directory, filename, title, filter, multiple, save,
 		// append extension according to active filter
 		if (mode == nsIFilePicker.modeSave) {
 			var os = Components.classes['@activestate.com/koOs;1']
-				.getService(Components.interfaces.koIOs);
+			.getService(Components.interfaces.koIOs);
 			if (!os.path.getExtension(path)) {
 				var defaultExt = os.path.getExtension(filters[fp.filterIndex]);
 				path += defaultExt;
 			}
 		}
 		if (typeof filterIndex == "object")
-			filterIndex.value = fp.filterIndex;
+		filterIndex.value = fp.filterIndex;
         return(path);
     }
     return (null);
@@ -424,8 +428,8 @@ sv.browseURI = function (URI, internal) {
         // other functions that return "" when they don't find it, see sv.r.help
 	} else {
 		if (internal == null)
-			internal = (sv.prefs.getString("sciviews.r.help",
-				"internal") == "internal");
+		internal = (sv.prefs.getString("sciviews.r.help",
+		"internal") == "internal");
 		if (internal == true) {
 			// TODO: open this in the R help pane, or in a buffer
 			ko.open.URI(URI, "browser");
@@ -501,7 +505,7 @@ sv.helpContext = function () {
 
 				// Look for URL-help
 				var help = content.replace(/^.*\[\[%pref:URL-help:([^\]]*)]].*$/,
-					'$1');
+				'$1');
 				if (help != content) {	// Found!
 					// Show in default browser
 					// TODO: a quick 'R help' tab to show this
@@ -511,7 +515,7 @@ sv.helpContext = function () {
 
 				// Look for R-help
 				help = content.replace(/^.*\[\[%pref:R-help:([^\]]*)]].*$/,
-					'$1');
+				'$1');
 				if (help != content) {	// Found!
 					// Do the help command in R
 					sv.r.help(help);
@@ -520,12 +524,12 @@ sv.helpContext = function () {
 
 				// Look for RWiki-help
 				help = content.replace(/^.*\[\[%pref:RWiki-help:([^\]]*)]].*$/,
-					'$1');
+				'$1');
 				if (help != content) {	// Found!
 					// Get the RWiki base URL
 					var baseURL = "http:/wiki.r-project.org/rwiki/doku.php?id="
 					baseURL = sv.prefs.getString("sciviews.rwiki.help.base",
-						baseURL);
+					baseURL);
 					// Display the RWiki page
 					// TODO: display this in the quick 'R help' tab
 					ko.browse.openUrlInDefaultBrowser(baseURL + help);
@@ -554,8 +558,8 @@ sv.helpContext = function () {
 // translate messages using data from chrome://sciviewsk/locale/main.properties
 sv.translate = function (textId) {
 	var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
-		.getService(Components.interfaces.nsIStringBundleService)
-		.createBundle("chrome://sciviewsk/locale/main.properties");
+	.getService(Components.interfaces.nsIStringBundleService)
+	.createBundle("chrome://sciviewsk/locale/main.properties");
 	var param;
 
 	try {
@@ -563,7 +567,7 @@ sv.translate = function (textId) {
 			param = [];
 
 			for (var i = 1; i < arguments.length; i++)
-				param = param.concat(arguments[i]);
+			param = param.concat(arguments[i]);
 			//return strbundle.getFormattedString(textId, param);
 			return bundle.formatStringFromName(textId, param, param.length);
 
@@ -602,7 +606,7 @@ sv.cmdout.append = function (str, newline, scrollToStart) {
 		var scimoz = document.getElementById("runoutput-scintilla").scimoz;
 		var prevLength = scimoz.length;
 		if (newline == null)
-			str += ["\r\n", "\n", "\r"][scimoz.eOLMode];
+		str += ["\r\n", "\n", "\r"][scimoz.eOLMode];
 
 		var str_byte_length = ko.stringutils.bytelength(str);
 		var ro = scimoz.readOnly;
@@ -659,8 +663,8 @@ sv.cmdout.message = function (msg, timeout, highlight, outputBar) {
 		runoutputDesc.setAttribute("value", msg);
 		window.clearTimeout(runoutputDesc.timeout);
 		if (timeout > 0)
-			runoutputDesc.timeout = window.setTimeout("sv.cmdout.message('', 0, null, true);",
-				timeout);
+		runoutputDesc.timeout = window.setTimeout("sv.cmdout.message('', 0, null, true);",
+		timeout);
 	} else {
 		ko.statusBar.AddMessage(msg, "SciViews-K info", timeout, highlight);
 	}
@@ -669,7 +673,7 @@ sv.cmdout.message = function (msg, timeout, highlight, outputBar) {
 
 //// Logging management ////////////////////////////////////////////////////////
 if (typeof(sv.log) == 'undefined')
-	sv.log = {};
+sv.log = {};
 
 
 //const LOG_NOTSET = 0;	//const LOG_DEBUG = 10;	//const LOG_INFO = 20;
@@ -714,10 +718,10 @@ if (typeof(sv.log) == 'undefined')
 		logger.setLevel(!!debug);
 		if (logger.getEffectiveLevel() == 1) {
 			ko.statusBar.AddMessage("SciViews error logging set to debug level",
-				"svLog", 3000, true);
+			"svLog", 3000, true);
 		} else {
 			ko.statusBar.AddMessage("SciViews error logging set to level " +
-				logger.getEffectiveLevel(), "svLog", 3000, true);
+			logger.getEffectiveLevel(), "svLog", 3000, true);
 		}
 	}
 
@@ -727,16 +731,16 @@ if (typeof(sv.log) == 'undefined')
 
 	this.show = function () {
 		var os = Components.classes['@activestate.com/koOs;1']
-			.getService(Components.interfaces.koIOs);
+		.getService(Components.interfaces.koIOs);
 		try {
 			appdir = ko.interpolate.interpolateStrings('%(path:hostUserDataDir)');
 			var logFile = os.path.join(appdir,'pystderr.log');
 			var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
 			window.openDialog('chrome://komodo/content/tail/tail.xul',
-				"_blank",winOpts,logFile);
+			"_blank",winOpts,logFile);
 		} catch(e) {
 			this.exception(e,
-				"Unable to display the Komodo error log (" + e + ")", true);
+			"Unable to display the Komodo error log (" + e + ")", true);
 		}
 	}
 
@@ -770,15 +774,13 @@ if (typeof(sv.log) == 'undefined')
 sv.checkToolbox = function () {
     try {
 		var path, tbxs;
-		// FIXED: determine versions automatically instead of hard-coding it!
-
 		var os = Components.classes['@activestate.com/koOs;1'].
-			getService(Components.interfaces.koIOs);
+		getService(Components.interfaces.koIOs);
 
 		// Find all .kpz files in 'defaults', append/replace version string in filenames,
 		// finally install as toolbox
 		path = sv.tools.file.path("ProfD", "extensions",
-			"sciviewsk@sciviews.org", "defaults");
+		"sciviewsk@sciviews.org", "defaults");
 		tbxs = sv.tools.file.list(path, "\\.kpz$");
 		var file1, file2;
 		for (var i in tbxs) {
@@ -794,9 +796,12 @@ sv.checkToolbox = function () {
 
 		// Message prompting for removing old or duplicated toolboxes
 		sv.alert(sv.translate("Toolboxes %S have been added. " +
-				 "To avoid conflicts, you should remove any previous or duplicated versions." +
-				 " To update the toolbars, restart Komodo.", "\"" +
-				 tbxs.join("\" and \"") + "\""));
+		"To avoid conflicts, you should remove any previous or duplicated versions." +
+		" To update the toolbars, restart Komodo.", "\"" +
+		tbxs.join("\" and \"") + "\""));
+
+
+		//document.getElementById("toolboxview").tree.view.invalidate();
 
 		//// This is old code kept if we want to take something back from it!
 		// Important! this code is dangerous, as it removes current SciViews-K toolbox
@@ -855,21 +860,5 @@ sv.checkToolbox = function () {
 //addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
 //addEventListener("load", sv.checkToolbox, false);
 
-// PhG: there is a bug in the way R starts: at the begining, a dummy '00LOCK'
-// file is created that prevents to config another R process as SciViews socket
-// server. Everytime svStart.R is run, it looks if this '00LOCK' file exists,
-// and if it finds it, it refuses to configure R as a socket server.
-// OK, but what happens if the config of the SciViews R server fails in the
-// middle of the process? Well, '00LOCK' is not removed, and it is not possible
-// any more to configre R (automatically) as a SciViews socket server.
-// To cope with this problem, I make sure '00LOCK' is deleted everytime the
-// SciViews-K plugin is loaded in Komodo Edit. That way, restarting Komodo
-// solves the problem of the remaining '00LOCK' file, in case R failed...
-var lockfilepath = sv.tools.file.path("ProfD", "extensions",
-"sciviewsk@sciviews.org", "defaults", "00LOCK");
-var file = Components.classes["@mozilla.org/file/local;1"].
-	createInstance(Components.interfaces.nsILocalFile);
-try {
-	file.initWithPath(lockfilepath);
-	file.remove(true);
-} catch(e) { }
+
+// KB: "Remove 00LOCK" code moved to commands.js:sv.command.startR()

@@ -13,6 +13,61 @@
 
 if (typeof(sv.prefs) == 'undefined') sv.prefs = new Object();
 
+//This can be used in the Preferences page to set/restore missing values:
+//sv.prefs.checkAll()
+
+// sv.prefs.defaults[preferenceName] = preferenceValue
+sv.prefs.defaults = {
+	"sciviews.server.socket": "7052",
+	"sciviews.client.socket": "8888",
+	"sciviews.client.id": "SciViewsK",
+	"sciviews.server.host": "127.0.0.1",
+	svRDefaultInterpreter: "", //????
+	svRApplication: "", //????
+	svRApplicationId: "", //????
+	svRQuiet: "", //must be string, otherwise sv.prefs.getString will fail
+	"r.csv.dec.arg": ".",  // TODO: change name, it is not only "csv"
+	"r.csv.sep.arg": ",",
+	CRANMirror: "http://cran.r-project.org/",
+	RHelpCommand: "javascript:sv.r.help(\"%w\")"
+
+	//*Future preferences:*
+	//sciviews.rhelp.open_in = [tab, window]
+	//sciviews.r.auto-start
+};
+
+
+// Set default preferences:
+sv.prefs.checkAll = function(revert) {
+	var prefset = Components.classes['@activestate.com/koPrefService;1']
+		.getService(Components.interfaces.koIPrefService).prefs;
+	for (var i in sv.prefs.defaults) {
+		var el;
+		var p = sv.prefs.defaults[i];
+		switch(typeof(p)) {
+			case "number":
+				el = (parseInt(p) == p)? "Long" : "Double";
+				break;
+			case "boolean":
+				el = "Boolean";
+				break;
+			case "string":
+			default:
+				el = "String";
+				p = p.toString();
+		}
+		if (revert // take all
+			|| !prefset.hasPref(i) // if missing at all
+			|| (prefset["has" + el + "Pref"](i)    // has one of right type, but empty
+				&& !prefset["get" + el + "Pref"](i))
+		) {
+			prefset.deletePref(i); // To avoid _checkPrefType error
+			prefset["set" + el + "Pref"](i, p);
+		};
+	}
+}
+
+
 // Get a string preference, or default value
 sv.prefs.getString = function (pref, def) {
 	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
@@ -70,18 +125,14 @@ sv.prefs.tip = function (arg, tip) {
 }
 
 //// Preferences (default values, or values reset on each start) ///////////////
+
 // Define default socket ports for the client and server, and other parameters
-sv.prefs.setString("sciviews.server.socket", "7052", false);
-sv.prefs.setString("sciviews.client.socket", "8888", false);
-sv.prefs.setString("sciviews.client.id", "SciViewsK", false);
-sv.prefs.setString("sciviews.server.host", "127.0.0.1", false);
-
 // R interpreter
-sv.prefs.setString("svRDefaultInterpreter", "", false);
-sv.prefs.setString("svRApplication", null, false);
-sv.prefs.setString("svRQuiet", false, false);
-var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
+sv.prefs.checkAll(false);
 
+
+var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
+//TODO: Rework this with respect to Mac and R.app
 // Default R interpreter Id: use a reasonable default, given the platform
 if (navigator.platform.indexOf("Win") === 0) {
 	sv.prefs.setString("svRApplicationId", "r-gui", false);
@@ -95,8 +146,8 @@ if (navigator.platform.indexOf("Win") === 0) {
 }
 sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, false);
 
-sv.prefs.setString("CRANMirror", "http://cran.r-project.org/", false);
-sv.prefs.setString("RHelpCommand", "javascript:sv.r.help(\"%w\")", false);
+
+
 
 // This is required by sv.helpContext() for attaching help to snippets (hack!)
 // Create empty preference sets to be used with snippet help system hack
@@ -147,6 +198,7 @@ sv.prefs.mru("y", true, "");
 sv.prefs.mru("factor", true, "");
 sv.prefs.mru("factor2", true, "");
 sv.prefs.mru("blockFactor", true, "");
+
 
 //// (re)initialize a series of MRU for snippets' %ask constructs //////////////
 // TODO: defaultMRU for ts, data, table, ...

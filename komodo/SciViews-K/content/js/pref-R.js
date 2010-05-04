@@ -106,10 +106,10 @@ function PrefR_OnLoad() {
 	PrefR_menulistSetValue(document.getElementById("svRApplication"),
 		os.path.basename(prefExecutable), "app",  "R");
 	document.getElementById("svRDefaultInterpreter").value = prefExecutable;
-	
+
 	if (!PrefR_UpdateCranMirrors(true))
 		PrefR_UpdateCranMirrors(false);
-	
+
 	menuListSetValues();
 	PrefR_svRApplicationUpdate(null);
 	parent.hPrefWindow.onpageload();
@@ -140,7 +140,7 @@ function OnPreferencePageOK(prefset) {
 		sv.r.eval('options(OutDec = "' + outDec + '", ' +
 			'OutSep = "' + outSep + '")', true);
 	}
-	
+
 	menuListGetValues();
 	return true;
 }
@@ -156,7 +156,7 @@ function PrefR_svRApplicationOnSelect(event) {
 	//      switch from R in /usr/bin to R.app in /Applications and vice versa
 	// So, we must start with a reasonable default directory for the application
 	// as it can be defined automatically...
-	// And even, for some applications, one cannot change it (disable 'Browse')!	
+	// And even, for some applications, one cannot change it (disable 'Browse')!
 	//var os = Components.classes['@activestate.com/koOs;1']
 	//	.getService(Components.interfaces.koIOs);
 	//var path = os.path.normpath(os.path.dirname(
@@ -179,10 +179,10 @@ function PrefR_svRApplicationUpdate(event) {
 	var sel = el.selectedItem;
 	var data = sel.getAttribute(prefattribute);
 	var cmdfield = document.getElementById('R_command');
-	
+
 	var svRDefaultInterpreter = document
 		.getElementById("svRDefaultInterpreter").value;
-	
+
 	// Check if svRDefaultInterpreter exists on disk
 	if (!sv.tools.file.exists(svRDefaultInterpreter)) {
 		// Indicate the problem in the command...
@@ -190,14 +190,14 @@ function PrefR_svRApplicationUpdate(event) {
 			"' not found!";
 		return false;
 	}
-	
+
 	var Quiet = " ";
 	if (document.getElementById("svRQuiet")
 		.getAttribute("checked") == "true") Quiet = "--quiet ";
 
 	var cwd = sv.tools.file.path("ProfD", "extensions",
 		"sciviewsk@sciviews.org", "defaults");
-	
+
 	// PhG: note that the path here is now the full path, application included!
 	data = data.replace("%Path%", svRDefaultInterpreter)
 		.replace("%title%", "SciViews-R").replace("%cwd%", cwd)
@@ -215,7 +215,7 @@ function PrefR_setExecutable(path) {
 		path = document.getElementById("svRDefaultInterpreter").value;
 		// Special treatment for the .app items: open the parent directory!
 		var defpath = path;
-		if (path.match(/\.app$/) == ".app") defpath = os.path.dirname(path); 
+		if (path.match(/\.app$/) == ".app") defpath = os.path.dirname(path);
 		path = ko.filepicker.openExeFile(defpath);
 	}
 
@@ -232,7 +232,8 @@ function PrefR_locateApp(appName) {
 		return(appName);
 	}
 	// 2) Try to locate the application
-	var appPath = sv.tools.file.whereIs(appName)
+	//TODO: use basename here?
+	var appPath = sv.tools.file.whereIs(appName);
 	if (appPath != null) {
 		return(appPath);
 	}
@@ -243,7 +244,7 @@ function PrefR_locateApp(appName) {
 		return(appName);
 	} else {
 		// Not found? What else can I do?
-		return("?");
+		return(null);
 	}
 }
 
@@ -329,14 +330,16 @@ function PrefR_UpdateCranMirrors(localOnly) {
 			var platform = navigator.platform.toLowerCase().substr(0,3);
 			if (platform == "win") // TODO: what is the pref is not set??
 				localPaths.push(sv_file.path(sv.prefs.getString("svRDefaultInterpreter"),
-									   "../../doc", csvName));
+									   "../../doc"));
 			else { // if (platform == "lin")
 				localPaths.push('/usr/share/R/doc'); 	// try other paths: // mac: ????
 				localPaths.push('/usr/local/share/R/doc');
 			}
+			var file;
 			for (i in localPaths) {
-				if (sv_file.exists(localPaths[i])) {
-					csvContent = sv_file.read(localPaths[i]);
+				file = sv_file.getfile(localPaths[i], csvName);
+				if (file.exists()) {
+					csvContent = sv_file.read(file.path);
 					//sv.cmdout.append("Read from: " + localPaths[i]);
 					break;
 				}
@@ -356,10 +359,15 @@ function PrefR_UpdateCranMirrors(localOnly) {
 		var name, url, item;
 		for (i in arrData) {
 			item = arrData[i];
-			if (item[colOK] == "1") {
+			if (item[colOK] == "1"
+				// fix for broken entries:
+				&& (item[colURL].search(/^(f|ht)tp:\/\//) === 0)
+				) {
 				arrData[i] = [item[colName], item[colURL]];
 			}
 		}
+		// Add main server at the beginning:
+		arrData.unshift(["Main CRAN server", "http://cran.r-project.org/"]);
 	}
 	if (!arrData)	return false;
 

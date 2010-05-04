@@ -3,9 +3,6 @@
 // Copyright (c) 2009, K. Barton & Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.command.getRApp(event);  	// Select a preferred R application in the list
-// sv.command.setMenuRApp(el); 	// Set up 'R application' submenu (checked item
-								// and hide incompatible items.
 // sv.command.startR();			// Start the preferred R app and connect to it
 // TODO: sv.command.quitR(saveWorkspace)
 // sv.command.openPkgManager(); // Open the package manager window
@@ -76,7 +73,9 @@ if (typeof(sv.command) == 'undefined') {
 	}
 
 	function _isRRunning () {
-		return sv.r.running;
+		//TODO: temporary solution
+		return true;
+		//return sv.r.running;
 	}
 
 	function _RControl_supported () {
@@ -103,12 +102,33 @@ this.startR = function () {
 	"sciviewsk@sciviews.org", "defaults");
 	var cmd = sv.prefs.getString("svRApplication");
 
+
+	// PhG: there is a bug in the way R starts: at the begining, a dummy '00LOCK'
+	// file is created that prevents to config another R process as SciViews socket
+	// server. Everytime svStart.R is run, it looks if this '00LOCK' file exists,
+	// and if it finds it, it refuses to configure R as a socket server.
+	// OK, but what happens if the config of the SciViews R server fails in the
+	// middle of the process? Well, '00LOCK' is not removed, and it is not possible
+	// any more to configure R (automatically) as a SciViews socket server.
+	// To cope with this problem, I make sure '00LOCK' is deleted everytime the
+	// SciViews-K plugin is loaded in Komodo Edit. That way, restarting Komodo
+	// solves the problem of the remaining '00LOCK' file, in case R failed...
+
+	// KB: The '00LOCK' semaphore is used mainly to prevent infinite loop when
+	// R restarts after installing missing libraries (as it is done in svStart).
+	// So, it should be ok to delete it everytime user chooses a command to
+	// start R from Komodo.
+	try {
+		var lockFile = sv.tools.file.getfile(cwd, "00LOCK");
+		if (lockFile.exists())	lockFile.remove(true);
+	} catch(e) { }
+
+
 	// trim just in case
 	var path = sv.tools.strings.trim(sv.prefs.getString("svRDefaultInterpreter"));
 
 	// PhG: on Mac OS X, R.app is not a file, but a dir!!!
-	//if (!path || (sv.tools.file.exists(path) != sv.tools.file.TYPE_FILE)) {
-	if (!path || (sv.tools.file.exists(path) < 1)) {
+	if (!path || (sv.tools.file.exists(path) == sv.tools.file.TYPE_NONE)) {
 	    if(ko.dialogs.okCancel(
 		sv.translate("Default R interpreter is not (correctly) set in " +
 			     "Preferences. Do you want to do it now?"),
@@ -124,8 +144,8 @@ this.startR = function () {
 	//.getService(Components.interfaces.koIOs);
 	//path = os.path.dirname(path);
 	//if (path) path += os.sep;
-	var Quiet = " ";
-	if (sv.prefs.getString("svRQuiet")) Quiet = "--quiet ";
+	var Quiet = sv.prefs.getString("svRQuiet")? "--quiet " : " ";
+
 	cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
 		.replace("%title%", "SciViews-R").replace("%quiet%", Quiet);
 
@@ -169,9 +189,14 @@ this.startR = function () {
 			break;
 		default:
 	}
+	//sv.cmdout.append("Running '" + cmd + "' in " + runIn + " / preferredRApp is" + preferredRApp);
+	//return;
 
 	ko.run.runCommand(window, cmd, cwd, env.join("\n"), false,
 		false, false, runIn, false, false, false);
+
+
+
 
 	//return cmd + "\n" + runIn;
 
@@ -242,94 +267,6 @@ this.startR = function () {
 			//window.updateCommands('r_app_started_closed');
 			sv.log.debug("R status updated: " + (running? "" : "not ") + "running" );
 		}
-	}
-
-	// Selects the checkbox on selected element, while deselecting others
-	this.getRApp = function (event) {
-		var el = event.originalTarget;
-		var siblings = el.parentNode.childNodes;
-		for (var i = 0; i < siblings.length; i++) {
-			try {
-				siblings[i].setAttribute("checked", siblings[i] == el);
-			} catch(e) {}
-		}
-		// This will preserve the selection
-		el.parentNode.setAttribute('selected',  el.id);
-		// Set the preference string
-		sv.prefs.setString("sciviews.preferredRApp", el.id, true);
-
-		document.getElementById("cmd_sv_start_R").setAttribute("label",
-			sv.translate("Start R") + " (" + el.getAttribute('label') + ")");
-	}
-
-	// Selects checkbox on the 'preferred R application' menu on its first
-	// display and hides unsupported commands
-	// It is triggered on popupshowing event, onload would be better,
-	// but it is for compatibility with Komodo 4 which doesn't support onload()
-	this.setMenuRApp = function (el) {
-		var selected = el.getAttribute('selected');
-		var siblings =  el.childNodes;
-
-		var isLinux = navigator.platform.toLowerCase().indexOf("linux") > -1;
-		var isMac = navigator.platform.toLowerCase().indexOf("mac") > -1;
-		var isWin = navigator.platform.toLowerCase().indexOf("win") == 0;
-
-		var validPlatforms, showItem;
-		var platform = navigator.platform;
-		for (var i = 0; i < siblings.length; i++) {
-			try {
-				validPlatforms = siblings[i].getAttribute("platform").
-					split(/[,\s]+/);
-				showItem = false;
-				for (var j in validPlatforms) {
-					if (platform.indexOf(validPlatforms[j]) > -1) {
-						// On linux, try to determine which terminals are
-						// not available and remove these items from menu
-
-						var appName = siblings[i].getAttribute("app");
-						if (isLinux || isWin) {
-							appName = appName.split(/[, ]+/);
-							var res = true;
-							for (var k in appName)
-							    res = res && !!sv.tools.file.whereIs(appName[k]);
-
-
-							if (res) {
-								showItem = true;
-								break;
-							}
-						} else if (isMac) {
-							// Check that we find the application
-							if (appName == "R" || sv.tools.file.exists(appName)) {
-								showItem = true;
-								break;
-							}
-						}
-					}
-				}
-
-				siblings[i].setAttribute("hidden", !showItem);
-				if (showItem) {
-					sv.log.debug("R application supported: " +
-						siblings[i].getAttribute("app"));
-					siblings[i].setAttribute("checked",
-						siblings[i].id == selected);
-				}
-			} catch(e) {
-				sv.log.exception(e, "Error looking for R apps in setMenuRApp");
-			}
-		}
-
-		// Set the preference string
-		sv.prefs.setString("sciviews.preferredRApp", selected, false);
-
-		document.getElementById("cmd_sv_start_R").setAttribute("label",
-			sv.translate("Start R") + " (" + document.getElementById(selected).
-				getAttribute('label') + ")"
-		);
-
-		// We do not need to run it anymore
-		el.removeAttribute("onpopupshowing");
 	}
 
 	this.openPkgManager = function () {
@@ -468,16 +405,17 @@ this.startR = function () {
 
 // PhG: currently, all menu items remain enabled, because this feature
 //      does not work well, and menus are sometimes disabled when they shouldn't be!
+
+// KB: temporarily _isRRunning always == true so items are disabled only if current language is not R
+
 		//_setCommandCtrl1(cmdsIfRRunning, _isRRunning, "sv_");
 		//_setCommandCtrl1(cmdsIfRNotRunning, function() {
 		//	return !_isRRunning()}, "sv_");
-		//_setCommandCtrl1(cmdsIfIsRView, _RControl_supported, "sv_R");
-		//_setCommandCtrl1(cmdsIfIsRViewAndSelection,
-		//	_RControlSelection_supported, "sv_R");
+		_setCommandCtrl1(cmdsIfIsRView, _RControl_supported, "sv_R");
+		_setCommandCtrl1(cmdsIfIsRViewAndSelection,
+			_RControlSelection_supported, "sv_R");
 
-		vmProto.do_cmd_sv_quit_R = function () {
-			sv.r.quit();
-		};
+		vmProto.do_cmd_sv_quit_R = function () sv.r.quit();
 
 		vmProto.do_cmd_sv_update_charset = function () {
 			sv.socket.updateCharset(true);
@@ -491,60 +429,22 @@ this.startR = function () {
 		//rather than continously
 		//_keepCheckingR();
 
-		// This is no longer needed:
-		// To run it with the same key as autocompletion with other languages
-		// command "cmd_triggerPrecedingCompletion" is replaced in XUL
-		// ko.commands.doCommandAsync('cmd_sv_RTriggerCompletion', event)
-		//vmProto.do_cmd_sv_RTriggerCompletion = function () {
-		//	sv.r.complete();
-		//};
 
-		vmProto.do_cmd_sv_RRunLine = function () {
-			sv.r.send("line");
-		};
-		vmProto.do_cmd_sv_RRunAll = function ()	{
-			sv.r.send("all");
-		};
-		vmProto.do_cmd_sv_RSourceAll = function () {
-			sv.r.source("all");
-		};
-		vmProto.do_cmd_sv_RSourcePara = function () {
-			sv.r.source("para");
-		};
-		vmProto.do_cmd_sv_RRunPara = function () {
-			sv.r.send("para");
-		};
-		vmProto.do_cmd_sv_RRunSelection = function () {
-			sv.r.send("sel");
-		};
-
-		vmProto.do_cmd_sv_RSourceSelection = function () {
-			sv.r.source("sel");
-		};
-
-		vmProto.do_cmd_sv_RRunLineOrSelection = function () {
-			sv.r.send("line/sel");
-		};
-
-		vmProto.do_cmd_sv_RSourceLineOrSelection = function () {
-			sv.r.source("line/sel");
-		};
-
-		vmProto.do_cmd_sv_RRunBlock = function () {
-			sv.r.send("block");
-		};
-		vmProto.do_cmd_sv_RSourceBlock = function () {
-			sv.r.source("block");
-		};
-		vmProto.do_cmd_sv_RRunFunction = function () {
-			sv.r.send("function");
-		};
-		vmProto.do_cmd_sv_RSourceFunction = function () {
-			sv.r.source("function");
-		};
-		vmProto.do_cmd_sv_start_R = function () {
-			sv.command.startR();
-		};
+		vmProto.do_cmd_sv_RRunLine = function() sv.r.send("line");
+		vmProto.do_cmd_sv_RRunAll = function()	sv.r.send("all");
+		vmProto.do_cmd_sv_RSourceAll = function() sv.r.source("all");
+		vmProto.do_cmd_sv_RSourcePara = function()	sv.r.source("para");
+		vmProto.do_cmd_sv_RRunPara = function() sv.r.send("para");
+		vmProto.do_cmd_sv_RRunSelection = function() sv.r.send("sel");
+		vmProto.do_cmd_sv_RSourceSelection = function() sv.r.source("sel");
+		vmProto.do_cmd_sv_RRunLineOrSelection = function() sv.r.send("line/sel");
+		vmProto.do_cmd_sv_RSourceLineOrSelection =
+			function() sv.r.source("line/sel");
+		vmProto.do_cmd_sv_RRunBlock = function() sv.r.send("block");
+		vmProto.do_cmd_sv_RSourceBlock = function() sv.r.source("block");
+		vmProto.do_cmd_sv_RRunFunction = function() sv.r.send("function");
+		vmProto.do_cmd_sv_RSourceFunction = function() sv.r.source("function");
+		vmProto.do_cmd_sv_start_R = function() sv.command.startR();
 	}
 
 // Code below is for extra items in editor context menu (eg. "run selection"),
@@ -585,15 +485,9 @@ this.startR = function () {
 		//gKeybindingMgr.currentScheme.name
 		var currentSchemeName = sv.prefs.getString("keybinding-scheme");
 
-		// Perhaps this should be redone for each scheme?
-		//var currentSchemeName = "Default";
-		//var schemeNames = {};
-		//keybindingSvc.getSchemeNames(schemeNames, {});
-		//schemeNames = schemeNames.value;
 		var sch = keybindingSvc.getScheme(currentSchemeName);
 
 		//gKeybindingMgr.parseConfiguration
-
 		var bindingRx = /[\r\n]+(# *SciViews|binding cmd_sv_.*)/g;
 		if (clearOnly != true) {
 			function _getSvKeys (data, pattern) {
@@ -615,9 +509,8 @@ this.startR = function () {
 			// Temporarily delete SciViews keybindings
 			sch.data = sch.data.replace(bindingRx, "");
 
-
-			//var usedbys = this.usedBy([keysequence]);
 			// Check for key conflicts
+			//var usedbys = this.usedBy([keysequence]);
 			var svKeysCurrentOther = _getSvKeys (sch.data, "");
 			var currKeyArr = [];
 			for (var k in svKeysCurrentOther)

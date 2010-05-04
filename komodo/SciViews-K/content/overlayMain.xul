@@ -71,9 +71,14 @@
 		<broadcaster id="sv_r_is_running" disabled="false"/>
 	</broadcasterset>
 <!-- PhG: commands updating disabled because it does not always work
-          => sometimes, required commands remain disabled!!!! -->
+          => sometimes, required commands remain disabled!!!!
+	KB: re-enabled commandupdater for now, but before we work out better
+	mechanism to check for R availability now it assumes that R is always on
+	(whether it really is or not), (see commands.js)
+
+-->
 	<commandset id="allcommands">
-		<commandset id="cmdset_rApp" commandupdater="false"
+		<commandset id="cmdset_rApp" commandupdater="true"
 			oncommandupdate="ko.commands.updateCommandset(this);"
 			events="r_app_started_closed">
 			<command id="cmd_sv_start_R" key="key_cmd_sv_start_R"
@@ -96,8 +101,11 @@
 				desc="R: &svOpenSessMgr;" label="&svOpenSessMgr;" accesskey="&svOpenSessMgr.key;"/>
 		</commandset>
 
-		<commandset id="cmdset_r_control" commandupdater="false"
-		  events="current_view_language_changed,r_app_started_closed"
+<!-- event names changed in Komodo 6: keeping the old one for compatibility
+(current_view_language_changed)
+-->
+		<commandset id="cmdset_r_control" commandupdater="true"
+		  events="current_view_language_changed,language_changed,current_view_changed,r_app_started_closed"
 		  oncommandupdate="ko.commands.updateCommandset(this);">
 			<command id="cmd_sv_RRunAll" key="key_cmd_sv_RRunAll"
 				oncommand="ko.commands.doCommand('cmd_sv_RRunAll')"
@@ -134,7 +142,7 @@
 				oncommand="ko.commands.doCommand('cmd_sv_RSourceLineOrSelection')"
 				desc="R: &rSrcLineOrSelection;" label="&rSrcLineOrSelection;"
 				accesskey="&rSrcLineOrSelection.key;"/>
-			
+
 			<commandset id="cmdset_r_control" commandupdater="false" events="select"
 				oncommandupdate="ko.commands.updateCommandset(this);">
 				<command id="cmd_sv_RRunSelection" key="key_cmd_sv_RRunSelection"
@@ -145,15 +153,6 @@
 					desc="R: &rSrcSel;" label="&rSrcSel;" accesskey="&rSrcSel.key;"/>
 			</commandset>
 		</commandset>
-
-		<!--<commandset id="cmdset_view_dependent"
-				removeelement="cmd_triggerPrecedingCompletion">
-			<command id="cmd_triggerPrecedingCompletion"
-				key="key_cmd_triggerPrecedingCompletion"
-				oncommand="ko.commands.doCommandAsync('cmd_triggerPrecedingCompletion', event);
-					ko.commands.doCommandAsync('cmd_sv_RTriggerCompletion', event);"
-				desc="&editorTriggerPrecedingAutoCompleteListOrCallTip.desc;"/>
-		</commandset>   -->
 	</commandset>
 
 	<menupopup id="popup_tools">
@@ -192,20 +191,12 @@
 					class="menuitem-iconic r-session-dir-icon"/>
 
 				<menuseparator/>
-				<!--<menuitem id="r_send_line_menu" observes="cmd_sv_RRunLine"-->
-				<!--	class="menuitem-iconic r-run-line-icon"/>-->
 				<menuitem id="r_send_line_sel_menu" observes="cmd_sv_RRunLineOrSelection"
 					class="menuitem-iconic r-run-selection-icon"/>
 				<menuitem id="r_send_all_menu" observes="cmd_sv_RRunAll"
 					class="menuitem-iconic r-run-all-icon"/>
 				<menuitem id="r_src_all_menu" observes="cmd_sv_RSourceAll"
 					class="menuitem-iconic r-source-all-icon"/>
-				<!--<menuitem id="r_send_sel_menu" observes="cmd_sv_RRunSelection"-->
-				<!--	class="menuitem-iconic r-run-selection-icon"/>-->
-				<!--<menuitem id="r_src_sel_menu" observes="cmd_sv_RSourceSelection"-->
-				<!--	class="menuitem-iconic r-source-selection-icon"/>-->
-				<!--<menuitem id="r_src_line_sel_menu" observes="cmd_sv_RSourceLineOrSelection"
-					class="menuitem-iconic r-source-selection-icon"/>-->
 				<menuitem id="r_send_block_menu" observes="cmd_sv_RRunBlock"
 					class="menuitem-iconic r-run-block-icon"/>
 				<menuitem id="r_src_block_menu" observes="cmd_sv_RSourceBlock"
