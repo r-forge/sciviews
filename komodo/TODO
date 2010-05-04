@@ -1,5 +1,11 @@
 = SciViews-K To Do
 
+* Resolve conflicting shortcuts and define shortcuts that can be used on all
+platforms => difficult task!!!
+
+* svRQuiet should be a string, not a boolean. Shouldn't we switch to svRArgs
+which would contain more args than just --quiet???
+
 * Allow defining in which library to install R packages during configuration of
 R.
 
