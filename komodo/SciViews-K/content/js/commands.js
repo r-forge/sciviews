@@ -144,6 +144,8 @@ this.startR = function () {
 	//.getService(Components.interfaces.koIOs);
 	//path = os.path.dirname(path);
 	//if (path) path += os.sep;
+	//TODO: shouldn't we replace this with a command line argument which would
+	// be more flexible, because it should allow much more than just --quiet???
 	var Quiet = sv.prefs.getString("svRQuiet")? "--quiet " : " ";
 
 	cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
