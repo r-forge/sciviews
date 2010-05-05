@@ -123,7 +123,6 @@ this.startR = function () {
 		if (lockFile.exists())	lockFile.remove(true);
 	} catch(e) { }
 
-
 	// trim just in case
 	var path = sv.tools.strings.trim(sv.prefs.getString("svRDefaultInterpreter"));
 
