@@ -1,5 +1,9 @@
 = SciViews-K To Do
 
+* In version 0.9.16, there is still a problem with the selection of the
+R interpreter: in Windows, switching from RGui to console do not switch
+from Rgui.exe and Rterm.exe and vice-versa.
+
 * Resolve conflicting shortcuts and define shortcuts that can be used on all
 platforms => difficult task!
 
