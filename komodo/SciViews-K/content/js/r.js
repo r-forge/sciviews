@@ -117,7 +117,8 @@ if (typeof(sv.r) == 'undefined')
 //}
 
 // Indicate if R is currently running
-sv.r.running = false;
+//FIXME: before we solve the issue of updating R status:
+sv.r.running = true; // = false;
 
 // Used to record pending commands while R is starting
 sv.r.pendingCmd = "";
@@ -1461,7 +1462,7 @@ sv.r.kpf2pot = function (kpfFile) {
 	} catch(e) {
 		sv.log.exception(e, "Unknown error while creating .pot file with"
 			+ " sv.r.kpf2pot(). (" + e + ")", true);
-	}	
+	}
 }
 
 // Create a translation (.pot) file for a package
@@ -1499,8 +1500,8 @@ sv.r.kpfTranslate = function (kpfFile) {
 	} catch(e) {
 		sv.log.exception(e, "Unknown error while translating a project file with"
 			+ " sv.r.kpfTranslate(). (" + e + ")", true);
-	}	
-} 
+	}
+}
 
 // Translate a package
 sv.r.kpzTranslate = function (kpzFile) {
@@ -1518,8 +1519,8 @@ sv.r.kpzTranslate = function (kpzFile) {
 	} catch(e) {
 		sv.log.exception(e, "Unknown error while translating package file with"
 			+ " sv.r.kpzTranslate(). (" + e + ")", true);
-	}		
-} 
+	}
+}
 
 
 //// Define the 'sv.r.pkg' namespace ///////////////////////////////////////////
