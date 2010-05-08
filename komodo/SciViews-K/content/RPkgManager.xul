@@ -122,29 +122,22 @@ function addcslashes (str, charlist) {
 }
 
 function reloadList () {
-		var eol = "\n\n\n";
-
-		var cmd = [
-				'svtmp.ipkg <- as.data.frame(installed.packages(fields = c("Description"))[, c("Package", "Version", "Description", "Depends")])',
-				'svtmp.ipkg$Loaded <- svtmp.ipkg$Package %in% .packages()',
-				'svtmp.ipkg$Required <- svtmp.ipkg$Package %in% .required',
-				'write.table(svtmp.ipkg [, c("Package", "Version", "Description", "Loaded", "Required", "Depends")], eol="'
-				+ addcslashes(eol, "\n") + '", na = "", sep="\\t", quote=FALSE, row.names = FALSE, col.names = FALSE)',
-		];
 
 		var theList = document.getElementById("TheList");
-
-		sv.r.evalCallback(cmd.join("\n"), function (data) {
+		sv.r.evalCallback('pkgManList()', function (data) {
 				data = data.replace(/\r\n/g, "\n");
-				data = data.split(eol);
+				data = data.split(/\n{2,4}/);
 
 				var selectIdx = theList.selectedIndex;
 
 				var newPackages = [], pkgs = [], pkg, name, required, loaded;
 
 				for (i in data) {
-						pkgs[i] = data[i].split("\t");
-						newPackages.push(pkgs[i][0]);
+						pkg = data[i].split("\t");
+						if (pkg.length < 6)
+							break;
+						pkgs[i] = pkg;
+						newPackages.push(pkg[0]);
 				}
 
 				var items = theList.childNodes;
@@ -334,29 +327,22 @@ self.onload = function () {
 		//f1();
 		//f1();
 		var args = window.arguments;
-		sv = args[0];
-		var cmd = 'svtmp.updatePkgs <- function (lib.loc = .libPaths(), repos = getOption("repos"),'
-				+	'	  contriburl = contrib.url(repos, type), method,'
-				+	'	  available = available.packages(contriburl = contriburl, method = method),'
-				+	'	  instlib = update[, "LibPath"], ...,'
-				+	'	  checkBuilt = FALSE, type = getOption("pkgType")) {\n'
-				+   'oldPkgs <- old.packages(lib.loc = lib.loc, contriburl = contriburl,'
-				+   '        method = method, available = available, checkBuilt = checkBuilt);\n'
-				+	'return(oldPkgs)}';
+		if (args) {
+			sv = args[0];
+		} else {
+			var p = parent;
+			while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
+		}
 
-		sv.r.evalCallback(cmd, function (data) {
-				sv.cmdout.append(data);
-				reloadList();
+		var file = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org",
+							"defaults", "pkgMan.R").replace(/\\/g, "/");
+
+		sv.r.evalCallback("source(\"" + file + "\"", function(data) {
+			reloadList();
 		});
-		//reloadList();
+
+
 }
-
-
-
-self.onclose = function() {
-    sv.r.evalHidden('rm(svtmp.updatePkgs, svtmp.ipkg)');
-}
-
 
 ]]>
 	</script>
