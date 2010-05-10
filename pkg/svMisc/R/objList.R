@@ -190,12 +190,14 @@ function (objname, envir, ...)
 	if (inherits(obj, "try-error"))
 		return(NULL)
 
+	if(is.environment(obj))
+		obj <- as.list(obj)
+
 	if (mode(obj) == "S4") {
 		ret <- lsObj.S4(obj, objname)
 	} else if (is.function(obj)) {
 		ret <- lsObj.function(obj, objname)
 	} else {	# S3
-#{{
 		if (!(mode(obj) %in% c("list", "pairlist")) || length(obj) == 0)
 			return(NULL)
 
@@ -226,7 +228,6 @@ function (objname, envir, ...)
 		}))
 
 		ret <- data.frame(itemnames, fullnames, ret, stringsAsFactors = FALSE)
-#}}
 	}
 	if (!is.null(ret))
 		names(ret) <- c("Name", "Full.name", "Dims/default", "Group", "Class",
