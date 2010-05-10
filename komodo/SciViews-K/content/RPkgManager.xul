@@ -48,8 +48,8 @@
 	height="500" width="500" persist="width height"
 	style="min-height: 500px; min-width: 500px;" title="Manage R Packages">
 
-	<script type="text/javascript">
-	<![CDATA[
+<script type="text/javascript">
+<![CDATA[
 //TODO: 	use xbl bindings
 // 		list of available packages at CRAN
 // 		repository selection + custom repositories
@@ -310,22 +310,7 @@ function pkgFindUpdates () {
 		});
 }
 
-{
-//
-//function openWin() {
-//	  var WindowObjectReference = window.openDialog("file:///C:/Kamil/sciviews/komodo/bla.xul",
-//		    "RPackageManager",
-//		    "chrome=yes,centerscreen,resizable=yes,scrollbars=yes,status=no",
-//		    xxx, 1, 2
-//		);
-//}
-}
-
 self.onload = function () {
-		//var x = document.getElementById("out");
-		//x.setAttribute("value", self.name);
-		//f1();
-		//f1();
 		var args = window.arguments;
 		if (args) {
 			sv = args[0];
@@ -337,11 +322,9 @@ self.onload = function () {
 		var file = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org",
 							"defaults", "pkgMan.R").replace(/\\/g, "/");
 
-		sv.r.evalCallback("source(\"" + file + "\"", function(data) {
+		sv.r.evalCallback("source(\"" + file + "\")", function(data) {
 			reloadList();
 		});
-
-
 }
 
 ]]>
