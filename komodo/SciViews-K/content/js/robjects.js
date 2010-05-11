@@ -178,6 +178,7 @@ sv.r.objects = {};
 		var cmd = 'print(objList(id = "' + id + '_' + pack + '", envir = "' +
 			pack + '", all.info = FALSE, compare = FALSE), sep = "' + sep +
 			'", eol = "\\n", raw.output = TRUE, header = TRUE)';
+		//TODO: Use cmdPattern instead
 
 		sv.log.debug(cmd);
 		sv.r.evalCallback(cmd, _parseObjectList, pack);
@@ -289,6 +290,7 @@ sv.r.objects = {};
 		_createVisibleData();
 	};
 
+//TODO: merge with _addObjectList
 	function _addSubObject (obj) {
 		var objName = obj.origItem.name;
 		// objList does not quote non syntactic names, so we do it here
@@ -305,10 +307,11 @@ sv.r.objects = {};
 			'", envir = "' + env + '", object = "' + objName +
 			'", all.info = FALSE, compare = FALSE), sep = "' + sep +
 			'", eol = "\\n")';
-		sv.log.debug(cmd);
+		//TODO: Use cmdPattern instead
 		sv.r.evalCallback(cmd, _parseSubObjectList, obj);
 	};
 
+//TODO: merge with _parseObjectList
 	function _parseSubObjectList (data, obj) {
 		var lines = data.split(/[\r\n]{1,2}/);
 
@@ -318,6 +321,8 @@ sv.r.objects = {};
 			_this.treeBox.invalidateRow(obj.origItem.index);
 			return;
 		}
+
+
 
 		// This is only for compatibility with different print.objList versions
 		// may be removed when final form of output will be estabilished
@@ -358,6 +363,7 @@ sv.r.objects = {};
 		origItem.children = [];
 		for (var i = 2; i < lines.length; i++) {
 			if (lines[i].indexOf(sep) != -1) {
+
 				line = lines[i].split(sep);
 				if (line.length < 6)
 					continue;
@@ -654,7 +660,6 @@ sv.r.objects = {};
 		var vd = this.visibleData;
 		var item = vd[idx];
 		if (!item) {
-			//sv.log.debug(idx);
 			return;
 		}
 
@@ -663,7 +668,6 @@ sv.r.objects = {};
 			_addSubObject(item);
 			return;
 		}
-
 		var rowsChanged;
 		var iLevel = item.level;
 

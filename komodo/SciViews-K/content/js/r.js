@@ -136,7 +136,7 @@ sv.r.test = function sv_RTest () {
 				// Remove message in the statusbar
 				sv.cmdout.message("");
 				// update character set used by R
-				sv.socket.updateCharset(true);
+				sv.socket.updateRInfo(true);
 				window.setTimeout(function() {
 					sv.log.info(sv.translate("R uses \"%S\" encoding.",
 					sv.socket.charset));
