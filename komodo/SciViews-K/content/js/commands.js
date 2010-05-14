@@ -145,7 +145,6 @@ this.startR = function () {
 	// be more flexible, because it should allow much more than just --quiet???
 	// KB: work in progress...
 
-
 	var Quiet = sv.prefs.getString("svRQuiet")? "--quiet " : " ";
 	cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
 		.replace("%title%", "SciViews-R").replace("%quiet%", Quiet);
@@ -167,9 +166,9 @@ this.startR = function () {
 	var isWin = navigator.platform.indexOf("Win") === 0;
 	// Default preferredRApp on Windows is r-gui
 	var preferredRApp = sv.prefs.getString("svRApplicationId", isWin?
-	"r-gui" : "r-terminal");
+		"r-gui" : "r-terminal");
 	var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
-	"SciViewsK"),
+		"SciViewsK"),
 		"koHost=localhost",
 		"koActivate=FALSE",
 		"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
@@ -398,7 +397,10 @@ this.startR = function () {
                 'cmd_svRSourceBlock': [ 'sv.r.source("block");',XisRDoc | XRRunning ],
                 'cmd_svRSourceFunction': [ 'sv.r.source("function");',XisRDoc | XRRunning ],
                 'cmd_svRSourcePara': [ 'sv.r.source("para");',XisRDoc | XRRunning ],
-                'cmd_svRRunLineOrSelection': [ 'sv.r.send("line/sel");',XisRDoc | XRRunning ],
+                // PhG: this should really be sv.r.run(), which is supposed to be "more
+				// intelligent" and can be used to run code step by step because it
+				// moves the cursor to the next line each time...
+				'cmd_svRRunLineOrSelection': [ 'sv.r.run();',XisRDoc | XRRunning ],
                 'cmd_svRSourceLineOrSelection': [ 'sv.r.source("line/sel");',XisRDoc | XRRunning ],
                 'cmd_svRRunSelection': [ 'sv.r.send("sel");',XisRDoc | XRRunning | XHasSelection ],
                 'cmd_svRSourceSelection': [ 'sv.r.source("sel");', XisRDoc | XRRunning | XHasSelection ]
@@ -430,9 +432,18 @@ this.startR = function () {
             if(!command in handlers) return false;
 
             var test = handlers[command][1];
-            return (((test & XRRunning) != XRRunning) || _isRRunning())
-            && (((test & XRStopped) != XRStopped) || !_isRRunning())
-            && (((test & XisRDoc) != XisRDoc) || _isRCurLanguage())
+            // PhG: since _isRRunning() returns always true, we are currently
+			// NOT able to start R!
+			return (((test & XRRunning) != XRRunning) || true) //_isRRunning())
+            && (((test & XRStopped) != XRStopped) || true) //!_isRRunning())
+            // PhG: it is NOT the program, but the user who decides when it possible
+			// to send a command to R... There are possibles situations where
+			// executable R code live somewhere else than in a .R document
+			// Let's think at examples in .Rd files, <code R> sections in a
+			// wiki page, etc.
+			// Thus, for the nth time, I don't want this restriction on commands
+			// running code to R: I want them available EVERYWHERE!
+			&& (((test & XisRDoc) != XisRDoc) || true) //_isRCurLanguage())
             && (((test & XHasSelection) != XHasSelection) || _hasSelection());
         }
 

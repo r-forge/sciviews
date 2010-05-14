@@ -162,8 +162,16 @@ function OnPreferencePageOK(prefset) {
 }
 
 function PrefR_svRApplicationOnSelect(event) {
+	var el = document.getElementById("svRApplication");
+	var sel = el.selectedItem;
+	var app = sel.hasAttribute("app")? sel.getAttribute("app") : "R";
+	// PhG: always get a good starting value - DO NOT ELIMINATE THIS!
+	var svRDefaultInterpreter = PrefR_locateApp(app);
+	document.getElementById("svRDefaultInterpreter").value
+		= svRDefaultInterpreter;
+	
 	// Delegate to PrefR_svRApplicationUpdate()
-	return PrefR_svRApplicationUpdate(event);
+ 	return PrefR_svRApplicationUpdate(event);
 }
 
 function PrefR_svRApplicationUpdate(event) {
