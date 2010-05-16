@@ -10,7 +10,7 @@ Version: 0.0-12
 Date: 2009-10-17
 Author: Romain Francois
 Maintainer: Romain Francois <francoisromain@free.fr>
-License: GPL (>= 2)
+License: GPL-2
 LazyLoad: yes
 LazyData: yes
 URL: http://www.sciviews.org/SciViews-R, http://romainfrancois.blog.free.fr/
