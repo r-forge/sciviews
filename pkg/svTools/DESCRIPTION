@@ -14,3 +14,4 @@ License: GPL (>= 2)
 LazyLoad: yes
 LazyData: yes
 URL: http://www.sciviews.org/SciViews-R, http://romainfrancois.blog.free.fr/
+BugReports: https://r-forge.r-project.org/tracker/?group_id=194
