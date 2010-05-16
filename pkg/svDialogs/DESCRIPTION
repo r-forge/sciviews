@@ -9,7 +9,7 @@ Version: 0.9-42
 Date: 2009-10-26
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
-License: GPL (>= 2)
+License: GPL-2
 LazyLoad: yes
 URL: http://www.sciviews.org/SciViews-R
 BugReports: https://r-forge.r-project.org/tracker/?group_id=194
