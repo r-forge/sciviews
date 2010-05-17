@@ -1,6 +1,6 @@
 // SciViews-K R unit functions
 // Define the 'sv.r.unit' namespace
-// Copyright (c) 2008, Philippe Grosjean
+// Copyright (c) 2008-2010, Philippe Grosjean
 
 ////////////////////////////////////////////////////////////////////////////////
 // sv.r.unit.version // Version of the svUnit R package it was designed for
@@ -41,8 +41,8 @@ if (typeof(sv.r) == 'undefined') {
 // Define the 'sv.r.unit' namespace
 if (typeof(sv.r.unit) == 'undefined') sv.r.unit = {
 	version: 0.7,
-	release: 1,
-	debug: true
+	release: 2,
+	debug: false
 };
 
 (function() { // 'sv.r.unit' namespace inside closure
@@ -87,8 +87,8 @@ if (typeof(sv.r.unit) == 'undefined') sv.r.unit = {
 		// TODO: a more sophisticated process looking (1) if svUnit R package
 		// is installed, and (2) if its version is correct. If not, propose to
 		// install or update it!
-		sv.r.evalHidden('require(svUnit, quietly = TRUE)', false);	// Make sure svUnit is loaded
-		var cmd = 'cat(guiSuiteList(sep = ",", compare = FALSE))';
+		var cmd = 'if (require(svUnit, quietly = TRUE)) ' +
+			'cat(guiSuiteList(sep = ",", compare = FALSE))';
 		sv.r.evalCallback(cmd, sv.r.unit.getRUnitList_Callback);
 	}
 
@@ -166,8 +166,8 @@ if (typeof(sv.r.unit) == 'undefined') sv.r.unit = {
 
 	this.setAutoTest = function(state) {
 		var autoTestButton = document.getElementById('svunit-auto-tests-button');
-		if (autoTestButton.checked != state) {
-			autoTestButton.checked = state;
+		if (autoTestButton.getAttribute("checked") != state) {
+			autoTestButton.setAttribute("checked", state);
 			this.autoTest();
 		}
 	}
@@ -182,14 +182,15 @@ if (typeof(sv.r.unit) == 'undefined') sv.r.unit = {
             var autoTestButton = document.getElementById('svunit-auto-tests-button');
             var runTestsButton = document.getElementById('svunit-run-tests-button');
             //runTestsButton.disabled = autoTestButton.checked;
-            if (autoTestButton.checked) {
+            if (autoTestButton.getAttribute("checked") == "true") {
                 gUnitTestRunning = false;   // Reset testing flag TODO: what if test is running?
                 gFileObserver.addObserver();
                 this.runTest();
             } else {
                 gFileObserver.removeObserver();
             }
-            gPrefSvc.prefs.setBooleanPref("svunitAutoTest", autoTestButton.checked);
+            gPrefSvc.prefs.setBooleanPref("svunitAutoTest",
+				autoTestButton.getAttribute("checked"));
         } catch (e) {
             alert(e);
         }
@@ -230,9 +231,9 @@ if (typeof(sv.r.unit) == 'undefined') sv.r.unit = {
 				var progressbar = document.getElementById('svunit-progress-bar');
 				progressbar.style.backgroundColor = "#E6E6E6";
 				// Collect together selected tests and run them
-				var cmd = 'require(svUnit, quietly = TRUE); createLog(deleteExisting = TRUE); runTest(svSuite(c("'
+				var cmd = 'if (require(svUnit, quietly = TRUE)) { createLog(deleteExisting = TRUE); runTest(svSuite(c("'
 				cmd = cmd + Selected.join('", "')
-				cmd = cmd + '")), name = "objects"); cat(guiTestReport(Log()))'
+				cmd = cmd + '")), name = "objects"); cat(guiTestReport(Log())) }'
 //				if (this.debug) alert("'" + cmd + "'");
 				var res = sv.r.evalCallback(cmd, sv.r.unit.runTest_finished);
 				ko.statusBar.AddMessage("R unit test started", "svUnit", 1000, true);
@@ -694,6 +695,9 @@ if (typeof(sv.r.unit) == 'undefined') sv.r.unit = {
 
     this.InitOverlay = function() {
         gUnitTreeObject = new _UnitTree();
+		// Make sure "Auto" mode is turned off at startup
+		document.getElementById('svunit-auto-tests-button')
+			.setAttribute("checked", "false");
     }
 
 }).apply(sv.r.unit);
