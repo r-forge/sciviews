@@ -12,7 +12,7 @@
 sweave
 \end_modules
 \language english
-\inputencoding auto
+\inputencoding utf8
 \font_roman palatino
 \font_sans lmss
 \font_typewriter lmtt
@@ -126,7 +126,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check <pkg>
 \end_layout
 
@@ -309,7 +308,6 @@ Assertions,
 status collapsed
 
 \begin_layout Plain Layout
-
 checkEquals()
 \end_layout
 
@@ -320,7 +318,6 @@ checkEquals()
 status collapsed
 
 \begin_layout Plain Layout
-
 checkEqualsNumeric()
 \end_layout
 
@@ -331,7 +328,6 @@ checkEqualsNumeric()
 status collapsed
 
 \begin_layout Plain Layout
-
 checkIdentical()
 \end_layout
 
@@ -342,7 +338,6 @@ checkIdentical()
 status collapsed
 
 \begin_layout Plain Layout
-
 checkTrue()
 \end_layout
 
@@ -353,7 +348,6 @@ checkTrue()
 status collapsed
 
 \begin_layout Plain Layout
-
 checkException()
 \end_layout
 
@@ -386,7 +380,6 @@ test function
 status collapsed
 
 \begin_layout Plain Layout
-
 DEACTIVATED()
 \end_layout
 
@@ -402,7 +395,6 @@ A series of test functions (whose name typically start with
 status collapsed
 
 \begin_layout Plain Layout
-
 test....
 \end_layout
 
@@ -423,7 +415,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 runit....
 \end_layout
 
@@ -459,7 +450,6 @@ RUnitTestSuite
 status collapsed
 
 \begin_layout Plain Layout
-
 defineTestSuite()
 \end_layout
 
@@ -474,7 +464,6 @@ One or more test suites can be run by calling
 status collapsed
 
 \begin_layout Plain Layout
-
 runTestSuite()
 \end_layout
 
@@ -487,7 +476,6 @@ runTestSuite()
 status collapsed
 
 \begin_layout Plain Layout
-
 runTestFile()
 \end_layout
 
@@ -515,7 +503,6 @@ One can print a synthetic report (how many test units, test functions, number
 status collapsed
 
 \begin_layout Plain Layout
-
 summary()
 \end_layout
 
@@ -527,7 +514,6 @@ summary()
 status collapsed
 
 \begin_layout Plain Layout
-
 printTextProtocol()
 \end_layout
 
@@ -563,7 +549,6 @@ RUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 inspect()
 \end_layout
 
@@ -622,7 +607,6 @@ There is also no integration with the "regular"
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -655,7 +639,6 @@ RUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -699,7 +682,6 @@ RUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -770,7 +752,6 @@ RUnitTestData
 status collapsed
 
 \begin_layout Plain Layout
-
 lapply()
 \end_layout
 
@@ -781,7 +762,6 @@ lapply()
 status collapsed
 
 \begin_layout Plain Layout
-
 sapply()
 \end_layout
 
@@ -1061,7 +1041,7 @@ status open
 
 \begin_layout Plain Layout
 
-options(useFancyQuotes = FALSE)
+options(useFancyQuotes = TRUE)
 \end_layout
 
 \begin_layout Plain Layout
@@ -1525,7 +1505,6 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 clearLog()
 \end_layout
 
@@ -1537,7 +1516,6 @@ clearLog()
 status collapsed
 
 \begin_layout Plain Layout
-
 Log()
 \end_layout
 
@@ -1548,7 +1526,6 @@ Log()
 status collapsed
 
 \begin_layout Plain Layout
-
 summary(Log())
 \end_layout
 
@@ -1560,7 +1537,6 @@ summary(Log())
 status collapsed
 
 \begin_layout Plain Layout
-
 Square()
 \end_layout
 
@@ -1647,7 +1623,6 @@ error
 status collapsed
 
 \begin_layout Plain Layout
-
 checkException()
 \end_layout
 
@@ -1682,7 +1657,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 checkException()
 \end_layout
 
@@ -1693,7 +1667,6 @@ checkException()
 status collapsed
 
 \begin_layout Plain Layout
-
 warning()
 \end_layout
 
@@ -1705,7 +1678,6 @@ warning()
 status collapsed
 
 \begin_layout Plain Layout
-
 owarn <- options(warn = 2)$warn
 \end_layout
 
@@ -1716,7 +1688,6 @@ owarn <- options(warn = 2)$warn
 status collapsed
 
 \begin_layout Plain Layout
-
 checkException()
 \end_layout
 
@@ -1727,7 +1698,6 @@ checkException()
 status collapsed
 
 \begin_layout Plain Layout
-
 options(warn = owarn)
 \end_layout
 
@@ -1747,7 +1717,6 @@ options(warn = owarn)
 status collapsed
 
 \begin_layout Plain Layout
-
 checkException(Square("xx"))
 \end_layout
 
@@ -1762,7 +1731,6 @@ Now, let's look what happens if we test the
 status collapsed
 
 \begin_layout Plain Layout
-
 Cube()
 \end_layout
 
@@ -1825,10 +1793,7 @@ c(8, 28)
 status collapsed
 
 \begin_layout Plain Layout
-Cube(
-2
-\lang english
-:3)
+Cube(2:3)
 \end_layout
 
 \end_inset
@@ -1838,10 +1803,7 @@ Cube(
 status collapsed
 
 \begin_layout Plain Layout
-checkEqualsNumeric(c(8, 28), Cube(
-2
-\lang english
-:3))
+checkEqualsNumeric(c(8, 28), Cube(2:3))
 \end_layout
 
 \end_inset
@@ -1876,7 +1838,6 @@ The results of the tests on
 status collapsed
 
 \begin_layout Plain Layout
-
 Cube()
 \end_layout
 
@@ -1901,7 +1862,6 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 clearLog()
 \end_layout
 
@@ -1924,7 +1884,6 @@ assertion
 status collapsed
 
 \begin_layout Plain Layout
-
 checkXXX()
 \end_layout
 
@@ -1960,7 +1919,6 @@ RUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 checkEquals(current, target)
 \end_layout
 
@@ -1971,7 +1929,6 @@ checkEquals(current, target)
 status collapsed
 
 \begin_layout Plain Layout
-
 target
 \end_layout
 
@@ -1982,7 +1939,6 @@ target
 status collapsed
 
 \begin_layout Plain Layout
-
 current
 \end_layout
 
@@ -1997,7 +1953,6 @@ current
 status collapsed
 
 \begin_layout Plain Layout
-
 checkEqualsNumeric(current, target)
 \end_layout
 
@@ -2013,7 +1968,6 @@ checkEqualsNumeric(current, target)
 status collapsed
 
 \begin_layout Plain Layout
-
 checkIdentical(current, target)
 \end_layout
 
@@ -2038,7 +1992,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 checkTrue(expr)
 \end_layout
 
@@ -2049,7 +2002,6 @@ checkTrue(expr)
 status collapsed
 
 \begin_layout Plain Layout
-
 expr
 \end_layout
 
@@ -2060,7 +2012,6 @@ expr
 status collapsed
 
 \begin_layout Plain Layout
-
 TRUE
 \end_layout
 
@@ -2102,7 +2053,6 @@ RUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 expr
 \end_layout
 
@@ -2125,7 +2075,6 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 TRUE
 \end_layout
 
@@ -2137,7 +2086,6 @@ TRUE
 status collapsed
 
 \begin_layout Plain Layout
-
 expr
 \end_layout
 
@@ -2148,7 +2096,6 @@ expr
 status collapsed
 
 \begin_layout Plain Layout
-
 all(expr)
 \end_layout
 
@@ -2163,7 +2110,6 @@ all(expr)
 status collapsed
 
 \begin_layout Plain Layout
-
 checkException(expr)
 \end_layout
 
@@ -2184,7 +2130,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 stop()
 \end_layout
 
@@ -2206,7 +2151,6 @@ For all these functions, you have an additional optional argument
 status collapsed
 
 \begin_layout Plain Layout
-
 msg
 \end_layout
 
@@ -2219,7 +2163,6 @@ msg
 status collapsed
 
 \begin_layout Plain Layout
-
 TRUE
 \end_layout
 
@@ -2230,7 +2173,6 @@ TRUE
 status collapsed
 
 \begin_layout Plain Layout
-
 FALSE
 \end_layout
 
@@ -2242,7 +2184,6 @@ FALSE
 status collapsed
 
 \begin_layout Plain Layout
-
 NA
 \end_layout
 
@@ -2356,7 +2297,6 @@ As you can see, the
 status collapsed
 
 \begin_layout Plain Layout
-
 checkXXX()
 \end_layout
 
@@ -2367,7 +2307,6 @@ checkXXX()
 status collapsed
 
 \begin_layout Plain Layout
-
 checkXXX()
 \end_layout
 
@@ -2385,7 +2324,6 @@ The last command
 status collapsed
 
 \begin_layout Plain Layout
-
 Log()
 \end_layout
 
@@ -2556,7 +2494,6 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 stats()
 \end_layout
 
@@ -2567,7 +2504,6 @@ stats()
 status collapsed
 
 \begin_layout Plain Layout
-
 summary()
 \end_layout
 
@@ -2578,7 +2514,6 @@ summary()
 status collapsed
 
 \begin_layout Plain Layout
-
 metadata()
 \end_layout
 
@@ -2589,7 +2524,6 @@ metadata()
 status collapsed
 
 \begin_layout Plain Layout
-
 ls()
 \end_layout
 
@@ -2694,7 +2628,6 @@ As you can see,
 status collapsed
 
 \begin_layout Plain Layout
-
 ls()
 \end_layout
 
@@ -2726,7 +2659,6 @@ data.frame
 status collapsed
 
 \begin_layout Plain Layout
-
 $
 \end_layout
 
@@ -2748,7 +2680,6 @@ svTestData
 status collapsed
 
 \begin_layout Plain Layout
-
 print()
 \end_layout
 
@@ -2759,7 +2690,6 @@ print()
 status collapsed
 
 \begin_layout Plain Layout
-
 summary()
 \end_layout
 
@@ -2770,7 +2700,6 @@ summary()
 status collapsed
 
 \begin_layout Plain Layout
-
 stats()
 \end_layout
 
@@ -2930,7 +2859,6 @@ test function
 status collapsed
 
 \begin_layout Plain Layout
-
 test
 \end_layout
 
@@ -3099,7 +3027,6 @@ RUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 runTest()
 \end_layout
 
@@ -3185,7 +3112,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 test(myobj) <-
 \end_layout
 
@@ -3410,7 +3336,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -3458,7 +3383,6 @@ A test unit is a sourceable text file that contains one or more test functions,
 status collapsed
 
 \begin_layout Plain Layout
-
 .setUp()
 \end_layout
 
@@ -3469,7 +3393,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 .tearDown()
 \end_layout
 
@@ -3529,7 +3452,6 @@ svTest
 status collapsed
 
 \begin_layout Plain Layout
-
 makeUnit()
 \end_layout
 
@@ -3541,7 +3463,6 @@ makeUnit()
 status collapsed
 
 \begin_layout Plain Layout
-
 Square()
 \end_layout
 
@@ -3632,7 +3553,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 dir =
 \end_layout
 
@@ -3643,7 +3563,6 @@ dir =
 status collapsed
 
 \begin_layout Plain Layout
-
 makeUnit()
 \end_layout
 
@@ -3655,7 +3574,6 @@ makeUnit()
 status collapsed
 
 \begin_layout Plain Layout
-
 .setUp()
 \end_layout
 
@@ -3666,7 +3584,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 .tearDown()
 \end_layout
 
@@ -3865,7 +3782,6 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 if (
 \begin_inset Quotes eld
 \end_inset
@@ -3931,7 +3847,6 @@ You will see further that it is possible to write much more complex test
 status collapsed
 
 \begin_layout Plain Layout
-
 makeUnit()
 \end_layout
 
@@ -4079,7 +3994,6 @@ So, with test units associated to packages, you have a very convenient way
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -4105,7 +4019,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -4117,7 +4030,6 @@ R CMD check
 status collapsed
 
 \begin_layout Plain Layout
-
 example()
 \end_layout
 
@@ -4150,7 +4062,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -4236,7 +4147,6 @@ status collapsed
 
 \begin_layout Plain Layout
 
-
 \backslash
 examples{}
 \end_layout
@@ -4249,7 +4159,6 @@ examples{}
 status collapsed
 
 \begin_layout Plain Layout
-
 errorLog()
 \end_layout
 
@@ -4263,7 +4172,6 @@ errorLog()
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -4285,7 +4193,6 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 R CMD check
 \end_layout
 
@@ -4530,7 +4437,6 @@ In the present case, the
 status collapsed
 
 \begin_layout Plain Layout
-
 errorLog()
 \end_layout
 
@@ -4567,7 +4473,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 package:myPkg
 \end_layout
 
@@ -4610,7 +4515,6 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 package:myPkg (subgroup)
 \end_layout
 
@@ -4662,7 +4566,6 @@ Test functions associated to your test suite receive a special treatment.
 status collapsed
 
 \begin_layout Plain Layout
-
 runTest()
 \end_layout
 
@@ -4689,7 +4592,6 @@ status collapsed
 status collapsed
 
 \begin_layout Plain Layout
-
 makeUnit()
 \end_layout
 
@@ -4714,7 +4616,6 @@ Before we apply all this, you should also know one more function:
 status collapsed
 
 \begin_layout Plain Layout
-
 svSuiteList()
 \end_layout
 
@@ -4735,7 +4636,6 @@ svSuiteList()
 status collapsed
 
 \begin_layout Plain Layout
-
 excludeList =
 \end_layout
 
@@ -4771,7 +4671,6 @@ svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 svSuiteList()
 \end_layout
 
@@ -4785,7 +4684,6 @@ svSuiteList()
 status collapsed
 
 \begin_layout Plain Layout
-
 options(svUnit.excludeList = ...)
 \end_layout
 
@@ -4841,7 +4739,6 @@ Thus, every entry matching the regular expressions
 status collapsed
 
 \begin_layout Plain Layout
-
 package:sv
 \end_layout
 
@@ -4852,7 +4749,6 @@ package:sv
 status collapsed
 
 \begin_layout Plain Layout
-
 package:RUnit
 \end_layout
 
@@ -4864,7 +4760,6 @@ package:RUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 package:svUnit
 \end_layout
 
@@ -4875,7 +4770,6 @@ package:svUnit
 status collapsed
 
 \begin_layout Plain Layout
-
 package:svUnit (VirtualClass
 \end_layout
 
@@ -5059,7 +4953,6 @@ not
 status collapsed
 
 \begin_layout Plain Layout
-
 runTest()
 \end_layout
 
@@ -5397,7 +5290,6 @@ If you want to implement such a side panel in another GUI, make sure to
 status collapsed
 
 \begin_layout Plain Layout
-
 koUnit_XXX()
 \end_layout
 

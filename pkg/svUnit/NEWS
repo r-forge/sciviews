@@ -1,5 +1,11 @@
 = svUnit News
 
+== svUnit 0.7-3
+
+* Loading of svUnit sometimes failed during checking of the SciViews-K Unit
+  plugin installation in Komodo Edit/IDE. Corrected. Thanks Claudia Beleites.
+
+
 == svUnit 0.7-2
 
 * Added a unitname argument in runTest.svSuite() to select one test unit
