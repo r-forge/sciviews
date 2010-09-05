@@ -174,7 +174,7 @@ test_Integrate <- svTest(function() {
 ## A function without test cases (will be filtered out of the suite list)
 foo <- function(x) return(x)
 
-## Look now what tests are available
+## Look now which tests are available
 svSuiteList()
 
 ## Only objects, no package units
@@ -186,7 +186,7 @@ myunit <- makeUnit(svSuiteList(), name = "AllTests")
 file.show(myunit, delete.file = TRUE)
 }
 
-## Filter objects using a list (object with/without tests and a  nonexisting obj)
+## Filter objects using a list (object with/without tests and a nonexisting obj)
 svSuiteList(packages = FALSE, objects = c("Cube", "foo", "bar"))
 
 ## Create another svSuite object with selected test items

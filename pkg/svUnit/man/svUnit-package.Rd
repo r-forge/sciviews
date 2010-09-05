@@ -17,7 +17,7 @@
     Package: \tab svUnit\cr
     Type: \tab Package\cr
     Version: \tab 0.7-3\cr
-    Date: \tab 2009-09-03\cr
+    Date: \tab 2009-09-05\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
 
@@ -147,7 +147,7 @@ runTest(foo)
 
 ## Inspect the result
 ls(.Log)
-.Log$"test(foo)"
+.Log$`test(foo)`
 ## This test fails. You see that the test function requires that foo(2) = 5 and
 ## the actual implementation returns 4. This is a trivial, useless example, but
 ## you are supposed to correct the function. For instance:

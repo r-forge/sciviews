@@ -6,9 +6,9 @@
 \alias{checkException}
 \alias{DEACTIVATED}
 
-\title{ SciViews R Unit check functions }
+\title{ SciViews R Unit assertions (check functions) }
 \description{
-  These functions define the code of test functions. They are designed to check
+  These functions define the assertions in test functions. They are designed to check
   the result of some test calculation.
 }
 
@@ -25,7 +25,7 @@ DEACTIVATED(msg = "")
 
 \arguments{
   \item{current}{ an object created for comparison (not an S4 class object). }
-  \item{target}{ a target object as reference fo comparison. }
+  \item{target}{ a target object as reference for comparison. }
   \item{msg}{ an optional (short!) message to document a test. This message is
     stored in the log and printed in front of each test report. }
   \item{tolerance}{	numeric >= 0. A numeric check does not fail if differences
@@ -74,7 +74,6 @@ DEACTIVATED(msg = "")
   \code{\link{guiTestReport}}, \code{\link[RUnit]{checkTrue}} }
 
 \examples{
-library(datasets)	# Make sure 'datasets' package is loaded
 clearLog()			# Clear the svUnit log
 
 ## All these tests are correct

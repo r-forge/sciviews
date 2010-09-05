@@ -90,16 +90,16 @@ checkTrue(1 < 2)
 checkException(log("a"))
 foo <- function(x, y = 2) return(x * y)
 test(foo) <- function () {
-        checkEqualsNumeric(4, foo(2))
-        checkEqualsNumeric(6, foo(2, nonexisting))
-        checkTrue(is.test(foo))
-        warning("This is a warning")
-        cat("Youhou from test!\n")	# Don't use, except for debugging!
-        checkTrue(is.test(test(foo)))
-        checkIdentical(attr(foo, "test"), test(foo))
-        checkException(foo(2, nonexisting))
-        #DEACTIVATED("My deactivation message")
-        checkException(foo(2))			# This test fails
+    checkEqualsNumeric(4, foo(2))
+    checkEqualsNumeric(6, foo(2, nonexisting))
+    checkTrue(is.test(foo))
+    warning("This is a warning")
+    cat("Youhou from test!\n")  # Don't use, except for debugging!
+    checkTrue(is.test(test(foo)))
+    checkIdentical(attr(foo, "test"), test(foo))
+    checkException(foo(2, nonexisting))
+    #DEACTIVATED("My deactivation message")
+    checkException(foo(2))  # This test fails
 }
 runTest(foo)
 
@@ -110,10 +110,12 @@ metadata(Log())
 Log()	# Print method
 summary(Log())
 
+\dontrun{
 ## To get a print of the test protocol on file, use:
 protocol(Log(), type = "text", file = "RprofProtocol.out")
 file.show("RprofProtocol.out")
 unlink("RprofProtocol.out")
+}
 
 rm(foo)
 
