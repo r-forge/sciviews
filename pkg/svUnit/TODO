@@ -2,8 +2,6 @@
 
 * guiTestFeedback() must be finished.
 
-* Install SciViews-K Unit Komodo extension.
-
 * Output results in html, latex, wiki, etc. format (summary.svSuiteData).
 
 * Queue tests to run and run them asynchronously using tcltk and after() if

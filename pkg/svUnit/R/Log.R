@@ -54,6 +54,9 @@ errorLog <- function (stopit = TRUE, summarize = TRUE)
 		if (isTRUE(summarize)) summary(.Log)
 		msg <- paste(Res[2], "failure(s) and", Res[3], "error(s)")
 		stop(msg)
+	} else if (interactive()) {
+		cat("Summary statistics on all tests run:\n")
+		print(Res)
 	}
 	return(invisible(Res))
 }

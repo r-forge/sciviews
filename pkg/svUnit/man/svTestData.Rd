@@ -50,7 +50,7 @@ stats(object, \dots)
 
 \examples{
 foo <- function(x, y = 2) return(x * y)
-is.test(foo)	# No
+is.test(foo)  # No
 ## Create test cases for this function
 test(foo) <- function () {
 	checkEqualsNumeric(4, foo(2))
@@ -58,7 +58,7 @@ test(foo) <- function () {
 	checkEqualsNumeric(5, foo(nonexists))
 }
 ## Generate a 'svTestData' object by running the test
-obj <- runTest(foo)	# Equivalent to runTest(test(foo)), but shorter
+obj <- runTest(foo)  # Equivalent to runTest(test(foo)), but shorter
 obj
 summary(obj)
 stats(obj)

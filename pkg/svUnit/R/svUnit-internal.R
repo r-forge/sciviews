@@ -28,7 +28,7 @@
 
 .packageName <- "svUnit"
 
-.komodoExtensionMinVersion <- "0.9.0"
+.komodoExtensionMinVersion <- "0.7.3"
 
 .installUpgradeKomodoExtension <- function ()
 {
