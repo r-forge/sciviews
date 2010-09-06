@@ -1,6 +1,32 @@
 = svGUI News
 
+== Changes in svGUI 0.9-48
+
+* koCmd() now should prepend <<<js>>> to the JavaScript code to get it evaluated
+  in Komodo (starting with SciViews-K 0.9-18). Komodo now also accepts RJsonP
+  strings, prepended with <<<rjson>>>. If there is no code prepended to the
+  string send to Komodo, it is just printed in the local R console.
+  A new 'type' argument specifies what kind of string we send to Komodo.
+
+* The R http server is modified to work with either RJsonP calls, or with plain
+  text exchange, as the SciViews socket server works. RJsonP objects returned
+  use list() to create lists, but also structures or new S4 objects.
+
+
+== Changes in svGUI 0.9-47
+
+* A new series of function to communication with a SciViews GUI client like
+  Komodo/SciViews-K by using the R http help server is added. It offers a
+  tcltk-free alternative to the svSocket server.
+  
+* The package no longer starts the socket server implemented in svSocket and it
+  does not import svSocket any more. As the HTTP server is an alternative, one
+  could now choose to run SciViews communication through the HTTP server without
+  using svSocket, and thus, without starting Tcl/Tk any more.
+  
+
 == Changes in svGUI 0.9-46
+
 * Use of svTaskCallbackManager() of svSocket >= 0.9-48 to register task
   callback that are also executed after each R code send by socket clients.
 

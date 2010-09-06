@@ -1,9 +1,11 @@
 "koCmd" <-
 function (cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
-	port = getOption("ko.port"), timeout = 1)
+	port = getOption("ko.port"), timeout = 1, type = c("js", "rjsonp", "output"),
+	pad = NULL, ...)
 {
 
-    if (is.null(host)) host <- "localhost"	# Default value
+    type <- match.arg(type)
+	if (is.null(host)) host <- "localhost"	# Default value
 	if (is.null(port)) port <- 7052			# Idem
 	cmd <- gsub("\n", "\\\\n", cmd)
 	cmd <- paste(cmd, collapse = " ")
@@ -31,7 +33,13 @@ function (cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
 					rework(data[[n[i]]]), cmd)
 		}
 	}
-
+	# What type of data do we send?
+	cmd <- switch(type,
+		js = paste("<<<js>>>", cmd, sep = ""),
+		rjsonp = paste("<<<rjsonp>>>", pad, "(",
+			paste(toRjson(cmd, ...), collapse = " "), ")", sep = ""),
+		cmd)
+		
 	otimeout <- getOption("timeout")
 	options(timeout = timeout) # Default timeout is 60 seconds
 	tryCatch(con <- socketConnection(host = host, port = port, blocking = TRUE),
