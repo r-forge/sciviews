@@ -1,12 +1,10 @@
-"getSocketServers" <-
-function ()
+getSocketServers <- function ()
 {
     # Get the list of currently running socket servers
     return(TempEnv()$SocketServers)
 }
 
-"getSocketClients" <-
-function (port = 8888)
+getSocketClients <- function (port = 8888)
 {
     if (!is.numeric(port[1]) || port[1] < 1)
         stop("'port' must be a positive integer!")
@@ -37,12 +35,10 @@ function (port = 8888)
     return(addresses)
 }
 
-"getSocketClientsNames" <-
-function (port = 8888)
+getSocketClientsNames <- function (port = 8888)
     names(getSocketClients(port = port))
 
-"getSocketServerName" <-
-function (port = 8888)
+getSocketServerName <- function (port = 8888)
 {
     if (!is.numeric(port[1]) || port[1] < 1)
         stop("'port' must be a positive integer!")
