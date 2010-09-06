@@ -12,33 +12,35 @@ changeTemp(x, item, value, replace.existing = TRUE)
 }
 
 \arguments{
-  \item{x}{ The name of the variable containing the list }
-  \item{item}{ The item to change (or create) in the list }
-  \item{value}{ The value to put in the list item }
-  \item{replace.existing}{ Do we replace an existing item? }
+  \item{x}{ the name of the variable containing the list. }
+  \item{item}{ the item to change (or create) in the list. }
+  \item{value}{ the value to put in the list item. }
+  \item{replace.existing}{ do we replace an existing item? }
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{TempEnv}}, \code{\link{assignTemp}}, \code{\link{getTemp}},
-          \code{\link{existsTemp}}, \code{\link{rmTemp}}, \code{\link{addTemp}},
-	  \code{\link{tempvar}}}
+\seealso{\code{\link{TempEnv}}, \code{\link{assignTemp}}, \code{\link{getTemp}},
+  \code{\link{existsTemp}}, \code{\link{rmTemp}}, \code{\link{addTemp}},
+  \code{\link{tempvar}}}
 
 \examples{
 changeTemp("tst", "item1", 1:10)
-# Retrieve this variable
+## Retrieve this variable
 getTemp("tst")
-# Create another item in the list
+## Create another item in the list
 changeTemp("tst", "item2", TRUE)
 getTemp("tst")
-# Change it
+## Change it
 changeTemp("tst", "item2", FALSE)
 getTemp("tst")
-# Delete it (= assign NULL to it)
+## Delete it (= assign NULL to it)
 changeTemp("tst", "item2", NULL)
 getTemp("tst")
-# Delete the whole variable
+## Delete the whole variable
 rmTemp("tst")
 }
 
 \keyword{ utilities }
+
+\concept{ temporary variables }

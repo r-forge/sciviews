@@ -5,6 +5,7 @@
 \description{
   Determine if 'topic' has a help file and example to run.
 }
+
 \usage{
 isHelp(topic, package = NULL, lib.loc = NULL)
 }
@@ -26,6 +27,7 @@ isHelp(topic, package = NULL, lib.loc = NULL)
   help file, and the second one indicating if there are examples associated
   with this help file.
 }
+
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
 \note{
@@ -37,4 +39,7 @@ isHelp("help")		# Help and example
 isHelp("Rtangle")	# Help but no example
 isHelp("notopic")	# No help or example
 }
+
 \keyword{ utilities }
+
+\concept{ help and example, man pages }

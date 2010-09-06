@@ -1,3 +1,2 @@
-"isWin" <-
-function ()
+isWin <- function ()
 	(.Platform$OS.type == "windows")

@@ -1,5 +1,41 @@
 = svMisc News
 
+== Changes in svMisc 0.9-60
+
+* A couple of functions are renamed: Parse() -> parseText(), clipsource() ->
+  sourceClipboard(). These functions are declared deprecated, and will become
+  defunct in final version 1.0-0 of the package.
+  
+* captureAll() now returns NA in case of incomplete line of code parsed by
+  parseText(). It also detects if expr is a valid language expression or is
+  NA.
+  
+* isMac() was not working correctly on Mac OS X Leopard and Snow Leopard
+  (bug corrected).
+  
+* Sys.userdir() did not expanded tilde in recent R versions (corrected).
+
+* 
+
+
+== Changes in svMisc 0.9-59
+
+* RJSON objects now use a customized list() function to build lists, but also
+  structures and new S4 objects.
+  
+* captureAll() has now a 'split' argument that allows to output to the R
+  console, while capturing output.
+  
+* Bug correction in captureAll(): call[[1L]] is not subsettable.
+
+
+== Changes in svMisc 0.9-58
+
+* Additions of functions toRjson() and evalRjson() and specification of the
+  RJSON (R-JavaScript Object Notation), an object exchange format not unlike
+  JSON, but richer and more adapted to represent most R objects.
+
+
 == Changes in svMisc 0.9-57
 
 * Small changes to objList() (now look at objects in their correct environment).

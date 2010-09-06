@@ -1,5 +1,4 @@
-"getTemp" <-
-function (x, default = NULL, mode = "any", item = NULL)
+getTemp <- function (x, default = NULL, mode = "any", item = NULL)
 {
     if (is.null(item)) Mode <- mode else Mode <- "any"
     if  (exists(x, envir = TempEnv(), mode = Mode, inherits = FALSE)) {

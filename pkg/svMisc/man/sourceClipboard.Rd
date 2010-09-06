@@ -1,18 +1,19 @@
-\name{clipsource}
-\alias{clipsource}
+\name{sourceClipboard}
+\alias{sourceClipboard}
 
 \title{ Source code from the clipboard }
 \description{
   This function reads R code from the clipboard, and then source it. Clipboard
   is managed correctly depending on the OS (Windows, Mac OS X, or *nix)
 }
+
 \usage{
-    clipsource(primary = TRUE, ...)
+sourceClipboard(primary = TRUE, \dots)
 }
 
 \arguments{
-  \item{primary}{ only valid on *nix: read the primary (or secondary) clipboard }
-  \item{\dots}{ further parameters passed to \code{source()} }
+  \item{primary}{ only valid on *nix: read the primary (or secondary) clipboard. }
+  \item{\dots}{ further parameters passed to \code{source()}. }
 }
 
 \value{
@@ -24,3 +25,5 @@
 \seealso{ \code{\link[base]{source}}, \code{\link[base]{file}} }
 
 \keyword{ utilities }
+
+\concept{ Source code from clipboard }

@@ -6,11 +6,11 @@
   \code{Sys.userdir()} retrieves the current user directory.
 }
 \usage{
-    Sys.userdir()
+Sys.userdir()
 }
 
 \value{
-  A string with the path to the user directory
+  A string with the path to the user directory.
 }
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
@@ -21,3 +21,5 @@ Sys.userdir()
 }
 
 \keyword{ utilities }
+
+\concept{ system directories }

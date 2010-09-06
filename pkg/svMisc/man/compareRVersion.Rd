@@ -11,20 +11,24 @@ compareRVersion(version)
 }
 
 \arguments{
-  \item{version}{ A string defining the version to compare to, like '2.0.0' or '1.9.1' }
+  \item{version}{ a string defining the version to compare to, like '2.0.0' or
+  '1.9.1'. }
 }
 
 \value{
   -1 if R is older, 0 if equal, 1 if newer. Take care: if you specify version as
-  "2.6", and R is version "2.6.0", then the function will return 1 (newer)!
+  "2.11", and R is version "2.11.0", then the function will return 1 (newer)!
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{isAqua}}, \code{\link{isWin}} }
+\seealso{ \code{\link[utils]{compareVersion}}, \code{\link[base]{R.version}},
+  \code{\link{isAqua}}, \code{\link{isWin}} }
 
 \examples{
-compareRVersion("2.6.0")
+compareRVersion("2.11.0") # Note that we strongly advise to use R > 2.11.0!
 }
 
 \keyword{ utilities }
+
+\concept{ version comparison }

@@ -12,11 +12,11 @@ tempvar(pattern = ".var")
 }
 
 \arguments{
-  \item{pattern}{ The prefix for the variable (the rest is a random number) }
+  \item{pattern}{ the prefix for the variable (the rest is a random number). }
 }
 
 \value{
-  A string with the name of a variable
+  A string with the name of a variable.
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
@@ -28,3 +28,5 @@ tempvar()
 }
 
 \keyword{ utilities }
+
+\concept{ temporary variables }

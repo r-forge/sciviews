@@ -25,3 +25,5 @@ Sys.tempdir()
 }
 
 \keyword{ utilities }
+
+\concept{ system directories }

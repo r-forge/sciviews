@@ -7,12 +7,15 @@
   This function can also be used under other platforms, but it will always
   return \code{FALSE}.
 }
+
 \usage{
 isRgui()
 }
+
 \value{
   \code{TRUE} if the R UI is Rgui.exe, \code{FALSE} otherwise.
 }
+
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
 \seealso{ \code{\link{isSDI}}, \code{\link{isWin}} }
@@ -20,4 +23,7 @@ isRgui()
 \examples{
 isRgui()
 }
+
 \keyword{ utilities }
+
+\concept{ OS system platform }

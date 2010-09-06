@@ -1,3 +1,2 @@
-"isMac" <-
-function ()
-	(.Platform$pkgType == "mac.binary")
+isMac <- function ()
+	(grepl("^mac", .Platform$pkgType))
