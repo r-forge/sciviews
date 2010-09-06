@@ -4,14 +4,14 @@ citEntry(entry="Manual",
          title = "SciViews-R: A GUI API for R",
          author = "Philippe Grosjean",
          organization = "UMons",
-         address      = "Mons, Belgium",
+         address      = "MONS, Belgium",
          year         = version$year,
          url          = "http://www.sciviews.org/SciViews-R",
 
          textVersion =
          paste("Grosjean, Ph. (", version$year, "). ",
                "SciViews: A GUI API for R. ",
-               "UMons, Mons, Belgium. ",
+               "UMONS, Mons, Belgium. ",
                "URL http://www.sciviews.org/SciViews-R.",
                sep="")
          )
