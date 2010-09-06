@@ -12,7 +12,8 @@
 
 \usage{
 koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
-    port = getOption("ko.port"), timeout = 1)
+    port = getOption("ko.port"), timeout = 1, type = c("js", "rjsonp", "output"),
+    pad = NULL, \dots)
 }
 
 \arguments{
@@ -29,6 +30,17 @@ koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
     default, it is port 7052. Can be changed by setting
     \code{options(ko.port = ....)}. }
   \item{timeout}{ Number of seconds to wait for response. }
+  \item{type}{ Which type of Komodo command do we send? If \code{type = "js"}
+    (by default), \code{cmd} is considered to be JavaScript code to be evaluated
+    in Komodo. If \code{type = "rjsonp"}, \code{cmd} is parsed as RJson object
+    with padding (included in a JavaScript function call) and will be evaluated
+    as such in Komodo. if \code{type = "output"}, the string in \code{cmd} is
+    considered to be some R output and will be displayed in the Komodo local
+    R console (no evaluation). }
+  \item{pad}{ A string naming the JavaScript function to run in Komodo, with
+    the constructed Rjson object as argument. If \code{NULL} (by default),
+    the Rjson object is evaluated directly without padding. }
+  \item{\dots}{ Further arguments to pass to \code{toRjson()}. }
 }
 
 \value{
@@ -80,6 +92,7 @@ koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
 # Make sure you have started Komodo Edit with the SciViews-K extension installed
 # on the same machine you run R, and the socket server started and then...
 
+## Send JavaScript commands to Komodo
 # Alert box in Komodo, and then reply to R
 koCmd(c('alert("Hello from R!");',
     'sv.socket.serverWrite("Hello from OpenKomodo (" + ko.interpolate.currentFilePath() + ")");'))
@@ -104,6 +117,16 @@ koCmd('alert("This is R version <<<major>>>.<<<minor>>>");', R.version)
 # Should return something like:
 # "ReferenceError: nonexistingJSfunction is not defined"
 
+
+## Sending RjsonP (Rjson with padding) instruction to Komodo
+koCmd("Hello with RjsonP!", type = "rjsonp", pad = "alert")
+
+# This is more useful to pass complex R objects to Komodo
+koCmd(head(iris), type = "rjsonp", pad = "sv.socket.serverWrite")
+
+
+## Send simple text (no evaluation) to the Komodo R console
+koCmd("Hello again from R!", type = "output")
 }
 }
 

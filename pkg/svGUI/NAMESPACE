@@ -1,7 +1,13 @@
-import(svMisc, svSocket)
+import(svMisc, tools)
 
 export(guiInstall,
        guiUninstall,
 	   guiRefresh,
 	   guiAutoRefresh,
-	   koCmd)
+	   koCmd,
+	   startHttpServer,
+	   stopHttpServer,
+	   HttpServerPort,
+	   HttpServerName,
+	   HttpClientsNames,
+	   parHttp)
