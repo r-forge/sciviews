@@ -1,5 +1,4 @@
-"sendSocketClients" <-
-function (text, sockets = "all", serverport = 8888)
+sendSocketClients <- function (text, sockets = "all", serverport = 8888)
 {
     # Note that 'real' clients should manage to print this BEFORE the current
     # command line, something that 'SimpleClient.Tcl' cannot do!

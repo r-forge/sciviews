@@ -2,8 +2,6 @@
 
 * Rework the mechanism to add history item to R from within Komodo
 
-* Eliminate the need to poll R regularly (for menu items activating/deactivating)
-
 * svSocket-package.Rd man page
 
 * Easy redefinition of options(width = ...) to adjust width of output to the
@@ -55,7 +53,7 @@
 
 * Correct handling of the prompt when several lines of code are pasted at once!
 
-* Currently, code send through the socket server cannt be interrupted
+* Currently, code send through the socket server cannot be interrupted
 
 * Implement a way to interrupt from the remote console + correct <<<esc>>>
 

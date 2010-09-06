@@ -1,5 +1,4 @@
-"processSocket" <-
-function (msg, socket, serverport, ...)
+processSocket <- function (msg, socket, serverport, ...)
 {
     # This is the default R function that processes a command send by a socket
     # client. 'msg' is assumed to be R code contained in a string
@@ -65,7 +64,8 @@ function (msg, socket, serverport, ...)
 		parSocket(client, serverport, bare = TRUE)
 	} else if (startmsg == "<<<u>>>") {
 		msg <- substr(msg, 8, 1000000)
-		# Silent execution, nothing is returned to the client (but still echoed to the server)
+		# Silent execution, nothing is returned to the client
+		# (but still echoed to the server)
 		hiddenMode <- FALSE
 		returnResults <- FALSE
 		parSocket(client, serverport, bare = TRUE)

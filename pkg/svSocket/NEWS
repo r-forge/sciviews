@@ -1,5 +1,11 @@
 = svSocket News
 
+== Changes in svSocket 0.9-49
+
+* Small change in startSocketServer(): the Tcl/Tk callback function now calls
+  a closure located in TempEnv (SocketServerProc).
+
+
 == Changes in svSocket 0.9-48
 
 * svTaskCallbackManager() added to allow callbacks to be executed after each

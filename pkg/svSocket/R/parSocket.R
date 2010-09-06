@@ -1,26 +1,24 @@
-"parSocket" <-
-function (client, serverport = 8888, ...)
+parSocket <- function (client, serverport = 8888, ...)
 {
     # Set or get parameters for a given socket client
     # No attempt is made to make sure this client exists
     sc <- paste("SocketClient", client, sep = "_")
-    if (!exists(sc, envir = TempEnv
-				(), inherits = FALSE,
+    if (!exists(sc, envir = TempEnv(), inherits = FALSE,
 		mode = "environment")) {
         # Create a new environment with default values
         e <- new.env(parent = TempEnv())
         e$client <- client
         e$serverport <- serverport
-        e$prompt <- "> "    # Default prompt
-        e$continue <- "+ "  # Default continuation prompt
-        e$code <- ""        # Current partial code for multiline mode
-        e$last <- ""        # String to add at the end of evaluations
-        e$echo <- FALSE     # Don't echo commands to the console
-        e$flag <- FALSE     # Do not flag pieces of code (not used yet!)
-        e$multiline <- TRUE # Allow for multiline code
-        e$bare <- TRUE      # Always start in "bare" mode
+        e$prompt <- ":> "    # Default prompt
+        e$continue <- ":+ "  # Default continuation prompt
+        e$code <- ""         # Current partial code for multiline mode
+        e$last <- ""         # String to add at the end of evaluations
+        e$echo <- FALSE      # Don't echo commands to the console
+        e$flag <- FALSE      # Do not flag pieces of code (not used yet!)
+        e$multiline <- TRUE  # Allow for multiline code
+        e$bare <- TRUE       # Always start in "bare" mode
         # Note: in bare mode, all other parameters are inactive!
-        # And assign it to TempEnv
+        # and assign it to TempEnv
         assign(sc, e, envir = TempEnv())
     } else e <- get(sc, envir = TempEnv(), mode = "environment")
     # Change or add parameters if they are provided

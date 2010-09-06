@@ -1,19 +1,16 @@
-".onLoad" <-
-function (lib, pkg)
+.onLoad <- function (lib, pkg)
 {
 	# Create our SciViews task callback manager
 	assignTemp(".svTaskCallbackManager", svTaskCallbackManager())
 }
 
-".onUnload" <-
-function (libpath)
+.onUnload <- function (libpath)
 {
 	removeTaskCallback("SV-taskCallbackManager")
 	rmTemp(".svTaskCallbackManager")
 }
 
-".Last.lib" <-
-function (libpath)
+.Last.lib <- function (libpath)
 {
     # Make sure that all clients are disconnected
     # and all servers are closed

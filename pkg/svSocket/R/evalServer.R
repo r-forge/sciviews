@@ -14,7 +14,8 @@ evalServer <- function (con, expr, send = NULL)
 
 	readLines(con)  # flush input stream just incase previous call failed to clean up.
 	if (missing(send)) {
-		cat('..Last.value <- try(eval(parse(text = "',x,'"))); .f <- file(); dump("..Last.value", file = .f); flush(.f); seek(.f, 0); cat("\\n<<<startflag>>>", readLines(.f), "<<<endflag>>>\\n", sep = "\\n"); close(.f); rm(.f, ..Last.value); flush.console()\n',
+		cat('..Last.value <- try(eval(parse(text = "', x,
+			'"))); .f <- file(); dump("..Last.value", file = .f); flush(.f); seek(.f, 0); cat("\\n<<<startflag>>>", readLines(.f), "<<<endflag>>>\\n", sep = "\\n"); close(.f); rm(.f, ..Last.value); flush.console()\n',
 			file = con, sep = "")
 		# It is important that one line only is written, so that other clients
 		# don't mix in with these lines.
@@ -28,14 +29,15 @@ evalServer <- function (con, expr, send = NULL)
 		dump("..Last.value", file <- .f)
 		flush(.f)
 		seek(.f, 0)
-		cat(readLines(.f), ';', x, ' <- ..Last.value; rm(..Last.value); cat("\\n<<<endflag>>>\\n"); flush.console()\n',
+		cat(readLines(.f), ';', x,
+			' <- ..Last.value; rm(..Last.value); cat("\\n<<<endflag>>>\\n"); flush.console()\n',
 			file = con, sep = "")
 	}
 	objdump <- ""
 	endloc <- NULL
 	while (!length(endloc)) {
 		obj <- readLines(con, n = 1000, warn = FALSE)
-		# wait for data to come back. Without this sleep, you get 20-30 calls
+		# Wait for data to come back. Without this sleep, you get 20-30 calls
 		# to readLines before data arrives.
 		if (!length(obj)) {
 			Sys.sleep(0.01)
@@ -54,7 +56,7 @@ evalServer <- function (con, expr, send = NULL)
 	start <- grep("<<<startflag>>>", objdump)
 	if (length(start) != 1)
 		stop("Unable to find <<<startflag>>>")
-	# the startflag is because sometimes (strangely rarely) seek, flush and dump
+	# The startflag is because sometimes (strangely rarely) seek, flush and dump
 	# can write return value to stdout which do not source.
 	objdump <- objdump[-(1:start)]
 	# Fix any output buffer wrap issues. There are line breaks mid number
@@ -63,7 +65,7 @@ evalServer <- function (con, expr, send = NULL)
 	# warns about these noncomplete lines otherwise.
 	nospace <- grep("[^ ]$", objdump)
 	nospace <- nospace[nospace < length(objdump)]
-	for (i in rev(nospace)) { #robust to consecutive lines to be joined
+	for (i in rev(nospace)) { # Robust to consecutive lines to be joined
 		objdump[i] <- paste(objdump[i], objdump[i + 1], sep = "")
 		objdump[i + 1] <- ""
 	}

@@ -1,5 +1,4 @@
-"stopSocketServer" <-
-function (port = 8888)
+stopSocketServer <- function (port = 8888)
 {
     # Stop one or more running socket server(s)
     if (port == "all") {

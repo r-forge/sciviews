@@ -1,5 +1,5 @@
-svTaskCallbackManager <-
-function (handlers = list(), registered = FALSE, verbose = FALSE) 
+svTaskCallbackManager <- function (handlers = list(), registered = FALSE,
+verbose = FALSE) 
 {
     suspended <- FALSE
     .verbose <- verbose
