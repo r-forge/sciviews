@@ -1,8 +1,11 @@
 = svMisc To Do list
 
-* The svMisc-package.Rd man page
+* Finalize the actions management
 
-* Write the code in objList() to list content inside objects
+* Specification of dates in RJSON format
+
+* Write the code in objList() to list content inside objects, and perhaps also
+  objects attributes.
 
 * Rework mechanism to call .guiCmd() from objXXX() functions
 
@@ -15,3 +18,7 @@ for S4 object does the same thing!
 * objMenu(): add copy name to clipboard, send name to editor in menu
 
 * Use RShowDoc() to access further R documentation.
+
+* Update po file.
+
+* Write a complete battery of tests for this package.

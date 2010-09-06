@@ -1,5 +1,4 @@
-"rmTemp" <-
-function (x)
+rmTemp <- function (x)
 {
 	if (!is.character(x))
 		stop("'x' must be character string(s)!")

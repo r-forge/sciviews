@@ -12,22 +12,23 @@ assignTemp(x, value, replace.existing = TRUE)
 }
 
 \arguments{
-  \item{x}{ The name of the variable }
-  \item{value}{ The value of the variable }
-  \item{replace.existing}{ Do we replace an existing variable? }
+  \item{x}{ the name of the variable. }
+  \item{value}{ the value of the variable. }
+  \item{replace.existing}{ do we replace an existing variable? }
 }
-
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{TempEnv}}, \code{\link{changeTemp}}, \code{\link{getTemp}},
-          \code{\link{rmTemp}}, \code{\link{existsTemp}}, \code{\link{addTemp}},
-	  \code{\link{tempvar}}}
+\seealso{\code{\link{TempEnv}}, \code{\link{changeTemp}}, \code{\link{getTemp}},
+  \code{\link{rmTemp}}, \code{\link{existsTemp}}, \code{\link{addTemp}},
+  \code{\link{tempvar}}}
 
 \examples{
 assignTemp("test", 1:10)
-# Retrieve this variable
+## Retrieve this variable
 getTemp("test")
 }
 
 \keyword{ utilities }
+
+\concept{ temporary variables }

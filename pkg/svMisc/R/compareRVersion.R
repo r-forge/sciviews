@@ -1,7 +1,6 @@
-"compareRVersion" <-
-function (version)
+compareRVersion <- function (version)
 {
-    # This is similar to compareVersion, but works for R version comparison
-    compareVersion(paste(R.Version()$major, R.Version()$minor, sep = "."),
+    ## This is similar to compareVersion, but works for R version comparison
+    compareVersion(paste(R.version$major, R.version$minor, sep = "."),
 		version)
 }

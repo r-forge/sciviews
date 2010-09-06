@@ -1,5 +1,4 @@
-"TempEnv" <-
-function ()
+TempEnv <- function ()
 {
     pos <-  match("TempEnv", search())
     if (is.na(pos)) { # Must create it
