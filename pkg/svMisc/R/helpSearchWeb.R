@@ -1,16 +1,24 @@
-helpSearchWeb <- function (apropos, type = c("google", "archive", "wiki"), browse = TRUE)
+helpSearchWeb <- function (what, type = c("R", "archive", "wiki", "google"),
+browse = TRUE, msg = browse, ...)
 {
-	apropos <- paste(apropos, collapse = " ", sep = "")
-	apropos <- gsub(" ", "+", apropos)
-	type <- type[1]
-	RSearchURL <- switch(type,
-		"google" = paste("http://www.google.com/search?sitesearch=r-project.org&q=",
-			apropos, sep = ''),
+	what <- paste(what, collapse = " ", sep = "")
+	what <- gsub(" ", "+", what)
+	type <- match.arg(type)
+	searchURL <- switch(type,
+		"R" = RSiteSearch(what, ...),
 		"archive" = paste("http://www.google.com/u/newcastlemaths?q=",
-			apropos, sep = ''),
+			what, sep = ''),
 		"wiki" = paste("http://rwiki.sciviews.org/doku.php?do=search&id=",
-			apropos, sep = ''),
-		stop("'type' could be only 'google', 'archive' or 'wiki', currently!"))
-	if (isTRUE(browse)) browseURL(RSearchURL)
-	return(invisible(RSearchURL))
+			what, sep = ''),
+		"google" = paste("http://www.google.com/search?sitesearch=r-project.org&q=",
+			what, sep = ''),
+		stop("'type' could be only 'R', 'archive', 'wiki' or 'google', currently!"))
+	if (type != "R") {
+		if (isTRUE(browse)) browseURL(searchURL)
+		if (isTRUE(msg)) {
+			cat(gettext("A search query has been submitted"), "\n")
+			cat(gettext("The results page should open in your browser shortly\n"))
+		}
+	}
+	return(invisible(searchURL))
 }
