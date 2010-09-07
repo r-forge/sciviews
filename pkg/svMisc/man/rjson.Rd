@@ -19,14 +19,14 @@ evalRjson(rjson)
 \arguments{
   \item{x}{ any R object to be converted into RJSON (do not work with objects
     containing C pointers, environments, promises or expressions, but should
-    work with almost all other R objects) }
+    work with almost all other R objects). }
   \item{attributes}{ if \code{FALSE} (by default), a simple object is created
     by ignoring all attributes. This is usally the suitable option to transfer
     data to another language, like JavaScript that do not understand R attributes
     anyway. With \code{attributes = TRUE}, the complete information about the
     object is written, so that the object could be recreated (almost) identical
     when evaluated in R (but prefer \code{save} and \code{load} to tranfer
-    objects between R sessions!) }
+    objects between R sessions!). }
   \item{rjson}{ a string containing an object specified in RJSON notation. The
     specification is evaluated in R... and it can contain also R code. There
     is no protection provided against execution of bad code. So, you must trust
@@ -85,7 +85,7 @@ evalRjson(rjson)
 \seealso{ \code{\link{Parse}} }
 
 \examples{
-# A complex R object
+## A complex R object
 Robj <- structure(list(
 	a = as.double(c(1:5, 6)),
 	LETTERS,
@@ -102,20 +102,22 @@ Robj <- structure(list(
     anAttrib = 1:10,
     anotherAttrib = list(TRUE, y = 1:4))
 
-# Convert to simplest RJSON, without attributes
+## Convert to simplest RJSON, without attributes
 Rjson1 <- toRjson(Robj)
 Rjson1
 evalRjson(Rjson1)
 
-# More complex RJSON, with attributes
+## More complex RJSON, with attributes
 Rjson2 <- toRjson(Robj, TRUE)
 Rjson2
 Robj2 <- evalRjson(Rjson2)
 Robj2
-# Numbers near equivalence comparison (note: identical(Robj, Robj2) is FALSE)
+## Numbers near equivalence comparison (note: identical(Robj, Robj2) is FALSE)
 all.equal(Robj, Robj2)
 
 rm(Robj, Robj2, Rjson1, Rjson2)
 }
 
 \keyword{ utilities }
+
+\concept{ Object serialization, JavaScript Object Notation }

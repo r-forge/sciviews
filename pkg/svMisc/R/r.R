@@ -1,10 +1,9 @@
-"r" <-
-function (...)
+r <- function (...)
 {
-	# A multiple require proceeding as silently as possible
-	# Suppress packages messages as much as possible
+	## A multiple require proceeding as silently as possible
+	## Suppress packages messages as much as possible
 	owarn <- getOption("warn")
-	options(warn = -1)	# Suppress warnings
+	options(warn = -1)  # Suppress warnings
 	on.exit(options(warn = owarn))
 	args <- unlist(list(...))
 	l <- length(args)

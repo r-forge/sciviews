@@ -16,11 +16,20 @@ getEnvironment(pos)
 \value{
   An environment.
 }
+
+\note{
+  This function appears useless since there is the as.environment(pos) function
+  in base that does the same. This function will disappear in version 1.0 of the
+  svMisc package.
+}
+
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
 \examples{
+\dontrun{
 getEnvironment(1)
 getEnvironment(length(search())) # base environment
+}
 }
 
 \keyword{ utilities }
