@@ -3,6 +3,7 @@
 
 \title{ Get the system temporary directory }
 \description{
+  This function is deprecated in favor of \code{systemDir("sysTemp")}!
   \code{Sys.tempdir()} retrieves the system temporary directory, which is
   usually /tmp under Unix, but could be located elsewhere, especially under
   Windows. It is simply the root directory of \code{tempdir()}.
@@ -18,12 +19,6 @@ Sys.tempdir()
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{Sys.userdir}} }
-
-\examples{
-Sys.tempdir()
-}
+\seealso{ \code{\link{systemDir}} }
 
 \keyword{ utilities }
-
-\concept{ system directories }

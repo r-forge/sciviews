@@ -1,5 +1,5 @@
-\name{r}
-\alias{r}
+\name{pkg}
+\alias{pkg}
 
 \title{ A very silent and multipackage require() function }
 \description{
@@ -8,12 +8,14 @@
   at least one loading fails, a short message is printed.
 }
 \usage{
-    r(...)
+    pkg(..., warn = TRUE)
 }
 
 \arguments{
   \item{\dots}{ the name of one or several R packages to load (character
     strings). }
+  \item{warn}{ If \code{TRUE}, issue a warning if one or several packages are
+    not loaded. }
 }
 
 \value{
@@ -28,9 +30,9 @@
 
 \examples{
 ## This should work...
-if (r("tools", "methods")) cat("Fine!\n")
-## ... but this not (notice there is no error or warning!)
-if (r("tools", "badname")) cat("Fine!\n")
+if (all(pkg("tools", "methods"))) cat("Fine!\n")
+## ... but this not
+if (!all(pkg("tools", "badname", warn = FALSE))) cat("Not fine!\n")
 }
 
 \keyword{ utilities }

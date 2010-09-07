@@ -21,6 +21,12 @@
   
 * For listTypes(), the convention has changed. Method/type is now separated by
   an underscore instead as with two dots (like in view_text.default).
+  
+* Sys.tempdir() and Sys.userdir() are deprecated in favor of the new more
+  general functions systemFile() and systemDir().
+  
+* r() is deprecated in favor of pkg() (r is not informative enough and more
+  susceptible to be used elsewere too).
 
 
 == Changes in svMisc 0.9-59
