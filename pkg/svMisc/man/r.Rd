@@ -12,7 +12,8 @@
 }
 
 \arguments{
-  \item{\dots}{ the name of one or several R packages to load (character strings) }
+  \item{\dots}{ the name of one or several R packages to load (character
+    strings). }
 }
 
 \value{
@@ -26,10 +27,12 @@
 \seealso{ \code{\link[base]{require}} }
 
 \examples{
-# This should work...
+## This should work...
 if (r("tools", "methods")) cat("Fine!\n")
-# ... but this not (notice there is no error or warning!)
+## ... but this not (notice there is no error or warning!)
 if (r("tools", "badname")) cat("Fine!\n")
 }
 
 \keyword{ utilities }
+
+\concept{ package requirement and loading }

@@ -5,7 +5,7 @@
 \description{
   List all types for a method; types are variants for a given method
   defined in a way it is easy to add other variants dynamically (on the contrary
-  to a usual \code{type=} or \code{which=} argument, like in \code{plot.ts()}
+  to a usual \code{type =} or \code{which =} argument, like in \code{plot.ts()}
   or \code{plot.lm()}, respectively.
 }
 \usage{
@@ -13,9 +13,9 @@ listTypes(method, class = "default", strict = FALSE)
 }
 
 \arguments{
-  \item{method}{ The method name }
-  \item{class}{ The class name. }
-  \item{strict}{ Do we list only types for the class (\code{TRUE}), or all
+  \item{method}{ the method name. }
+  \item{class}{ the class name. }
+  \item{strict}{ do we list only types for the class (\code{TRUE}), or all
     possible types, including for inherited objects, and default ones
     (\code{FALSE}, by default)? }
 }
@@ -27,8 +27,8 @@ listTypes(method, class = "default", strict = FALSE)
 \note{ This function is only useful for special generic functions with type
 argument like \code{view}, \code{copy} or \code{export}. These functions offer a
 mechanism to easily add custom types, and the present function list them. For
-S3 objects a type is simply a function whose name is : <method>..<type>.<class>.
-So, adding new <type>s for <method> is very easy to implement }
+S3 objects a type is simply a function whose name is : <method>_<type>.<class>.
+So, adding new <type>s for <method> is very easy to implement. }
 
 \seealso{ \code{\link{listMethods}} }
 

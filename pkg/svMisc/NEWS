@@ -15,7 +15,12 @@
   
 * Sys.userdir() did not expanded tilde in recent R versions (corrected).
 
-* 
+* Little change in def() arguments: length.out instead of length to use the same
+  name as correcponding argument in rep(). Coercion to logical is now done using
+  as.logical()... but the result may differ from previous implementations.
+  
+* For listTypes(), the convention has changed. Method/type is now separated by
+  an underscore instead as with two dots (like in view_text.default).
 
 
 == Changes in svMisc 0.9-59

@@ -1,25 +1,34 @@
 \name{def}
 \alias{def}
 
-\title{ Define a vector of a given mode and length (possibly filling it with default values) }
+\title{ Define a vector of a given mode and length (possibly filling it with
+  default values) }
 \description{
   This function makes sure that a vector of a given mode and length is returned.
-  If the value provided is NULL, NA, or empty, a default value is used instead.
-  If \code{length = NULL}, the length of the vector is not constrained, otherwise,
-  it is fixed (possibly cutting or recycling \code{value}).
+  If the value provided is \code{NULL}, or empty, the default value is used
+  instead. If \code{length.out = NULL}, the length of the vector is not
+  constrained, otherwise, it is fixed (possibly cutting or recycling
+  \code{value}).
 }
 \usage{
-    def(value, default = "", mode = "character", length = NULL)
+def(value, default = "", mode = "character", length.out = NULL)
 }
 
 \arguments{
-  \item{value}{ the value to pass with default }
-  \item{default}{ the default value to use, in case of NULL, NA, or length == 0 }
-  \item{mode}{ the mode of the result: character, logical, numeric, complex or
-    factor. Other modes are NOT coerced! }
-  \item{length}{ the desired length of the returned vector; use \code{length = NULL}
-    (default) if you don't want to change the length of the vector, i.e., keep same
-    length as \code{value}.}
+  \item{value}{ the value to pass with default. }
+  \item{default}{ the default value to use, in case of \code{NULL}, or
+    \code{length(value) == 0}. }
+  \item{mode}{ the mode of the resulting object: 'character', 'logical',
+    'numeric' (and, if you want to be more precise: 'double', 'integer' or
+    'single') or 'complex'. Although not being a mode by itself, you can also
+    specify 'factor' to make sure the result is a factor (thus, of mode
+    'numeric', storage mode 'integer', with a levels attribute). Other modes are
+    ignored, and \code{value} is NOT coerced (silently) in this case, i.e., if
+    you don't want to force coercion of the resulting object, use anything
+    else. }
+  \item{length.out}{ the desired length of the returned vector; use
+    \code{length.out = NULL} (default) if you don't want to change the length of
+    the vector.}
 }
 
 \value{
@@ -28,15 +37,18 @@
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{getTemp}}, \code{\link{assignTemp}} }
+\seealso{ \code{\link[base]{mode}}, \code{\link[base]{rep}}
+  \code{\link{getTemp}}, \code{\link{assignTemp}} }
 
 \examples{
-def(1:3, length = 5)	                  # Convert into character and recycle
-def(0:2, mode = "logical")                # Numbers to logical
-def(c("TRUE", "FALSE"), mode = "logical") # Text to logical
-def(NULL, "default text")                 # Default value used
-def(character(0), "default text")         # Idem
-def(NA, 10, mode = "numeric", length = 2) # Vector of two numbers
+def(1:3, length.out = 5)	                  # Convert into character and recycle
+def(0:2, mode = "logical")                    # Numbers to logical
+def(c("TRUE", "FALSE"), mode = "logical")     # Text to logical
+def(NULL, "default text")                     # Default value used
+def(character(0), "default text")             # Idem
+def(NA, 10, mode = "numeric", length.out = 2) # Vector of two numbers
 }
 
 \keyword{ utilities }
+
+\concept{ coercion and default values }

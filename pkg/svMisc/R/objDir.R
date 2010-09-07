@@ -1,3 +1,2 @@
-"objDir" <-
-function ()
+objDir <- function ()
     file.path(tempdir(), "svObjBrowser")

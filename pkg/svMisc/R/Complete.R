@@ -1,10 +1,9 @@
-"Complete" <-
-function (code, print = FALSE, types = c("default", "scintilla"),
+Complete <- function (code, print = FALSE, types = c("default", "scintilla"),
 addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 	ComplEnv <- utils:::.CompletionEnv
 
 	finalize <- function (completions) {
-		# Sort completion items alphabetically
+		## Sort completion items alphabetically
 		completions <- sort(completions)
 		if (isTRUE(add.types)) {
 			tl <- numeric(length(completions))
@@ -47,32 +46,32 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 	}
 	if (is.na(types[1L])) add.types <- FALSE else add.types <- TRUE
 
-	# Default values for completion context
+	## Default values for completion context
 	token <- ""
 	triggerPos <- 0L
 	fguess <- ""
 	funargs <- list()
 	isFirstArg <- FALSE
 
-	# Is there some code provided?
+	## Is there some code provided?
 	code <- paste(as.character(code), collapse = "\n")
 	if (is.null(code) || !length(code) || code == "") {
-		# Just return a list of objects in .GlobalEnv
+		## Just return a list of objects in .GlobalEnv
 		return(finalize(ls(envir = .GlobalEnv)))
 	}
 
-	# If code ends with a single [, then nothing to return
+	## If code ends with a single [, then nothing to return
 	if (regexpr("[^[][[]$", code) > 0)
 		return(invisible(""))
 
-	# If code ends with a double [[, then, substitute $ instead and indicate
-	# to quote returned arguments (otherwise, [[ is not correctly handled)!
+	## If code ends with a double [[, then, substitute $ instead and indicate
+	## to quote returned arguments (otherwise, [[ is not correctly handled)!
 	if (regexpr("[[][[]$", code) > 0) {
 		code <- sub("[[][[]$", "$", code)
 		dblBrackets <- TRUE
 	} else dblBrackets <- FALSE
 
-	# Save funarg.suffix and use " = " temporarily
+	## Save funarg.suffix and use " = " temporarily
 	opts <- ComplEnv$options
 	funarg.suffix <- opts$funarg.suffix
 	on.exit({
@@ -94,28 +93,26 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 	triggerPos <- pos - ComplEnv[["start"]]
 	token <- ComplEnv[["token"]]
 
-	# If token is empty, we complete by using objects in .GlobalEnv by default
+	## If token is empty, we complete by using objects in .GlobalEnv by default
 	if (!length(completions) && token == "") {
 		triggerPos <- nchar(code, type = "chars")
 		return(finalize(ls(envir = .GlobalEnv)))
 	}
 
-    # From CompletePlus() for a similar behaviour
-	# For tokens like "a[m", the actual token should be "m"
-    # completions are modified accordingly
+    ## From CompletePlus() for a similar behaviour
+	## For tokens like "a[m", the actual token should be "m"
+    ## completions are modified accordingly
     rx <- regexpr("[[]+", ComplEnv$token)
     if (rx > 0) {
-    	# then we need to trim out whatever is before the [ in the completion
-    	# and the token
+    	## Then we need to trim out whatever is before the [ in the completion
+    	## and the token
     	start <- rx + attr(rx, "match.length")
     	ComplEnv$token <- substring(ComplEnv$token, start)
     	completions <- substring(completions, start)
     }
 	if (!length(completions)) return(invisible(""))
 
-	# remove weird object names (useful when the token starts with ".")
-    # line below causes error on ubuntu: could not find function "grepl". older R version?
-	#completions <- completions[!grepl("^[.]__[[:alpha:]]__", completions)]
+	## Remove weird object names (useful when the token starts with ".")
     i <- grep("^[.]__[[:alpha:]]__", completions)
 	if (length(i) > 0)
 		completions <- completions[-i]
@@ -136,7 +133,7 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 		completions <- substring(completions, triggerPos + 1)
 
 	if (dblBrackets) {
-		# Substitute var$name by var[["name"
+		## Substitute var$name by var[["name"
 		completions <- sub("[$](.+)$", '[["\\1"', completions)
 		token <- sub("[$]$", "[[", token)
 		triggerPos <- triggerPos + 1
@@ -148,25 +145,18 @@ addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?") {
 }
 
 .reserved.words <- c("if", "else", "repeat", "while", "function", "for", "in",
-					  "next", "break", "TRUE", "FALSE", "NULL", "Inf", "NaN",
-					  "NA", "NA_integer_", "NA_real_", "NA_complex_",
-					  "NA_character_")
+	"next", "break", "TRUE", "FALSE", "NULL", "Inf", "NaN", "NA", "NA_integer_",
+	"NA_real_", "NA_complex_", "NA_character_")
 
-.default.completion.types <- list(fun = "function",
-								  var = "variable",
-								  env = "environment",
-								  args = "arg",
-								  keyword = "keyword")
+.default.completion.types <- list(fun = "function", var = "variable",
+	env = "environment", args = "arg", keyword = "keyword")
 
-.scintilla.completion.types <- list(fun = "1",
-									var = "3",
-									env = "8",
-									args = "11",
-									keyword = "13")
+.scintilla.completion.types <- list(fun = "1", var = "3",
+	env = "8", args = "11", keyword = "13")
 
-# modified utils:::inFunction()
-# The only difference is that it also gets current arguments list (if applicable).
-# They are assigned to utils:::.CompletionEnv$funargs
+## Modified utils:::inFunction()
+## The only difference is that it also gets current arguments list (if applicable).
+## They are assigned to utils:::.CompletionEnv$funargs
 .inFunctionExt <-
 function (line = utils:::.CompletionEnv[["linebuffer"]],
 cursor = utils:::.CompletionEnv[["start"]])
@@ -193,22 +183,23 @@ cursor = utils:::.CompletionEnv[["start"]])
 			1L), 1000000L), fixed = TRUE)) == 0L)) {
 			return(character(0L))
 		} else {
-
-			# This is the code added to utils:::inFunction()
+			## This is the code added to utils:::inFunction()
 			wp2 <- rev(cumsum(temp$c[-(wp[1L]:nrow(temp))]))
 			suffix <- sub("^\\s+", "", suffix, perl = TRUE)
-			# TODO: simplify this:
+			## TODO: simplify this:
 			if (length(wp2)) {
-				funargs <- strsplit(suffix,	"\\s*[\\(\\)][\\s,]*", perl = TRUE)[[1]]
+				funargs <- strsplit(suffix,	"\\s*[\\(\\)][\\s,]*",
+					perl = TRUE)[[1]]
 				funargs <- paste(funargs[wp2 == 0], collapse = ",")
 			} else {
 				funargs <- suffix
 			}
 			funargs <- strsplit(funargs, "\\s*,\\s*", perl=TRUE)[[1]]
 			funargs <- unname(sapply(funargs, sub, pattern = "\\s*=.*$",
-				replacement = utils:::.CompletionEnv$options$funarg.suffix, perl=TRUE))
+				replacement = utils:::.CompletionEnv$options$funarg.suffix,
+					perl=TRUE))
 			assign("funargs", funargs, utils:::.CompletionEnv)
-			# ... addition ends here
+			## ... addition ends here
 
 			possible <- suppressWarnings(strsplit(prefix, utils:::breakRE,
 				perl = TRUE))[[1L]]
@@ -224,8 +215,8 @@ cursor = utils:::.CompletionEnv[["start"]])
 	}
 }
 
-# modified utils:::.completeToken()
-# main difference is that calls .inFunctionExt instead of utils:::inFunction.
+## Modified utils:::.completeToken()
+## Main difference is that calls .inFunctionExt instead of utils:::inFunction.
 .completeTokenExt <- function () {
 	ComplEnv <- utils:::.CompletionEnv
 	text <- ComplEnv$token
@@ -248,10 +239,10 @@ cursor = utils:::.CompletionEnv[["start"]])
 		}
 	} else {
 
-		#Completion does not a good job when there are quoted strings,
-		# e.g for linebuffer = "Complete2("anova(", )" would give arguments for anova
-		# rather than for Complete2.
-		# Code below replaces quoted strings with sequences of "_" of the same length.
+		## Completion does not a good job when there are quoted strings,
+		## e.g for linebuffer = "Complete2("anova(", )" would give arguments for
+		## anova rather than for Complete2.
+		# Replace quoted strings with sequences of "_" of the same length.
 		# This is a temporary solution though, there should be a better way...
 		mt <- gregexpr('(?<!\\\\)(["\']).*?((?<!\\\\)\\1|$)', linebuffer,
 			perl = TRUE)[[1]]
@@ -261,13 +252,13 @@ cursor = utils:::.CompletionEnv[["start"]])
 			for (i in seq_along(mt))
 				substr(linebuffer, mt[i], mt[i] + ml[i]) <- y[i]
 		}
-		# ... additions until here
+		## ... additions until here
 
 		utils:::.setFileComp(FALSE)
 		utils:::setIsFirstArg(FALSE)
 		guessedFunction <- ""
 		if (ComplEnv$settings[["args"]]) {
-			# Call of .inFunctionExt() instead of utils:::inFunction()
+			## Call of .inFunctionExt() instead of utils:::inFunction()
 			guessedFunction <- .inFunctionExt(linebuffer, st)
 		} else {
 			guessedFunction <- ""

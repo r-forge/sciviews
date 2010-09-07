@@ -1,5 +1,6 @@
 \name{CompletePlus}
 \alias{CompletePlus}
+
 \title{ Get completion and additional information from an R code fragment }
 \description{
   The function generates completion possibilities and investigate
@@ -7,17 +8,17 @@
 }
 \usage{
 CompletePlus(linebuffer, cursorPosition = nchar(linebuffer), minlength = 2,
-simplify = FALSE, types = c("arguments", "functions", "packages"))
+    simplify = FALSE, types = c("arguments", "functions", "packages"))
 }
 
 \arguments{
-  \item{linebuffer}{ R code fragment }
-  \item{cursorPosition}{ Position of the cursor in the fragment }
-  \item{minlength}{ Minimum size the fragment needs to be to perform the
-    completion }
-  \item{simplify}{ Logical. If TRUE, then the result is printed in strings with
+  \item{linebuffer}{ R code fragment. }
+  \item{cursorPosition}{ position of the cursor in the fragment. }
+  \item{minlength}{ minimum size the fragment needs to be to perform the
+    completion. }
+  \item{simplify}{ logical. If TRUE, then the result is printed in strings with
     tabulation as field separators. }
-  \item{types}{ Which types of items should we be looking for? }
+  \item{types}{ which types of items should we be looking for? }
 }
 
 \details{
@@ -42,4 +43,7 @@ simplify = FALSE, types = c("arguments", "functions", "packages"))
 \examples{
 CompletePlus("dn")
 }
+
 \keyword{ utilities }
+
+\concept{ Graphical user interface (GUI) control, completion }

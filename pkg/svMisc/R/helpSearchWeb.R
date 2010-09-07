@@ -1,5 +1,4 @@
-"helpSearchWeb" <-
-function (apropos, type = c("google", "archive", "wiki"), browse = TRUE)
+helpSearchWeb <- function (apropos, type = c("google", "archive", "wiki"), browse = TRUE)
 {
 	apropos <- paste(apropos, collapse = " ", sep = "")
 	apropos <- gsub(" ", "+", apropos)
@@ -9,9 +8,9 @@ function (apropos, type = c("google", "archive", "wiki"), browse = TRUE)
 			apropos, sep = ''),
 		"archive" = paste("http://www.google.com/u/newcastlemaths?q=",
 			apropos, sep = ''),
-		"wiki" = paste("http://wiki.r-project.org/rwiki/doku.php?do=search&id=",
+		"wiki" = paste("http://rwiki.sciviews.org/doku.php?do=search&id=",
 			apropos, sep = ''),
 		stop("'type' could be only 'google', 'archive' or 'wiki', currently!"))
-	if (browse) browseURL(RSearchURL)
+	if (isTRUE(browse)) browseURL(RSearchURL)
 	return(invisible(RSearchURL))
 }

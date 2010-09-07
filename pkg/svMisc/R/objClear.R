@@ -1,8 +1,7 @@
-"objClear" <-
-function (id = "default")
+objClear <- function (id = "default")
 {
-    # Clear any reference to a given 'id' object browser
-	id <- as.character(id)[1]	# Make sure id is character
+    ## Clear any reference to a given 'id' object browser
+	id <- as.character(id)[1]  # Make sure id is character
 	if (id == "") id <- "default"
 	Pars <- getTemp(".guiObjParsCache", default = list())
 	Pars[[id]] <- NULL
@@ -10,7 +9,7 @@ function (id = "default")
     List <- getTemp(".guiObjListCache", default = list())
     List[[id]] <- NULL
 	assignTemp(".guiObjListCache", List)
-	# Also delete corresponding files
+	## Also delete corresponding files
 	Root <- objDir()
 	ParsFile = file.path(Root, paste("Pars_", id, ".txt", sep=""))
 	if (file.exists(ParsFile)) unlink(ParsFile)

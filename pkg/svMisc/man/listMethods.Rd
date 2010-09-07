@@ -7,18 +7,18 @@
 }
 \usage{
 listMethods(f = character(), class = NULL, S3 = TRUE, S4 = TRUE,
-	mixed = TRUE, filter = getOption("svGUI.methods"))
+    mixed = TRUE, filter = getOption("svGUI.methods"))
 }
 
 \arguments{
-  \item{f}{ The name of the generic function (character string), used only
-    when \code{class = NULL} }
-  \item{class}{ The name of a class }
-  \item{S3}{ If TRUE, list of S3 methods }
-  \item{S4}{ If TRUE, list of S4 methods }
-  \item{mixed}{ If TRUE, S3 and S4 methods are mixed together in a character
+  \item{f}{ the name of the generic function (character string), used only
+    when \code{class = NULL}. }
+  \item{class}{ the name of a class. }
+  \item{S3}{ if TRUE, list of S3 methods. }
+  \item{S4}{ if TRUE, list of S4 methods. }
+  \item{mixed}{ if TRUE, S3 and S4 methods are mixed together in a character
     vector, otherwise, S3 and S4 methods are reported separately in a list }
-  \item{filter}{ A list of methods to consider when listing class methods.
+  \item{filter}{ a list of methods to consider when listing class methods.
     Only classes in this list that are defined for the class are returned.
     Store the list of methods you want in the options \"svGUI.methods\". The
     package proposes a reasonable starting point on loading if this option
@@ -32,6 +32,7 @@ listMethods(f = character(), class = NULL, S3 = TRUE, S4 = TRUE,
     or \code{character(0)} if none}
   Otherwise, a character vector with the requested methods
 }
+
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
 \seealso{ \code{\link{listTypes}}, \code{\link{addItems}} }
@@ -43,10 +44,13 @@ listMethods("show", mixed = FALSE)	# S4
 listMethods("ls") # None, not a generic function!
 
 ## Classes
-# Only the following methods are considered
+## Only the following methods are considered
 getOption("gui.methods")
 listMethods(class = "data.frame")
 listMethods(class = "lm")
 
 }
+
 \keyword{ utilities }
+
+\concept{ classes, objects and methods }
