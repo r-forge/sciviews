@@ -1,4 +1,10 @@
-r <- function (...)
+r <- function (...) {
+	.Deprecated("pkg")
+	## r() was not informative enough and is used also in other packages (Distr)
+	return(pkg(...))
+}
+
+pkg <- function (..., warn = TRUE)
 {
 	## A multiple require proceeding as silently as possible
 	## Suppress packages messages as much as possible
@@ -12,14 +18,15 @@ r <- function (...)
 		for (i in 1:l)
 			check[i] <- suppressPackageStartupMessages(require(args[i],
 				quietly = TRUE, character.only = TRUE, warn.conflicts = FALSE))
-	if (!all(check)) {
+	if (!all(check) && isTRUE(warn)) {
 		bads <- args[!check]
+		options(warn = owarn)
 		if (length(bads) == 1) {
-			cat("Unable to load package ", bads, "!\n", sep = "")
+			warning("Unable to load package ", bads, "!\n")
 		} else {
-			cat("Unable to load package(s): ",
-				paste(bads, collapse = ", "), "!\n", sep = "")
+			warning("Unable to load package(s): ",
+				paste(bads, collapse = ", "), "!\n")
 		}
 	}
-	return(invisible(all(check)))
+	return(invisible(check))
 }

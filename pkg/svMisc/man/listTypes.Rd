@@ -8,6 +8,7 @@
   to a usual \code{type =} or \code{which =} argument, like in \code{plot.ts()}
   or \code{plot.lm()}, respectively.
 }
+
 \usage{
 listTypes(method, class = "default", strict = FALSE)
 }
@@ -19,9 +20,11 @@ listTypes(method, class = "default", strict = FALSE)
     possible types, including for inherited objects, and default ones
     (\code{FALSE}, by default)? }
 }
+
 \value{
   A vector with character strings with methods' type names.
 }
+
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
 \note{ This function is only useful for special generic functions with type
@@ -39,3 +42,5 @@ listTypes("view", "data.frame", TRUE) # None, except if you defined custom views
 }
 
 \keyword{ utilities }
+
+\concept{ Method dispatching }
