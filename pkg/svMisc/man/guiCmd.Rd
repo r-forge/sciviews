@@ -14,14 +14,14 @@
   debugging purposes). It executes a command string to a (compatible) GUI client.
 }
 \usage{
-guiCmd(command, ...)
-guiImport(...)
-guiExport(...)
-guiLoad(...)
-guiReport(...)
-guiSave(...)
-guiSetwd(...)
-guiSource(...)
+guiCmd(command, \dots)
+guiImport(\dots)
+guiExport(\dots)
+guiLoad(\dots)
+guiReport(\dots)
+guiSave(\dots)
+guiSetwd(\dots)
+guiSource(\dots)
 }
 
 \arguments{
