@@ -1,4 +1,9 @@
-Args <- function (name, only.args = FALSE)
+Args <- function (name, only.args = FALSE) {
+	.Deprecated("argsTip")
+	return(argsTip(name, only.args = only.args))
+}
+
+argsTip <- function (name, only.args = FALSE)
 {
 	## TODO: handle primitives and S3/S4 methods for generic functions
 	ret <- try(res <- eval(parse(text = paste("argsAnywhere(", name, ")",
@@ -7,7 +12,7 @@ Args <- function (name, only.args = FALSE)
 		return("")  # Function 'name' not found
 	res <- deparse(res)
 	res <- paste(res[-length(res)], collapse = "\n")
-	if (only.args) {
+	if (isTRUE(only.args)) {
 		res <- sub("^function *[(]", "", res)
 		res <- sub(" *[)] *$", "", res)
 	} else {

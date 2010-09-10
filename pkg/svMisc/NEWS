@@ -27,6 +27,12 @@
   
 * r() is deprecated in favor of pkg() (r is not informative enough and more
   susceptible to be used elsewere too).
+  
+* Args() is deprecated in favor of argsTip() and CallTip() is deprecated in
+  favor of callTip() (further homogeneization of svMisc function names).
+  
+* Complete() and CompletePlus() are deprecated in favor of a unique completion()
+  function. Code of both original functions has been fused and reworked.
 
 
 == Changes in svMisc 0.9-59

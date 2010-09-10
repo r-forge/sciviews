@@ -8,7 +8,8 @@ descFun <- function (fun, package, lib.loc = NULL)
 	
 	## Otherwise, use the old version (that depends on text rendered help files)
 	if (is.null(fun) || length(fun) == 0) return("")
-	fun <- as.character(fun[1])
+	fun <- as.character(fun)
+	package <- rep(package, length.out = length(fun))
 	## Get the description associated with this topic
 	AllTopics <- eval(parse(text = paste("library(help =", package,
 		")")))$info[[2]]
@@ -56,27 +57,39 @@ descFun <- function (fun, package, lib.loc = NULL)
 {
 	## Get the description of fun using the new (R >= 2.10.0) help system
 	if (is.null(fun) || length(fun) == 0) return("")
-	fun <- as.character(fun[1])
-	## Get location of the help file
-	## We cannot just call help normally because otherwise it thinks
-	## we are looking for package "package" so we create a call and eval it
-	help.call <- call("help", fun, lib.loc = lib.loc, help_type = "text")
-	if (!is.null(package)) help.call[["package"]] <- package
-	file <- eval(help.call)
-	file <- as.character(file)
-	if (length(file) == 0) return("")
-	## Read the Rd file and get the title section out of it
-	Rdoc <- utils:::.getHelpFile(file[1L])
-	## Look for the \title tag
-	i <- 0
-	for (i in seq_along(Rdoc))
-		if (attr(Rdoc[[i]], "Rd_tag") == "\\title") break
-	if (i == 0) return("") else {
-		desc <- as.character(Rdoc[[i]][[1]])
-		desc <- sub("^[ \t]+", "", desc)
-		desc <- sub("[ \t]+$", "", desc)
-		return(desc)
+	fun <- as.character(fun)
+	l <- length(fun)
+	if (is.null(package)) package <- ""
+	package <- rep(package, length.out = l)
+	
+	## Create a vector of results
+	res <- rep("", l)
+	
+	## Collect help for each function
+	for (i in 1:l) {
+		## Get location of the help file
+		## We cannot just call help normally because otherwise it thinks
+		## we are looking for package "package" so we create a call and eval it
+		help.call <- call("help", fun[i], lib.loc = lib.loc, help_type = "text")
+		if (package[i] != "") help.call[["package"]] <- package[i]
+		file <- eval(help.call)
+		file <- as.character(file)
+		if (length(file) > 0) {
+			## Read the Rd file and get the title section out of it
+			Rdoc <- utils:::.getHelpFile(file[1L])
+			## Look for the \title tag
+			j <- 0
+			for (j in seq_along(Rdoc))
+				if (attr(Rdoc[[j]], "Rd_tag") == "\\title") break
+			if (j > 0) {
+				desc <- as.character(Rdoc[[j]][[1]])
+				desc <- sub("^[ \t]+", "", desc)
+				desc <- sub("[ \t]+$", "", desc)
+				res[i] <- desc
+			}
+		}
 	}
+	return(res)
 }
 
 descArgs <- function (fun, args = NULL, package = NULL, lib.loc = NULL)
@@ -162,6 +175,7 @@ descArgs <- function (fun, args = NULL, package = NULL, lib.loc = NULL)
 }
 
 ## Version of descArgs for R >= 2.10.0 and its new help system
+## TODO: eliminate multispaces in the returned strings!
 .descArgsNew <- function (fun, args = NULL, package = NULL, lib.loc = NULL)
 {	
 	## We cannot just call help normally because otherwise it thinks

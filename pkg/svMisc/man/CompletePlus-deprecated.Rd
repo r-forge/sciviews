@@ -22,6 +22,9 @@ CompletePlus(linebuffer, cursorPosition = nchar(linebuffer), minlength = 2,
 }
 
 \details{
+  This function is deprecated in favor of \code{completion()}. It will
+  disappear in version 1.0 of the svMisc package!
+  
   The information given back depends on the kind of completion performed. If a
   potential completion ends with the equal sign, then \code{CompletePlus} tries
   to get information on the argument from the guessed function. If the potential
@@ -38,11 +41,7 @@ CompletePlus(linebuffer, cursorPosition = nchar(linebuffer), minlength = 2,
 
 \author{ Romain Francois <rfrancois@mango-solutions.com> }
 
-\seealso{ \code{\link{Complete}}, \code{\link{descFun}} }
-
-\examples{
-CompletePlus("dn")
-}
+\seealso{ \code{\link{completion}}, \code{\link{descFun}} }
 
 \keyword{ utilities }
 
