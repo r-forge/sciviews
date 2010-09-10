@@ -269,21 +269,3 @@
 
 .gettextf <- function (fmt, ..., domain = "R")
     sprintf(ngettext(1, fmt, "", domain = domain), ...)
-
-
-## Similar to "find" but `what` can be a vector
-## also, this one only searches in packages (position of the search path
-## matching '^package:') and only gives one result per what
-.find.multiple <- function (what)
-{
-    stopifnot(is.character(what))
-    sp <- grep( "^package:", search(), value = TRUE)
-    out <- rep( "" , length(what))
-    for (i in sp) {
-        ok <- what %in% ls(i, all.names = TRUE) & out == ""
-        out[ok] <- i
-        if (all(out!="")) break
-    }
-    names(out) <- what
-    sub("^package:", "", out)
-}

@@ -33,6 +33,9 @@ Attributes:\cr
 }
 
 \details{
+  This function is deprecated in favor of \code{completion()}. It will
+  disappear in version 1.0 of the svMisc package!
+  
   The completion list is context-dependent, and it is calculated as if the
   code was entered at the command line.
 
@@ -68,30 +71,7 @@ Attributes:\cr
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> & Kamil Barton }
 
-\seealso{ \code{\link{CompletePlus}}, \code{\link{CallTip}} }
-
-\examples{
-## a data.frame
-data(iris)
-Complete("item <- iris$")
-Complete("item <- iris[[")
-
-## An S4 object
-setClass("track", representation(x = "numeric", y = "numeric"))
-t1 <- new("track", x = 1:20, y = (1:20)^2)
-Complete("item2 <- t1@")
-
-## A namespace
-Complete("utils::")
-
-## A partial identifier
-Complete("item3 <- va")
-
-## Otherwise, a list with the content of .GlobalEnv
-Complete("item4 <- ")
-
-## TODO: directory ad filename completion!
-}
+\seealso{ \code{\link{completion}}, \code{\link{CallTip}} }
 
 \keyword{ utilities }
 

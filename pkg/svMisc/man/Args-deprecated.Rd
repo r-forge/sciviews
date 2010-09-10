@@ -30,13 +30,15 @@ CallTip(code, only.args = FALSE, location = FALSE)
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\note{ \code{Args()} is supposed to display S3 and S4 methods, and primitives
+\note{
+  Function \code{Args()} is deprecated in favor of \code{argsTip()} and
+  \code{CallTip()} is deprecated in favor of \code{callTip()}. Deprecated
+  functions will disappear in version 1.0 of the svMisc package!
+  
+  \code{Args()} is supposed to display S3 and S4 methods, and primitives
   adequately,... but this is not implemented yet in the current version! }
 
-\examples{
-Args("ls")
-CallTip("myvar <- lm(")
-}
+\seealso{ \code{\link{argsTip}}, \code{\link{callTip}} }
 
 \keyword{ utilities }
 
