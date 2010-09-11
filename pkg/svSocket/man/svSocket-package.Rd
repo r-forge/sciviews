@@ -38,7 +38,7 @@
     Package: \tab svSocket\cr
     Type: \tab Package\cr
     Version: \tab 0.9-50\cr
-    Date: \tab 2009-09-11\cr
+    Date: \tab 2010-09-11\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples

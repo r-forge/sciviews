@@ -2,7 +2,7 @@
 \alias{startSocketServer}
 \alias{stopSocketServer}
 
-\title{ Start and stop a R socket server. }
+\title{ Start and stop a R socket server }
 
 \description{
   A R socket server is listening for command send by clients to a TCP port.
