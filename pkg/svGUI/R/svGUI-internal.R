@@ -1,5 +1,4 @@
-".onLoad" <-
-function (lib, pkg)
+.onLoad <- function (lib, pkg)
 {
 	#serve <- getOption("ko.serve")
 	#if (!is.null(serve)) {
@@ -8,8 +7,7 @@ function (lib, pkg)
 	#}
 }
 
-".onUnload" <-
-function (libpath)
+.onUnload <- function (libpath)
 {
 	#serve <- getOption("ko.serve")
 	#if (!is.null(serve) && "package:svSocket" %in% search())
@@ -17,4 +15,4 @@ function (libpath)
 	guiUninstall()
 }
 
-".packageName" <- "svGUI"
+.packageName <- "svGUI"

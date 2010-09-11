@@ -3,7 +3,7 @@
 * A ko() function to manipulate komodo from the command line
   (+ correct installation under Mac OS X)
 
-* The svGUI-package.Rd man page
+* Rework thecode to manage active data frames
 
 * Write the whole API to access Komodo from R
 

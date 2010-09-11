@@ -1,5 +1,11 @@
 = svGUI News
 
+== Changes in svGUI 0.9-49
+
+* HTTP server code processing now uses parseText() of svMisc >= 0.9-60 instead
+  of the deprecated Parse() function.
+
+
 == Changes in svGUI 0.9-48
 
 * koCmd() now should prepend <<<js>>> to the JavaScript code to get it evaluated

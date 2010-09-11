@@ -28,14 +28,14 @@ parHttp(client, \dots)
 \arguments{
   \item{port}{ port on which the server should run (both help and SciViews).
     By default, it is port 8888. Note that this server runs only locally and
-    can only serve requests from 127.0.0.1 }
+    can only serve requests from 127.0.0.1. }
   \item{name}{ the name given to the SciViews server. By default, it is
-    \code{R} }
-  \item{remove.clients}{ Do we remove also persistent data for the clients,
-    \code{FALSE} by default }
+    \code{R}. }
+  \item{remove.clients}{ do we remove also persistent data for the clients,
+    \code{FALSE} by default. }
   \item{client}{ the name of one client. A client that does not identify itself
-    is named \code{default} }
-  \item{\dots}{ named arguments specifying options to set or change }
+    is named \code{default}. }
+  \item{\dots}{ named arguments specifying options to set or change. }
 }
 
 \value{
@@ -58,3 +58,5 @@ parHttp(client, \dots)
 \seealso{ \code{\link[svSocket]{startSocketServer}} }
 
 \keyword{ IO }
+
+\concept{ interprocess commnunication Komodo }
