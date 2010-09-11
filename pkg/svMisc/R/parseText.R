@@ -1,6 +1,6 @@
 Parse <- function (text)
 {
-	## Deprecated, in favor of parseText
+	## Deprecated, in favor of parseText()
 	.Deprecated("parseText")
 	return(parseText(text))
 }
@@ -31,7 +31,7 @@ parseText <- function (text)
     ## There is still a case of incomplete code not catch: incomplete strings
     dp <- deparse(expr)
     ## Is it an incomplete string (like "my string or 'my string)?
-    if (regexpr("\\n\")$", dp) > 0 &&
+	if (regexpr("\\\\n\")$", dp) > 0 &&
         regexpr("\n[\"'][ \t\r\n\v\f]*($|#.*$)", text) < 0)
 		return(NA)
 

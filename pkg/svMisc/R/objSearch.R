@@ -1,7 +1,7 @@
 objSearch <- function(sep = "\t", path = NULL, compare = TRUE)
 {
     Search <- search()
-	if (compare) {
+	if (isTRUE(compare)) {
 		oldSearch <- getTemp(".guiObjSearchCache", default = "")
 		## Compare both versions
 		if (length(Search) != length(oldSearch) || !all(Search == oldSearch)) {

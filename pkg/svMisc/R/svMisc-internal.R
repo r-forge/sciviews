@@ -25,9 +25,9 @@
 		example =   gettext("Example\nRun examples for this object"),
 		edit =      gettext("Edit\nEdit an object"),
 		fix =       gettext("Fix\nFix an R object"),
+		pkg =       gettext("Load package(s)\nLoad one or several R packages"),
 		remove =    gettext("Remove\nRemove (permanently!) one or several objects from memory"),
 		require =   gettext("Require <<<pkg>>>\nRequire the package <<<pkg>>>"),
-		r =         gettext("Require (compact)\nCompact require one or several R packages"),
 		attach =    gettext("Attach\nAttach an object to the search path"),
 		detach =    gettext("Detach\nDetach an object or package from the search path"),
 		detachUnload = gettext("Detach and unload\nDetach a package from the search path and unload it"),
@@ -50,26 +50,26 @@
 		export =   "guiExport(<<<obj>>>)",
 		report =   "guiReport(<<<obj>>>)",
 		setwd =    "guiSetwd([[[<<<dir>>>]]])",
-		print = 	"<<<obj>>>",
-		generic =	"[[[<<<var>>>> <- ]]]<<<fun>>>(<<<obj>>>)",
+		print =    "<<<obj>>>",
+		generic =  "[[[<<<var>>>> <- ]]]<<<fun>>>(<<<obj>>>)",
 		names =    "names(<<<obj>>>)",
-		str =		"str(<<<obj>>>)",
+		str =      "str(<<<obj>>>)",
 		help =     "help(<<<obj>>>)",
 		example =  "example(<<<obj>>>)",
 		edit =     "<<<obj>>> <- edit(<<<obj>>>)",
-		fix =		"fix(<<<obj>>>)",	# There is no guarantee we fix the right one!
+		fix =      "fix(<<<obj>>>)",  # There is no guarantee we fix the right one!
+		pkg =      "[[[<<<res>>> <- ]]]pkg(\"<<<pkgs>>>\")",
 		remove =   "rm(<<<obj>>>[[[, pos = \"<<<envir>>>\"]]])",
 		require =  "[[[<<<res>>> <- ]]]require(<<<pkg>>>)",
-		r =        "[[[<<<res>>> <- ]]]r(\"<<<pkgs>>>\")",
 		attach =   "attach(<<<obj>>>)",
 		detach =   "detach(<<<envir>>>)",
 		detachunload = "detach(<<<envir>>>, unload = TRUE)",
 		reattach = "detach(<<<obj>>>); attach(<<<obj>>>)",
 		pkgInfo =  "<<<H>>>library(help = <<<package>>>)",
 		viewDef =  "view(<<<obj>>>)",
-		view =		"view(<<<obj>>>, type = \"<<<type>>>\")",
-		copyDef =	"copy(<<<obj>>>)",
-		copy =		"copy(<<<obj>>>, type = \"<<<type>>>\")"
+		view =	   "view(<<<obj>>>, type = \"<<<type>>>\")",
+		copyDef =  "copy(<<<obj>>>)",
+		copy =	   "copy(<<<obj>>>, type = \"<<<type>>>\")"
 	), replace = replace)
 
 	addTemp(".svActions", "state", c(
@@ -90,8 +90,7 @@
 	if (is.null(getOption("svGUI.methods")))
 		options(svGUI.methods = c("AIC", "anova", "confint", "BIC", "formula",
 			"head", "hist", "logLik", "plot", "predict", "residuals", "summary",
-			"tail", "vcov"
-		))
+			"tail", "vcov"))
 }
 
 .createStripbar <- function (type = c("menubar", "popupbar", "toolbar", "buttonbar", "statusbar"))
@@ -138,7 +137,7 @@
 			stop("'widgets' must be 'menu', 'item', 'sep' or 'space'")
 	}
 
-	## Get tree hierachy of the menus being the number of dots before '_'
+	## Get tree hierarchy of the menus being the number of dots before '_'
 	tree <- sub("^([.]+)_.*$", "\\1", wnames)
 	tree[regexpr("^[.]+$", tree) == -1] <- ""
 	tree <- gsub("[.]", "|", tree)
@@ -171,8 +170,7 @@
 		getTemp(".svIcons", default = character()))
 
 	## The function used to replace placeholders in text and code
-	replace <- function (x, ...)
-	{
+	replace <- function (x, ...) {
 		## Do replacement for ... arguments
 		args <- list(...)
 		largs <- length(args)

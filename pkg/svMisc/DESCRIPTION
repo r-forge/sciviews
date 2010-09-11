@@ -6,7 +6,7 @@ Depends: R (>= 2.6.0)
 Suggests: svUnit
 Description: Supporting functions for the GUI API (various utilitary functions)
 Version: 0.9-60
-Date: 2010-09-05
+Date: 2010-09-11
 Author: Philippe Grosjean, Romain Francois & Kamil Barton
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL-2

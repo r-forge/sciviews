@@ -18,6 +18,7 @@ path = NULL)
 				collapse = "\n"),
 			TempEnv = "SciViews temporary variables environment",
 			RcmdrEnv = "R Commander temporary variables environment",
+			`tools:RGUI` = "R.app tools environment",
 			Autoloads = "R autoloading objects environment",
 			if (regexpr("^package:", envir) > -1) {
 				pkg <- sub("^package:", "", envir)
@@ -54,8 +55,7 @@ path = NULL)
 		InfoFile <- file.path(path, paste("Info_", id, ".txt", sep = ""))
 		cat(Info, collapse = "\n", file = InfoFile)
 	}
-
-	## TODO: allow different functions to pass data to different GUI clients
+	
 	## Possibly call a .guiObjInfo function to pass the data to the GUI client
 	CmdFun <- getTemp(".guiObjInfo", mode = "function")
     if (!is.null(CmdFun)) CmdFun(id = id, data = Info)

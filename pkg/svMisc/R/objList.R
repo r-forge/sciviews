@@ -24,7 +24,7 @@ path = NULL, compare = TRUE, ...)
 	Nothing <- data.frame(Envir = character(0), Name = character(0),
 		Dims = character(0), Group = character(0), Class = character(0),
 		Recursive = logical(0), stringsAsFactors = FALSE)
-	if (!all.info) Nothing <- Nothing[, -1]
+	if (!isTRUE(all.info)) Nothing <- Nothing[, -1]
 	attr(Nothing, "all.info") <- all.info
 	attr(Nothing, "envir") <- ename
 	attr(Nothing, "object") <- object
@@ -96,7 +96,7 @@ path = NULL, compare = TRUE, ...)
 
 	## Determine if it is required to refresh something
 	Changed <- TRUE
-	if (compare) {
+	if (isTRUE(compare)) {
 		allList <- getTemp(".guiObjListCache", default = list())
 
 		if (identical(res, allList[[id]])) Changed <- FALSE else {
@@ -155,7 +155,7 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 
 		objname <- if (is.null(attr(x, "object"))) {
 			if (raw.output) "" else "<All>"
-			} else attr(x, "object")
+		} else attr(x, "object")
 
 		cat(sprintf(header.fmt,  attr(x, "envir"), objname))
 	}
@@ -178,7 +178,7 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 		silent = TRUE)
 	if (inherits(obj, "try-error")) return(NULL)
 
-	if(is.environment(obj)) obj <- as.list(obj)
+	if (is.environment(obj)) obj <- as.list(obj)
 
 	if (mode(obj) == "S4") {
 		ret <- .lsObjS4(obj, objname)
@@ -191,7 +191,7 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 		itemnames <- fullnames <- names(obj)
 		if (is.null(itemnames)) {
 			itemnames <- seq_along(obj)
-			fullnames <- paste(objname, "[[", seq_along(obj), "]]", sep = "")
+			fullnames <- paste(objname, "[[", itemnames, "]]", sep = "")
 		} else {
 			w.names <- itemnames != ""
 			.names <- itemnames[w.names]

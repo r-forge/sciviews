@@ -8,7 +8,7 @@
 \usage{
 completion(code, pos = nchar(code), min.length = 2, print = FALSE,
     types = c("default", "scintilla"), addition = FALSE, sort = TRUE,
-    what = c("arguments", "functions", "packages"), describe = FALSE, 
+    what = c("arguments", "functions", "packages"), description = FALSE, 
     max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 }
 \arguments{
@@ -23,7 +23,8 @@ completion(code, pos = nchar(code), min.length = 2, print = FALSE,
   \item{sort}{ do wer sort the list of completions alphabetically? }
   \item{what}{ what are we looking for? Allow to restrict search for faster
     calculation. }
-  \item{describe}{ do we describe items in the completion list (may be slow)? }
+  \item{description}{ do we describe items in the completion list
+    (may be slow)? }
   \item{max.fun}{ in case we describe items, the maximum number of functions to
     process (if longer, no description is returned for function) because it can
     bz very slow otherwise. }
@@ -34,10 +35,10 @@ completion(code, pos = nchar(code), min.length = 2, print = FALSE,
 }
 
 \value{
-  If \code{types == NA} and \code{describe = FALSE}, a character vector giving the
-  completions, otherwise a data frame with two columns: 'completion', and 'type'
-  when \code{describe = FALSE}, or with four columns: "completion', 'type',
-  'desc' and 'context' when \code{describe = TRUE}.\cr
+  If \code{types == NA} and \code{description = FALSE}, a character vector
+  giving the completions, otherwise a data frame with two columns: 'completion',
+  and 'type' when \code{description = FALSE}, or with four columns: "completion',
+  'type', 'desc' and 'context' when \code{description = TRUE}.\cr
   Attributes:\cr
     \code{attr(,"token")} - a completed token.\cr
     \code{attr(,"triggerPos")} - number of already typed characters.\cr
@@ -102,10 +103,10 @@ t1 <- new("track", x = 1:20, y = (1:20)^2)
 completion("item2 <- t1@")
 
 ## A namespace
-completion("utils::", describe = TRUE)
+completion("utils::", description = TRUE)
 
 ## A partial identifier
-completion("item3 <- va", describe = TRUE)
+completion("item3 <- va", description = TRUE)
 
 ## Otherwise, a list with the content of .GlobalEnv
 completion("item4 <- ")

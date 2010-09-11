@@ -14,8 +14,8 @@ minlength = 2, simplify = FALSE, types = c("arguments", "functions", "packages")
 	.Deprecated("completion")
 	res <- completion(linebuffer, pos = cursorPosition, min.length = minlength,
 		print = FALSE, what = types, types = NA, addition = FALSE,
-		sort = FALSE, describe = TRUE, max.fun = 10000, skip.used.args = FALSE,
-		field.sep = "\t")
+		sort = FALSE, description = TRUE, max.fun = 10000,
+		skip.used.args = FALSE, field.sep = "\t")
 	if (is.character(res) && length(res) && res == "") return(NULL) else {
 		if (isTRUE(simplify)) {
 			cat(apply(res[, c("completion", "context", "desc")], 1, paste,
@@ -26,8 +26,8 @@ minlength = 2, simplify = FALSE, types = c("arguments", "functions", "packages")
 
 completion <- function (code, pos = nchar(code), min.length = 2,
 print = FALSE, types = c("default", "scintilla"), addition = FALSE, sort = TRUE,
-what = c("arguments", "functions", "packages"), describe = FALSE, max.fun = 100,
-skip.used.args = TRUE, sep = "\n", field.sep = "\t")
+what = c("arguments", "functions", "packages"), description = FALSE,
+max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 {
 	finalize <- function (completions) {
 		## Construct a data frame with completions
@@ -48,7 +48,7 @@ skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 		}
 		
 		## Do we add descriptions?
-		if (isTRUE(describe)) {
+		if (isTRUE(description)) {
 			ret <- cbind(ret, data.frame(desc = rep("", nrow(ret)),
 				context = rep("", nrow(ret)), stringsAsFactors = FALSE))
 						

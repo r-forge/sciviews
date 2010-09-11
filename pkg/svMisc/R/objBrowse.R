@@ -118,11 +118,10 @@ pattern = NULL, group = NULL, sep = "\t", path = NULL, regenerate = FALSE)
 		if (is.null(path)) Data <- paste(c(Data, ChangedList),
 			collapse = "\n")
 	}
-	## TODO: allow different functions to pass data to different GUI clients
+
 	## Possibly call a .guiObjBrowse function to pass the data to the GUI client
 	CmdFun <- getTemp(".guiObjBrowse", mode = "function")
-    if (!is.null(CmdFun))
-		CmdFun(id = id, data = Data)
+    if (!is.null(CmdFun)) CmdFun(id = id, data = Data)
 	## Return the data invisibly
 	return(invisible(Data))
 }
