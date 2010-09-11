@@ -1,7 +1,6 @@
-"guiUninstall" <-
-function ()
+guiUninstall <- function ()
 {
-	# Eliminate .guiCmd
+	## Eliminate .guiCmd
 	rmTemp(".guiCmd")
 	rmTemp(".guiObjBrowse")
 	rmTemp(".guiObjInfo")
@@ -9,7 +8,7 @@ function ()
 
 	rmTemp(".koCmd")
 
-	# Unregister our own TaskCallback
+	## Unregister our own TaskCallback
 	h <- getTemp(".svTaskCallbackManager", default = NULL, mode = "list")
 	if (!is.null(h))
 		h$remove("guiAutoRefresh")

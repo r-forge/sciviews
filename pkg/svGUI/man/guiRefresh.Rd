@@ -10,12 +10,12 @@
 }
 \usage{
 guiRefresh(force = FALSE)
-guiAutoRefresh(...)
+guiAutoRefresh(\dots)
 }
 
 \arguments{
-  \item{force}{ Do we force refresh, even if data have not changed? }
-  \item{...}{ Any argument (ignored, but useful for \code{addTaskCallback()}) }
+  \item{force}{ do we force refresh, even if data have not changed? }
+  \item{\dots}{ any argument (ignored, but useful for \code{addTaskCallback()}). }
 }
 
 \value{
@@ -27,3 +27,5 @@ guiAutoRefresh(...)
 \seealso{ \code{\link{koCmd}} }
 
 \keyword{misc}
+
+\concept{ interprocess commnunication Komodo }
