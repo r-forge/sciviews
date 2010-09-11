@@ -1,9 +1,9 @@
 Args <- function (name, only.args = FALSE) {
 	.Deprecated("argsTip")
-	return(argsTip(name, only.args = only.args))
+	return(argsTip(name, only.args = only.args, width = NULL))
 }
 
-argsTip <- function (name, only.args = FALSE)
+argsTip <- function (name, only.args = FALSE, width = getOption("width"))
 {
 	## TODO: handle primitives and S3/S4 methods for generic functions
 	ret <- try(res <- eval(parse(text = paste("argsAnywhere(", name, ")",
@@ -19,5 +19,8 @@ argsTip <- function (name, only.args = FALSE)
 		res <- sub("^function *", name, res)
 		res <- sub(" *$", "", res)
 	}
+	## Reflow the tip
+	if (!is.null(width))
+		res <- paste(strwrap(res, width = width, exdent = 4), collapse = "\n")
 	return(res)
 }
