@@ -13,14 +13,18 @@
 }
 
 \usage{
-captureAll(expr, split = FALSE)
+captureAll(expr, split = FALSE, file = NULL)
 }
 
 \arguments{
   \item{expr}{ a valid R expression to evaluate (names and calls are also
     accepted). }
   \item{split}{ do we split output, that is, do we also issue it at the R console
-  too, or do we only capture it silently? }
+    too, or do we only capture it silently? }
+  \item{file}{ a file, or a valid opened connection where output is sinked. It
+    is closed at the end, and the function returns \code{NULL} in this case. If
+	\code{file = NULL} (by default), a textConnection() captures the output and
+	it is returned is a character string by the function. }
 }
 
 \value{
