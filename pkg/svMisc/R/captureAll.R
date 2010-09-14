@@ -1,4 +1,4 @@
-captureAll <- function (expr, split = FALSE)
+captureAll <- function (expr, split = FALSE, file = NULL)
 {
 	## If expr is NA, just return it
 	if (!is.language(expr))
@@ -8,9 +8,10 @@ captureAll <- function (expr, split = FALSE)
 	split <- isTRUE(split)
 
 	## captureAll() is inspired from capture.output(), but it captures
-	## both the output and the message streams
+	## both the output and the message streams (without redirecting
+	## the message stream, but by using a withCallingHandlers() construct).
 	rval <- NULL	# Just to avoid a note during code analysis
-	file <- textConnection("rval", "w", local = TRUE)
+	if (is.null(file)) file <- textConnection("rval", "w", local = TRUE)
 	sink(file, type = "output", split = split)
 
 	## This is a hack to display warning(..., immediate.) correctly
@@ -36,7 +37,7 @@ captureAll <- function (expr, split = FALSE)
 	on.exit({
 		sink(type = "output")
 		close(file)
-		if (exists("warning", envir = TempEnv()))
+		if (exists("warning", envir = TempEnv(), inherits = FALSE))
 			rm("warning", envir = TempEnv())
 	})
 
@@ -69,8 +70,9 @@ captureAll <- function (expr, split = FALSE)
 				## Result depends upon 'warn'
 				Warn <- getOption("warn")
 
-				## If warning generated in eval environment,  make it NULL
-				try(if (!is.null(call) && identical(call[[1L]], quote(eval)))
+				## If warning generated in eval environment, make it NULL
+				try(if (!is.null(call)  && !is.symbol(call) &&
+					identical(call[[1L]], quote(eval)))
 					e$call <- NULL, silent = TRUE)
 
 				if (Warn < 0) { # Do nothing!
@@ -121,7 +123,8 @@ captureAll <- function (expr, split = FALSE)
 				## try(stop(...)).  This will need adjusting if the
 				## implementation of tryCatch changes.
 				## Use identical() since call[[1]] can be non-atomic.
-				try(if (!is.null(call) && identical(call[[1L]], quote(eval)))
+				try(if (!is.null(call) && !is.symbol(call) &&
+					identical(call[[1L]], quote(eval)))
 					call <- NULL, silent = TRUE)
 				if (!is.null(call)) {
 					dcall <- deparse(call)[1L]
