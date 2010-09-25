@@ -1,15 +1,15 @@
-\name{Source}
-\alias{Source}
+\name{sourceFormat}
+\alias{sourceFormat}
 
 \title{ Source R code, capture its output and convert it in a different format }
 
 \description{
-  \code{Source()} is like \code{source()}, but it allows to rework the output
-  (for instance to print it in HTML format).
+  \code{sourceFormat()} is like \code{source()}, but it allows to rework the
+  output into a different format (for instance to print it in HTML format).
 }
 
 \usage{
-Source(file, out.form = getOption("R.output.format"), local = FALSE,
+sourceFormat(file, out.form = getOption("R.output.format"), local = FALSE,
     echo = FALSE, print.eval = TRUE, verbose = getOption("verbose"),
     prompt.echo = getOption("prompt"), max.deparse.length = 150,
     chdir = FALSE, prompt = FALSE)
@@ -54,3 +54,4 @@ Source(file, out.form = getOption("R.output.format"), local = FALSE,
 
 \keyword{ utilities }
 
+\concept{ Source R code and format it }

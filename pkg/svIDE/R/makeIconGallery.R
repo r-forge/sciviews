@@ -1,16 +1,17 @@
-# Create an iframe to represent all icons in a category in Komodo
-# iconpicker from a list of URIs
-makeIconGallery <- function (flist) {
+## Create an iframe to represent all icons in a category in Komodo
+## iconpicker from a list of URIs
+makeIconGallery <- function (flist)
+{
 	flist <- as.character(flist)[1]
 	if (!file.exists(flist))
 		stop("'flist' file not found")
-	# Read the list
+	## Read the list
 	icns <- readLines(flist)
-	# Eliminate empty lines
+	## Eliminate empty lines
 	icns <- icns[icns != ""]
 	if (length(icns) < 1)
 		stop("Nothing in the 'flist' file!")
-	# Create the iframe
+	## Create the iframe
 	iframe <- sub("\\.txt$", ".html", flist)
 	if (iframe == flist)
 		iframe <- paste(flist, "html", sep =".")
@@ -38,6 +39,6 @@ makeIconGallery <- function (flist) {
 		cat(itm, file = iframe, append = TRUE)
 	}
 	cat(tail, file = iframe, append = TRUE)
-	# Check if the file exists
+	## Check if the file exists
 	return(invisible(file.exists(iframe)))
 }
