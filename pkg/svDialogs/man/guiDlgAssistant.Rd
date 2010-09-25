@@ -10,11 +10,12 @@ guiDlgAssistant(...)
 }
 
 \arguments{
-  \item{\dots}{ Arguments for the assistant dialog box }
+  \item{\dots}{ arguments for the assistant dialog box. }
 }
 
 \value{
-  This function is invoked for its side effect: to display an assistant dialog box.
+  This function is invoked for its side effect: to display an assistant dialog
+  box.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -22,7 +23,9 @@ guiDlgAssistant(...)
 \seealso{ \code{\link{guiDlgFunction}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }

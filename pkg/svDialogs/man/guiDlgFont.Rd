@@ -3,14 +3,15 @@
 
 \title{ A font selection dialog box }
 \description{
-  Select a font and some attributes
+  Select a font and some attributes.
 }
+
 \usage{
 guiDlgFont(...)
 }
 
 \arguments{
-  \item{\dots}{ further arguments to the function }
+  \item{\dots}{ further arguments to the function. }
 }
 
 \value{
@@ -22,7 +23,9 @@ guiDlgFont(...)
 \seealso{ \code{\link{guiDlgOptions}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }

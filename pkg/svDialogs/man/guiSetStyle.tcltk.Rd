@@ -11,13 +11,13 @@ guiSetStyle.tcltk(style = c("classic", "SciViews", "Rcmdr", "large"), ask = FALS
 }
 
 \arguments{
-  \item{style}{ The style to use }
-  \item{ask}{ Do we ask the user to choose a style (not implemented yet)? }
+  \item{style}{ the style to use. }
+  \item{ask}{ do we ask the user to choose a style (not implemented yet)? }
 }
 
 \value{
   This function is invoked for its side effect to change the default style of
-  tcltk dialog boxes
+  tcltk dialog boxes.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -25,7 +25,9 @@ guiSetStyle.tcltk(style = c("classic", "SciViews", "Rcmdr", "large"), ask = FALS
 \seealso{ \code{\link{guiDlg}} }
 
 \examples{
-##### TO DO...
+### TODO...
 }
 
 \keyword{misc}
+
+\concept{ GUI API dialog boxes }

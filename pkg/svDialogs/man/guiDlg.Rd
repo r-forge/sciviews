@@ -17,18 +17,18 @@ guiDlg(title = "Input", message = NULL, help = NULL, sep = NULL, width = 50,
 }
 
 \arguments{
-  \item{title}{ The title of the dialog box }
-  \item{message}{ The message to display on top of the dialog box }
-  \item{help}{ The help topic to trigger with the button 'help' }
-  \item{sep}{ Do we use separators? }
-  \item{width}{ The width of the dialog box }
-  \item{labelwidth}{ The width reserved for labels }
-  \item{panes}{ A list with the panes to add to this flexible dialog box }
-  \item{GUI}{ Which GUI toolkit do we use to display this dialog box? }
-  \item{x}{ A guiDlg object that accepts a display method }
-  \item{parent}{ Which window is the perent of this flexible dialog box? }
-  \item{debug}{ Do we debug this dialog box? }
-  \item{\dots}{ Further arguments passed to the display method }
+  \item{title}{ the title of the dialog box. }
+  \item{message}{ the message to display on top of the dialog box. }
+  \item{help}{ the help topic to trigger with the button 'help'. }
+  \item{sep}{ do we use separators? }
+  \item{width}{ the width of the dialog box. }
+  \item{labelwidth}{ the width reserved for labels. }
+  \item{panes}{ a list with the panes to add to this flexible dialog box. }
+  \item{GUI}{ which GUI toolkit do we use to display this dialog box? }
+  \item{x}{ a guiDlg object that accepts a display method }
+  \item{parent}{ which window is the perent of this flexible dialog box? }
+  \item{debug}{ do we debug this dialog box? }
+  \item{\dots}{ further arguments passed to the display method. }
 }
 
 \value{
@@ -40,7 +40,9 @@ guiDlg(title = "Input", message = NULL, help = NULL, sep = NULL, width = 50,
 \seealso{ \code{\link{display}}, \code{\link{guiEval}}, \code{\link{guiPane.tcltk}} }
 
 \examples{
-### TO DO...
+### TODO...
 }
 
 \keyword{misc}
+
+\concept{ GUI API dialog boxes }

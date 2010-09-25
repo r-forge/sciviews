@@ -12,12 +12,12 @@ display(x, \dots)
 }
 
 \arguments{
-  \item{x}{ An object that accepts a display method }
-  \item{\dots}{ Further arguments passed to the display method }
+  \item{x}{ an object that accepts a display method. }
+  \item{\dots}{ further arguments passed to the display method. }
 }
 
 \value{
-  The R code constructed by this dialog box
+  The R code constructed by this dialog box.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -25,7 +25,9 @@ display(x, \dots)
 \seealso{ \code{\link{guiDlg}}, \code{\link{guiEval}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{misc}
+
+\concept{ GUI API dialog boxes }

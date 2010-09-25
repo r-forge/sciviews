@@ -1,5 +1,10 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-43
+
+* tcltk R package is moved from depends to imports.
+
+
 == Changes in svDialogs 0.9-42
 
 * guiDlgFun() is adapted to the new help system provided in R 2.10.

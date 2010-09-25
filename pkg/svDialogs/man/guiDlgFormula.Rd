@@ -3,25 +3,28 @@
 
 \title{ A formula dialog box }
 \description{
-  Eases the creation of formulas
+  Eases the creation of formulas.
 }
 \usage{
-guiDlgFormula(...)
+guiDlgFormula(\dots)
 }
 
 \arguments{
-  \item{\dots}{ further arguments to the function }
+  \item{\dots}{ further arguments to the function. }
 }
 
 \value{
-  A formula build with this dialog box
+  A formula build with this dialog box.
 }
+
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
 
 \seealso{ \code{\link{guiDlgFunction}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }
