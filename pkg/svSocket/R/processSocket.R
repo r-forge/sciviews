@@ -1,6 +1,6 @@
 processSocket <- function (msg, socket, serverport, ...)
 {
-    ## This is the default R function that processes a command send by a socket
+	## This is the default R function that processes a command send by a socket
     ## client. 'msg' is assumed to be R code contained in a string
 
     ## Do we receive a <<<id=myID>>> sequence?
@@ -16,7 +16,8 @@ processSocket <- function (msg, socket, serverport, ...)
 
 	## Do we receive <<<esc>>>? => break (currently, only break multiline mode)
     if (substr(msg, 1, 9) == "<<<esc>>>") {
-        pars <- parSocket(client, serverport, code = "")  # Reset multiline code
+		## Reset multiline code and update clientsocket
+        pars <- parSocket(client, serverport, clientsocket = socket, code = "")
         msg <- substr(msg, 10, 1000000)
     }
 
@@ -41,34 +42,35 @@ processSocket <- function (msg, socket, serverport, ...)
     } else if (startmsg == "<<<q>>>") {
 		msg <- substr(msg, 8, 1000000)
         ## Remember to indicate disconnection at the end
-        parSocket(client, serverport, last = "\n\f")
+        parSocket(client, serverport, clientsocket = socket, last = "\n\f")
     } else if (startmsg == "<<<e>>>") {
         msg <- substr(msg, 8, 1000000)
         ## We just configure the server correctly
-        parSocket(client, serverport, bare = FALSE, echo = TRUE,
-			prompt = ":> ", continue = ":+ ",
-            multiline = TRUE, last = "\n\f")
+        parSocket(client, serverport, clientsocket = socket, bare = FALSE,
+			echo = TRUE, prompt = ":> ", continue = ":+ ", multiline = TRUE,
+			last = "\n\f")
         ## Add a command to the command history
         #timestamp("my R command", "", "", quiet = TRUE)
     } else if (startmsg == "<<<h>>>") {
 		msg <- substr(msg, 8, 1000000)
 		## Do not echo command on the server (silent execution)
 		hiddenMode <- TRUE
-		parSocket(client, serverport, bare = TRUE, last = "\n\f")
+		parSocket(client, serverport, clientsocket = socket, bare = TRUE,
+			last = "\n\f")
     } else if (startmsg == "<<<H>>>") {
 		msg <- substr(msg, 8, 1000000)
 		## Do not echo command on the server (silent execution with no return)
         closeSocketClients(sockets = socket, serverport = serverport)
 		hiddenMode <- TRUE
 		returnResults <- FALSE
-		parSocket(client, serverport, bare = TRUE)
+		parSocket(client, serverport, clientsocket = socket, bare = TRUE)
 	} else if (startmsg == "<<<u>>>") {
 		msg <- substr(msg, 8, 1000000)
 		## Silent execution, nothing is returned to the client
 		## (but still echoed to the server)
 		hiddenMode <- FALSE
 		returnResults <- FALSE
-		parSocket(client, serverport, bare = TRUE)
+		parSocket(client, serverport, clientsocket = socket, bare = TRUE)
 	}
 
     ## Get parameters for the client
@@ -123,7 +125,10 @@ processSocket <- function (msg, socket, serverport, ...)
     ## Is it something to evaluate?
     if (length(expr) < 1) return(paste(pars$last, Prompt, sep = ""))
     ## Correct code,... we evaluate it
-    results <- captureAll(expr)
+	## Something like this should allow for real-time echo in client, but it is too slow
+	## and it outputs all results at the end...
+	#results <- captureAll(expr, split = Echo, file = socketClientConnection(socket))
+	results <- captureAll(expr, split = Echo)
 	## Should we run taskCallbacks?
 	if (!hiddenMode) {
 		h <- getTemp(".svTaskCallbackManager", default = NULL, mode = "list")
@@ -131,7 +136,7 @@ processSocket <- function (msg, socket, serverport, ...)
 	}
     ## Collapse and add last and the prompt at the end
     results <- paste(results, collapse = "\n")
-    if (Echo) cat(results)
+	#if (Echo) cat(results)
     if (!returnResults) return("")
 	Prompt <- if (pars$bare) "" else pars$prompt
     results <- paste(results, pars$last, Prompt, sep = "")
