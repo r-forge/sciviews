@@ -1,5 +1,12 @@
 = svIDE News
 
+== Changes in svIDE 0.9-50
+
+* Addition of a pcakge man page.
+
+* Source is deprecated in favor of sourceFormat().
+
+
 == Changes in svIDE 0.9-49
 
 * Addition of makeIconGallery() to build icon galleries used by SciViews-K and
