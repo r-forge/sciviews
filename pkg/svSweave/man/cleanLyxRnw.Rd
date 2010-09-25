@@ -17,10 +17,10 @@ cleanLyxRnw(RnwCon, RnwCon2 = RnwCon)
 }
 
 \arguments{
-  \item{RnwCon}{ A connection object or a character string corresponding to the
-    path to a R noweb file to be read }
-  \item{RnwCon2}{ Idem, but where the cleaned up R noweb file should be written
-    (by default, on the same file or connection) }
+  \item{RnwCon}{ a connection object or a character string corresponding to the
+    path to a R noweb file to be read. }
+  \item{RnwCon2}{ idem, but where the cleaned up R noweb file should be written
+    (by default, on the same file or connection). }
 }
 
 \value{
@@ -29,3 +29,5 @@ cleanLyxRnw(RnwCon, RnwCon2 = RnwCon)
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
 \keyword{ utilities }
+
+\concept{ Litterate programming, weaving, tangling from LyX using Sweave }
