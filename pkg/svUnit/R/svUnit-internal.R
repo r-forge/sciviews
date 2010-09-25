@@ -6,7 +6,8 @@
 	if (is.null(getOption("svUnit.excludeList")))
 		options(svUnit.excludeList = c("package:sv", "package:RUnit"))
 	## Look if the SciViews-K Unit Komodo extension is installed
-	.installUpgradeKomodoExtension()
+	## TODO: this causes more problems than solutions => temporarily deactivated!
+	#.installUpgradeKomodoExtension()
 	## Install a callback to update the list of units automatically in the GUI
 	## Use the mechanism introduced in svSocket 0.9-48 to allow execution of
 	## this task callback from a socket client too
