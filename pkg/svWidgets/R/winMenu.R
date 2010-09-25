@@ -1,11 +1,10 @@
-"winMenuChangeItem" <-
-function (menu, item, action, options = "")
+winMenuChangeItem <- function (menu, item, action, options = "")
 {
-    ### TODO: this is buggy under R 2.2.0! Recheck for latest R version
+### TODO: this is buggy under R 2.2.0! Recheck for latest R version
 	if (action == "") return(invisible())
 	if (!isRgui())
 		stop("This function can only be used with Rgui under Windows!")
-	# First check if the entry exists
+	## First check if the entry exists
 	if (!menu %in% winMenuNames())
 		stop("menu '", menu, "' does not exist!")
 	if (!item %in%  names(winMenuItems(menu)))
@@ -23,35 +22,33 @@ function (menu, item, action, options = "")
 	return(invisible(TRUE))
 }
 
-"winMenuStateItem" <-
-function (menu, item, active = TRUE)
+winMenuStateItem <- function (menu, item, active = TRUE)
 {
     if (!isRgui())
 		stop("This function can only be used with Rgui under Windows!")
-	# First check if the entry exists
+	## First check if the entry exists
 	if (!menu %in% winMenuNames())
 		stop("menu '", menu, "' does not exist!")
 	if (!item %in%  names(winMenuItems(menu)))
 		stop("item '", item, "' does not exist!")
-	# Enable/disable the entry
+	## Enable/disable the entry
 	cmd <- if (active) "enable" else "disable"
 	winMenuAddItem(menu, item, cmd)
 	return(invisible(TRUE))
 }
 
-"winMenuInvoke" <-
-function (menu, item)
+winMenuInvoke <- function (menu, item)
 {
 	if (!menu %in% winMenuNames())
 		stop("menu '", menu, "' does not exist!")
 	action <- winMenuItems(menu)[item]
 	if (is.null(action) || is.na(action) || length(action) == 0 || action == "")
 		return(invisible(FALSE))
-	# Print the action on the console
+	## Print the action on the console
 	cat(getOption("prompt"), action, "\n", sep = "")
-	# Add the action to the command history
+	## Add the action to the command history
 	timestamp(action, prefix = "", suffix = "", quiet = TRUE)
-	# and execute it in .GlobalEnv
+	## and execute it in .GlobalEnv
 	eval(parse(text = action), envir = .GlobalEnv)
 
 	return(invisible(TRUE))

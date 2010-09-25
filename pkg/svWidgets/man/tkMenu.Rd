@@ -3,6 +3,7 @@
 \alias{tkMenuAddItem}
 \alias{tkMenuDel}
 \alias{tkMenuDelItem}
+\alias{tkMenuItemCall}
 \alias{tkMenuItems}
 \alias{tkMenuChangeItem}
 \alias{tkMenuStateItem}
@@ -16,26 +17,28 @@
   One should, thus, preferably use \code{MenuXXX()}!
 }
 \usage{
-  tkMenuAdd(menu, tearoff = FALSE)
-  tkMenuAddItem(menu, item, action, image = "", accel = "", options = "")
-  tkMenuDel(menu)
-  tkMenuDelItem(menu, item)
-  tkMenuItems(menu)
-  tkMenuChangeItem(menu, item, action = "", options = "")
-  tkMenuStateItem(menu, item, active = TRUE)
-  tkMenuInvoke(menu, item)
+tkMenuAdd(menu, tearoff = FALSE)
+tkMenuAddItem(menu, item, action, image = "", accel = "", options = "")
+tkMenuDel(menu)
+tkMenuDelItem(menu, item)
+tkMenuItems(menu)
+tkMenuChangeItem(menu, item, action = "", options = "")
+tkMenuStateItem(menu, item, active = TRUE)
+tkMenuInvoke(menu, item)
+tkMenuItemCall(expr)
 }
 
 \arguments{
-  \item{menu}{ Name of a menu }
-  \item{tearoff}{ Should the menu be detachable? }
-  \item{item}{ Name of a menu item }
-  \item{action}{ Action the menu triggers (R code) }
-  \item{image}{ Name of an image to display at left of the menu item }
-  \item{accel}{ Accelerator (keystroke) to use to trigger this menu item }
-  \item{options}{ Additional options, for instance 'state = "disable"' to
-	disable the menu at creation. }
-  \item{active}{ Do we enable or disable the menu item? }
+  \item{menu}{ name of a menu. }
+  \item{tearoff}{ should the menu be detachable? }
+  \item{item}{ name of a menu item. }
+  \item{action}{ action the menu triggers (R code). }
+  \item{image}{ name of an image to display at left of the menu item. }
+  \item{accel}{ accelerator (keystroke) to use to trigger this menu item. }
+  \item{options}{ additional options, for instance 'state = "disable"' to
+    disable the menu at creation. }
+  \item{active}{ do we enable or disable the menu item? }
+  \item{expr}{ an expression to execute corresponding to the menu item call. }
 }
 
 \details{
@@ -52,6 +55,10 @@
   \code{tkMenuInvoke()} returns invisibly \code{TRUE} if the menu item was
     invoked, \code{FALSE} otherwise.
   \code{tkMenuStateItem()} returns the new state of the menu.
+  \code{tkMenuItemCall()} is usually not called directly by the end-user, but
+    rather through a menu. It is a user-visible function so that it is possible
+    to substitute it with a custom function to manage menu item calls
+    differently in a custom GUI, for instance.
 }
 
 \author{ Philippe Grosjean }
@@ -59,3 +66,5 @@
 \seealso{ \code{\link{MenuAdd}} }
 
 \keyword{ utilities }
+
+\concept{ GUI menu management in Tcl/Tk }

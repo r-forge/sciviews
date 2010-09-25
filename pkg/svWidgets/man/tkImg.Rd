@@ -15,11 +15,11 @@ tkImgRead(dir, type = "gif")
 }
 
 \arguments{
-  \item{file}{ Image file from where to download the resource }
-  \item{type}{ Type of image. Currently, only 'gif' is supported. }
-  \item{update}{ Do we update an already loaded image resource, or not? }
-  \item{image}{ Name of an image }
-  \item{dir}{ The directory that contains one or more image files to read }
+  \item{file}{ image file from where to download the resource. }
+  \item{type}{ type of image. Currently, only 'gif' is supported. }
+  \item{update}{ do we update an already loaded image resource, or not? }
+  \item{image}{ name of an image. }
+  \item{dir}{ the directory that contains one or more image files to read. }
 }
 
 \details{
@@ -40,3 +40,5 @@ tkImgRead(dir, type = "gif")
 \seealso{ \code{\link{ImgAdd}}, \code{\link{ImgDel}}, \code{\link{ImgRead}} }
 
 \keyword{ utilities }
+
+\concept{ GUI image resources in Tcl }

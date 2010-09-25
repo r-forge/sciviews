@@ -16,19 +16,18 @@ tkWinDel(window)
 }
 
 \arguments{
-  \item{name}{ Name for a new  Tk window }
-  \item{parent}{ Parent of this window }
-  \item{title}{ Title of the window }
-  \item{pos}{ Where to place the window. A string like '+XX+YY' where XX is the
-	horizontal position in pixels, and YY is the vertical position. Using
-	negative values place the window relative to the right or bottom side of the
-	screen.
-	Specifying \code{NULL} (by default) allows for automatic placement of the
-	window. }
-  \item{bind.delete}{ Do we automatically bind \code{tkWinDel()} to the window
+  \item{name}{ name for a new  Tk window. }
+  \item{parent}{ parent of this window. }
+  \item{title}{ title of the window. }
+  \item{pos}{ where to place the window. A string like '+XX+YY' where XX is the
+    horizontal position in pixels, and YY is the vertical position. Using
+    negative values place the window relative to the right or bottom side of the
+    screen. Specifying \code{NULL} (by default) allows for automatic placement
+    of the window. }
+  \item{bind.delete}{ do we automatically bind \code{tkWinDel()} to the window
     delete event (strongly advised for correct housekeeping)? }
-  \item{\dots}{ Additional options to pass to the window creator }
-  \item{window}{ The name of a 'tkguiWin' object }
+  \item{\dots}{ additional options to pass to the window creator. }
+  \item{window}{ the name of a 'tkguiWin' object. }
 }
 
 \details{
@@ -47,3 +46,5 @@ tkWinDel(window)
 \seealso{ \code{\link{WinAdd}} }
 
 \keyword{ utilities }
+
+\concept{ GUI windows management in Tcl/Tk }
