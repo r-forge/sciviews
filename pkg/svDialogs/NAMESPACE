@@ -25,6 +25,6 @@ export(display,
        guiPane.tcltk,
        guiPane.entry.tcltk,
        guiPane.list.tcltk,
-	   guiSetStyle.tcltk)
+       guiSetStyle.tcltk)
 
 S3method(display, guiDlg)

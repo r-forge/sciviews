@@ -10,23 +10,23 @@
 }
 
 \usage{
-guiPane.tcltk(dlg, item, ...)
-guiPane.entry.tcltk(paneFrame, butArg, onArgEdit, varUseIt, dlg, item, ...)
-guiPane.list.tcltk(paneFrame, butArg, onArgEdit, varUseIt, dlg, item, ...)
+guiPane.tcltk(dlg, item, \dots)
+guiPane.entry.tcltk(paneFrame, butArg, onArgEdit, varUseIt, dlg, item, \dots)
+guiPane.list.tcltk(paneFrame, butArg, onArgEdit, varUseIt, dlg, item, \dots)
 }
 
 \arguments{
-  \item{dlg}{ A flexible dialog box }
-  \item{paneFrame}{ The frame where this pane should be incrusted }
-  \item{butArg}{ Arguments for buttons }
-  \item{onArgEdit}{ Edit it on arg? }
+  \item{dlg}{ a flexible dialog box. }
+  \item{paneFrame}{ the frame where this pane should be incrusted. }
+  \item{butArg}{ arguments for buttons. }
+  \item{onArgEdit}{ edit it on arg? }
   \item{varUseIt}{ var uses it? }
-  \item{item}{ An item in this dialog box }
-  \item{\dots}{ further arguments passed to the function }
+  \item{item}{ an item in this dialog box. }
+  \item{\dots}{ further arguments passed to the function. }
 }
 
 \value{
-  Build a pane in a flexible dialog box
+  Build a pane in a flexible dialog box.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -34,7 +34,9 @@ guiPane.list.tcltk(paneFrame, butArg, onArgEdit, varUseIt, dlg, item, ...)
 \seealso{ \code{\link{guiDlg}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{misc}
+
+\concept{ GUI API dialog boxes }

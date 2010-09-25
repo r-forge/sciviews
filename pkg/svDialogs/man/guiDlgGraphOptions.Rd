@@ -3,18 +3,19 @@
 
 \title{ A graph options dialog box }
 \description{
-  Change various graph options at once with this dialog box
+  Change various graph options at once with this dialog box.
 }
 \usage{
-guiDlgGraphOptions(...)
+guiDlgGraphOptions(\dots)
 }
 
 \arguments{
-  \item{\dots}{ further arguments to the function }
+  \item{\dots}{ further arguments to the function. }
 }
 
 \value{
-  This function is invoked for its side effect to change graph options with a GUI dialog box.
+  This function is invoked for its side effect to change graph options with a
+  GUI dialog box.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -22,7 +23,9 @@ guiDlgGraphOptions(...)
 \seealso{ \code{\link{guiDlgOptions}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }

@@ -12,12 +12,12 @@ guiEval(code, ident = "GUI ")
 }
 
 \arguments{
-  \item{code}{ A string wuth some R code }
-  \item{ident}{ Do we identify this execution (change the prompt) }
+  \item{code}{ a string wuth some R code. }
+  \item{ident}{ do we identify this execution (change the prompt)? }
 }
 
 \value{
-  The result of the evaluated R code
+  The result of the evaluated R code.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -25,7 +25,9 @@ guiEval(code, ident = "GUI ")
 \seealso{ \code{\link{guiDlg}}, \code{\link{display}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{misc}
+
+\concept{ GUI API dialog boxes }

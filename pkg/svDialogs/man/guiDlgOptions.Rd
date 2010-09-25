@@ -3,18 +3,19 @@
 
 \title{ A general options dialog box }
 \description{
-  Display and allow to change various options
+  Display and allow to change various options.
 }
 \usage{
-guiDlgOptions(...)
+guiDlgOptions(\dots)
 }
 
 \arguments{
-  \item{\dots}{ further arguments to the function }
+  \item{\dots}{ further arguments to the function. }
 }
 
 \value{
-  This function is invoked for its side effect to change options through a dialog box
+  This function is invoked for its side effect to change options through
+  a dialog box.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -22,7 +23,9 @@ guiDlgOptions(...)
 \seealso{ \code{\link{guiDlgGraphOptions}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }

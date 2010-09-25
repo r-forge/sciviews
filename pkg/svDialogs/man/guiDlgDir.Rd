@@ -3,7 +3,7 @@
 
 \title{ A select directory dialog box }
 \description{
-  Allows to easily select a directory
+  Allows to easily select a directory.
 }
 
 \usage{
@@ -12,11 +12,11 @@ guiDlgDir(title = "Select a directory", dir = getwd(), new = TRUE,
 }
 
 \arguments{
-  \item{title}{ the title of the dialog box }
-  \item{dir}{ the default directory }
+  \item{title}{ the title of the dialog box. }
+  \item{dir}{ the default directory. }
   \item{new}{ is a new directory allowed? }
-  \item{parent}{ the parent of this dialog box (not implemented yet) }
-  \item{GUI}{ which GUI widgets do you want to use (tcltk, ...) }
+  \item{parent}{ the parent of this dialog box (not implemented yet). }
+  \item{GUI}{ which GUI widgets do you want to use (tcltk, ...). }
 }
 
 \value{
@@ -28,7 +28,9 @@ guiDlgDir(title = "Select a directory", dir = getwd(), new = TRUE,
 \seealso{ \code{\link{guiDlgOpen}},  \code{\link{guiDlgSave}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }

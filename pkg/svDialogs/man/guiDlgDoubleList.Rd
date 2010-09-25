@@ -12,17 +12,18 @@ guiDlgDoubleList(list1, list2, title = "Select", default1 = "", default2 = "",
 }
 
 \arguments{
-  \item{list1}{ The first list items }
-  \item{list2}{ The second list items }
-  \item{title}{ A title for this dialog box }
-  \item{default1}{ Selected items by default for the first list }
-  \item{default2}{ Selected items by default for the second list }
-  \item{multi}{ Do we allow multiple selection for first and second list }
-  \item{new}{ Do we allow to create new items for first and second list }
-  \item{sort}{ Do we sort first and second list }
-  \item{transfer}{ The transfer mode allows to transfer items form one list to the other }
-  \item{parent}{ Which window is the parent of this dialog box }
-  \item{GUI}{ Which GUI toolkit would we use }
+  \item{list1}{ the first list items. }
+  \item{list2}{ the second list items. }
+  \item{title}{ a title for this dialog box. }
+  \item{default1}{ selected items by default for the first list. }
+  \item{default2}{ selected items by default for the second list. }
+  \item{multi}{ do we allow multiple selection for first and second list. }
+  \item{new}{ do we allow to create new items for first and second list. }
+  \item{sort}{ do we sort first and second list. }
+  \item{transfer}{ the transfer mode allows to transfer items form one list to
+    the other. }
+  \item{parent}{ which window is the parent of this dialog box? }
+  \item{GUI}{ which GUI toolkit would we use? }
 }
 
 \value{
@@ -34,7 +35,9 @@ guiDlgDoubleList(list1, list2, title = "Select", default1 = "", default2 = "",
 \seealso{ \code{\link{guiDlgList}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }

@@ -10,11 +10,11 @@ guiDlgColor(...)
 }
 
 \arguments{
-  \item{\dots}{ further arguments to the color dialog box }
+  \item{\dots}{ further arguments to the color dialog box. }
 }
 
 \value{
-  Returns selected colors
+  Returns selected colors.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -22,7 +22,9 @@ guiDlgColor(...)
 \seealso{ \code{\link{guiDlgFont}}, \code{\link{guiDlgGraphOptions}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }

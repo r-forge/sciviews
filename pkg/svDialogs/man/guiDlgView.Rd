@@ -11,16 +11,16 @@ guiDlgView(file, CSSfile, title = "View", report = TRUE, parent = -1,
 }
 
 \arguments{
-  \item{file}{ The path of the file that contains the view }
-  \item{CSSfile}{ The CSS file (Cascaded Style Sheet) to use }
-  \item{title}{ The title of the view window }
-  \item{report}{ Do we allow to report this view? }
-  \item{parent}{ Which window is the paren t of this view window }
-  \item{GUI}{ Which GUI toolkit to use for this view window }
+  \item{file}{ the path of the file that contains the view. }
+  \item{CSSfile}{ the CSS file (Cascaded Style Sheet) to use. }
+  \item{title}{ the title of the view window. }
+  \item{report}{ do we allow to report this view? }
+  \item{parent}{ which window is the paren t of this view window? }
+  \item{GUI}{ which GUI toolkit to use for this view window? }
 }
 
 \value{
-  Nothing
+  Returns nothing.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -28,7 +28,9 @@ guiDlgView(file, CSSfile, title = "View", report = TRUE, parent = -1,
 \seealso{ \code{\link{guiDlgText}} }
 
 \examples{
-#### TO DO...
+### TODO...
 }
 
 \keyword{ misc }
+
+\concept{ GUI API dialog boxes }
