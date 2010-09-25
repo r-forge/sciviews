@@ -27,3 +27,5 @@ makeIconGallery(flist)
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
 
 \keyword{ utilities }
+
+\concept{ Make Komodo icon galleries }

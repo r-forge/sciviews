@@ -1,11 +1,10 @@
-"createSyntaxFile" <-
-function (svlfile = "R.svl", pos = 2:length(search()))
+createSyntaxFile <- function (svlfile = "R.svl", pos = 2:length(search()))
 {
-	# Create an .svl syntax file for R.
-	# Note: use only main keywords for keywords2, because it is limited
-	# to a little bit less than 32k (2.000 to 2.500 keywords)
+	## Create an .svl syntax file for R.
+	## Note: use only main keywords for keywords2, because it is limited
+	## to a little bit less than 32k (2.000 to 2.500 keywords)
 
-	# Create the beginning of the file
+	## Create the beginning of the file
 	cat(";This is a config file internally used by SciViews.\n",
 		file = svlfile)
 	cat(";Do not change it manually, except if you exactly know what you are doing!\n\n",
@@ -31,7 +30,7 @@ function (svlfile = "R.svl", pos = 2:length(search()))
 	cat("[Syntax]\n", file = svlfile, append = TRUE)
 	cat("CaseSensitive=1\n", file = svlfile, append = TRUE)
 	cat("SingleLineComment=#\n", file = svlfile, append = TRUE)
-	#### TODO: starting from R 2.4.0, "`" inside strings raises a warning => temporarilly disabled
+### TODO: starting from R 2.4.0, "`" inside strings raises a warning => temporarilly disabled
 	#cat("ScopeKeywords1={,(,[,[[,$,@,¸\n", file = svlfile, append = TRUE)
 	cat("ScopeKeywords1={,(,[,[[,$,@\n", file = svlfile, append = TRUE)
 	#cat("ScopeKeywords2=},),],]],$,@,¸\n", file = svlfile, append = TRUE)

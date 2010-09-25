@@ -6,7 +6,7 @@
 
 \title{
   Create a POT file or use a PO file to allow translating Komodo project
-  (.kpf) or package (.kpz)
+  (.kpf) or package (.kpz).
 }
 
 \description{
@@ -26,25 +26,25 @@ kpzTranslate(kpzFile, langs, poFiles, kpz2Files)
 }
 
 \arguments{
-  \item{kpfFile}{ A Komodo project file with a .kpf extension to be translated }
-  \item{kpzFile}{ A Komodo package file with a .kpz extension to be translated }
-  \item{potFile}{ The name of a .pot file providing strings to be translated,
+  \item{kpfFile}{ a Komodo project file with a .kpf extension to be translated. }
+  \item{kpzFile}{ a Komodo package file with a .kpz extension to be translated. }
+  \item{potFile}{ the name of a .pot file providing strings to be translated,
     if not provided, it is the same name as the .kpf/.kpz file, but with a .pot
-    extension instead }
-  \item{langs}{ The language(s) to translate to, for instance, 'fr' for French,
+    extension instead. }
+  \item{langs}{ the language(s) to translate to, for instance, 'fr' for French,
     'de' for German, 'it' for Italian, 'en_GB' for Great Britain's English,
     etc. }
-  \item{poFiles}{ The path to the .po files containing the translations. If not
+  \item{poFiles}{ the path to the .po files containing the translations. If not
     provided, it is assumed to be the basename of the .kpf/.kpz file without
     extension, plus '-', plus langs and with a .po extension. For instance, the
     default translation file for \code{myproject.kpf} into French is named
     \code{myproject-fr.po}. }
-  \item{kpf2Files}{ The Komodo project files to create with the translations. If
+  \item{kpf2Files}{ the Komodo project files to create with the translations. If
     not provided, it is assumed to be the same as the initial project file, but
     with '-lang' appended to the base name. For instance, the French
     translation of \code{myproject.kpf} would be \code{myproject-fr.kpf} in the
     same directory, by default. }
-  \item{kpz2Files}{ Same as kpf2Files, but for Komodo package files with a .kpz
+  \item{kpz2Files}{ same as kpf2Files, but for Komodo package files with a .kpz
     extension. }
 }
 \value{
@@ -127,3 +127,5 @@ kpzTranslate(kpzFile, langs, poFiles, kpz2Files)
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
 \keyword{ utilities }
+
+\concept{ Translate Komodo snippets }
