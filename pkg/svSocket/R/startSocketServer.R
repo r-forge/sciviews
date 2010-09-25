@@ -147,14 +147,20 @@ procfun = processSocket, secure = FALSE, local = !secure)
 		paste("    #puts \"Close $Rserver_", port, "($sock)\"", sep = ""),
 		paste("    unset Rserver_", port, "($sock)", sep = ""),
 		"} else {",
-		"    global sockPort",
-		"    global sockClient",
-		"    global sockMsg",
-		paste("    set ::sockPort", port),
-		"    set ::sockClient $sock",
-		"    set ::sockMsg $line",
-		"    SocketServerProc    ;# process the command in R",
-		"}\n}"),
+		"    # Do we have to redirect the connection?",
+		"    if {[string compare \">>>>>>sock\" [string range $line 0 9]] == 0} {",
+		"        set redirSock [string range $line 6 12]",
+		"        fileevent $sock readable [list sockRedirect $sock $redirSock]",
+		paste("        unset Rserver_", port, "($sock)", sep = ""),
+		"    } else {",
+		"        global sockPort",
+		"        global sockClient",
+		"        global sockMsg",
+		paste("        set ::sockPort", port),
+		"        set ::sockClient $sock",
+		"        set ::sockMsg $line",
+		"        SocketServerProc    ;# process the command in R",
+		"}\n}\n}"),
 	collapse = "\n")
     ## if {[gets $sock line] < 0} {return} # To handle incomplete lines!
     .Tcl(cmd)
@@ -190,6 +196,20 @@ procfun = processSocket, secure = FALSE, local = !secure)
 		collapse = "\n")
 	}
 	.Tcl(cmd)
+	
+	## Create a Tcl procedure to redirect output (used in socketClientConnection())
+	if (!tclProcExists("sockRedirect")) {
+		cmd <- paste(c("proc sockRedirect {sock tosock} {",
+			"if {[eof $sock] == 1 || [catch {gets $sock line}]} {",
+			"    # end of file or abnormal connection drop",
+			"    fileevent $sock readable {}",
+			"    close $sock",
+			"} else {",
+			"    puts $tosock $line",
+			"}\n}"),
+			collapse = "\n")
+		.Tcl(cmd)
+	}
 
 	## Create the socket server itself in Tcl (a different one for each port)
 	## If we want a secure server, use the tls secured socket instead

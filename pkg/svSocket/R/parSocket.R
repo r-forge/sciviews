@@ -1,4 +1,4 @@
-parSocket <- function (client, serverport = 8888, ...)
+parSocket <- function (client, serverport = 8888, clientsocket = client, ...)
 {
     ## Set or get parameters for a given socket client
     ## No attempt is made to make sure this client exists
@@ -7,6 +7,7 @@ parSocket <- function (client, serverport = 8888, ...)
         ## Create a new environment with default values
         e <- new.env(parent = TempEnv())
         e$client <- client
+		e$clientsocket <- clientsocket
         e$serverport <- serverport
         e$prompt <- ":> "    # Default prompt
         e$continue <- ":+ "  # Default continuation prompt
@@ -21,7 +22,11 @@ parSocket <- function (client, serverport = 8888, ...)
         assign(sc, e, envir = TempEnv())
     } else e <- get(sc, envir = TempEnv(), mode = "environment")
     ## Change or add parameters if they are provided
-    args <- list(...)
+    ## There is no reason that serverport changes
+	## but if a client disconnects and reconnects, the clientsocket may be
+	## different! But only change if it is sockXXX
+	if (grepl("^sock[0-9]+$", clientsocket)) e$clientsocket <- clientsocket
+	args <- list(...)
     if (l <- length(args)) {
         change.par <- function (x, val, env) {
             if (is.null(x)) return(FALSE)  # Do nothing without a valid name
