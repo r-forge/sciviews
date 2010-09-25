@@ -1,5 +1,12 @@
 = svWidgets News
 
+== Changes in svWidgets 0.9-41
+
+* Addition of a package man page.
+
+* Addition of tkMenuItemCall().
+
+
 == Changes in svWidgets 0.9-40
 
 This is the first version distributed on R-forge. It is completely refactored

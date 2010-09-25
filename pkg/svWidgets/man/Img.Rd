@@ -30,19 +30,19 @@ ImgReadPackage(package, subdir = "gui", type = "gif", imgtype = "tkImage")
 }
 
 \arguments{
-  \item{file}{ Image file from where to download the resource }
-  \item{type}{ Type of image. Currently, only 'gif' is supported. }
-  \item{imgtype}{ The type of image resource to create. Currently, only
-    'tkImage' is supported and it is a Tcl/Tk resource }
-  \item{update}{ Do we update an already loaded image resource, or not? }
-  \item{image}{ Name of an image }
-  \item{warn}{ Do we issue a warning if the type of image is not recognized? }
-  \item{dir}{ The directory that contains one or more image files to read }
-  \item{package}{ Name of a package from where to load image resources }
-  \item{subdir}{ Subdirectory in the package where the graphical resources are
+  \item{file}{ image file from where to download the resource. }
+  \item{type}{ type of image. Currently, only 'gif' is supported. }
+  \item{imgtype}{ the type of image resource to create. Currently, only
+    'tkImage' is supported and it is a Tcl/Tk resource. }
+  \item{update}{ do we update an already loaded image resource, or not? }
+  \item{image}{ Name of an image. }
+  \item{warn}{ do we issue a warning if the type of image is not recognized? }
+  \item{dir}{ the directory that contains one or more image files to read. }
+  \item{package}{ name of a package from where to load image resources. }
+  \item{subdir}{ subdirectory in the package where the graphical resources are
     stored. By default, it is the \"gui\" subdirectory. }
-  \item{x}{ An object of class 'guiImg' }
-  \item{\dots}{ Further arguments (currently not used) }
+  \item{x}{ an object of class 'guiImg'. }
+  \item{\dots}{ further arguments (currently not used). }
 }
 
 \details{
@@ -66,28 +66,30 @@ ImgReadPackage(package, subdir = "gui", type = "gif", imgtype = "tkImage")
 \seealso{ \code{\link{ToolAdd}} }
 
 \examples{
-  \dontrun{
+\dontrun{
 ## These cannot be run by examples() but should be OK when pasted
 ## into an interactive R session with the tcltk package loaded
 
 ImgNames()
 myImg <- ImgAdd(system.file("gui", "logoSciViews.gif", package = "svWidgets"))
-myImg    # Note that $Tk. is prepended to the name!
+myImg  # Note that $Tk. is prepended to the name!
 ImgNames()
 ImgType(myImg)
-# Place that logo in a Tk window
+## Place that logo in a Tk window
 timg <- WinAdd("timg", title = "A Tk window with image", pos ="-40+20")
 labImg <- tklabel(timg, image = ImgGet(myImg), bg = "white")
 tkpack(labImg)
-# When the image resource is deleted, it is not displayed any more (no error)
+## When the image resource is deleted, it is not displayed any more (no error)
 ImgDel(myImg)
 ImgNames()
 WinDel("timg")
-# To read all image resources at once (place this in .Lib.first())
+## To read all image resources at once (place this in .Lib.first())
 ImgReadPackage("svWidgets")
 ImgNames()
 rm(myImg)
-  }
+}
 }
 
 \keyword{ utilities }
+
+\concept{ GUI image resources }

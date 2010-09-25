@@ -12,18 +12,18 @@
   as well as other menus, like Tk.
 }
 \usage{
-  winMenuChangeItem(menu, item, action, options = "")
-  winMenuStateItem(menu, item, active = TRUE)
-  winMenuInvoke(menu, item)
+winMenuChangeItem(menu, item, action, options = "")
+winMenuStateItem(menu, item, active = TRUE)
+winMenuInvoke(menu, item)
 }
 
 \arguments{
-  \item{menu}{ Name of a menu }
-  \item{item}{ Name of a menu item }
-  \item{action}{ Action the menu triggers (R code) }
-  \item{options}{ Additional options. Only supports "enable" or "disable",
+  \item{menu}{ name of a menu. }
+  \item{item}{ name of a menu item. }
+  \item{action}{ action the menu triggers (R code). }
+  \item{options}{ additional options. Only supports "enable" or "disable",
     currenty. }
-  \item{active}{ Do we enable or disable the menu item? }
+  \item{active}{ do we enable or disable the menu item? }
 }
 
 \details{
@@ -41,3 +41,5 @@
   \code{\link{MenuInvoke}} }
 
 \keyword{ utilities }
+
+\concept{ Windows RGui menus management }

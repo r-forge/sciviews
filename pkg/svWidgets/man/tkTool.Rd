@@ -18,26 +18,26 @@
 }
 
 \usage{
-  tkToolAdd(toolbar, side = "top")
-  tkToolAddItem(toolbar, item, action, image = "", options = "")
-  tkToolDel(toolbar)
-  tkToolDelItem(toolbar, item)
-  tkToolItems(toolbar)
-  tkToolChangeItem(toolbar, item, action = "", options = "")
-  tkToolStateItem(toolbar, item, active = TRUE)
-  tkToolInvoke(toolbar, item)
+tkToolAdd(toolbar, side = "top")
+tkToolAddItem(toolbar, item, action, image = "", options = "")
+tkToolDel(toolbar)
+tkToolDelItem(toolbar, item)
+tkToolItems(toolbar)
+tkToolChangeItem(toolbar, item, action = "", options = "")
+tkToolStateItem(toolbar, item, active = TRUE)
+tkToolInvoke(toolbar, item)
 }
 
 \arguments{
-  \item{toolbar}{ Name of a Tk toolbar }
-  \item{side}{ Where to place the toolbar in the window (\"top\", \"bottom\",
+  \item{toolbar}{ name of a Tk toolbar. }
+  \item{side}{ where to place the toolbar in the window (\"top\", \"bottom\",
     \"left\", or \"right\")? }
-  \item{item}{ Name of a toolbutton }
-  \item{action}{ Action the toolbutton triggers (R code) }
-  \item{image}{ Name of a Tk image to display in the toolbutton }
-  \item{options}{ Additional options, for instance 'state = "disable"' to
+  \item{item}{ name of a toolbutton. }
+  \item{action}{ action the toolbutton triggers (R code). }
+  \item{image}{ name of a Tk image to display in the toolbutton. }
+  \item{options}{ additional options, for instance 'state = "disable"' to
 	disable the toolbutton at creation. }
-  \item{active}{ Do we enable or disable the toolbutton? }
+  \item{active}{ do we enable or disable the toolbutton? }
 }
 
 \details{
@@ -61,3 +61,5 @@
 \seealso{ \code{\link{ToolAdd}} }
 
 \keyword{ utilities }
+
+\concept{ GUI toolbar resources management in Tcl/Tk }
