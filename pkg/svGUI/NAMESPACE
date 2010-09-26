@@ -2,12 +2,12 @@ import(svMisc, tools)
 
 export(guiInstall,
        guiUninstall,
-	   guiRefresh,
-	   guiAutoRefresh,
-	   koCmd,
-	   startHttpServer,
-	   stopHttpServer,
-	   HttpServerPort,
-	   HttpServerName,
-	   HttpClientsNames,
-	   parHttp)
+       guiRefresh,
+       guiAutoRefresh,
+       koCmd,
+       startHttpServer,
+       stopHttpServer,
+       HttpServerPort,
+       HttpServerName,
+       HttpClientsNames,
+       parHttp)
