@@ -1,89 +1,84 @@
-
-CompletePlusWrap <- function( ... ){
-	out <- CompletePlus( ..., minlength = 1 )
-	if( is.null(out) ){
-		out <- matrix( "", nc = 4, nr = 0 )
-		token <- utils:::.guessTokenFromLine( )
-	} else{
-		token <- attr( out, "token" )
-		if( is.null(token) ){
-			token <- utils:::.guessTokenFromLine( )
-		}
-		types <- rep( "function" , nrow(out ) )
-		completions <- out[,1]
-		types[ completions %~% "= *$" ] <- "argument"
-		types[ completions %~% ":: *$" ] <- "package"
-		# arguments first, then functions, then packages
-		out <- cbind( out, types )	[ order(types),, drop = FALSE ]
+completeCode <- function (...)
+{
+	out <- completion(..., min.length = 1)
+	if (is.null(out)) {
+		out <- matrix("", nc = 4, nr = 0) 
+		token <- utils:::.guessTokenFromLine()
+	} else {
+		token <- attr(out, "token")
+		if (is.null(token)) token <- utils:::.guessTokenFromLine()
+		types <- rep("function", nrow(out))
+		completions <- out[, 1]
+		types[regexpr("= *$", completions) > 0] <- "argument"
+		types[regexpr(":: *$", completions) > 0] <- "package"
+		## Arguments first, then functions, then packages
+		out <- cbind(out, types)[order(types), , drop = FALSE]
 	}
 	
 	fun <- utils:::inFunction()
-  	if(length(fun) && !is.na(fun)){
-  	  tooltip <- CallTip( fun )
+  	if (length(fun) && !is.na(fun)) {
+		tooltip <- callTip(fun)
   	} else {
-  	  tooltip <- NULL
-  	  fun <- ""
+		tooltip <- NULL
+		fun <- ""
   	}
 	
-	list( data = out, token = token,  
-	  fun = fun, tooltip = tooltip )
+	return(list(token = token, completions = out, fun = fun, tooltip = tooltip))
 }
 
-pchComplete <- function( line ){
-	allPch <- 1:25
-	if( line %~% "pch *= *[^,)]*$" ){
-		start <- line %-~% "^.*= *"
-		if( start %!~% "^ *[0-9]+ *$" ){ 
-			completions <- allPch
-		} else{
+completePch <- function (line)
+{	
+	allPchs <- 1:25
+	if (regexpr("pch *= *[^,)]*$", line) > 0) {
+		start <- gsub("^.*= *", "", line)
+		if (regexpr("^ *[0-9]+ *$", start) <= 0) { 
+			pchs <- allPchs
+		} else {
 			int <- try(as.integer(start), silent = TRUE)
-			if( int %of% "try-error" ) 	completions <- allPch
-			out <- as.integer( grep( start, allPch, value = TRUE ) )
-			completions <- if( length(out ) ) out else allPch
+			if (inherits(int, "try-error")) pchs <- allPchs
+			out <- as.integer(grep(start, allPchs, value = TRUE))
+			pchs <- if (length(out)) out else allPchs
 		}
-		return( list( completions = completions, token = start ) )
+		return(list(token = line, completions = pchs))
 	}
 }
 
-colComplete <- function( line ){
+completeCol <- function (line)
+{	
+	token <- sub("^.*=[[:space:]]*", "", line)
+	start <- gsub("[[:space:]]+", "", token)
 	
-	token <- sub( "^.*=[[:space:]]*", "", line )
-	start <- token %-~% "[[:space:]]+" 
-	
-	if( start %~% "['\"]" ){
-		### look at named colors
-		start <- start %-~% "['\"]"
+	if (regexpr("['\"]", start) > 0) {
+		## Look at named colors
+		start <- gsub("['\"]", "", start) 
 		
-		cols <- ( allColors <- colors() ) %~|% start
-		if( !length( cols ) ) cols <- allColors
-		rgb <- t( col2rgb( cols ) )
-		cols <- paste( '"', cols, '"', sep = "" )
+		allColors <- colors()
+		cols <- allColors[regexpr(start, allColors) > 0]
+		if (!length(cols)) cols <- allColors
+		rgb <- t(col2rgb(cols))
+		cols <- paste('"', cols, '"', sep = "")
 	} else {
-		### look at colors in the palette
+		## Look at colors in the palette
 		pal <- palette()
-		if( nchar(start) ) {
-			cols <- 1:length(pal) %~|% start
-			if( !length( cols ) ){
-				cols <- 1:length(pal)
-			} 
+		if (nchar(start)) {
+			cols <- 1:length(pal)
+			cols <- cols[regexpr(start, cols) > 0]
+			if (!length(cols)) cols <- 1:length(pal)
 		} else cols <- 1:length(pal)
-		rgb <- t( col2rgb( pal[cols] ) )
+		rgb <- t(col2rgb(pal[cols]))
 	}
-	list( token = token, names = as.character(cols), rgb = rgb )
-	
+	return(list(token = line, completions = cols, col.rgb = rgb))
 }
 
-ltyComplete <- function( line ){
-	
+completeLty <- function (line)
+{	
 	ltys <- c("blank", "dashed", "solid", "dotted", "longdash", "twodash" )
 	
-	token <- line %-~% "^.*=[[:space:]]*"
-	start <- token %-~% "([[:space:]]+|'|\")" 
+	token <- gsub("^.*=[[:space:]]*", "", line)
+	start <- gsub("([[:space:]]+|'|\")" , "", token)
 	
-	matches <- ltys %~|% start
-  if( !length( matches ) ) matches <- ltys
+	matches <- ltys[regexpr(start, ltys) > 0]
+	if (!length(matches)) matches <- ltys
 	
-	list( lty = matches , token = token )
-	
+	return(list(token = line, completions = ltys))
 }
-

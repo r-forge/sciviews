@@ -1,58 +1,42 @@
-import(utils, tools, codetools, svMisc, operators )
+import(utils, tools, codetools, svMisc)
 
-export(generateRoxygenTemplate)
-export(checkUsageFile)
+export(browse,
+       completeCode,
+       completeCol,
+       completeDescription,
+       completeNamespace,
+       completeLty,
+       completePch,
+       completeRoxygen,
+       completeRoxygenParam,
+       generateRoxygenTemplate,
+       lintDescription,
+       lintNamespace,
+       lintUsage,  
+       pkgDesc,
+       pkgInstalled,
+       pkgLoaded,
+       pkgWebDesc,
+       searchBiblio,
+       searchGraph,
+       searchMailing,
+       searchPackage,
+       searchWiki,
+       sidekick)
+# Currently hidden, but my be exported in the future
+#       addError,
+#       emptyError,
+#       getErrors,
+#       resetErrors,
+#       tryParse,
+#       trySource,
+#       parseError,
+#       parseIndex,
+#       parseRd)
 
-# sidekick.R
-export(sidekick)
-S3method( sidekick, "function") 
-S3method( sidekick, "default")
-S3method( sidekick, "character")
+S3method(sidekick, "default")
+S3method(sidekick, "character")
+S3method(sidekick, "function") 
 
-# errorlist.R
-#export(getErrors)
-#export(addError)
-#export(resetErrors)
-#export(emptyError)
-
-# parseError.R
-#export(parseError)
-
-# tryParse.R
-#export(tryParse)
-
-# trySource.R
-#export(trySource)
-
-# check_description.R
-export(check_description)
-
-# complete_description.R
-export(completeDescription)
-
-# completion.R
-#export(ltyComplete)
-#export(colComplete)
-#export(pchComplete)
-export(CompletePlusWrap)
-
-# complete_namespace.R
-#export(namespaceComplete)
-
-# check_namespace.R
-export(namespaceParser)
-
-# packages.R
-#export(packwebdesc)
-#export(packdesc)
-export(installedPackages)
-export(loadedPackages)
-
-# rdparse.R
-#export(rdparse)
-
-# S3method(print, rsitesearch)
-# S3method(head, rsitesearch)
-# S3method(tail, rsitesearch)
-# S3method(summary, rsitesearch)
-# S3method("[", rsitesearch)
+S3method(print, "search")
+S3method(browse, "search")
