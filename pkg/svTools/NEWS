@@ -1,21 +1,29 @@
 = svTools News
 
+== Change in svTools 0.9-0
+
+* This is a major rewriting of the package. Dependency to operators was
+  eliminated, and most functions and arguments have changed!
+
+
 == Changes in svTools 0.0-12
 
-* sidekick is now generic 
+* sidekick is now generic.
+
 
 == Changes in svTools 0.0-11
 
-* Further clean up of the NAMESPACE and DESCRIPTION files
+* Further clean up of the NAMESPACE and DESCRIPTION files.
+
 
 == Changes in svTools 0.0-10
 
-* Cleaning for CRAN submission
+* Cleaning for CRAN submission.
 
 
 == Changes in svTools 0.0-8
 
-* Handling the token better in CompletePlusWrap
+* Handling the token better in CompletePlusWrap().
 
 
 == Version 0.0-5
