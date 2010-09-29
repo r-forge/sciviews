@@ -36,18 +36,6 @@
 [scriptable, uuid(5e04a8de-ac01-4df1-af7a-184130e645b8)]
 interface svIRinterpreter : nsISupports {
     /**
-    * Execute code in the R interpreter and return result.
-    * @param cmd - The command to evaluate in R.
-    */
-    /*string eval(in string cmd);*/
-
-    /**
-    * Execute code in the R interpreter in hidden way and return result.
-    * @param cmd - The command to evaluate in R.
-    */
-    /*string evalHidden(in string cmd, in boolean earlyExit);*/
-
-    /**
     * Escape from multiline mode in the R interpreter.
     */
     string escape();

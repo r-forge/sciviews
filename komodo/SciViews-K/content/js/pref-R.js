@@ -1,5 +1,5 @@
 // SciViews-K R preferences panel functions
-// Copyright (c) 2009, Ph. Grosjean (phgrosjean@sciviews.org) & Kamil Barton
+// Copyright (c) 2009-2010, Ph. Grosjean (phgrosjean@sciviews.org) & Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // svPrefR_OnPreferencePageOK(prefset);         // User click OK
@@ -22,7 +22,7 @@
 
 var sv;
 
-// for editable menulists: append new element if necessary
+// For editable menulists: append new element if necessary
 function editMenulist(el) {
 	var curValue = sv.tools.strings.trim(el.value);
 	if (!curValue) return;
@@ -38,7 +38,7 @@ function editMenulist(el) {
 	el.appendItem(curValue, curValue, null);
 }
 
-// Used at startup:
+// Used at startup
 function menuListSetValues(attribute) {
 	if (!attribute) attribute = 'values';
 	var ml = document.getElementsByTagName('menulist');
@@ -63,9 +63,8 @@ function menuListGetValues(attribute) {
 		el = ml[i];
 		if (el.hasAttribute(attribute)) {
 			values = [];
-			for (var k = 0; k < el.itemCount; k++) {
+			for (var k = 0; k < el.itemCount; k++)
 				values.push(el.getItemAtIndex(k).value);
-			}
 			el.setAttribute(attribute, values.join(" "));
 		}
 	}
@@ -109,8 +108,7 @@ function PrefR_OnLoad() {
         os.path.basename(prefExecutable), "app",  "R");
 	document.getElementById("svRDefaultInterpreter").value = prefExecutable;
 
-	if (!PrefR_UpdateCranMirrors(true))
-        PrefR_UpdateCranMirrors(false);
+	if (!PrefR_UpdateCranMirrors(true)) PrefR_UpdateCranMirrors(false);
 
 	menuListSetValues();
 	sv.prefs.checkAll();
@@ -124,11 +122,11 @@ function OnPreferencePageLoading(prefset) {
 
 function OnPreferencePageOK(prefset) {
 	prefset = parent.hPrefWindow.prefset;
-        prefset.setStringPref("svRDefaultInterpreter",
+    prefset.setStringPref("svRDefaultInterpreter",
         document.getElementById("svRDefaultInterpreter").value);
-        prefset.setStringPref("svRApplication",
+    prefset.setStringPref("svRApplication",
         document.getElementById('svRApplication')
-        .selectedItem.getAttribute("value"));
+		.selectedItem.getAttribute("value"));
 	prefset.setStringPref("svRApplicationId",
         document.getElementById('svRApplication').selectedItem.id);
 	prefset.setStringPref("svRQuiet",
@@ -146,19 +144,18 @@ function OnPreferencePageOK(prefset) {
         ko.dialogs.alert(
             "Decimal separator cannot be the same as field separator.", null,
             "SciViews-K preferences");
-        return false;
+        return(false);
     }
 
 	//The 'r.csv.*.arg' prefs are replaced by simply 'r.csv.dec'/'r.csv.sep'
 	//as they escaped strings anyway (e.g. string "\\t" not tab character)
 
-	if (sv.r.running) {
+	if (sv.r.running)
 		sv.r.eval('options(OutDec = "' + outDec + '", ' +
-                'OutSep = "' + outSep + '")', true);
-	}
+			'OutSep = "' + outSep + '")');
 
 	menuListGetValues();
-	return true;
+	return(true);
 }
 
 function PrefR_svRApplicationOnSelect(event) {
@@ -171,7 +168,7 @@ function PrefR_svRApplicationOnSelect(event) {
 		= svRDefaultInterpreter;
 	
 	// Delegate to PrefR_svRApplicationUpdate()
- 	return PrefR_svRApplicationUpdate(event);
+ 	return(PrefR_svRApplicationUpdate(event));
 }
 
 function PrefR_svRApplicationUpdate(event) {
@@ -188,8 +185,8 @@ function PrefR_svRApplicationUpdate(event) {
 	if (!sv.tools.file.exists(svRDefaultInterpreter)) {
 		// Indicate the problem in the command...
 		cmdfield.value = "??? R interpreter '" + svRDefaultInterpreter +
-                "' not found!";
-		return false;
+            "' not found!";
+		return(false);
 	}
 
 	var Quiet = " ";
@@ -205,7 +202,7 @@ function PrefR_svRApplicationUpdate(event) {
         .replace("%quiet%", Quiet);
 
 	cmdfield.value = data;
-	return true;
+	return(true);
 }
 
 function PrefR_setExecutable(path) {
@@ -229,15 +226,13 @@ function PrefR_setExecutable(path) {
 // PhG: I use this to get a first guess of the application location
 function PrefR_locateApp(appName) {
 	// 1) Look if app is an existing file
-	if (sv.tools.file.exists(appName)) {
-		return(appName);
-	}
+	if (sv.tools.file.exists(appName)) return(appName);
+	
 	// 2) Try to locate the application
 	//TODO: use basename here?
 	var appPath = sv.tools.file.whereIs(appName);
-	if (appPath != null) {
-		return(appPath);
-	}
+	if (appPath != null) return(appPath);
+	
 	// 3) For R.app and the like on the Macintosh, I should really look at the
 	// /Applications directory
 	appName = "/Applications/" + appName;
@@ -270,8 +265,7 @@ function PrefR_setRAppMenu(menuList) {
 						appName = appName.split(/[, ]+/);
 						var res = true;
 						for (var k in appName)
-                                                res = res && !!sv.tools.file.whereIs(appName[k]);
-
+                            res = res && !!sv.tools.file.whereIs(appName[k]);
 						if (res) {
 							showItem = true;
 							break;
@@ -293,12 +287,13 @@ function PrefR_setRAppMenu(menuList) {
 		} catch(e) { }
 	}
 	// If there is at least one item available, hide the message to install R
-	if (anyItem) {
-		document.getElementById("svRinstallMessage").setAttribute("hidden", "true");
-	}
+	if (anyItem)
+		document.getElementById("svRinstallMessage")
+			.setAttribute("hidden", "true");
 }
 
 // Get CRAN mirrors list - independently of R
+// TODO: rework this to use RJSON objects
 function PrefR_UpdateCranMirrors(localOnly) {
 	var sv_file = sv.tools.file;
 
@@ -330,8 +325,8 @@ function PrefR_UpdateCranMirrors(localOnly) {
 
 			var platform = navigator.platform.toLowerCase().substr(0,3);
 			if (platform == "win") // TODO: what is the pref is not set??
-                        localPaths.push(sv_file.path(sv.prefs.getString("svRDefaultInterpreter"),
-                        "../../doc"));
+                localPaths.push(sv_file.path(sv.prefs.getString("svRDefaultInterpreter"),
+                    "../../doc"));
 			else { // if (platform == "lin")
 				localPaths.push('/usr/share/R/doc'); 	// try other paths: // mac: ????
 				localPaths.push('/usr/local/share/R/doc');
@@ -347,7 +342,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
 			}
 		}
 	}
-	if (!csvContent && !arrData)	return false;
+	if (!csvContent && !arrData) return(false);
 	// TODO: Add error message when mirrors list cannot be obtained.
 
 	if (!arrData) {
@@ -361,16 +356,14 @@ function PrefR_UpdateCranMirrors(localOnly) {
 		for (i in arrData) {
 			item = arrData[i];
 			if (item[colOK] == "1"
-                        // fix for broken entries:
-                        && (item[colURL].search(/^(f|ht)tp:\/\//) === 0)
-                        ) {
+                // fix for broken entries:
+                && (item[colURL].search(/^(f|ht)tp:\/\//) === 0))
 				arrData[i] = [item[colName], item[colURL]];
-			}
 		}
 		// Add main server at the beginning:
 		arrData.unshift(["Main CRAN server", "http://cran.r-project.org/"]);
 	}
-	if (!arrData)	return false;
+	if (!arrData) return(false);
 
 	if (!localOnly || !alreadyCached) {
 		// If updated from web, or not cached yet,
@@ -378,20 +371,20 @@ function PrefR_UpdateCranMirrors(localOnly) {
 		sv_file.write(jsonFile, nativeJSON.encode(arrData), 'utf-8');
 	}
 
-	// Put arrData into MenuList:
+	// Put arrData into MenuList
 	var menuList = document.getElementById("CRANMirror");
 	var value = menuList.value? menuList.value : sv.prefs.getString("CRANMirror");
 	menuList.removeAllItems();
 	for (i in arrData) {
 		if (arrData[i][0])
-                menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
+            menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
 	}
 	menuList.value = value;
-	return true;
+	return(true);
 }
 
 // From: http://www.bennadel.com/index.cfm?dax=blog:1504.view
-function CSVToArray(strData, strDelimiter){
+function CSVToArray(strData, strDelimiter) {
 	strDelimiter = (strDelimiter || ",");
 	var objPattern = new RegExp((
         // Delimiters.
@@ -405,13 +398,11 @@ function CSVToArray(strData, strDelimiter){
 	var arrMatches = objPattern.exec(strData);
 	while (arrMatches) {
 		var strMatchedDelimiter = arrMatches[1];
-		if (strMatchedDelimiter.length &&
-			(strMatchedDelimiter != strDelimiter)) {
+		if (strMatchedDelimiter.length && (strMatchedDelimiter != strDelimiter))
 			arrData.push([]);
-                        }
 		if (arrMatches[2]) {
 			var strMatchedValue = arrMatches[2]
-                        .replace(new RegExp( "\"\"", "g" ),	"\"");
+                .replace(new RegExp( "\"\"", "g" ),	"\"");
 		} else {
 			var strMatchedValue = arrMatches[3];
 		}

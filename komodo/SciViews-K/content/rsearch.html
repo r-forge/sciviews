@@ -16,11 +16,11 @@ function _getWindowByURI(uri) {
 		while (en.hasMoreElements()) {
 			win = en.getNext();
 			if ((win.location.href == uri) ||
-				(win.location.href.lastIndexOf(uri) == win.location.href.length - uri.length))
-				return win;
+				(win.location.href.lastIndexOf(uri) == win.location.href.length
+				- uri.length)) return(win);
 		}
 	}
-	return null;
+	return(null);
 }
 
 var rHelpWin, sv;
@@ -55,85 +55,76 @@ function appendElem(parent, tagName, textContent, attributes) {
 		if (typeof parent == "string")
 			parent = document.getElementById(parent);
 
-		if (parent)
-			parent.appendChild(el);
+		if (parent) parent.appendChild(el);
 	}
 
-	return el;
+	return(el);
 }
-
 
 function appendElem(parent, tagName, textContent, attributes) {
 	var el = document.createElement(tagName);
 
-	if (textContent)
-		el.textContent = textContent;
+	if (textContent) el.textContent = textContent;
 
 	if (attributes) {
-		for (i in attributes) {
+		for (i in attributes)
 			el.setAttribute(i, attributes[i]);
-		}
 	}
 	if (parent) {
 		if (typeof parent == "string")
 			parent = document.getElementById(parent);
 
 		if (parent) {
-			if (parent.appendChild)
+			if (parent.appendChild) {
 				parent.appendChild(el);
-			else if (parent.appendElem)
+			} else if (parent.appendElem) {
 				parent.appendElem(el);
+			}
 		}
 	}
-	return el;
+	return(el);
 }
 
 function displayResults(data) {
-		if (!data)
-			return;
+	if (!data) return;
 
-		var doc = document;
-		appendElem(doc.body, "h1", "Search results");
-		var out = appendElem(doc.body, "div");
-		data = data.split(/[\r\n]+/);
+	var doc = document;
+	appendElem(doc.body, "h1", "Search results");
+	var out = appendElem(doc.body, "div");
+	data = data.split(/[\r\n]+/);
 
-		appendElem(out, "p", 'Search text was: "' + sv.tools.strings.trim(data[0]) + '"');
-		if (data.length == 1) {
-			appendElem(out, "p", "Nothing found.");
-			return;
+	appendElem(out, "p", 'Search text was: "' + sv.tools.strings.trim(data[0]) + '"');
+	if (data.length == 1) {
+		appendElem(out, "p", "Nothing found.");
+		return;
+	}
+
+	var prevPkg = "", fnList, li, el, p, pkgList;
+	var resTable = appendElem(out, "table", "", {cellpadding: 2, id: "resultTable"});
+
+	for (var i = 1; i < data.length; i++) {
+		var di = data[i].split(/\s*;\s*/);
+
+		curPkg = di[2];
+		if (curPkg != prevPkg) {
+			var th = appendElem(appendElem(resTable, "tr"), "th", "",
+				{colspan: 2});
+			appendElem(th, "a", "Package: " + curPkg,
+				{href: "file://" + di[3] + "/html/00Index.html"});
 		}
+		prevPkg = curPkg;
 
-		var prevPkg = "", fnList, li, el, p, pkgList;
-		var resTable = appendElem(out, "table", "", {cellpadding: 2, id: "resultTable"});
-
-		for (var i = 1; i < data.length; i++) {
-			var di = data[i].split(/\s*;\s*/);
-
-			curPkg = di[2];
-			if (curPkg != prevPkg) {
-				var th = appendElem(appendElem(resTable, "tr"), "th", "",
-					{colspan: 2});
-				appendElem(th, "a", "Package: " + curPkg,
-					{href: "file://" + di[3] + "/html/00Index.html"});
-			}
-			prevPkg = curPkg;
-
-			var tr = appendElem(resTable, "tr");
-
-			appendElem(appendElem(tr, "td"),
-				"a", di[0], {href: "file://" + di[4]});
-
-			appendElem(tr, "td", di[1]);
-
-		}
+		var tr = appendElem(resTable, "tr");
+		appendElem(appendElem(tr, "td"), "a", di[0], {href: "file://" + di[4]});
+		appendElem(tr, "td", di[1]);
+	}
 }
-
 
 function rHelp (topic, pkg) {
 	var res = false;
 
 	if (!topic && !pkg) {
-		return false;
+		return(false);
 	} else {
 		var cmd = '';
 		cmd += pkg? ' package = "' + pkg + '", ' : "";
@@ -147,7 +138,7 @@ function rHelp (topic, pkg) {
 				.LOAD_FLAGS_REPLACE_HISTORY);
 		});
 	}
-	return res;
+	return(res);
 }
 
 
@@ -164,7 +155,8 @@ function init() {
 
 		var content = document.createElement("body");
 		content.innerHTML = sv.tools.file.read(topic);
-		rHelpWin.document.title = document.title = content.firstChild.getAttribute("title");
+		rHelpWin.document.title = document.title =
+			content.firstChild.getAttribute("title");
 		document.body = content;
 	} else {
 		var matches = topic.match(/([\w\.\-]+)::([\w\.\-\[]+)/i);
@@ -173,7 +165,6 @@ function init() {
 		} else {
 			askR(topic);
 		}
-
 	}
 }
 

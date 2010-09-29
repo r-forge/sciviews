@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.tools.strings' namespace
-if (typeof(sv.tools.strings) == 'undefined') sv.tools.strings = new Object();
+if (typeof(sv.tools.strings) == 'undefined') sv.tools.strings = {};
 
 // Replace line feed and carriage return by 'code'
 sv.tools.strings.replaceCRLF = function (str, code) {
@@ -44,9 +44,8 @@ sv.tools.strings.toRegex = function (str) {
 // Get filename or last directory name in a file path
 sv.tools.strings.filename = function (str) {
 	// Under Windows, replace \ by /
-	if (navigator.platform.indexOf("Win") == 0) {
+	if (navigator.platform.indexOf("Win") == 0)
 		str = str.replace(/[\\]/g, "/");
-	}
 	// Remove last trailing '/'
 	str = str.replace(/\/$/, "");
 	// Split into components
@@ -55,22 +54,28 @@ sv.tools.strings.filename = function (str) {
 	return(items[items.length - 1]);
 }
 
-
 sv.tools.strings.addslashes = function(str) {
 	// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	return str.replace(/([\\"'])/g, "\\$1").replace(/\x00/g, "\\0").replace(/\u0000/g, "\\0");
+	return(str.replace(/([\\"'])/g, "\\$1")
+		.replace(/\x00/g, "\\0").replace(/\u0000/g, "\\0"));
 }
 
 
 sv.tools.strings.trim = function (str, which) {
-	if (!which) which == "both";
+	if (which === undefined) which == "both";
 	var rx;
 	switch(which) {
-		case "left": rx = /^\s+/g; break;
-		case "right": rx = /\s+$/g; break;
-		default: rx = /^\s+|\s+$/g; break;
+	 case "left":
+		rx = /^\s+/g;
+		break;
+	 case "right":
+		rx = /\s+$/g;
+		break;
+	 default:
+		rx = /^\s+|\s+$/g;
+		break;
 	}
-	return str.replace(rx, '');
+	return(str.replace(rx, ""));
 }
 
 //// Additional methods to String objects //////////////////////////////////////

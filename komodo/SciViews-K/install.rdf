@@ -4,7 +4,7 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>sciviewsk@sciviews.org</em:id>
         <em:name>SciViews-K</em:name>
-        <em:version>0.9.17</em:version>
+        <em:version>0.9.18</em:version>
         <em:description>Edit R (http://www.r-project.org) code with Komodo</em:description>
         <em:creator>Philippe Grosjean</em:creator>
         <em:contributor>Romain Francois</em:contributor>
@@ -17,7 +17,7 @@
                 <!-- Komodo IDE's uuid -->
                 <em:id>{36E66FA0-F259-11D9-850E-000D935D3368}</em:id>
                 <em:minVersion>5.0</em:minVersion>
-                <em:maxVersion>6.*</em:maxVersion>
+                <em:maxVersion>5.*</em:maxVersion>
             </Description>
         </em:targetApplication>
         <em:targetApplication>

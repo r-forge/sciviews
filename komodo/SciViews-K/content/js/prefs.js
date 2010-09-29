@@ -1,7 +1,7 @@
 // SciViews-K preference code
 // SciViews-K preferences management ('sv.prefs' namespace)
 // Define default preferences values for SciViews-K and MRU lists
-// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2008-2010, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.prefs.getString(pref, def); // Get a preference, use 'def' is not found
@@ -11,7 +11,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-if (typeof(sv.prefs) == 'undefined') sv.prefs = new Object();
+if (typeof(sv.prefs) == "undefined") sv.prefs = {};
 
 //This can be used in the Preferences page to set/restore missing values:
 //sv.prefs.checkAll()
@@ -25,8 +25,8 @@ sv.prefs.defaults = {
 	svRDefaultInterpreter: "", //????
 	svRApplication: "", //????
 	svRApplicationId: "", //????
-	svRQuiet: "", //must be string, otherwise sv.prefs.getString will fail
-	svRArgs: "--quiet", //For future use, replaces svRQuiet
+	svRQuiet: "", // Must be string, otherwise sv.prefs.getString will fail
+	svRArgs: "--quiet", // For future use, replaces svRQuiet
     "r.csv.dec": ".",
 	"r.csv.sep": ",",
 	CRANMirror: "http://cran.r-project.org/",
@@ -37,7 +37,7 @@ sv.prefs.defaults = {
 	//sciviews.r.auto-start
 };
 
-// Set default preferences:
+// Set default preferences
 sv.prefs.checkAll = function(revert) {
 	var prefset = Components.classes['@activestate.com/koPrefService;1']
 		.getService(Components.interfaces.koIPrefService).prefs;
@@ -45,22 +45,21 @@ sv.prefs.checkAll = function(revert) {
 		var el;
 		var p = sv.prefs.defaults[i];
 		switch(typeof(p)) {
-			case "number":
-				el = (parseInt(p) == p)? "Long" : "Double";
-				break;
-			case "boolean":
-				el = "Boolean";
-				break;
-			case "string":
-			default:
-				el = "String";
-				p = p.toString();
+		 case "number":
+			el = (parseInt(p) == p)? "Long" : "Double";
+			break;
+		 case "boolean":
+			el = "Boolean";
+			break;
+		 case "string":
+		 default:
+			el = "String";
+			p = p.toString();
 		}
 		if (revert // take all
 			|| !prefset.hasPref(i) // if missing at all
 			|| (prefset["has" + el + "Pref"](i)    // has one of right type, but empty
-				&& !prefset["get" + el + "Pref"](i))
-		) {
+			&& !prefset["get" + el + "Pref"](i))) {
 			prefset.deletePref(i); // To avoid _checkPrefType error
 			prefset["set" + el + "Pref"](i, p);
 		};
@@ -88,8 +87,8 @@ sv.prefs.setString = function (pref, value, overwrite) {
 
 // Display a dialog box to change a preference string
 sv.prefs.askString = function (pref, defvalue) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
-		getService(Components.interfaces.koIPrefService);
+	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
+		.getService(Components.interfaces.koIPrefService);
 	var prefs = prefsSvc.prefs;
 	// If defvalue is defined, use it, otherwise, use current pref value
 	if (defvalue == null & prefs.hasStringPref(pref))
@@ -105,11 +104,11 @@ sv.prefs.askString = function (pref, defvalue) {
 sv.prefs.mru = function (mru, reset, items, sep) {
 	var mruList = "dialog-interpolationquery-" + mru + "Mru";
 	// Do we reset the MRU list?
-	if (typeof(reset) == "undefined") reset = false;
+	if (reset === undefined) reset = false;
 	if (reset == true) ko.mru.reset(mruList);
 
 	// Do we need to split items (when sep is defined)?
-	if (typeof(sep) != "undefined") items = items.split(sep);
+	if (sep !== undefined) items = items.split(sep);
 
 	// Add each item in items in inverse order
 	for (var i = items.length - 1; i >= 0; i--) {
@@ -129,7 +128,6 @@ sv.prefs.tip = function (arg, tip) {
 // R interpreter
 sv.prefs.checkAll(false);
 
-
 var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
 //TODO: Rework this with respect to Mac and R.app
 // Default R interpreter Id: use a reasonable default, given the platform
@@ -137,15 +135,12 @@ if (navigator.platform.indexOf("Win") === 0) {
 	sv.prefs.setString("svRApplicationId", "r-gui", false);
 	if (!svRDefaultInterpreter)
 		svRDefaultInterpreter = sv.tools.file.whereIs("Rgui");
-
 } else {
 	sv.prefs.setString("svRApplicationId", "r-terminal", false);
 	if (!svRDefaultInterpreter)
 		svRDefaultInterpreter = sv.tools.file.whereIs("R");
 }
 sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, false);
-
-
 
 
 // This is required by sv.helpContext() for attaching help to snippets (hack!)

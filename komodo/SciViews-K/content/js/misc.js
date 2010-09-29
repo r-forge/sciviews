@@ -1,6 +1,6 @@
 // SciViews-K miscellaneous functions
 // Define the 'sv.misc' namespace
-// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org) & K. Barton
+// Copyright (c) 2008-2010, Ph. Grosjean (phgrosjean@sciviews.org) & K. Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.misc.sessionData(data);       // Create/open a .csv dataset from session
@@ -19,12 +19,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.misc' namespace
-if (typeof(sv.misc) == 'undefined')
-	sv.misc = {};
+if (typeof(sv.misc) == "undefined") sv.misc = {};
 
 // Create or open a .csv dataset from session
 sv.misc.sessionData = function (data) {
-    if (typeof(data) == "undefined") {
+    if (data === undefined) {
         data = ko.dialogs.prompt(
             "Open or create a dataset in .csv format in the data session directory...",
             "Dataset name:", "Dataset", "Select a dataset", "datafile");
@@ -35,44 +34,43 @@ sv.misc.sessionData = function (data) {
             .createInstance(Components.interfaces.nsILocalFile);
         file.initWithPath(dataDir);
         file.append(data + ".csv");
-        if (file.exists() == false) {
-        file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 438);
-        // Create a minimal content in this file
-        var outputStream = Components.
-            classes["@mozilla.org/network/file-output-stream;1"]
-            .createInstance( Components.interfaces.nsIFileOutputStream );
-        /* Open flags
-        #define PR_RDONLY       0x01
-        #define PR_WRONLY       0x02
-        #define PR_RDWR         0x04
-        #define PR_CREATE_FILE  0x08
-        #define PR_APPEND       0x10
-        #define PR_TRUNCATE     0x20
-        #define PR_SYNC         0x40
-        #define PR_EXCL         0x80
-        */
-        /*
-        ** File modes ....
-        **
-        ** CAVEAT: 'mode' is currently only applicable on UNIX platforms.
-        ** The 'mode' argument may be ignored by PR_Open on other platforms.
-        **
-        **   00400   Read by owner.
-        **   00200   Write by owner.
-        **   00100   Execute (search if a directory) by owner.
-        **   00040   Read by group.
-        **   00020   Write by group.
-        **   00010   Execute by group.
-        **   00004   Read by others.
-        **   00002   Write by others
-        **   00001   Execute by others.
-        **
-        */
-        outputStream.init(file, 0x04 | 0x08 | 0x20, 438, 0);
-        var sep = sv.prefs.getString("r.csv.sep", "\t");
+        if (!file.exists()) {
+			file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 438);
+			// Create a minimal content in this file
+			var outputStream = Components
+			    .classes["@mozilla.org/network/file-output-stream;1"]
+				.createInstance( Components.interfaces.nsIFileOutputStream );
+			/* Open flags
+			#define PR_RDONLY       0x01
+			#define PR_WRONLY       0x02
+			#define PR_RDWR         0x04
+			#define PR_CREATE_FILE  0x08
+			#define PR_APPEND       0x10
+			#define PR_TRUNCATE     0x20
+			#define PR_SYNC         0x40
+			#define PR_EXCL         0x80
+			*/
+			/*
+			** File modes ....
+			**
+			** CAVEAT: 'mode' is currently only applicable on UNIX platforms.
+			** The 'mode' argument may be ignored by PR_Open on other platforms.
+			**
+			**   00400   Read by owner.
+			**   00200   Write by owner.
+			**   00100   Execute (search if a directory) by owner.
+			**   00040   Read by group.
+			**   00020   Write by group.
+			**   00010   Execute by group.
+			**   00004   Read by others.
+			**   00002   Write by others
+			**   00001   Execute by others.
+			*/
+			outputStream.init(file, 0x04 | 0x08 | 0x20, 438, 0);
+			var sep = sv.prefs.getString("r.csv.sep", "\t");
             var content = '"var1"' + sep + '"var2"\n';
-        var result = outputStream.write(content, content.length);
-        outputStream.close();
+			var result = outputStream.write(content, content.length);
+			outputStream.close();
         }
         try {
             file.launch();
@@ -93,7 +91,7 @@ sv.misc.sessionData = function (data) {
 
 // Create or open a .R script from session
 sv.misc.sessionScript = function (script) {
-    if (typeof(script) == "undefined") {
+    if (script === undefined) {
         script = ko.dialogs.prompt(
             "Open or create a R script in session directory...",
             "Script name:", "Script", "Select a script", "scriptfile");
@@ -105,9 +103,8 @@ sv.misc.sessionScript = function (script) {
             .createInstance(Components.interfaces.nsILocalFile);
         file.initWithPath(scriptsDir);
         file.append(script + ".R");
-        if (file.exists() == false) {
+        if (!file.exists())
             file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 438);
-        }
         ko.open.URI(file.path);
     }
     // Make sure lists of session files are refreshed
@@ -116,7 +113,7 @@ sv.misc.sessionScript = function (script) {
 
 // Create or open a .odt report from session
 sv.misc.sessionReport = function (rep) {
-    if (typeof(rep) == "undefined") {
+    if (rep === undefined) {
         rep = ko.dialogs.prompt(
             "Open or create an .odt report in session directory...",
             "Report name:", "Report", "Select a report", "reportfile");
@@ -128,7 +125,7 @@ sv.misc.sessionReport = function (rep) {
             .createInstance(Components.interfaces.nsILocalFile);
         file.initWithPath(reportsDir);
         file.append(rep + ".odt");
-        if (file.exists() == false) {
+        if (!file.exists()) {
             // Copy the report template from SciViews-K templates
             var tpl = ko.interpolate.
                 interpolateStrings("%(path:hostUserDataDir)");
@@ -185,15 +182,14 @@ sv.misc.closeAllOthers = function () {
 				// Exclude the Start Page from "Close All".
 				if (thisView.getAttribute("type") != "startpage"
                     && thisView != currentView) {
-                    if (!thisView.close()) {
-						return false;
-                    }
+                    if (!thisView.close()) return(false);
                 }
             }
         }
     } catch(e) {
         sv.log.exception(e, "sv.misc.closeAllOthers() error");
     }
+	return(null);
 }
 
 /*
@@ -219,7 +215,7 @@ if ((os_prefix == "win") || (os_prefix == "mac")) {
 	function _colorPicker_system (color) {
 		var sysUtils = Components.classes['@activestate.com/koSysUtils;1'].
 			getService(Components.interfaces.koISysUtils);
-		if (!color)		color = "#000000";
+		if (!color) color = "#000000";
 		// sysUtils.pickColor seems to be broken, does not return any value
 		// which is strange, because it is only wrapper for
 		// .pickColorWithPositioning,
@@ -319,7 +315,7 @@ sv.misc.moveLineDown = function () {
         var ke = currentView.scimoz;
         var currentLine = ke.lineFromPosition(ke.currentPos);
         // Check if we are not at the last line
-        if( currentLine < (ke.lineCount - 1)) {
+        if (currentLine < (ke.lineCount - 1)) {
             ke.lineDown();
             ke.lineTranspose();
         }
@@ -355,9 +351,9 @@ sv.misc.searchBySel = function () {
 
         // Search with last user find preferences
         var findSvc = Components.classes["@activestate.com/koFindService;1"]
-                .getService(Components.interfaces.koIFindService);
+            .getService(Components.interfaces.koIFindService);
         var context = Components.classes["@activestate.com/koFindContext;1"]
-                .createInstance(Components.interfaces.koIFindContext);
+            .createInstance(Components.interfaces.koIFindContext);
         context.type = findSvc.options.preferredContextType;
         Find_FindNext(window, context, searchText);
     }
@@ -386,11 +382,11 @@ sv.misc.swapQuotes = function() {
             var curPos = scimoz.currentPos;
 
             // Replace the currently selected text
-            scimoz.replaceSel(
+            scimoz.replaceSel (
                 // Find all single and double quote characters
                 scimoz.selText.replace( /[\'\"]/g, function (value) {
                     // Return whatever the value isn't
-                    return value == '"'?"'":'"';
+                    return(value == '"' ? "'" : '"');
                 })
             );
 
@@ -410,8 +406,7 @@ sv.misc.pathToClipboard = function (unix) {
         getService(Components.interfaces.nsIClipboardHelper);
     try {
         var path = ko.views.manager.currentView.document.file.path;
-		if (unix)
-			path = path.replace(/\\/g, "/");
+		if (unix) path = path.replace(/\\/g, "/");
 		ch.copyString(path);
     } catch(e) {
         sv.alert("Copy path to clipboard",
@@ -433,10 +428,8 @@ sv.misc.timeStamp = function (format) {
 			.getService(Components.interfaces.koITime);
 		var secsNow = timeSvc.time();
 		var timeTupleNow = timeSvc.localtime(secsNow, new Object());
-		if (!format)
-			format = sv.prefs.getString("defaultDateFormat");
-		var timeStr = timeSvc.strftime(format, timeTupleNow.length,
-			timeTupleNow);
+		if (!format) format = sv.prefs.getString("defaultDateFormat");
+		var timeStr = timeSvc.strftime(format, timeTupleNow.length, timeTupleNow);
 		ke.replaceSel(timeStr);
     } catch(e) {
         sv.log.exception(e, "sv.misc.timeStamp() error");

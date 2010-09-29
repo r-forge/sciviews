@@ -94,11 +94,9 @@ function OnLoad(event) {
 		prefHomeSubst = prefSettings.indexOf("home-subst") != -1;
 		prefExistingOnly = prefSettings.indexOf("existing-only") != -1;
 
-		if (prefHomeSubst)
-			prefVal = sf.path(prefVal);
+		if (prefHomeSubst) prefVal = sf.path(prefVal);
 
 		if (el.tagName == "menulist") {
-
 			listContentPref = el.hasAttribute("contentpref")?
 				el.getAttribute("contentpref") : prefName + ".mru";
 
@@ -113,7 +111,7 @@ function OnLoad(event) {
 				if (k != -1) values.splice(k, 1);
 				values = Array.concat(prefVal, values);
 
-				if (values.length > 10)		values.splice(10);
+				if (values.length > 10) values.splice(10);
 
 				for (var j = 0; j < values.length; j++) {
 					value = sf.path(values[j]);
@@ -153,7 +151,7 @@ function OK() {
 					 _getVal("sciviews.session.scripts"),
 					 _getVal("sciviews.session.reports"));
 
-	return true;
+	return(true);
 }
 
 // Substitute real home path for "~"
@@ -167,10 +165,9 @@ function homeSubst(dir) {
 	if ((platform == "win"
 		&& dir.substr(0, homedir.length).toLowerCase() == homedir.toLowerCase())
 		|| dir.substr(0, homedir.length) == homedir) {
-
-		dir = homeMacro + dir.substr(homedir.length);
+        dir = homeMacro + dir.substr(homedir.length);
 	}
-	return dir;
+	return(dir);
 }
 
 // Add a directory item into list
@@ -178,8 +175,7 @@ function setDir(id) {
 	var el = document.getElementById(id);
 	var dir = ko.filepicker.getFolder(el.value, "Choose directory for: " + id);
 
-	if (!dir) return false;
-
+	if (!dir) return(false);
 
 	var mi;
 	for (var j = 0; j < el.itemCount; j++) {
@@ -191,7 +187,7 @@ function setDir(id) {
 	el.insertItemAt(0, dir, dir, null);
 	el.value = dir;
 	selectSessionDir();
-	return true;
+	return(true);
 }
 
 function remCurItemFromList() {
@@ -200,9 +196,7 @@ function remCurItemFromList() {
 	var selInd = el.selectedIndex;
 	el.selectedIndex = (selInd + 1) % el.itemCount;
 	el.removeItemAt(selInd);
-	if (!el.itemCount) {
-		el.value = null;
-	}
+	if (!el.itemCount) el.value = null;
 	selectSessionDir();
 }
 

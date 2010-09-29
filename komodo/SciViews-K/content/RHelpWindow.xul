@@ -61,28 +61,24 @@ var rHelpBrowser;
 var rHelpTopic;
 
 function go(uri, loadFlags) {
-	// these are still undefined when calling .go on load event,
-	// so define them here:
-
+	// These are still undefined when calling .go on load event,
+	// so define them here
 	rHelpBrowser = document.getElementById("rhelp-browser");
-
 	switch (uri) {
-		case  "":
-		case "@home@":
-			rHelpBrowser.goHome();
-			return;
-		case "@CRAN@":
-			uri = sv.prefs.getString("CRANMirror");
-			if (!uri || uri.indexOf("ftp:/") === 0)
-				uri = "http://cran.r-project.org/";
+	 case  "":
+	 case "@home@":
+		rHelpBrowser.goHome();
+		return;
+	 case "@CRAN@":
+		uri = sv.prefs.getString("CRANMirror");
+		if (!uri || uri.indexOf("ftp:/") === 0)
+			uri = "http://cran.r-project.org/";
 	}
 
 	rHelpTopic = document.getElementById("rhelp-topic");
 	// In case the window was not yet fully loaded.
 	if (!rHelpTopic) {
-		self.addEventListener("load", function(event) {
-			go(uri);
-		}, false);
+		self.addEventListener("load", function(event) { go(uri); }, false);
 		return;
 	}
 
@@ -92,7 +88,6 @@ function go(uri, loadFlags) {
 		uri = rHelpTopic.value;
 	}
 	rHelpTopic.select();
-
 
 	// Try to differentiate an URL from a help topic
 	var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
@@ -120,8 +115,7 @@ function txtInput(aEvent) {
 }
 
 function search(topic) {
-	if (!topic)		return;
-
+	if (!topic) return;
 	rHelpTopic.select();
 	sv.r.search(topic);
 }
@@ -151,18 +145,14 @@ function find(next, backwards) {
 	}
 }
 
-// Browser progress listener:
-// so far used only to change title and location text
-
+// Browser progress listener: so far used only to change title and location text
 // From: https://developer.mozilla.org/en/Code_snippets/Progress_Listeners
-
 var progressListener = {
 	QueryInterface: function(aIID) 	{
 		if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
 			aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
-			aIID.equals(Components.interfaces.nsISupports))
-				return this;
-			throw Components.results.NS_NOINTERFACE;
+			aIID.equals(Components.interfaces.nsISupports)) return(this);
+	    throw(Components.results.NS_NOINTERFACE);
 	},
 
 	onStateChange: function(aWebProgress, aRequest, aFlag, aStatus) {
@@ -172,9 +162,7 @@ var progressListener = {
 
 		if (aFlag & Components.interfaces.nsIWebProgressListener.STATE_START) {
 			// This fires when the load event is initiated
-			document.getElementById("cmd_stop")
-				.setAttribute("disabled", false);
-
+			document.getElementById("cmd_stop").setAttribute("disabled", false);
 			document.getElementById("cmd_stop").hidden = false;
 			document.getElementById("cmd_reload").hidden = true;
 		}
@@ -184,18 +172,13 @@ var progressListener = {
 			self.document.title = aWebProgress.DOMWindow.document.title;
 			rHelpTopic.value = aWebProgress.DOMWindow.document.location;
 
-			document.getElementById("cmd_stop")
-				.setAttribute("disabled", true);
-
+			document.getElementById("cmd_stop").setAttribute("disabled", true);
 			document.getElementById("cmd_stop").hidden = true;
 			document.getElementById("cmd_reload").hidden = false;
-
 			document.getElementById("cmd_go_back")
-				.setAttribute("disabled", !rHelpBrowser.webNavigation
-						  .canGoBack)
+				.setAttribute("disabled", !rHelpBrowser.webNavigation.canGoBack)
 			document.getElementById("cmd_go_forward")
-				.setAttribute("disabled", !rHelpBrowser.webNavigation
-						  .canGoForward);
+				.setAttribute("disabled", !rHelpBrowser.webNavigation.canGoForward);
 		}
 	},
 
@@ -209,11 +192,9 @@ var progressListener = {
 		// This redirects result page from html search form to rHelpSearch results:
 		//FIXME: on the results page, when .goBack is invoked, page will be redirected again
 		if (aProgress.DOMWindow.document.location.href
-					.search(/search\/SearchEngine\.html\?.*SEARCHTERM=([a-z0-9+%]*)(?=&|$)/) != -1) {
-
-				rHelpSearch(RegExp.$1);
+		    .search(/search\/SearchEngine\.html\?.*SEARCHTERM=([a-z0-9+%]*)(?=&|$)/) != -1) {
+			rHelpSearch(RegExp.$1);
 		}
-
 	},
 
 	// For definitions of the remaining functions see XULPlanet.com
@@ -232,13 +213,9 @@ function onFindToolbarAttrModified(event) {
 }
 
 function rHelpBrowserContextOnShow(event) {
-
-	var selText = sv.tools.strings.trim(window._content.getSelection()
-				.toString());
-
+	var selText = sv.tools.strings.trim(window._content.getSelection().toString());
 	var el = document.getElementById("cmd_rsearch_for");
 	var elLabel;
-
 	var nothingSelected = !selText;
 
 	if (nothingSelected) {
@@ -255,7 +232,7 @@ function rHelpBrowserContextOnShow(event) {
 
 function runSelAsRCode() {
 	var selText = sv.tools.strings.trim(window._content.getSelection()
-										.getRangeAt(0).toString());
+	    .getRangeAt(0).toString());
 
 	// Looks like R help page, so require package first
 	win = window._content;
@@ -264,15 +241,12 @@ function runSelAsRCode() {
 		var docTables = doc.getElementsByTagName("table");
 		if (docTables.length > 0
 			&& docTables[0].summary.search(/page for (\S+) \{([\w\.]+)\}/) == 0) {
-
 			selText = "require(" + RegExp.$2 + ")\n" + selText;
-
 			//TODO: for remote help files, ask to install package in not available
 		}
 	}
 	sv.r.eval(selText);
 }
-
 
 // display formatted search results in a help window
 function rHelpSearch(topic) {
@@ -295,29 +269,39 @@ function _getHomePage(browser, goTo) {
 	//var cmd = 'suppressMessages(make.packages.html()); ';
 	//cmd += 'options(htmlhelp = TRUE); ';
 	//cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
-    // Make sure that help is started, but do not open a browser
-	var cmd = 'invisible(capture.output(suppressMessages(help.start(browser = function(...) return())))); ';
-	// return the home page of R 2.10 help system
-	cmd += 'cat(paste("\n", "http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = ""))';
-
-	var res = sv.r.evalCallback(cmd, function (path) {
-		path = sv.tools.strings.removeLastCRLF(path);
-		// Old treatment for R < 2.10
-		//path = sv.tools.file.getfile(path,
-		//	[(isWin? null : ".R"), "doc", "html", "index.html"]);
-		//path = sv.tools.file.getURI(path);
-
-		// get just the last line, get rid of the help.start's message
-		path = path.substring(path.lastIndexOf("\n") + 1);
-
+    
+	// If it is the http server, we know that the help server is launched
+	// (it is the same), and we also know the port!
+	var res = false;
+	var cmd = "";
+	if (sv.r.server == "http") {
+        var port = sv.prefs.getString("sciviews.client.socket", "8888");
+		var path = "http://127.0.0.1:" + port + "/doc/html/index.html";
 		browser.homePage = sv.helpStartURI = path;
-
 		//alert(browser.homePage);
+		if (goTo) go(path);
+	} else { // socket, we must start the help server and ask for its port
+	    // Make sure that help is started, but do not open a browser
+	    cmd = 'invisible(capture.output(suppressMessages(help.start(browser = function(...) return())))); ';
+	    // return the home page of R >= 2.10 help system
+	    cmd += 'cat(paste("\n", "http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = ""))';
 
-		if (goTo)		go(path);
-	});
+	    res = sv.r.evalCallback(cmd, function (path) {
+			path = sv.tools.strings.removeLastCRLF(path);
+			// Old treatment for R < 2.10
+			//path = sv.tools.file.getfile(path,
+			//	[(isWin ? null : ".R"), "doc", "html", "index.html"]);
+			//path = sv.tools.file.getURI(path);
+
+			// Get just the last line, get rid of the help.start's message
+			path = path.substring(path.lastIndexOf("\n") + 1);
+
+			browser.homePage = sv.helpStartURI = path;
+			//alert(browser.homePage);
+			if (goTo) go(path);
+		});
+	}
 }
-
 
 var browserUtils = {};
 
@@ -326,28 +310,21 @@ var browserUtils = {};
 this.purgeCache = function() {
 	var cacheService = Components.classes["@mozilla.org/network/cache-service;1"]
 		.getService(Components.interfaces.nsICacheService);
-
 	cacheService.evictEntries(Components.interfaces.nsICache.STORE_ANYWHERE);
 }
 
 this.purgeHistory = function() {
-	if (rHelpBrowser.docShell.sessionHistory.count) {
+	if (rHelpBrowser.docShell.sessionHistory.count)
 		rHelpBrowser.docShell
 			.sessionHistory.PurgeHistory(rHelpBrowser.docShell.sessionHistory.count);
-	}
 }
-
-
 
 }).apply(browserUtils);
 
 function OnLoad (event) {
 	// DOMContentLoaded is fired also for HTML content
-	if (event.target != self.document)
-		return;
-
+	if (event.target != self.document) return;
 	var page;
-
 	if (window.arguments) {
 		var args = window.arguments;
 		sv = args[0];
@@ -364,18 +341,16 @@ function OnLoad (event) {
 
 	rHelpTopic = document.getElementById("rhelp-topic");
 	rHelpTopic.clickSelectsAll = true;
-
 	rHelpBrowser = document.getElementById("rhelp-browser");
-
 	rHelpBrowser.addProgressListener(progressListener,
-	  Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+	    Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 
 	var findToolbar = document.getElementById("FindToolbar");
 	// Listen to find toolbar attribute modifications:
 	findToolbar.addEventListener("DOMAttrModified",
 		onFindToolbarAttrModified, false);
 
-	go(page? page : "about:blank");
+	go(page ? page : "about:blank");
 	_getHomePage(rHelpBrowser, !page);
 
 	// Print preview does not work on a Mac, disable that command then
