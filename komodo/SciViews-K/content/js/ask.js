@@ -9,6 +9,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 // TODO: list files in a directory and a given extension
+//       implement sv.ask.vars and sv.ask.factors
 
 
 if (typeof(sv.ask) == 'undefined') sv.ask = new Object();
@@ -19,7 +20,7 @@ sv.ask.setDefault = function (object, classes) {
 	// Otherwise, ask R for the classes (also look if it is data.frame or lm)!
 	var cls, i;
 	switch (arguments.length) {
-	case  1:
+	 case  1:
 		// No class provided => send code to R to set it according to the
 		// actual class of the object
 		res = sv.r.evalCallback('if (exists("' + object + '")) ' +
@@ -40,8 +41,7 @@ sv.ask.setDefault = function (object, classes) {
 			}
 		);
 		break;
-	
-	case 2:
+	 case 2:
 		// Classes are provided (separated by |)
 		cls = classes.split("|");
 		for (i = 0; i < cls.length; i++) {
@@ -52,6 +52,25 @@ sv.ask.setDefault = function (object, classes) {
 					sv.r.obj_message();
 				} else if (cls[i] == "lm") sv.r.obj_message();
 			}
+		}
+	}
+}
+
+// The callback function for sv.ask.setDefault
+// TODO: use a RJSONP object instead
+sv.ask.setDefault_callback = function (msg) {
+	// In the case of http server, we got a more complex object!
+	if (msg.result !== undefined) msg = msg.result;
+	
+	var cls = sv.tools.strings.removeLastCRLF(msg).split("|");
+	var obj = cls[0];
+	for (i = 1; i < cls.length; i++) {
+		if (cls[i] != null & cls[i] != "") {
+			sv.prefs.setString("r.active." + cls[i], obj, true);
+			if (cls[i] == "data.frame") {
+				sv.prefs.setString("r.active.data.frame.d", obj + "$", true);
+				sv.r.obj_message();
+			} else if (cls[i] == "lm") sv.r.obj_message();
 		}
 	}
 }

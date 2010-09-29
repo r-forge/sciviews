@@ -1,5 +1,5 @@
 // SciViews-K interpolation function, and other rewritten Komodo functions
-// Copyright (c) 2009, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2009-2010, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // svWindowPatcher() and svWindowObserver() allow for patching Komodo windows
@@ -113,7 +113,7 @@ function svWindowObserver() {
 			wm.getMostRecentWindow(null)
 				.addEventListener("load", svWindowPatcher, false);
 		}
-   }
+	}
 }
  
 var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
@@ -158,13 +158,13 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 {
     try {
     if (typeof queryTitle == 'undefined') queryTitle = null;
-	log.info("interpolate.interpolate(editor, strings=["+strings+
-                          "], bracketedStrings=["+bracketedStrings+"], queryTitle='"+
-                          queryTitle+"', viewData)");
+	log.info("interpolate.interpolate(editor, strings=[" + strings +
+        "], bracketedStrings=[" + bracketedStrings + "], queryTitle='" +
+        queryTitle + "', viewData)");
 	viewData = ko.interpolate.getViewData(editor, viewData);
 
     var lastErrorSvc = Components.classes["@activestate.com/koLastErrorService;1"]
-                       .getService(Components.interfaces.koILastErrorService);
+        .getService(Components.interfaces.koILastErrorService);
 
     // PhG: interpolation step 0: eliminate [[%tr:...]] used to tag strings
 	// to be translated
@@ -175,7 +175,7 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 		// Replace [[%ask:x:%tr:x-value]] by [[%ask:x:x-value]]
 		brStr = brStr.replace(/%tr:/g, "");
 		bracketedStrings[0] = brStr;
-	} catch(e) {}
+	} catch(e) { }
 	
 	// Interpolation step 1: get queries.
     var queriesCountObj = new Object();
@@ -186,7 +186,7 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
     //XXX The prefset used may need to be the project prefs at some point in
     //    the future, for now we'll stick with the current view's prefset.
     var iSvc = Components.classes["@activestate.com/koInterpolationService;1"]
-               .getService(Components.interfaces.koIInterpolationService);
+        .getService(Components.interfaces.koIInterpolationService);
     iSvc.Interpolate1(strings.length, strings,
                       bracketedStrings.length, bracketedStrings,
                       viewData.fileName, viewData.lineNum,
@@ -199,7 +199,7 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
     var istrings = i1stringsObj.value;
 
     // Ask the user for required data. (If there are no queries then we are
-    // done interpolating.)
+    // done interpolating)
     if (queries.length != 0) {
         var obj = new Object();
         obj.queries = queries;
@@ -210,21 +210,18 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 		// PhG: replaced this by my own dialog box with extra features
 		//window.openDialog("chrome://komodo/content/run/interpolationquery.xul",
         window.openDialog("chrome://sciviewsk/content/Rinterpolationquery.xul",
-		                  "Komodo:InterpolationQuery",
-                          "chrome,modal,titlebar",
-                          obj);
+		    "Komodo:InterpolationQuery", "chrome,modal,titlebar", obj);
         if (obj.retval == "Cancel") {
             var errmsg = "Interpolation query cancelled.";
             lastErrorSvc.setLastError(Components.results.NS_ERROR_ABORT, errmsg);
-            throw errmsg;
+            throw(errmsg);
         }
 
         // Interpolation step 2: interpolated with answered queries.
         var i2countObj = new Object();
         var i2stringsObj = new Array();
-        iSvc.Interpolate2(istrings.length, istrings,
-                          queries.length, queries,
-                          i2countObj, i2stringsObj);
+        iSvc.Interpolate2(istrings.length, istrings, queries.length, queries,
+            i2countObj, i2stringsObj);
         istrings = i2stringsObj.value;
     }
 
@@ -240,21 +237,19 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 			// The string must contain both !@#_currentPos and !@#_anchor
 			if (istrings[i].indexOf("!@#_currentPos") == -1) {
 				// If !@#_anchor is there, add !@#_currentPos at the end
-				if (istrings[i].indexOf("!@#_anchor") > -1) {
+				if (istrings[i].indexOf("!@#_anchor") > -1)
 					istrings[i] = istrings[i] + "!@#_currentPos";
-				}
 			} else { // !@#_currentPos is there, make sure !@#_anchor is also there
-				if (istrings[i].indexOf("!@#_anchor") == -1) {
+				if (istrings[i].indexOf("!@#_anchor") == -1)
 					istrings[i] = istrings[i] + "!@#_anchor";
-				}
 			}
 		}
 	}
 
-    log.info("interpolate.interpolate: istrings=["+istrings+"]");
-    return istrings;
+    log.info("interpolate.interpolate: istrings=[" + istrings + "]");
+    return(istrings);
     } catch(e) {
         log.exception(e);
-        throw e;
+        throw(e);
     }
 }

@@ -1,6 +1,6 @@
 // SciViews-K file related functions
 // Various file related functions in 'sv.tools.file' namespace
-// Copyright (c) 2008-2009, Kamil Barton
+// Copyright (c) 2008-2010, Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.tools.file.defaultEncoding;			// Default file encoding to use
@@ -26,15 +26,12 @@
 								// returns null if not found
 ////////////////////////////////////////////////////////////////////////////////
 
-if (typeof(sv) == 'undefined')
-	var sv = {};
+if (typeof(sv) == 'undefined') var sv = {};
 
 // Define the 'sv.tools' namespace
-if (typeof(sv.tools) == 'undefined')
-	sv.tools = {};
+if (typeof(sv.tools) == 'undefined') sv.tools = {};
 // Define the 'sv.tools.file' namespace
-if (typeof(sv.tools.file) == 'undefined')
-	sv.tools.file = {};
+if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 (function () {
 	// Default file encoding to use
@@ -45,8 +42,7 @@ if (typeof(sv.tools.file) == 'undefined')
 
 	// Read a file with encoding
 	this.read = function (filename, encoding) {
-		if (!encoding)
-			encoding = this.defaultEncoding;
+		if (!encoding) encoding = this.defaultEncoding;
 
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
@@ -76,15 +72,14 @@ if (typeof(sv.tools.file) == 'undefined')
 			is.close();
 			fis.close();
 		}
-		return ret;
+		return(ret);
 	}
 
 	// Write in a file with encoding
 	this.write = function (filename, content, encoding, append) {
-		if (!encoding)
-			encoding = this.defaultEncoding;
+		if (!encoding) encoding = this.defaultEncoding;
 
-		append = append? 0x10 : 0x20;
+		append = append ? 0x10 : 0x20;
 
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
@@ -111,47 +106,47 @@ if (typeof(sv.tools.file) == 'undefined')
 
 	// Checks for file existence, returns 2 for dir, 1 for file, otherwise 0
 	this.exists = function (path) {
-		var file = Components.classes["@mozilla.org/file/local;1"].
-			createInstance(Components.interfaces.nsILocalFile);
+		var file = Components.classes["@mozilla.org/file/local;1"]
+			.createInstance(Components.interfaces.nsILocalFile);
 
 		try {
 			file.initWithPath(path);
 		} catch(e) {
-			return this.TYPE_NONE;
+			return(this.TYPE_NONE);
 		}
 
 		if (file.exists()) {
-			if (file.isDirectory())
-				return this.TYPE_DIRECTORY;
-			else if (file.isFile())
-				return this.TYPE_FILE;
+			if (file.isDirectory()) {
+				return(this.TYPE_DIRECTORY);
+			} else if (file.isFile()) {
+				return(this.TYPE_FILE);
+			}
 		}
-		return 0;
+		return(0);
 	}
 
 	// Creates unique temporary file, accessible by all users; returns its name
 	this.temp = function (prefix) {
 		var nsIFile = Components.interfaces.nsIFile;
-		var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"].
-			 getService(Components.interfaces.nsIProperties);
+		var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"]
+			.getService(Components.interfaces.nsIProperties);
 		var tempDir = dirSvc.get("TmpD", nsIFile).path;
-		var tmpfile = Components.classes["@mozilla.org/file/local;1"].
-			createInstance(Components.interfaces.nsILocalFile);
+		var tmpfile = Components.classes["@mozilla.org/file/local;1"]
+			.createInstance(Components.interfaces.nsILocalFile);
 
-		if (!prefix)	prefix = "svtmp";
+		if (!prefix) prefix = "svtmp";
 
 		tmpfile.initWithPath(tempDir);
 		tmpfile.append(prefix)
 		tmpfile.createUnique(nsIFile.NORMAL_FILE_TYPE, 0777);
 
-		return tmpfile.path;
+		return(tmpfile.path);
 	}
-
 
 	this.specDir = function(dirName) {
 		var file;
 		if (dirName == "~")
-			dirName = (navigator.platform.indexOf("Win") == 0)? "Pers" : "Home";
+			dirName = (navigator.platform.indexOf("Win") == 0) ? "Pers" : "Home";
 
 		try {
 			try {
@@ -168,18 +163,18 @@ if (typeof(sv.tools.file) == 'undefined')
 			}
 
 		} catch(e) {}
-		return file? file : dirName;
+		return(file ? file : dirName);
 	}
 
 	// Create nsILocalFile object from path
 	// concatenates arguments if needed
 	this.getfile = function (path) {
 		path = this.path.apply(this, Array.apply(null, arguments));
-		//return path;
-		var file = Components.classes["@mozilla.org/file/local;1"].
-			createInstance(Components.interfaces.nsILocalFile);
+		//return(path);
+		var file = Components.classes["@mozilla.org/file/local;1"]
+			.createInstance(Components.interfaces.nsILocalFile);
 		file.initWithPath(path);
-		return file;
+		return(file);
 	}
 
 	// Concatenate the arguments into a file path.
@@ -197,31 +192,30 @@ if (typeof(sv.tools.file) == 'undefined')
 	// "c:\users\bob\MyDocuments\workspace\dir1\dir2\file1.tmp"
 	// "/home/bob/workspace/dir1/dir2/file1.tmp"
 	this.path = function (path) {
-		var os = Components.classes['@activestate.com/koOs;1'].
-			getService(Components.interfaces.koIOs);
+		var os = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs);
 		var sep = os.sep;
 		if (typeof path.join == "undefined")
 			path = Array.apply(null, arguments);
 		// 'flatten' the array:
-			var res = [];
-			for(var i in path) res = res.concat(path[i]);
-			path = res;
+		var res = [];
+		for(var i in path) res = res.concat(path[i]);
+		path = res;
 		path = os.path.normpath(path.join(sep));
 		var dir0 = path.split(sep, 1)[0];
 		path = sv.tools.file.specDir(dir0) + path.substring(dir0.length);
 		path = os.path.abspath(path);
-		return path;
+		return(path);
 	}
-	this.getURI = function(file) {
-		if (typeof file == "string") {
-			file = this.getfile(file);
-		}
-		if (!file)	return null;
+	
+	this.getURI = function (file) {
+		if (typeof(file) == "string") file = this.getfile(file);
+		if (!file) return(null);
 
-		var ios = Components.classes["@mozilla.org/network/io-service;1"].
-                    getService(Components.interfaces.nsIIOService);
+		var ios = Components.classes["@mozilla.org/network/io-service;1"]
+            .getService(Components.interfaces.nsIIOService);
 		var URL = ios.newFileURI(file);
-		return URL.spec;
+		return(URL.spec);
 	}
 
 	// Read data from an URI
@@ -232,51 +226,48 @@ if (typeof(sv.tools.file) == 'undefined')
 		file.open('r');
 		var res = file.readfile();
 		file.close();
-		return res;
+		return(res);
 	}
 
 	// List all files matching a given pattern in directory,
 	// python interface - ~2x faster than with nsILocalFile
 	this.list = function (dirname, pattern, noext) {
-			var os = Components.classes['@activestate.com/koOs;1']
-				.getService(Components.interfaces.koIOs);
+		var os = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs);
 
-			if (os.path.exists(dirname) && os.path.isdir(dirname)) {
-				var files = os.listdir(dirname, {});
-				var selfiles = [], file;
-				for (var i in files) {
-					file = files[i];
-					if (os.path.isfile(os.path.join(dirname, file))
-						&& file.search(pattern) != -1) {
-
-						file = noext? file.substring(0, file.lastIndexOf("."))
-							: file;
-						selfiles.push(file);
-					}
+		if (os.path.exists(dirname) && os.path.isdir(dirname)) {
+			var files = os.listdir(dirname, {});
+			var selfiles = [], file;
+			for (var i in files) {
+				file = files[i];
+				if (os.path.isfile(os.path.join(dirname, file))
+					&& file.search(pattern) != -1) {
+					file = noext ? file.substring(0, file.lastIndexOf(".")) : file;
+					selfiles.push(file);
 				}
-				return (selfiles);
-			} else {
-				return null;
 			}
-
+			return(selfiles);
+		} else {
+			return(null);
+		}
 		return(null);
 	}
 
 // TODO: check registry keys for Windows versions other than XP
 if (navigator.platform.indexOf("Win") == 0) {
 	function _findFileInPath(file) {
-		var os = Components.classes['@activestate.com/koOs;1'].
-			getService(Components.interfaces.koIOs);
+		var os = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs);
 		var dirs = os.getenv("PATH").split(os.pathsep);
 		var res = [];
 		for (var i in dirs)
 			if (os.path.exists(os.path.join(dirs[i], file))) res.push(dirs[i]);
-		return res.length? res : null;
+		return(res.length ? res : null);
 	}
 
-	this.whereIs = function(appName) {
+	this.whereIs = function (appName) {
 		// add default extension for executable if none
-		if (appName.search(/\.[^\.]{3}$/) == -1) 	appName += ".exe";
+		if (appName.search(/\.[^\.]{3}$/) == -1) appName += ".exe";
 
 		var reg = Components.classes["@mozilla.org/windows-registry-key;1"]
 			.createInstance(Components.interfaces.nsIWindowsRegKey);
@@ -295,49 +286,49 @@ if (navigator.platform.indexOf("Win") == 0) {
 			}
 			if (!reg.hasValue("InstallPath") && reg.hasValue("Current Version")) {
 				reg = reg.openChild(reg.readStringValue("Current Version"),
-									reg.ACCESS_READ);
+					reg.ACCESS_READ);
 			}
 			if (reg.hasValue("InstallPath"))
-				return reg.readStringValue("InstallPath") + "\\bin\\" + appName;
+				return(reg.readStringValue("InstallPath") + "\\bin\\" + appName);
 		}
 
-		var key = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" + appName;
+		var key = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" +
+			appName;
 		try {
 			reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ);
 			path = reg.readStringValue("");
-			return path.replace(/(^"|"$)/g, "");
+			return(path.replace(/(^"|"$)/g, ""));
 		} catch(e) {
 			var key = "Applications\\" + appName + "\\shell\\Open\\Command";
 			try {
 				reg.open(reg.ROOT_KEY_CLASSES_ROOT, key, reg.ACCESS_READ);
 				path = reg.readStringValue("");
 				path = path.replace(/(^"+|"*\s*"%\d.*$)/g, "");
-				return path;
+				return(path);
 			} catch(e) {
 				// fallback: look for app in PATH:
-				return _findFileInPath(appName);
+				return(_findFileInPath(appName));
 			}
 		}
-		return null;
+		return(null);
 	}
 
+// Linux or Mac OS X	
 } else {
 	// Will it work on Mac too?
-	this.whereIs = function(appName) {
-		var runSvc = Components.
-			classes["@activestate.com/koRunService;1"].
-			getService(Components.interfaces.koIRunService);
+	this.whereIs = function (appName) {
+		var runSvc = Components
+			.classes["@activestate.com/koRunService;1"]
+			.getService(Components.interfaces.koIRunService);
 		var err = {}, out = {};
 		var res = runSvc.RunAndCaptureOutput("which " + appName,
 			null, null, null, out, err);
 
 		var path = sv.tools.strings.trim(out.value);
 
-		if (!path) return null;
-		return path.split(" ");
+		if (!path) return(null);
+		return(path.split(" "));
 	}
-
 }
-
 
 }).apply(sv.tools.file);

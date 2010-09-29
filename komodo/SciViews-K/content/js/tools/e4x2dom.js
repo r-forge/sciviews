@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.tools.e4x2dom' namespace
-if (typeof(sv.tools.e4x2dom) == 'undefined') sv.tools.e4x2dom = new Object();
+if (typeof(sv.tools.e4x2dom) == 'undefined') sv.tools.e4x2dom = {};
 
 // Translate e4x (JavaScript) node into a DOM node
 sv.tools.e4x2dom.importNode = function (e4x, doc) {
@@ -29,10 +29,10 @@ sv.tools.e4x2dom.importNode = function (e4x, doc) {
 	domTree = me.Static.parser.parseFromString( xhtml.toXMLString().
 		replace( />\n *</g, "><" ), me.Const.mimeType);
 	importMe = domTree.documentElement.firstChild;
-	while(importMe && importMe.nodeType != 1)
+	while (importMe && importMe.nodeType != 1)
 		importMe = importMe.nextSibling;
-	if(!doc) doc = document;
-	return importMe ? doc.importNode(importMe, true) : null;
+	if (!doc) doc = document;
+	return(importMe ? doc.importNode(importMe, true) : null);
 }
 
 // Append an e4x node to a DOM node

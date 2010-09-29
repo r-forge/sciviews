@@ -158,14 +158,14 @@ sv.r.console.run_cb  = function (data) {
   
     var div =
         <html:pre class="consoleInput" xmlns:html="http://www.w3.org/1999/xhtml">{ "R> " + cmd }</html:pre>;
-    sv.tools.e4x2dom.appendTo(div,output);
+    sv.tools.e4x2dom.appendTo(div, output);
   
     // FIXME: replace the dot with something invisible (space gets swallowed by the <pre>)
     //        or use something else than a <pre>
     data = data.replace(/^ /, ".");
     var div =
         <html:pre class="consoleOutput" xmlns:html="http://www.w3.org/1999/xhtml">{data}</html:pre>;
-    sv.tools.e4x2dom.appendTo(div,output);
+    sv.tools.e4x2dom.appendTo(div, output);
   
     // add the current command to the history and refresh the history
     sv.r.console.addCommandToHistory(cmd);
@@ -180,11 +180,13 @@ sv.r.console.run_cb  = function (data) {
 sv.r.console.parse = function () {
     var cmd = "Parse('" + sv.r.console.getCurrentCommand().
         replace(/'/g, "\\'") + "')";
-    sv.r.evalCallback(cmd, sv.r.console.parse_cb); 
+    sv.r.evalCallback(cmd, sv.r.console.parse_cb);
 }
 
 // Callback called after an R command is parsed
 sv.r.console.parse_cb = function (data) {
+    if (data.result !== undefined) data = data.result;
+    
     if (data.substring(0, 10) == "expression") {
         // command is ok, run it
         sv.r.evalCallback(sv.r.console.getCurrentCommand(),
@@ -209,19 +211,19 @@ sv.r.console.getHistoryRegex = function () {
     try {
         var out = new RegExp(txt);
     } catch(e) {
-        return false;
+        return(false);
     }
-    return out;
+    return(out);
 }
 
 // Refresh history
 sv.r.console.refreshHistory = function () {
-    var his = document.
-        getElementById("sciviews_rconsole_console_history_richlistbox");
+    var his = document
+        .getElementById("sciviews_rconsole_console_history_richlistbox");
     var cmd;
     var item ;
-    var filter = new RegExp(document.
-        getElementById("sciviews_rconsole_history_filter").value);
+    var filter = new RegExp(document
+        .getElementById("sciviews_rconsole_history_filter").value);
     sv.tools.e4x2dom.clear(his);
     for (i = sv.r.console.history.length - 1; i >= 0; i--) {
         cmd = sv.r.console.history[i];
@@ -277,13 +279,16 @@ sv.r.console.complete_cb = function (data, counter) {
 
 // Completion asked by the user
 sv.r.console.completeExplicit = function () {
-    // cmd = "cat( Complete('" + sv.r.console.getConsoleContent().
+    // cmd = "cat(completion('" + sv.r.console.getConsoleContent().
     //      replace(/'/g, "\\'")  + "'))";
+    // PhG: if this gets reactivated, do not forget to make a form for HTTP and another one for socket!
     // sv.r.evalCallback(cmd, sv.r.console.completeExplicit_cb); 
 }
 
 // Callback for explicit completion
 sv.r.console.completeExplicit_cb = function (data) {
+    if (data.result !== undefined) data = data.result;
+    
     var completions = data.split("\t");
     if (completions.length == 1) {
         // sv.r.console.setConsoleContent(sv.r.console.getConsoleContent( ) +
@@ -295,8 +300,8 @@ sv.r.console.completeExplicit_cb = function (data) {
 
 // Clear completion list
 sv.r.console.clearCompletionTab = function () {
-    var compTree = document.
-        getElementById("sciviews_rconsole_completion_tree_main");
+    var compTree = document
+        .getElementById("sciviews_rconsole_completion_tree_main");
     sv.tools.e4x2dom.clear(compTree);
 }
 
@@ -310,9 +315,8 @@ sv.r.console.updateCompletionTab = function (completions) {
         var currentCmd;
         for (var i = sv.r.console.history.length - 1; i >= 0; i--) {
             currentCmd = sv.r.console.history[i];
-            if (cmdRx.test(currentCmd)) {
+            if (cmdRx.test(currentCmd))
                 histCompletions[histCompletions.length] = [currentCmd, "", ""];
-            }
         }
     } catch(e) {
         // Problem when creating the RegExp
@@ -373,8 +377,8 @@ sv.r.console.updateCompletionTab = function (completions) {
             sv.tools.e4x2dom.appendTo(newItem, root);
         }
     }
-    var compTree = document.
-        getElementById("sciviews_rconsole_completion_tree_main");
+    var compTree = document
+        .getElementById("sciviews_rconsole_completion_tree_main");
   
     // TODO: move the if to the makeTree function  
     makeTree(argCompletions, "arguments", compTree);

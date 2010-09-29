@@ -128,7 +128,7 @@ function OnLoad() {
             // for extra features of our R interpolation query dialog box
             // and make sure we return nothing from it
             switch (q.question) {            
-			case "R-desc":
+			 case "R-desc":
                 var queryDesc = document.getElementById("query-desc");
                 if (queryDesc.value == "") {
                     queryDesc.value = q.answer;
@@ -142,7 +142,7 @@ function OnLoad() {
                 q.answer = "";
                 break;
             
-            case "R-tip":
+             case "R-tip":
                 // Set the tooltip text of a query box to the provided string
 				var id = gIds[q.answer.match(/^[^:]+(?=:)/)];
 				if (typeof(id) != 'undefined') {
@@ -154,7 +154,7 @@ function OnLoad() {
                 q.answer = "";
                 break;
             
-			case "R-onfocus":
+			 case "R-onfocus":
                 // Set the onfocus action for this textbox
 				var id = gIds[q.answer.match(/^[^:]+(?=:)/)];
 				if (typeof(id) != 'undefined') {
@@ -166,15 +166,15 @@ function OnLoad() {
                 q.answer = "";
                 break;
 			
-			case "R-onok":
+			 case "R-onok":
                 // Set the onok action
 				gOnOK = q.answer;
                 // Make sure we return nothing from here!
                 q.answer = "";
                 break;
 			
-            case "R-help":
-            case "URL-help":
+             case "R-help":
+             case "URL-help":
                 helpButton.setAttribute("hidden", "false");
                 dialog.setAttribute("ondialoghelp",
                     "Help('" + q.answer + "');");
@@ -182,7 +182,7 @@ function OnLoad() {
                 q.answer = "";
                 break;
             
-            case "RWiki-help":
+             case "RWiki-help":
                 helpButton.setAttribute("hidden", "false");
                 // Get the RWiki base URL
 				var baseURL = "http:/wiki.r-project.org/rwiki/doku.php?id="
@@ -194,7 +194,7 @@ function OnLoad() {
                 q.answer = "";
                 break;
             
-            default:
+             default:
                 row = document.createElement("row");
                 row.setAttribute("align", "center");
 				
@@ -260,7 +260,7 @@ function OnLoad() {
             }
         }
     } catch(ex) {
-        dump("error adding interpolation query rows: "+ex+"\n");
+        dump("error adding interpolation query rows: " + ex + "\n");
     }
 
     window.sizeToContent();
@@ -268,7 +268,7 @@ function OnLoad() {
 }
 
 function OK() {
-    try { gHelpWin.closeHelp(); } catch(e) {}
+    try { gHelpWin.closeHelp(); } catch(e) { }
     // Store users answers to query objects.
     for (var i = 0; i < gQueries.length; i++) {
         var q = gQueries[i];
@@ -278,9 +278,7 @@ function OK() {
             var queryTextbox = document.getElementById(id);
             if (queryTextbox.value) {
                 q.answer = queryTextbox.value;
-                if (q.mruName) {
-                    ko.mru.addFromACTextbox(queryTextbox);
-                }
+                if (q.mruName) ko.mru.addFromACTextbox(queryTextbox);
             } else {
                 q.answer = "";
             }
@@ -288,16 +286,14 @@ function OK() {
     }
 	window.arguments[0].retval = "OK";
 	// Do we have onOK code to execute?
-	if (gOnOK != "") {
-		eval(gOnOK);
-	}
-    return true;
+	if (gOnOK != "") eval(gOnOK);
+    return(true);
 }
 
 function Cancel() {
-    try { gHelpWin.close(); } catch(e) {}
+    try { gHelpWin.close(); } catch(e) { }
     window.arguments[0].retval = "Cancel";
-    return true;
+    return(true);
 }
 
 function Help(uri) {
