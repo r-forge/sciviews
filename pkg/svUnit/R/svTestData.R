@@ -84,3 +84,34 @@ append = FALSE, ...)
             sep = "", file = file, append = TRUE)
     }
 }
+
+
+protocol_junit.svTestData <- function(object, ...) {
+  if(!require(XML, quietly=TRUE))
+    return(invisible(FALSE))
+
+  toValidXmlString <- function(s) gsub("<", "&lt;", s)
+
+  basename <- function(s) sub(".*/", "", s)
+
+  Context <- attr(object, "context")
+  Stats <- attr(object, "stats")
+  result <- xmlNode('testcase',
+                    attrs=c(
+                      'classname'=basename(Context[['unit']]),
+                      'name'=toValidXmlString(Context[['test']]),
+                      'time'=object$timing))
+  kind <- as.numeric(.kindMax(object$kind))  # TODO: use accessor
+  elementName <- c(NA, 'failure', 'error', NA)[kind]
+  if(!is.na(elementName)) {
+    failureNode <- xmlNode(elementName,
+                           attrs=c(
+                             'type'=elementName,
+                             'message'=object$res))  # TODO: use accessor
+    result <- addChildren(result, kids=list(failureNode))
+  }
+  if(kind == 4)
+    result <- addChildren(result, kids=list(xmlNode('skipped')))
+
+  return(result)
+}

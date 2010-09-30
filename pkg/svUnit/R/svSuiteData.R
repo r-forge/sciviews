@@ -113,3 +113,41 @@ protocol_text.svSuiteData <- function (object, file = "", append = FALSE, ...)
             summary(object[[Test]], file = file, append = TRUE)
     }
 }
+
+protocol_junit <- function (object, ...)
+	UseMethod("protocol_junit")
+
+protocol_junit.svSuiteData <- function (object, file="", append=FALSE, ...)
+{
+  if (!is.svSuiteData(object))
+    stop("'object' must inherit from 'svSuiteData'")
+  if(!require(XML, quietly=TRUE))
+    return(invisible(FALSE))
+
+  Tests <- sort(ls(object))
+  if((length(Tests) > 0) && inherits(object[[Tests[1]]], "svSuiteData"))
+    ## this is a set of suites (containing svSuiteData)
+    root <- xmlNode('testsuites')
+  else
+    ## this is a single suite (containing svTestData)
+    root <- xmlNode('testsuite')
+
+  with(stats(object), addAttributes(root, 
+                                    name=NULL,
+                                    tests=length(Tests),
+                                    errors=sum(kind == '**ERROR**'),
+                                    failures=sum(kind == '**FAILS**'),
+                                    skip=sum(kind == 'DEACTIVATED')))
+  if (length(Tests) > 0) {
+    for (Test in Tests)
+      root <- addChildren(root, kids=list(protocol_junit(object[[Test]], append=TRUE)))
+  }
+
+  ## decide whether to return the xml node or write the xml file
+  if(append)
+    return(root)
+  else {
+    saveXML(root, file)
+    return(invisible(TRUE))
+  }
+}
