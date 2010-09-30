@@ -2,7 +2,7 @@ Package: svUnit
 Type: Package
 Title: SciViews GUI API - Unit testing
 Depends: R (>= 1.9.0)
-Suggests: svGUI, datasets, utils
+Suggests: svGUI, datasets, utils, XML
 Description: A complete unit test system and functions to implement its GUI part
 Version: 0.7-4
 Date: 2010-09-30
