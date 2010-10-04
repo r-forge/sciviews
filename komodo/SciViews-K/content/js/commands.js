@@ -118,7 +118,7 @@ this.startR = function () {
 	// make sure to redefine reasonable default values here
 	var isWin = navigator.platform.indexOf("Win") === 0;
 	// Default preferredRApp on Windows is r-gui
-	var preferredRApp = sv.prefs.getString("svRApplicationId", 
+	var preferredRApp = sv.prefs.getString("svRApplicationId",
 		isWin? "r-gui" : "r-terminal");
 
 	var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
@@ -246,6 +246,9 @@ this.startR = function () {
 // sv.command.openHelp - returns reference to the RHelpWindow
 //FIXME: help in tab still buggy
 	this.openHelp = function (uri) {
+
+		//sv.cmdout.append("openHelp" + uri); // DEBUG
+
 		var RHelpWin = _this.RHelpWin;
 
 		// We will need special treatment in windows
@@ -359,7 +362,7 @@ this.startR = function () {
 				// intelligent" and can be used to run code step by step because it
 				// moves the cursor to the next line each time...
 				'cmd_svRRunLineOrSelection': [ 'sv.r.run();', XisRDoc | XRRunning ],
-                'cmd_svRSourceLineOrSelection': [ 'sv.r.source("line/sel");',XisRDoc | XRRunning ],
+                'cmd_svRSourceLineOrSelection': [ 'sv.r.source("line/sel");', XisRDoc | XRRunning ],
                 'cmd_svRRunSelection': [ 'sv.r.send("sel");',XisRDoc | XRRunning | XHasSelection ],
                 'cmd_svRSourceSelection': [ 'sv.r.source("sel");', XisRDoc | XRRunning | XHasSelection ],
                 'cmd_viewrtoolbar': [ 'ko.uilayout.toggleToolbarVisibility(\'RToolbar\')', 0 ]
@@ -377,7 +380,7 @@ this.startR = function () {
                 return false;
             return(view.document.language == 'R');
 /*
-// This would be useful if Komodo had event for language change at cursor position, 
+// This would be useful if Komodo had event for language change at cursor position,
 // and lexers allowed for R as sub-language
 			if (!view || !view.koDoc || !view.scimoz)
                 return (false);
@@ -403,9 +406,10 @@ this.startR = function () {
 
         svController.prototype.isCommandEnabled = function(command) {
             if(!command in handlers) return(false);
-			// TODO: Clean up the mess here.
+
 			return(true);
 
+			// TODO: Clean up the mess here.
             //var test = handlers[command][1];
             // PhG: since _isRRunning() returns always true, we are currently
 			// NOT able to start R!
@@ -421,14 +425,16 @@ this.startR = function () {
 			// Thus, for the nth time, I don't want this restriction on commands
 			// running code to R: I want them available EVERYWHERE!
 
-			// KB: the reasons for that were: (1) I do not like feeding R with lots of text pressing an F-key accidentally
-			// (2) I want to use e.g. F5 for running currently active code in an appropriate interpreter (like in SciTe),
-			// Unfortunately, Komodo does not allow for defining multiple commands for a single key combination
+			// KB: the reasons for that were: (1) I do not like feeding R with
+			// lots of text pressing an F-key accidentally (2) I want to use
+			// e.g. F5 for running currently active code in an appropriate
+			// interpreter (like in SciTe), Unfortunately, Komodo does not allow
+			// for defining multiple commands for a single key combination
 			//&& (((test & XisRDoc) != XisRDoc) || true) //_isRCurLanguage())
 			//&& (((test & XisRDoc) != XisRDoc) || _isRCurLanguage())
             // && (((test & XHasSelection) != XHasSelection) || _hasSelection());
 			//	&& (((test & XHasSelection) != XHasSelection) || _hasSelection()));
-//
+
 			//return true;
         }
 
@@ -442,6 +448,7 @@ this.startR = function () {
         window.controllers.appendController(new svController());
         //sv.log.debug("Controllers has been set.");
 }
+
 
 // Code below is for extra items in editor context menu (eg. "run selection"),
 // Commented out because it is still buggy
@@ -550,10 +557,16 @@ this.startR = function () {
 		//	"ko.commands.doCommandAsync('cmd_svRTriggerCompletion',
 		//  event);"].join(";"));
         //sv.log.debug("Keybindings has been applied.");
-
 	}
 
-    addEventListener("load", _setControllers, false);
+	// Workaround for an apparent bug in Komodo 6.0.0-rc1, causing that some
+	// commands become inactive when _setControllers are run immediately
+	// "on load" (e.g. Save)
+	function _delayedSetControllers () {
+		window.setTimeout(_setControllers, 100);
+	}
+
+    addEventListener("load", _delayedSetControllers, false);
     addEventListener("load", _setKeybindings, false);
 
 }).apply(sv.command);
