@@ -61,7 +61,6 @@
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/rjson.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
@@ -70,7 +69,16 @@
 
 	<broadcasterset id="broadcasterset_global">
 		<broadcaster id="sv_r_is_running" disabled="false"/>
+		<broadcaster
+			id="cmd_viewrtoolbar" key="key_cmd_viewrtoolbar"
+			desc="&userInterfaceShowHideRToolbar.desc;"
+			autoCheck="false"
+			checked="true"
+			persist="checked"
+			oncommand="ko.commands.doCommandAsync('cmd_viewrtoolbar', event)"
+		/>
 	</broadcasterset>
+
 <!-- PhG: commands updating disabled because it does not always work
           => sometimes, required commands remain disabled!!!!
 	KB: re-enabled commandupdater for now, but before we work out better
@@ -88,6 +96,10 @@
 			<command id="cmd_svQuitR" key="key_cmd_svQuitR"
 				oncommand="ko.commands.doCommand('cmd_svQuitR');"
 				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
+			<command id="cmd_svREscape" key="key_cmd_svREscape"
+				oncommand="ko.commands.doCommand('cmd_svREscape');"
+				desc="R: &rEscape;" label="&rEscape;" accesskey="&rEscape.key;"/>
+
 			<command id="cmd_svOpenPkgManager" key="key_cmd_svOpenPkgManager"
 				oncommand="ko.commands.doCommand('cmd_svOpenPkgManager');" disabled="false"
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
@@ -216,6 +228,97 @@
 			</menupopup>
 		</menu>
 	</menubar>
+
+
+	<toolbar id="main-toolboxrow">
+		<toolbaritem class="chromeclass-toolbar"
+			id="RToolbar"
+			broadcaster="cmd_viewrtoolbar"
+			grippyhidden="true"
+			align="center"
+			persist="hidden collapsed buttonstyle"
+			buttonstyle="pictures">
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rEscape;"
+						   persist="buttonstyle"
+						   class="stop-icon"
+						   observes="cmd_svREscape"
+						   label="&rEscape;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSendLineOrSelection;"
+						   persist="buttonstyle"
+						   class="r-run-selection-icon"
+						   observes="cmd_svRRunLineOrSelection"
+						   label="&rSendLineOrSelection;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSendFile;"
+						   persist="buttonstyle"
+						   class="r-run-all-icon"
+						   observes="cmd_svRRunAll"
+						   label="&rSendFile;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSrcFile;"
+						   persist="buttonstyle"
+						   class="r-source-all-icon"
+						   observes="cmd_svRSourceAll"
+						   label="&rSrcFile;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSendBlock;"
+						   persist="buttonstyle"
+						   class="r-run-block-icon"
+						   observes="cmd_svRRunBlock"
+						   label="&rSendBlock;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSrcBlock;"
+						   persist="buttonstyle"
+						   class="r-source-block-icon"
+						   observes="cmd_svRSourceBlock"
+						   label="&rSrcBlock;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSendPara;"
+						   persist="buttonstyle"
+						   class="r-run-para-icon"
+						   observes="cmd_svRRunPara"
+						   label="&rSendPara;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSrcPara;"
+						   persist="buttonstyle"
+						   class="r-source-para-icon"
+						   observes="cmd_svRSourcePara"
+						   label="&rSrcPara;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSendFun;"
+						   persist="buttonstyle"
+						   class="r-run-function-icon"
+						   observes="cmd_svRRunFunction"
+						   label="&rSendFun;" />
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&rSrcFun;"
+						   persist="buttonstyle"
+						   class="r-source-function-icon"
+						   observes="cmd_svRSourceFunction"
+						   label="rSrcFun;" />
+		</toolbaritem>
+	</toolbar>
+
+	<menupopup id="context-toolbox-menu">
+		<menuitem id="context_viewrtoolbar"
+			label="&RToolbar.label;"
+			type="checkbox"
+			observes="cmd_viewrtoolbar"
+			key="key_viewRToolbar"/>
+	</menupopup>
+
+	<menupopup id="popup_toolbars">
+			<menuitem id="menu_viewrtoolbar"
+			label="&RToolbar.label;"
+			observes="cmd_viewrtoolbar"
+			persist="checked"
+			checked="true"
+			type="checkbox"
+			/>
+	</menupopup>
+
 
 	<tabbox id="rightTabBox">
 		<tabs id="right_toolbox_tabs">

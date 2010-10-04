@@ -1,6 +1,6 @@
 // SciViews-K array functions
-// Various functions to manipulate arrays, 'sv.tools.array' namespace' 
-// Copyright (c) 2008-2010, Romain Francois and Kamil Barton
+// Various functions to manipulate arrays, 'sv.tools.array' namespace'
+// Copyright (c) 2008-2009, Romain Francois and Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.tools.array.remove(a, s);     // Eliminate 's' from 'a'
@@ -25,12 +25,10 @@ sv.tools.array.remove = function (a, s) {
 
 // Does the array 'a' contain 's'?
 sv.tools.array.contains = function (a, s) {
-	for (i = 0; i< a.length; i++)
-		if (s == a[i]) return(true);
-	return(false);
+	return (a.indexOf(s) !== -1);
 }
 
-// Return an array from which 's' item is eliminated fro the array 'a'
+// Return an array from which 's' item is eliminated from the array 'a'
 sv.tools.array.removeItem = function (a, s) {
 	var b = [];
 	for (i in a)
@@ -38,22 +36,20 @@ sv.tools.array.removeItem = function (a, s) {
 	return(b);
 }
 
+sv.tools.array.unique = function(a) {
+    var res = [];
+    var l = a.length;
+	for (var i in a) {
+		if (res.indexOf(a[i]) != -1) continue;
+		res.push(a[i]);
+	}
+	return res;
+}
+
+
 
 //// Additional methods to Array objects ///////////////////////////////////////
 //// Return new array with duplicate values removed
-//Array.prototype.makeunique =  function() {
-//    var a = [];
-//    var l = this.length;
-//	for (var i=0; i<l; i++) {
-//		for (var j=i+1; j<l; j++) {
-//			// If this[i] is found later in the array
-//			if (this[i] === this[j])
-//				j = ++i;
-//		}
-//		a.push(this[i]);
-//    }
-//    return a;
-//};
 //
 //// Compute the intersection of n arrays
 //Array.prototype.getintersect = function () {

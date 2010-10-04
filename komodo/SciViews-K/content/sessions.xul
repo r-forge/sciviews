@@ -1,61 +1,61 @@
 <?xml version="1.0"?>
-<!-- ***** BEGIN LICENSE BLOCK *****
- Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ <!-- ***** BEGIN LICENSE BLOCK *****
+	Version: MPL 1.1/GPL 2.0/LGPL 2.1
 
- The contents of this file are subject to the Mozilla Public License
- Version 1.1 (the "License"); you may not use this file except in
- compliance with the License. You may obtain a copy of the License at
- http://www.mozilla.org/MPL/
+	The contents of this file are subject to the Mozilla Public License
+	Version 1.1 (the "License"); you may not use this file except in
+	compliance with the License. You may obtain a copy of the License at
+	http://www.mozilla.org/MPL/
 
- Software distributed under the License is distributed on an "AS IS"
- basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- License for the specific language governing rights and limitations
- under the License.
+	Software distributed under the License is distributed on an "AS IS"
+	basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+	License for the specific language governing rights and limitations
+	under the License.
 
- The Original Code is SciViews-K by Philippe Grosjean et al.
+	The Original Code is SciViews-K by Philippe Grosjean et al.
 
- Contributor(s):
-   Kamil Barton
- 
- Alternatively, the contents of this file may be used under the terms of
- either the GNU General Public License Version 2 or later (the "GPL"), or
- the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- in which case the provisions of the GPL or the LGPL are applicable instead
- of those above. If you wish to allow use of your version of this file only
- under the terms of either the GPL or the LGPL, and not to allow others to
- use your version of this file under the terms of the MPL, indicate your
- decision by deleting the provisions above and replace them with the notice
- and other provisions required by the GPL or the LGPL. If you do not delete
- the provisions above, a recipient may use your version of this file under
- the terms of any one of the MPL, the GPL or the LGPL.
+	Contributor(s):
+	Kamil Barton
 
- ***** END LICENSE BLOCK ***** -->
+	Alternatively, the contents of this file may be used under the terms of
+	either the GNU General Public License Version 2 or later (the "GPL"), or
+	the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+	in which case the provisions of the GPL or the LGPL are applicable instead
+	of those above. If you wish to allow use of your version of this file only
+	under the terms of either the GPL or the LGPL, and not to allow others to
+	use your version of this file under the terms of the MPL, indicate your
+	decision by deleting the provisions above and replace them with the notice
+	and other provisions required by the GPL or the LGPL. If you do not delete
+	the provisions above, a recipient may use your version of this file under
+	the terms of any one of the MPL, the GPL or the LGPL.
+
+	***** END LICENSE BLOCK ***** -->
 
 <!-- SciViews-K's R-session manager dialog box -->
 
 <!DOCTYPE dialog SYSTEM "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
 <!ENTITY % dialogsDTD SYSTEM "chrome://komodo/locale/dialogs.dtd">
-  %dialogsDTD;
+%dialogsDTD;
 <!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
-	%sciviewskDTD;
+%sciviewskDTD;
 ]>
 
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
 
-<dialog id="dialog-svsetsession"
-		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-		onload="OnLoad(event)"
-		orient="vertical"
-		flex="1"
-		buttons="accept,extra1,cancel"
-		buttonlabelextra1="Apply"
-		ondialoghelp="return false;"
-		ondialogaccept="return OK();"
-		ondialogcancel="return true;"
-		ondialogextra1="OK();"
-		title="R Session manager"
-		persist="screenX screenY width height"
+		<dialog id="dialog-svsetsession"
+xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+onload="OnLoad(event)"
+orient="vertical"
+flex="1"
+buttons="accept,extra1,cancel"
+buttonlabelextra1="Apply"
+ondialoghelp="return false;"
+ondialogaccept="return OK();"
+ondialogcancel="return true;"
+ondialogextra1="OK();"
+title="R Session manager"
+persist="screenX screenY"
 		>
 <script type="text/javascript">
 <![CDATA[
@@ -82,23 +82,27 @@ function OnLoad(event) {
 
 	var prefEls = document.getElementsByAttribute("pref", "true");
 	var prefName, prefVal, prefSettings, prefHomeSubst, prefExistingOnly,
-		el, value, values, listContentPref;
+	el, value, values, listContentPref;
 	for (var i = 0; i < prefEls.length; i++) {
 		el = prefEls[i];
 		prefName = el.id;
 		prefVal = sv.prefs.getString(prefName);
-		prefSettings = el.getAttribute("prefsettings");
+		//prefSettings = el.getAttribute("prefsettings");
 		if (el.hasAttribute("prefsettings")) {
 			prefSettings = el.getAttribute("prefsettings").split(" ");
+		} else {
+			prefSettings = '';
 		}
 		prefHomeSubst = prefSettings.indexOf("home-subst") != -1;
 		prefExistingOnly = prefSettings.indexOf("existing-only") != -1;
 
-		if (prefHomeSubst) prefVal = sf.path(prefVal);
+		if (prefHomeSubst)
+			prefVal = sf.path(prefVal);
 
 		if (el.tagName == "menulist") {
+
 			listContentPref = el.hasAttribute("contentpref")?
-				el.getAttribute("contentpref") : prefName + ".mru";
+			el.getAttribute("contentpref") : prefName + ".mru";
 
 			values = sv.prefs.getString(listContentPref);
 			if (values) {
@@ -106,19 +110,21 @@ function OnLoad(event) {
 				values = values.split(os.pathsep);
 
 				var k = values.indexOf(
-					prefHomeSubst? homeSubst(prefVal) : prefVal);
+				prefHomeSubst? homeSubst(prefVal) : prefVal);
 				// Move current value onto top of list:
 				if (k != -1) values.splice(k, 1);
 				values = Array.concat(prefVal, values);
 
-				if (values.length > 10) values.splice(10);
+				if (values.length > 10)		values.splice(10);
 
 				for (var j = 0; j < values.length; j++) {
 					value = sf.path(values[j]);
 					if (!prefExistingOnly || sf.exists(value))
-						el.insertItemAt(j, value, value, null);
+					el.insertItemAt(j, value, value, null);
 				}
 			}
+		} else if (el.tagName == "checkbox") {
+			el.checked = (prefVal == "true");
 		}
 		el.value = prefVal;
 	}
@@ -141,17 +147,26 @@ function OK() {
 		el = prefEls[i];
 		prefVal = el.value;
 		if (el.getAttribute("prefsettings").indexOf("home-subst") != -1)
-			prefVal = homeSubst(prefVal);
+		prefVal = homeSubst(prefVal);
 		sv.prefs.setString(el.id, prefVal);
 	}
 
 	function _getVal(id) document.getElementById(id).value;
-	sv.r.setSession (_getVal("sciviews.session.dir"),
-					 _getVal("sciviews.session.data"),
-					 _getVal("sciviews.session.scripts"),
-					 _getVal("sciviews.session.reports"));
 
-	return(true);
+	sv.r.setSession (_getVal("sciviews.session.dir"),
+	_getVal("sciviews.session.data"),
+	_getVal("sciviews.session.scripts"),
+	_getVal("sciviews.session.reports"));
+
+	var setPlacesRoot =
+		document.getElementById("sciviews.session.placesroot").checked;
+
+	if (setPlacesRoot) {
+		ko.places.manager.openDirectory(_getVal("sciviews.session.dir"));
+	}
+	sv.prefs.setString("sciviews.session.placesroot", setPlacesRoot);
+
+	return (true);
 }
 
 // Substitute real home path for "~"
@@ -163,11 +178,12 @@ function homeSubst(dir) {
 	var platform = navigator.platform.substring(0,3).toLowerCase();
 
 	if ((platform == "win"
-		&& dir.substr(0, homedir.length).toLowerCase() == homedir.toLowerCase())
-		|| dir.substr(0, homedir.length) == homedir) {
-        dir = homeMacro + dir.substr(homedir.length);
+	&& dir.substr(0, homedir.length).toLowerCase() == homedir.toLowerCase())
+	|| dir.substr(0, homedir.length) == homedir) {
+
+		dir = homeMacro + dir.substr(homedir.length);
 	}
-	return(dir);
+	return (dir);
 }
 
 // Add a directory item into list
@@ -175,7 +191,8 @@ function setDir(id) {
 	var el = document.getElementById(id);
 	var dir = ko.filepicker.getFolder(el.value, "Choose directory for: " + id);
 
-	if (!dir) return(false);
+	if (!dir) return (false);
+
 
 	var mi;
 	for (var j = 0; j < el.itemCount; j++) {
@@ -187,7 +204,7 @@ function setDir(id) {
 	el.insertItemAt(0, dir, dir, null);
 	el.value = dir;
 	selectSessionDir();
-	return(true);
+	return true;
 }
 
 function remCurItemFromList() {
@@ -196,7 +213,9 @@ function remCurItemFromList() {
 	var selInd = el.selectedIndex;
 	el.selectedIndex = (selInd + 1) % el.itemCount;
 	el.removeItemAt(selInd);
-	if (!el.itemCount) el.value = null;
+	if (!el.itemCount) {
+		el.value = null;
+	}
 	selectSessionDir();
 }
 
@@ -210,7 +229,7 @@ function selectSessionDir(noReadConfig) {
 	var hasConfig, hasWorkspace = false;
 
 	hasConfig = sv.tools.file.exists(dir) == 2 &&
-				sv.tools.file.exists(cfgFile) == 1;
+	sv.tools.file.exists(cfgFile) == 1;
 
 	hasWorkspace = sv.tools.file.exists(sv.tools.file.path(dir, ".RData"));
 
@@ -238,7 +257,7 @@ function selectSessionDir(noReadConfig) {
 	}
 
 	printInfo("This directory contains " + (hasConfig? "a config file" : "no config file") +
-			  " (\".svConfig\") and " + (hasWorkspace? "saved workspace": "no workspace") + ".");
+	" (\".svConfig\") and " + (hasWorkspace? "saved workspace": "no workspace") + ".");
 
 	document.getElementById("delete-config-button").disabled = !hasConfig;
 	document.getElementById("delete-workspace-button").disabled = !hasWorkspace;
@@ -269,11 +288,11 @@ function clearFiles(which) {
 	var files;
 	switch (which) {
 		case "config":
-			files = [".svData"];
-			break;
+		files = [".svData"];
+		break;
 		case "workspace":
-			files = [".RData", ".Rhistory"];
-			break;
+		files = [".RData", ".Rhistory"];
+		break;
 		default:
 	}
 
@@ -302,20 +321,19 @@ function saveWorkspace() {
 	var rDataFile = sf.path(dir, ".RData");
 	var rHistoryFile = sf.path(dir, ".Rhistory");
 	if (!sf.exists(rDataFile) || ko.dialogs.okCancel(
-			sv.translate("Do you really want to overwrite exising workspace file"
-						 + "in \"%S\" with current workspace?", dir),
-				"Cancel", null, sv.translate("Save current workspace")
+	sv.translate("Do you really want to overwrite exising workspace file"
+	+ "in \"%S\" with current workspace?", dir),
+		"Cancel", null, sv.translate("Save current workspace")
 		) == "OK") {
-			sv.r.evalCallback('save.image("' + addslashes(rDataFile) + '")',
-				selectSessionDir);
+		sv.r.evalCallback('save.image("' + addslashes(rDataFile) + '")',
+			selectSessionDir);
 
 		if (!sf.exists(rHistoryFile) || ko.dialogs.okCancel(
 			sv.translate("Do you want to overwrite current history file in \"%S\"", dir),
 				"Cancel", null, sv.translate("Save current history")
-		) == "OK") {
+			) == "OK") {
 			sv.r.evalHidden('savehistory("' + addslashes(rDataFile) + '")');
 		}
-
 	}
 }
 
@@ -335,6 +353,11 @@ function saveWorkspace() {
 					<button label="Browse..."
 					oncommand="setDir('sciviews.session.dir');"/>
 					<button label="Remove" oncommand="remCurItemFromList('sciviews.session.dir');"/>
+				</hbox>
+				<hbox align="center">
+					<checkbox id="sciviews.session.placesroot" pref="true"
+						label="Set this directory as root in &quot;Places&quot;"
+						/>
 				</hbox>
 				<separator class="thin"/>
 				<label id="info" value="" />

@@ -108,3 +108,9 @@
 
 <!ENTITY svOpenSessMgr "Session directory">
 <!ENTITY svOpenSessMgr.key "C">
+
+<!ENTITY rEscape "Escape current calculation">
+<!ENTITY rEscape.key "E">
+
+<!ENTITY RToolbar.label "R toolbar">
+<!ENTITY userInterfaceShowHideRToolbar.desc "User Interface: Show/Hide R toolbar">

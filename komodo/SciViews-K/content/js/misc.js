@@ -405,7 +405,7 @@ sv.misc.pathToClipboard = function (unix) {
     var ch = Components.classes["@mozilla.org/widget/clipboardhelper;1"].
         getService(Components.interfaces.nsIClipboardHelper);
     try {
-        var path = ko.views.manager.currentView.document.file.path;
+        var path = ko.views.manager.currentView.koDoc.file.path;
 		if (unix) path = path.replace(/\\/g, "/");
 		ch.copyString(path);
     } catch(e) {

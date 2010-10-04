@@ -34,13 +34,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		return(null);
 	}
 
-	// Get reference to a window, opening it if is closed
-	function _getWindowRef(uri, name, features, focus) { //, ...
+	//Get reference to a window, opening it if is closed
+	function _getWindowRef(uri, name, features, focus) {//, ...
 		var win = _getWindowByURI(uri);
 		if (!win || win.closed) {
 			try {
 				var args = Array.apply(null, arguments);
-				args = args.slice(0, 3).concat(args.slice(4));
+				args = args.slice(0,3).concat(args.slice(4));
 				if (!features) args[2] = "chrome,modal,titlebar";
 				win = window.openDialog.apply(null, args);
 			} catch (e) {
@@ -73,122 +73,89 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 	function _RControl_supported () {
 		var currentView = ko.views.manager.currentView;
-		if (!currentView || !currentView.document) return(false);
-		//return(_isRRunning() && currentView.document.language == "R");
-		return(currentView.document.language == "R");
+		if (!currentView || !currentView.koDoc) return(false);
+		//return(_isRRunning() && currentView.koDoc.language == "R");
+		return(currentView.koDoc.language == "R");
 	}
 
 	function _RControlSelection_supported () {
 		var currentView = ko.views.manager.currentView;
-		if (!currentView || !currentView.scimoz) return(false);
-		return (_RControl_supported() &&
-			((currentView.scimoz.selectionEnd -
-			currentView.scimoz.selectionStart) != 0));
 	}
 
-	// Start R
-	this.startR = function () {
-		var cwd = sv.tools.file.path("ProfD", "extensions",
-			"sciviewsk@sciviews.org", "defaults");
-		var cmd = sv.prefs.getString("svRApplication");
-	
-		// PhG: there is a bug in the way R starts: at the begining, a dummy '00LOCK'
-		// file is created that prevents to config another R process as SciViews socket
-		// server. Everytime svStart.R is run, it looks if this '00LOCK' file exists,
-		// and if it finds it, it refuses to configure R as a socket server.
-		// OK, but what happens if the config of the SciViews R server fails in the
-		// middle of the process? Well, '00LOCK' is not removed, and it is not possible
-		// any more to configure R (automatically) as a SciViews socket server.
-		// To cope with this problem, I make sure '00LOCK' is deleted everytime the
-		// SciViews-K plugin is loaded in Komodo Edit. That way, restarting Komodo
-		// solves the problem of the remaining '00LOCK' file, in case R failed...
-	
-		// KB: The '00LOCK' semaphore is used mainly to prevent infinite loop when
-		// R restarts after installing missing libraries (as it is done in svStart).
-		// So, it should be ok to delete it everytime user chooses a command to
-		// start R from Komodo.
-		try {
-			var lockFile = sv.tools.file.getfile(cwd, "00LOCK");
-			if (lockFile.exists())	lockFile.remove(true);
-		} catch(e) { }
-	
-		// trim just in case
-		var path = sv.tools.strings.trim(sv.prefs.getString("svRDefaultInterpreter"));
-	
-		// PhG: on Mac OS X, R.app is not a file, but a dir!!!
-		if (!path || (sv.tools.file.exists(path) == sv.tools.file.TYPE_NONE)) {
-			if(ko.dialogs.okCancel(
-			sv.translate("Default R interpreter is not (correctly) set in " +
-				"Preferences. Do you want to do it now?"),
-				"OK", null, "SciViews-K") == "OK") {
-					prefs_doGlobalPrefs("svPrefRItem", true);
-				}
-			return;
+// Start R
+this.startR = function () {
+	var cwd = sv.tools.file.path("ProfD", "extensions",
+	"sciviewsk@sciviews.org", "defaults");
+	var cmd = sv.prefs.getString("svRCommand");
+
+    // Remove /defaults/00LOCK if remained after a fail-start
+	try {
+		var lockFile = sv.tools.file.getfile(cwd, "00LOCK");
+		if (lockFile.exists())	lockFile.remove(true);
+	} catch(e) { }
+
+
+	if (!cmd || (sv.tools.file.exists(sv.prefs.getString("svRDefaultInterpreter"))
+                 == sv.tools.file.TYPE_NONE)) {
+	    if(ko.dialogs.okCancel(
+		sv.translate("Default R interpreter is not (correctly) set in " +
+			     "Preferences. Do you want to do it now?"),
+			"OK", null, "SciViews-K") == "OK") {
+		prefs_doGlobalPrefs("svPrefRItem", true);
+	    }
+	    return;
 		}
-	
-		// PhG: %Path% has changed: it is now the full application path, like "/usr/bin/R"!
-		// So, the following code should be eliminated!
-		//var os = Components.classes['@activestate.com/koOs;1']
-		//.getService(Components.interfaces.koIOs);
-		//path = os.path.dirname(path);
-		//if (path) path += os.sep;
-		//TODO: shouldn't we replace this with a command line argument which would
-		// be more flexible, because it should allow much more than just --quiet???
-		// KB: work in progress...
-		var Quiet = sv.prefs.getString("svRQuiet") ? "--quiet " : " ";
-		cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
-			.replace("%title%", "SciViews-R").replace("%quiet%", Quiet);
-	
-		//var Args = sv.prefs.getString("svRArgs");
-		//cmd = cmd.replace("%Path%", path).replace("%cwd%", cwd)
-		//	.replace("%title%", "SciViews-R").replace("%args%", Args);
-	
+
+	var id=sv.prefs.getString("svRApplication",
+                                isWin? "r-gui" : "r-terminal");
+
 		var id = sv.prefs.getString("svRApplicationId");
-	
-		// runIn = "command-output-window", "new-console",
-		// env strings: "ENV1=fooJ\nENV2=bar"
-		// gPrefSvc.prefs.getStringPref("runEnv");
-	
-		// Reasonable default values are set in prefs.js... but just in case, we
-		// make sure to redefine reasonable default values here
-		var isWin = navigator.platform.indexOf("Win") === 0;
-		// Default preferredRApp on Windows is r-gui
-		var preferredRApp = sv.prefs.getString("svRApplicationId",
-			isWin ? "r-gui" : "r-terminal");
-		var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
-			"SciViewsK"),
-			"koHost=localhost",
-			"koActivate=FALSE",
-			"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
-			"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
-			"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
-			"koDebug=" + String(sv.socket.debug).toUpperCase(),
-			"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin ? ".exe" : ""))
-		];
-		var runIn = "no-console";
-		env.push("Rid=" + preferredRApp);
-	
-		switch (preferredRApp) {
-		 case "r-tk":
+	// runIn = "command-output-window", "new-console",
+	// env strings: "ENV1=fooJ\nENV2=bar"
+	// gPrefSvc.prefs.getStringPref("runEnv");
+
+	// Reasonable default values are set in prefs.js... but just in case, we
+	// make sure to redefine reasonable default values here
+	var isWin = navigator.platform.indexOf("Win") === 0;
+	// Default preferredRApp on Windows is r-gui
+	var preferredRApp = sv.prefs.getString("svRApplicationId", 
+		isWin? "r-gui" : "r-terminal");
+
+	var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
+		"SciViewsK"),
+		"koHost=localhost",
+		"koActivate=FALSE",
+		"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
+		"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
+		"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
+		"koDebug=" + String(sv.socket.debug).toUpperCase(),
+		"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : ""))
+	];
+	var runIn = "no-console";
+
+	env.push("Rid=" + id);
+
+	switch (id) {
+		case "r-tk":
 			env.push("Rid=R-tk");
 			// Set DISPLAY only when not set:
 			var XEnv = Components.classes["@activestate.com/koEnviron;1"]
 				.createInstance(Components.interfaces.koIEnviron);
-			if (!XEnv.has("DISPLAY")) env.push("DISPLAY=:0");
+			if (!XEnv.has("DISPLAY"))	env.push("DISPLAY=:0");
 			delete(XEnv);
 			break;
-		 case "r-terminal":
+		case "r-terminal":
 			runIn = "new-console";
 			break;
-		 default:
-		}
-	
-		ko.run.runCommand(window, cmd, cwd, env.join("\n"), false,
-			false, false, runIn, false, false, false);
-	
-		// Register observer of application termination.
-		this.rObserver = new AppTerminateObserver(cmd);
+		default:
 	}
+
+	ko.run.runCommand(window, cmd, cwd, env.join("\n"), false,
+		false, false, runIn, false, false, false);
+
+	// Register observer of application termination.
+	this.rObserver = new AppTerminateObserver(cmd);
+}
 
 	// This will observe status message notification to be informed about
 	// application being terminated. A more straightforward way would be to use
@@ -220,6 +187,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			this.command = command;
 			observerSvc.addObserver(this, 'status_message', false);
 			sv.log.debug("R has been started with command: " + command);
+
 			// Sending commands to R does not seem to work, I think it is
 			// too early, R is still starting. This should be in .Rprofile
 			//sv.socket.rUpdate();
@@ -244,13 +212,21 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 	this.updateRStatus = function (running) {
 		running = !!running;
-		if (running != sv.r.running) {
-			sv.r.running = !!running;
+        // Toggle status if no argument
+		if(typeof running == "undefined")
+            running = !sv.r.running;
+		else
+            running = true;
+            //running = !!running; // ensure it is boolean
+
+        if (running != sv.r.running) {
+			sv.r.running = running;
+			//sv.r.running = running;
 			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			// PhG: these events are disabled for now, because menus are
 			//      sometimes disabled when they shouldn't be!!! Very ennoying!
 			//window.updateCommands('r_app_started_closed');
-			sv.log.debug("R status updated: " + (running ? "" : "not ") + "running");
+			//sv.cmdout.message("R status: " + (running? "" : "not ") + "running" );
 		}
 	}
 
@@ -267,8 +243,8 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		return(win);
 	}
 
-	// sv.command.openHelp - returns reference to the RHelpWindow
-	//FIXME: help in tab still buggy
+// sv.command.openHelp - returns reference to the RHelpWindow
+//FIXME: help in tab still buggy
 	this.openHelp = function (uri) {
 		var RHelpWin = _this.RHelpWin;
 
@@ -300,7 +276,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 		// Open R-help in a right tab
 		if (rhelpTabbed) {
-			// make sure tab is visible and select it
+			// Make sure tab is visible and select it
 			var tabPanel = document.getElementById("rhelpviewbox");
 			var tab = document.getElementById("rhelp_tab");
 			var tabBox = tabPanel.parentNode.parentNode;
@@ -339,7 +315,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	}
 
 	// Close r-help tab
-	this.closeHelp = function () {
+	this.closeHelp = function() {
 		var tabPanel = document.getElementById("rhelpviewbox");
 		var tab = document.getElementById("rhelp_tab");
 		var tabBox = tabPanel.parentNode.parentNode;
@@ -350,6 +326,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			tabBox.tabs.itemCount) - 1;
 		document.getElementById("rhelpview-frame")
 			.setAttribute("src", "about:blank");
+
 		//_this.RHelpWin.closed = true;
 	}
 
@@ -361,81 +338,105 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
         const XRRunning = 1, XRStopped = 2, XisRDoc = 4, XHasSelection = 8;
         var handlers = {
-                'cmd_svOpenPkgManager': ["sv.command.openPkgManager();", XRRunning],
-                'cmd_svBrowseWD': ['sv.r.setwd(\'current\', true);', XRRunning],
-                'cmd_svQuitR': ['sv.r.quit();', XRRunning],
-                'cmd_svOpenHelp': ["sv.command.openHelp();", XRRunning],
-                'cmd_svSessionMgr': ["sv.command.openSessionMgr();", XRRunning],
-                'cmd_svStartR': ['sv.command.startR();', XRStopped],
-                'cmd_svUpdateRInfo': ['sv.socket.rUpdate();', XRRunning],
-                'cmd_svRRunAll': ['sv.r.send("all");', XisRDoc | XRRunning],
-                'cmd_svRSourceAll': ['sv.r.source("all");', XisRDoc | XRRunning],
-                'cmd_svRRunBlock': ['sv.r.send("block");', XisRDoc | XRRunning],
-                'cmd_svRRunFunction': ['sv.r.send("function");', XisRDoc | XRRunning],
-                'cmd_svRRunLine': ['sv.r.send("line");', XisRDoc | XRRunning],
-                'cmd_svRRunPara': ['sv.r.send("para");', XisRDoc | XRRunning],
-                'cmd_svRSourceBlock': ['sv.r.source("block");', XisRDoc | XRRunning],
-                'cmd_svRSourceFunction': ['sv.r.source("function");', XisRDoc | XRRunning],
-                'cmd_svRSourcePara': ['sv.r.source("para");', XisRDoc | XRRunning],
+                'cmd_svOpenPkgManager': [ "sv.command.openPkgManager();", XRRunning ],
+                'cmd_svBrowseWD': [ 'sv.r.setwd(\'current\', true);', XRRunning ],
+                'cmd_svQuitR': [ 'sv.r.quit();', XRRunning ],
+                'cmd_svOpenHelp': [ "sv.command.openHelp();", XRRunning ],
+                'cmd_svSessionMgr': [ "sv.command.openSessionMgr();", XRRunning ],
+                'cmd_svStartR': [ 'sv.command.startR();', 0 ], // XRStopped
+                'cmd_svREscape': [ 'sv.r.escape();', XRRunning ],
+                // 'cmd_svUpdateRInfo': ['sv.socket.rUpdate();', XRRunning],
+                'cmd_svRRunAll': [ 'sv.r.send("all");',XisRDoc | XRRunning ],
+                'cmd_svRSourceAll': [ 'sv.r.source("all");',XisRDoc | XRRunning ],
+                'cmd_svRRunBlock': [ 'sv.r.send("block");',XisRDoc | XRRunning ],
+                'cmd_svRRunFunction': [ 'sv.r.send("function");',XisRDoc | XRRunning ],
+                'cmd_svRRunLine': [ 'sv.r.send("line");',XisRDoc | XRRunning ],
+                'cmd_svRRunPara': [ 'sv.r.send("para");',XisRDoc | XRRunning ],
+                'cmd_svRSourceBlock': [ 'sv.r.source("block");',XisRDoc | XRRunning ],
+                'cmd_svRSourceFunction': [ 'sv.r.source("function");',XisRDoc | XRRunning ],
+                'cmd_svRSourcePara': [ 'sv.r.source("para");',XisRDoc | XRRunning ],
                 // PhG: this should really be sv.r.run(), which is supposed to be "more
 				// intelligent" and can be used to run code step by step because it
 				// moves the cursor to the next line each time...
-				'cmd_svRRunLineOrSelection': ['sv.r.run();', XisRDoc | XRRunning],
-                'cmd_svRSourceLineOrSelection': ['sv.r.source("line/sel");', XisRDoc | XRRunning],
-                'cmd_svRRunSelection': ['sv.r.send("sel");', XisRDoc | XRRunning | XHasSelection],
-                'cmd_svRSourceSelection': ['sv.r.source("sel");', XisRDoc | XRRunning | XHasSelection]
+				'cmd_svRRunLineOrSelection': [ 'sv.r.run();', XisRDoc | XRRunning ],
+                'cmd_svRSourceLineOrSelection': [ 'sv.r.source("line/sel");',XisRDoc | XRRunning ],
+                'cmd_svRRunSelection': [ 'sv.r.send("sel");',XisRDoc | XRRunning | XHasSelection ],
+                'cmd_svRSourceSelection': [ 'sv.r.source("sel");', XisRDoc | XRRunning | XHasSelection ],
+                'cmd_viewrtoolbar': [ 'ko.uilayout.toggleToolbarVisibility(\'RToolbar\')', 0 ]
         }
 
         // Temporary
         function _isRRunning () {
-            return(true);
+            return true;
+
         }
-		
+
         function _isRCurLanguage () {
             var view = ko.views.manager.currentView;
-            if (!view || !view.document) return(false);
-            return(view.document.language == "R");
+            if (!view || !view.document)
+                return false;
+            return(view.document.language == 'R');
+/*
+// This would be useful if Komodo had event for language change at cursor position, 
+// and lexers allowed for R as sub-language
+			if (!view || !view.koDoc || !view.scimoz)
+                return (false);
+            var lang = view.koDoc.languageForPosition(view.scimoz.currentPos);
+            return(lang == 'R');
+*/
         }
-		
+
         function _hasSelection () {
             var view = ko.views.manager.currentView;
             if (!view || !view.scimoz) return(false);
-            return((view.scimoz.selectionEnd - view.scimoz.selectionStart) != 0);
+
+            return ((view.scimoz.selectionEnd - view.scimoz.selectionStart) != 0);
         }
 
         function svController() {}
-        
-		svController.prototype = new Controller();
-        
-		svController.prototype.constructor = svController;
-        
-		svController.prototype.destructor = function () { }
-        
-		svController.prototype.isCommandEnabled = function (command) {
-            if(!command in handlers) return(false);
 
-            var test = handlers[command][1];
+        svController.prototype = new Controller();
+
+        svController.prototype.constructor = svController;
+
+        svController.prototype.destructor = function() { }
+
+        svController.prototype.isCommandEnabled = function(command) {
+            if(!command in handlers) return(false);
+			// TODO: Clean up the mess here.
+			return(true);
+
+            //var test = handlers[command][1];
             // PhG: since _isRRunning() returns always true, we are currently
 			// NOT able to start R!
-			return((((test & XRRunning) != XRRunning) || true) //_isRRunning())
-				&& (((test & XRStopped) != XRStopped) || true) //!_isRRunning())
-				// PhG: it is NOT the program, but the user who decides when it possible
-				// to send a command to R... There are possibles situations where
-				// executable R code live somewhere else than in a .R document
-				// Let's think at examples in .Rd files, <code R> sections in a
-				// wiki page, etc.
-				// Thus, for the nth time, I don't want this restriction on commands
-				// running code to R: I want them available EVERYWHERE!
-				&& (((test & XisRDoc) != XisRDoc) || true) //_isRCurLanguage())
-				&& (((test & XHasSelection) != XHasSelection) || _hasSelection()));
+			// KB: Yes, but startR is enabled by on Komodo load and event "r_app_started_closed"
+			// is never fired.
+			//return (((test & XRRunning) != XRRunning) || _isRRunning())
+            //&& (((test & XRStopped) != XRStopped) || !_isRRunning())
+            // PhG: it is NOT the program, but the user who decides when it possible
+			// to send a command to R... There are possibles situations where
+			// executable R code live somewhere else than in a .R document
+			// Let's think at examples in .Rd files, <code R> sections in a
+			// wiki page, etc.
+			// Thus, for the nth time, I don't want this restriction on commands
+			// running code to R: I want them available EVERYWHERE!
+
+			// KB: the reasons for that were: (1) I do not like feeding R with lots of text pressing an F-key accidentally
+			// (2) I want to use e.g. F5 for running currently active code in an appropriate interpreter (like in SciTe),
+			// Unfortunately, Komodo does not allow for defining multiple commands for a single key combination
+			//&& (((test & XisRDoc) != XisRDoc) || true) //_isRCurLanguage())
+			//&& (((test & XisRDoc) != XisRDoc) || _isRCurLanguage())
+            // && (((test & XHasSelection) != XHasSelection) || _hasSelection());
+			//	&& (((test & XHasSelection) != XHasSelection) || _hasSelection()));
+//
+			//return true;
         }
 
-        svController.prototype.supportsCommand = svController.prototype
-			.isCommandEnabled;
+        svController.prototype.supportsCommand = svController.prototype.isCommandEnabled;
 
-        svController.prototype.doCommand = function (command) {
+        svController.prototype.doCommand = function(command) {
             if (command in handlers) return(eval(handlers[command][0]));
-            return(false);
+            return (false);
         }
 
         window.controllers.appendController(new svController());
@@ -449,13 +450,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 //
 //		var ids = ["editor-context-sep-sv", "editor-context-sv-r-send-line-sel"];
 //
-//		var langNotR = ko.views.manager.currentView.document.language != "R";
-//		var visibility = langNotR ? "collapse" : "visible";
+//		var langNotR = ko.views.manager.currentView.koDoc.language != "R";
+//		var visibility = langNotR? "collapse" : "visible";
 ///*
 //		for (i in ids)
 //			document.getElementById(ids[i]).style.visibility = visibility;
 //*/
-//		//} catch(e) { }
+//		//} catch(e) {}
 //
 //	}
 //var editorContextMenu = document.getElementById("editorContextMenu");
@@ -469,7 +470,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			.classes["@activestate.com/koKeybindingSchemeService;1"]
 			.getService(Components.interfaces.koIKeybindingSchemeService);
 
-		//TODO: use of gKeybindingMgr could simplify this code
+//TODO: use of gKeybindingMgr could simplify this code
 		//gKeybindingMgr.keybindingSchemeService
 
 		var svSchemeDefault = sv.tools.file

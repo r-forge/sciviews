@@ -1,12 +1,11 @@
 // SciViews-K R preferences panel functions
-// Copyright (c) 2009-2010, Ph. Grosjean (phgrosjean@sciviews.org) & Kamil Barton
+// Copyright (c) 2009, Ph. Grosjean (phgrosjean@sciviews.org) & Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // svPrefR_OnPreferencePageOK(prefset);         // User click OK
 // PrefR_OnLoad();                            // R preference widow loaded
-// svPrefR_loadRExecutable();                   // Select R executable
-// svPrefR_finishSpecifyingExecutable(path);    // Set R executable
-////////////////////////////////////////////////////////////////////////////////
+// TODO: update this list...
+//////////////////////////////////////////////////////////////////////////////
 //
 // TODO: use 'R' simply as default R (terminal on Win/Mac, or on Linux)
 
@@ -16,15 +15,13 @@
 * R Site search url (%S replaced by topic)
 */
 
-// TODO: rework R applications list, include "Find in path" item, similar to other
-// languages' interpeters in Komodo. Add new function to find installed R's and
-// populate the interpreter list (depending on the platform).
 
 var sv;
 
-// For editable menulists: append new element if necessary
-function editMenulist(el) {
-	var curValue = sv.tools.strings.trim(el.value);
+// For menulists, take the value argument/(or text in the textbox), and append
+// it as new element to the list if it is new, otherwise set as selected
+function editMenulist(el, value) {
+	var curValue = (!value)?  sv.tools.strings.trim(el.value) : value;
 	if (!curValue) return;
 	var values = [], val;
 	for (var j = 0; j < el.itemCount; j++) {
@@ -42,13 +39,14 @@ function editMenulist(el) {
 function menuListSetValues(attribute) {
 	if (!attribute) attribute = 'values';
 	var ml = document.getElementsByTagName('menulist');
-	var el, values;
+	var el, values, v;
 	for (var i = 0; i < ml.length; i++) {
 		el = ml[i];
 		if (el.hasAttribute(attribute)) {
 			values = el.getAttribute(attribute).split(/\s+/);
 			for (var k in values) {
-                el.appendItem(values[k], values[k], null);
+                v = unescape(values[k]);
+                el.appendItem(v, v, null);
 			}
 		}
 	}
@@ -63,20 +61,22 @@ function menuListGetValues(attribute) {
 		el = ml[i];
 		if (el.hasAttribute(attribute)) {
 			values = [];
-			for (var k = 0; k < el.itemCount; k++)
-				values.push(el.getItemAtIndex(k).value);
+			for (var k = 0; k < el.itemCount; k++) {
+				values.push(escape(el.getItemAtIndex(k).value));
+			}
 			el.setAttribute(attribute, values.join(" "));
 		}
 	}
 }
 
-function PrefR_menulistSetValue(menuList, value, attr, vdefault) {
+function PrefR_menulistSetValue(menuList, value, attrName, vdefault) {
 	var n = menuList.itemCount;
 	var item;
 	for (var i = 0; i <= n; i++) {
 		item = menuList.getItemAtIndex(i);
 		if (item) {
-			var attr1 = item.hasAttribute(attr)? item.getAttribute(attr) : vdefault;
+			var attr1 = item.hasAttribute(attrName)? item.getAttribute(attrName)
+            	: vdefault;
 			if (attr1 == value) {
 				menuList.selectedIndex = i;
 				break;
@@ -85,53 +85,145 @@ function PrefR_menulistSetValue(menuList, value, attr, vdefault) {
 	}
 }
 
+// List of R applications
+var apps = [
+{ id:"r-terminal", label:"in default terminal", path:"\"%Path%\" %args%",
+        app:"R", required:"R", platform:"Lin,Mac"},
+{id:"r-terminal", label:"in console window", path:"\"%Path%\" %args%",
+        app:"R.exe", required:"R", platform:"Win"},
+{id:"r-gnome-term", label:"in Gnome terminal",
+        path:"gnome-terminal --hide-menubar --working-directory='%cwd%' -t '%title%' -x '%Path%' %args%",
+        app:"R", required:"gnome-terminal,R", platform:"Lin"},
+{id:"r-kde-term", label:"in Konsole", app:"R",
+        path:"konsole --workdir '%cwd%' --title %title% -e \"%Path%\" %args%",
+        required:"konsole,R", platform:"Lin"},
+{id:"r-xfce4-term", label:"in XFCE terminal", app:"R",
+        path:"xfce4-terminal --title \"%title%\" -x \"%Path%\" %args%",
+        required:"xfce4-terminal,R", platform:"Lin"},
+{id:"r-app", label:"R app", path:"open -a \"%Path%\" \"%cwd%\"",
+        app:"R.app",
+        required:"/Applications/R.app", platform:"Mac"},
+{id:"r64-app", label:"R64 app", path:"open -a \"%Path%\" \"%cwd%\"",
+        app:"R64.app",
+        required:"/Applications/R64.app", platform:"Mac"},
+{id:"svr-app", label:"SciViews R app", path:"open -a \"%Path%\" \"%cwd%\"",
+        app:"SciViews R.app",
+        required:"/Applications/SciViews R.app", platform: "Mac"},
+{id:"svr64-app", label:"SciViews R64 app", path:"open -a \"%Path%\" \"%cwd%\"",
+        app:"SciViews R64.app",
+        required:"/Applications/SciViews R64.app", platform:"Mac"},
+{id:"r-gui", label:"R GUI", app:"Rgui.exe", path:"\"%Path%\" --sdi %args%",
+        required:"Rgui",
+        platform:"Win"},
+{id:"r-tk", label:"R Tk GUI", path:"\"%Path%\" --interactive --gui:Tk %args%",
+        app:"R", required:"R", platform:"Lin,Mac"}
+];
+
+
 function PrefR_OnLoad() {
 	// Get the sv object:
 	var p = parent;
 	while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
+    //p = parent;
+	//while (p.opener && (p = p.opener) && !ko) if (p.ko) ko = p.ko;
 
 	var os = Components.classes['@activestate.com/koOs;1']
-        .getService(Components.interfaces.koIOs);
+    .getService(Components.interfaces.koIOs);
 
 	var prefExecutable;
 	var prefset = parent.hPrefWindow.prefset;
 	var prefName = 'svRDefaultInterpreter';
-	document.getElementById("svRQuiet")
-        .setAttribute("checked", sv.prefs.getString("svRQuiet"));
-	if (!prefset.hasStringPref(prefName) || !prefset.getStringPref(prefName)) {
-		prefExecutable = sv.tools.file.whereIs("R");
-		prefset.setStringPref(prefName, prefExecutable);
-	}
-	prefExecutable = sv.prefs.getString("svRDefaultInterpreter")
-	PrefR_setRAppMenu(document.getElementById("svRApplication"));
-	PrefR_menulistSetValue(document.getElementById("svRApplication"),
-        os.path.basename(prefExecutable), "app",  "R");
-	document.getElementById("svRDefaultInterpreter").value = prefExecutable;
+    var menu = document.getElementById("svRApplication");
+    menu.removeAllItems();
 
-	if (!PrefR_UpdateCranMirrors(true)) PrefR_UpdateCranMirrors(false);
+    var platform = navigator.platform.substr(0,3);
 
-	menuListSetValues();
-	sv.prefs.checkAll();
-	PrefR_svRApplicationUpdate(null);
+    var tmp = {}, required, res;
+    for (var i in apps)
+    if (apps[i].platform.split(',').indexOf(platform) != -1) {
+        required = apps[i].required.split(',');
+        res = true;
+        for (var k in required)
+        res = res && !!sv.tools.file.whereIs(required[k]);
+        if (res)
+        tmp[apps[i].id] = apps[i];
+    }
+    apps = tmp;
+
+    for (var i in apps)
+    menu.appendItem(apps[i].label, i, null);
+
+    // update cran mirror list (first local, then tries remote at CRAN)
+	if (!PrefR_UpdateCranMirrors(true))
+    PrefR_UpdateCranMirrors(false);
+
+	menuListSetValues(); // Restores saved menu values
+	sv.prefs.checkAll(); // Check if all preference values are ok, if not, restore defaults
+    PrefR_PopulateRInterps();
 	parent.hPrefWindow.onpageload();
+    PrefR_updateCommandLine(true);
+}
+
+
+//TODO: check if there is new R version installed and ask whether to switch to it.
+function PrefR_PopulateRInterps() {
+
+    var prefExecutable = sv.prefs.getString('svRDefaultInterpreter');
+    var rs = new Array();
+    var os = Components.classes['@activestate.com/koOs;1']
+    .getService(Components.interfaces.koIOs);
+    var menu = document.getElementById("svRDefaultInterpreter");
+
+    // windows:
+    ////////////////////////////////////
+    switch (os.name) { //'posix', 'nt', 'mac', 'os2', 'ce', 'java', 'riscos'.
+        case "nt":
+        rs = rs.concat(sv.tools.file.whereIs("Rgui"));
+        rs = rs.concat(sv.tools.file.whereIs("R"));
+        break;
+        case "mac":
+        //FIXME: as I understand there are only 2 options on Mac, is it right?:
+        rs = ["/Applications/R.app", "/Applications/R64.app"];
+        // What about "SciViews R*.app" ???
+        break;
+        case "posix":
+        default:
+        rs = rs.concat(sv.tools.file.whereIs("R"));
+    }
+    rs.unshift(prefExecutable);
+
+    for (var i in rs) {
+        rs[i] = os.path.normpath(rs[i]);
+        if (sv.tools.file.exists(rs[i]) == sv.tools.file.TYPE_NONE) {
+            rs.splice(i, 1);
+        }
+    }
+
+    rs = sv.tools.array.unique(rs); // Get rid of duplicates
+    menu.removeAllItems();
+    for (var i in rs) {
+        menu.appendItem(rs[i], rs[i], null);
+    }
+
+    if (rs.length > 0) {
+        document.getElementById("no-avail-interps-message").hidden = true;
+    }
+
 }
 
 function OnPreferencePageLoading(prefset) {
-	//PrefR_svRApplicationOnSelect(null);
 }
 
 function OnPreferencePageOK(prefset) {
 	prefset = parent.hPrefWindow.prefset;
     prefset.setStringPref("svRDefaultInterpreter",
-        document.getElementById("svRDefaultInterpreter").value);
+    document.getElementById("svRDefaultInterpreter").value);
     prefset.setStringPref("svRApplication",
-        document.getElementById('svRApplication')
-		.selectedItem.getAttribute("value"));
+    document.getElementById('svRApplication')
+    .selectedItem.getAttribute("value"));
 	prefset.setStringPref("svRApplicationId",
-        document.getElementById('svRApplication').selectedItem.id);
-	prefset.setStringPref("svRQuiet",
-        document.getElementById('svRQuiet')
-        .getAttribute("checked") == "true");
+    document.getElementById('svRApplication').selectedItem.id);
+
 
 	var outDec = document.getElementById('r.csv.dec').value;
 	var outSep = document.getElementById('r.csv.sep').value;
@@ -142,158 +234,134 @@ function OnPreferencePageOK(prefset) {
     if (outDec == outSep) {
         parent.switchToPanel("svPrefRItem");
         ko.dialogs.alert(
-            "Decimal separator cannot be the same as field separator.", null,
-            "SciViews-K preferences");
+        "Decimal separator cannot be the same as field separator.", null,
+        "SciViews-K preferences");
         return(false);
     }
 
 	//The 'r.csv.*.arg' prefs are replaced by simply 'r.csv.dec'/'r.csv.sep'
 	//as they escaped strings anyway (e.g. string "\\t" not tab character)
 
-	if (sv.r.running)
-		sv.r.eval('options(OutDec = "' + outDec + '", ' +
-			'OutSep = "' + outSep + '")');
-
-	menuListGetValues();
-	return(true);
-}
-
-function PrefR_svRApplicationOnSelect(event) {
-	var el = document.getElementById("svRApplication");
-	var sel = el.selectedItem;
-	var app = sel.hasAttribute("app")? sel.getAttribute("app") : "R";
-	// PhG: always get a good starting value - DO NOT ELIMINATE THIS!
-	var svRDefaultInterpreter = PrefR_locateApp(app);
-	document.getElementById("svRDefaultInterpreter").value
-		= svRDefaultInterpreter;
-	
-	// Delegate to PrefR_svRApplicationUpdate()
- 	return(PrefR_svRApplicationUpdate(event));
-}
-
-function PrefR_svRApplicationUpdate(event) {
-	var el = document.getElementById("svRApplication");
-	var prefattribute = el.getAttribute("prefattribute");
-	var sel = el.selectedItem;
-	var data = sel.getAttribute(prefattribute);
-	var cmdfield = document.getElementById('R_command');
-
-	var svRDefaultInterpreter = document
-        .getElementById("svRDefaultInterpreter").value;
-
-	// Check if svRDefaultInterpreter exists on disk
-	if (!sv.tools.file.exists(svRDefaultInterpreter)) {
-		// Indicate the problem in the command...
-		cmdfield.value = "??? R interpreter '" + svRDefaultInterpreter +
-            "' not found!";
-		return(false);
+	if (sv.r.running) {
+		sv.r.eval('options(OutDec="' + outDec + '", ' +
+        'OutSep="' + outSep + '")', true);
 	}
 
-	var Quiet = " ";
-	if (document.getElementById("svRQuiet")
-        .getAttribute("checked") == "true") Quiet = "--quiet ";
+	menuListGetValues();
 
-	var cwd = sv.tools.file.path("ProfD", "extensions",
-        "sciviewsk@sciviews.org", "defaults");
+    // Restart socket server if running and port changed
+    var serverPort = document.getElementById('sciviews.server.socket').value;
+    if(sv.socket.serverIsStarted &&
+       serverPort != prefset.getStringPref("sciviews.server.socket")){
+        prefset.setStringPref("sciviews.server.socket", serverPort);
+        sv.socket.serverStart();
+    }
 
-	// PhG: note that the path here is now the full path, application included!
-	data = data.replace("%Path%", svRDefaultInterpreter)
-        .replace("%title%", "SciViews-R").replace("%cwd%", cwd)
-        .replace("%quiet%", Quiet);
 
-	cmdfield.value = data;
+
+
+
+
+
 	return(true);
+}
+
+function svRDefaultInterpreterOnSelect(event) {
+	var os = Components.classes['@activestate.com/koOs;1']
+    .getService(Components.interfaces.koIOs);
+
+	var menuApplication = document.getElementById("svRApplication");
+    var menuInterpreters = document.getElementById("svRDefaultInterpreter");
+
+    var app = os.path.basename(menuInterpreters.value);
+
+    if (apps[menuApplication.value].app != app) {
+        var i;
+        for (i in apps)
+        if (apps[i].app == app) break;
+        menuApplication.value = i;
+    }
+
+
+
+    PrefR_updateCommandLine(true);
+}
+
+//TODO: rename to PrefR_svRApplicationUpdate
+function PrefR_svRApplicationOnSelect(event) {
+	var menuApplication = document.getElementById("svRApplication");
+    var menuInterpreters = document.getElementById("svRDefaultInterpreter");
+    var app = apps[menuApplication.value].app;
+	var sel = menuApplication.selectedItem;
+
+	var os = Components.classes['@activestate.com/koOs;1']
+    .getService(Components.interfaces.koIOs);
+
+    if (os.path.basename(menuInterpreters.value) != app) {
+        //TODO: modify to use with:
+        //PrefR_menulistSetValue(menuInterpreters, value, "value", null);
+        var item;
+        for (var i = 0; i <= menuInterpreters.itemCount; i++) {
+            item = menuInterpreters.getItemAtIndex(i);
+            if (item) {
+                if (os.path.basename(item.getAttribute("value")) == app) {
+                    menuInterpreters.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    }
+    PrefR_updateCommandLine(true);
+}
+
+function PrefR_updateCommandLine(update) {
+    var appId = document.getElementById("svRApplication").value;
+    var appPath = document.getElementById("svRDefaultInterpreter").value;
+    var cmdArgs = document.getElementById("svRArgs").value;
+    var args1 = document.getElementById("sciviews.pkgs.sciviews").checked ?
+    " --args --pkgs=SciViews,MASS,ellipse" : "";
+
+   	var cwd = sv.tools.file.path("ProfD", "extensions",
+    "sciviewsk@sciviews.org", "defaults");
+
+    var cmd = apps[appId].path;
+	cmd = cmd.replace("%Path%", appPath)
+    .replace("%title%", "SciViews-R").replace("%cwd%", cwd)
+    .replace("%args%", cmdArgs) + args1;
+
+    if (update) {
+        var cmdLabel = document.getElementById('R_command');
+        cmdLabel.value = cmd;
+    }
+
+    return(cmd);
 }
 
 function PrefR_setExecutable(path) {
-	if (!path || !sv.tools.file.exists(path)) {
+    var menu = document.getElementById("svRDefaultInterpreter");
+
+    if (!path || !sv.tools.file.exists(path)) {
 		var os = Components.classes['@activestate.com/koOs;1']
-                .getService(Components.interfaces.koIOs);
+        .getService(Components.interfaces.koIOs);
 
-		path = document.getElementById("svRDefaultInterpreter").value;
-		// Special treatment for the .app items: open the parent directory!
-		var defpath = path;
-		if (path.match(/\.app$/) == ".app") defpath = os.path.dirname(path);
-		path = ko.filepicker.openExeFile(defpath);
+		path = menu.value;
+
+        //Error: ko.uriparse is undefined
+        path = ko.filepicker.openExeFile(os.path.dirname(path),
+        os.path.basename(path));
 	}
+    if (!path) return;
+    path = os.path.normpath(path);
 
-	PrefR_menulistSetValue(document.getElementById("svRApplication"),
-        os.path.basename(path), "app",  "R");
-	document.getElementById("svRDefaultInterpreter").value = os.path.abspath(path);
-	PrefR_svRApplicationUpdate(null);
+    editMenulist(menu, path);
+    menu.value = path;
+
+
 }
 
-// PhG: I use this to get a first guess of the application location
-function PrefR_locateApp(appName) {
-	// 1) Look if app is an existing file
-	if (sv.tools.file.exists(appName)) return(appName);
-	
-	// 2) Try to locate the application
-	//TODO: use basename here?
-	var appPath = sv.tools.file.whereIs(appName);
-	if (appPath != null) return(appPath);
-	
-	// 3) For R.app and the like on the Macintosh, I should really look at the
-	// /Applications directory
-	appName = "/Applications/" + appName;
-	if (sv.tools.file.exists(appName)) {
-		return(appName);
-	} else {
-		// Not found? What else can I do?
-		return(null);
-	}
-}
 
-function PrefR_setRAppMenu(menuList) {
-	var isLinux = navigator.platform.toLowerCase().indexOf("linux") > -1;
-	var isMac = navigator.platform.toLowerCase().indexOf("mac") > -1;
-	var isWin = navigator.platform.toLowerCase().indexOf("win") == 0;
-
-	var validPlatforms, showItem;
-	var platform = navigator.platform;
-	var anyItem = false;
-
-	for (var i = menuList.itemCount; i >= 0; i--) {
-		var item = menuList.getItemAtIndex(i);
-		try {
-			validPlatforms = item.getAttribute("platform").split(/[,\s]+/);
-			showItem = false;
-			for (var j in validPlatforms) {
-				if (platform.indexOf(validPlatforms[j]) > -1) {
-					var appName = item.getAttribute("which");
-					if (isLinux || isWin) {
-						appName = appName.split(/[, ]+/);
-						var res = true;
-						for (var k in appName)
-                            res = res && !!sv.tools.file.whereIs(appName[k]);
-						if (res) {
-							showItem = true;
-							break;
-						}
-					} else if (isMac) {
-						// Check that we find the application
-						if (appName == "R" || sv.tools.file.exists(appName)) {
-							showItem = true;
-							break;
-						}
-					}
-				}
-			}
-			if (!showItem) {
-				menuList.removeItemAt(i);
-			} else {
-				anyItem = true;
-			}
-		} catch(e) { }
-	}
-	// If there is at least one item available, hide the message to install R
-	if (anyItem)
-		document.getElementById("svRinstallMessage")
-			.setAttribute("hidden", "true");
-}
 
 // Get CRAN mirrors list - independently of R
-// TODO: rework this to use RJSON objects
 function PrefR_UpdateCranMirrors(localOnly) {
 	var sv_file = sv.tools.file;
 
@@ -310,7 +378,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
 	}
 
 	var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
-        .createInstance(Components.interfaces.nsIJSON);
+    .createInstance(Components.interfaces.nsIJSON);
 
 	var jsonFile = sv_file.path(localDir, "CRAN_mirrors.json");
 	var alreadyCached = false;
@@ -325,8 +393,8 @@ function PrefR_UpdateCranMirrors(localOnly) {
 
 			var platform = navigator.platform.toLowerCase().substr(0,3);
 			if (platform == "win") // TODO: what is the pref is not set??
-                localPaths.push(sv_file.path(sv.prefs.getString("svRDefaultInterpreter"),
-                    "../../doc"));
+            localPaths.push(sv_file.path(sv.prefs.getString("svRDefaultInterpreter"),
+            "../../doc"));
 			else { // if (platform == "lin")
 				localPaths.push('/usr/share/R/doc'); 	// try other paths: // mac: ????
 				localPaths.push('/usr/local/share/R/doc');
@@ -342,7 +410,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
 			}
 		}
 	}
-	if (!csvContent && !arrData) return(false);
+	if (!csvContent && !arrData)	return(false);
 	// TODO: Add error message when mirrors list cannot be obtained.
 
 	if (!arrData) {
@@ -356,9 +424,10 @@ function PrefR_UpdateCranMirrors(localOnly) {
 		for (i in arrData) {
 			item = arrData[i];
 			if (item[colOK] == "1"
-                // fix for broken entries:
-                && (item[colURL].search(/^(f|ht)tp:\/\//) === 0))
+            // fix for broken entries:
+            && (item[colURL].search(/^(f|ht)tp:\/\//) === 0)) {
 				arrData[i] = [item[colName], item[colURL]];
+			}
 		}
 		// Add main server at the beginning:
 		arrData.unshift(["Main CRAN server", "http://cran.r-project.org/"]);
@@ -377,32 +446,34 @@ function PrefR_UpdateCranMirrors(localOnly) {
 	menuList.removeAllItems();
 	for (i in arrData) {
 		if (arrData[i][0])
-            menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
+        menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
 	}
 	menuList.value = value;
 	return(true);
 }
 
 // From: http://www.bennadel.com/index.cfm?dax=blog:1504.view
-function CSVToArray(strData, strDelimiter) {
+function CSVToArray(strData, strDelimiter){
 	strDelimiter = (strDelimiter || ",");
 	var objPattern = new RegExp((
-        // Delimiters.
-        "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-        // Quoted fields.
-        "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-        // Standard fields.
-        "([^\"\\" + strDelimiter + "\\r\\n]*))"
-        ), "gi");
+    // Delimiters.
+    "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+    // Quoted fields.
+    "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+    // Standard fields.
+    "([^\"\\" + strDelimiter + "\\r\\n]*))"
+    ), "gi");
 	var arrData = [[]];
 	var arrMatches = objPattern.exec(strData);
 	while (arrMatches) {
 		var strMatchedDelimiter = arrMatches[1];
-		if (strMatchedDelimiter.length && (strMatchedDelimiter != strDelimiter))
+		if (strMatchedDelimiter.length &&
+			(strMatchedDelimiter != strDelimiter)) {
 			arrData.push([]);
+            }
 		if (arrMatches[2]) {
 			var strMatchedValue = arrMatches[2]
-                .replace(new RegExp( "\"\"", "g" ),	"\"");
+            .replace(new RegExp( "\"\"", "g" ),	"\"");
 		} else {
 			var strMatchedValue = arrMatches[3];
 		}

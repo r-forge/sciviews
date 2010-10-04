@@ -19,10 +19,10 @@ ko.help.language = function () {
         view = ko.views.manager.currentView;
     }
     if (view != null) {
-        if (view.document) {
-            language = view.document.subLanguage;
+        if (view.koDoc) {
+            language = view.koDoc.subLanguage;
             if (language == "XML") {
-                language = view.document.language;
+                language = view.koDoc.language;
             }
         } else {
             language = view.language;

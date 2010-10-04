@@ -12,6 +12,7 @@ guiInstall <- function ()
 			setwd = "",
 			"")
 	})
+	# FIXME: these sv.* functions do not exist in SciViews-K!
 	assignTemp(".guiObjBrowse", function(id, data) {
 		koCmd('sv.objBrowse("<<<id>>>", "<<<dat>>>");',
 		list(id = id, dat = data))
