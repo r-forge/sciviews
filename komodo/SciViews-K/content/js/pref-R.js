@@ -220,7 +220,7 @@ function OnPreferencePageOK(prefset) {
     document.getElementById("svRDefaultInterpreter").value);
     prefset.setStringPref("svRApplication",
     document.getElementById('svRApplication')
-    .selectedItem.getAttribute("value"));
+		.selectedItem.getAttribute("value"));
 	prefset.setStringPref("svRApplicationId",
     document.getElementById('svRApplication').selectedItem.id);
 
@@ -238,6 +238,7 @@ function OnPreferencePageOK(prefset) {
         "SciViews-K preferences");
         return(false);
     }
+	prefset.setStringPref("svRCommand", PrefR_updateCommandLine(false));
 
 	//The 'r.csv.*.arg' prefs are replaced by simply 'r.csv.dec'/'r.csv.sep'
 	//as they escaped strings anyway (e.g. string "\\t" not tab character)
@@ -256,13 +257,6 @@ function OnPreferencePageOK(prefset) {
         prefset.setStringPref("sciviews.server.socket", serverPort);
         sv.socket.serverStart();
     }
-
-
-
-
-
-
-
 	return(true);
 }
 
