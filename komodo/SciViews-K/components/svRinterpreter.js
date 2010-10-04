@@ -25,26 +25,26 @@ Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 function svRinterpreter() {}
 
 svRinterpreter.prototype = {
-    
+
     // Properties required for XPCOM registration
     classDescription: "The SciViews-K R interpreter",
     classID:          Components.ID("{57dbf673-ce91-4858-93f9-2e47fea3495d}"),
     contractID:       "@sciviews.org/svRinterpreter;1",
-    
+
     // Category: An array of categories to register this component in.
     _xpcom_categories: [{
-  
+
       // Each object in the array specifies the parameters to pass to
       // nsICategoryManager.addCategoryEntry(). 'true' is passed for both
       // aPersist and aReplace params.
       category: "r",
-  
+
       // Optional, defaults to the object's classDescription
       //entry: "",
-  
+
       // Optional, defaults to object's contractID (unless 'service' specified)
       //value: "...",
-  
+
       // Optional, defaults to false. When set to true, and only if 'value' is
       // not specified, the concatenation of the string "service," and the
       // object's contractID is passed as aValue parameter of addCategoryEntry.
@@ -56,7 +56,7 @@ svRinterpreter.prototype = {
     QueryInterface: XPCOMUtils.generateQI([Components.interfaces.svIRinterpreter]),
 
     //chromeURL: "chrome://komodo/content/colorpicker/colorpicker.html",
-    	
+
     /**
     * Escape from multiline mode in the R interpreter.
     */
@@ -64,7 +64,7 @@ svRinterpreter.prototype = {
 		// Currently do noting
 		return null;
 	},
-    
+
     /**
     * Query the R interpreter to get a calltip.
     * @param code - The piece of code currently edited requiring calltip.
@@ -74,7 +74,7 @@ svRinterpreter.prototype = {
 			return "";
 		}
 		var cmd = 'cat(callTip("' + code.replace(/(")/g, "\\$1") +
-		'", location = TRUE, description = TRUE, methods = FALSE, width = 80))';
+		'", location = TRUE))';
 		var res = rCommand("<<<h>>>" + cmd,
 			function (tip) {
 				if (tip != "") {
@@ -82,7 +82,7 @@ svRinterpreter.prototype = {
 					var kvSvc = Components
 						.classes["@activestate.com/koViewService;1"]
 						.getService(Components.interfaces.koIViewService);
-					var ke = kvSvc.currentView.document.getView().scimoz;					
+					var ke = kvSvc.currentView.document.getView().scimoz;
 					ke.callTipCancel();
 					ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
 				}
@@ -90,7 +90,7 @@ svRinterpreter.prototype = {
 		);
 		return(res);
     },
-    
+
     /**
     * Query the R interpreter to get a completion list.
     * @param code - The piece of code currently edited requiring completion.
@@ -126,7 +126,7 @@ svRinterpreter.prototype = {
 				// otherwise, the algorithm does not find them (try: typing T, then ctrl+J, then R)
 				// TODO: there is a problem with items with special character (conversion problems)
 				autoCstring = autoCstring.replace(/\r?\n/g, autoCSeparatorChar);
-				
+
 				// code below taken from "CodeIntelCompletionUIHandler"
 			//	var iface = Components.interfaces.koICodeIntelCompletionUIHandler;
 			//	ke.registerImage(iface.ACIID_FUNCTION, ko.markers.
@@ -210,7 +210,7 @@ function _fromUnicode (str, charset) {
 	if (charset !== undefined && converter.charset != charset) {
 		converter.charset = charset;
 	}
-	try { 
+	try {
 		str = converter.ConvertFromUnicode(str);
 	} catch(e) {
 		koLoggerException(e, "Unable to convert from Unicode");
@@ -222,16 +222,16 @@ function _toUnicode (str, charset) {
 	if (charset !== undefined && converter.charset != charset) {
 		converter.charset = charset;
 	}
-	try { 
+	try {
 		str = converter.ConvertToUnicode(str);
 	} catch(e) {
 		koLoggerException(e, "Unable to convert from Unicode");
 	}
 	return(str);
 }
-				
+
 // The main socket client function to connect to R socket server
-function rClient(host, port, cmd, listener) {	
+function rClient(host, port, cmd, listener) {
 	// Workaround for NS_ERROR_OFFLINE returned by 'createTransport' when
 	// there is no network connection (when network goes down). Based on
 	// toggleOfflineStatus() in chrome://browser/content/browser.js.
@@ -249,13 +249,13 @@ function rClient(host, port, cmd, listener) {
 		var outstream = transport.openOutputStream(0, 0, 0);
 		cmd = _fromUnicode(cmd);
 		outstream.write(cmd, cmd.length);
-	
+
 		var stream = transport.openInputStream(0, 0, 0);
 		var instream = Components
 			.classes["@mozilla.org/scriptableinputstream;1"]
 			.createInstance(Components.interfaces.nsIScriptableInputStream);
 		instream.init(stream);
-	
+
 		var dataListener = {
 			data: "",
 			onStartRequest: function(request, context) { this.data = ""; },
@@ -288,7 +288,7 @@ function rClient(host, port, cmd, listener) {
 				this.data += chunk;
 			}
 		}
-	
+
 		var pump = Components
 			.classes["@mozilla.org/network/input-stream-pump;1"]
 			.createInstance(Components.interfaces.nsIInputStreamPump);
@@ -300,7 +300,7 @@ function rClient(host, port, cmd, listener) {
 	}
 	return(null);
 }
-	
+
 // Send an R command through the socket
 function rCommand(cmd, procfun) {
 	var host = getPrefString("sciviews.server.host", "127.0.0.1");
@@ -323,7 +323,7 @@ function rCommand(cmd, procfun) {
 				} else { // In fact we can add a property even to a function
 					procfun.value = data;
 				}
-			}	
+			}
 		}
 	}
 	var res = rClient(host, port, id + cmd + "\n", listener);
