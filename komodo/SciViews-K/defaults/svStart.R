@@ -37,12 +37,16 @@ SciViews = "0.9-2"),
 		}
 	}
 	file.create(lockfile)
-	on.exit(file.remove(lockfile)) # Clean up
+	on.exit({
+		file.remove(lockfile)
+		# Self-destruction
+		if(exists("svStart", envir = parent.frame(), inherits = TRUE))
+			rm("svStart", envir= parent.frame(), inherits = TRUE)
+		debugMsg("svStart exit")
+	}) # Clean up
 
 	if (debug) {
-		"debugMsg" <- function(...) {
-			cat("DEBUG:", ..., "\n")
-		}
+		"debugMsg" <- function(...) cat("DEBUG:", ..., "\n");
 	} else {
 		"debugMsg" <- function(...) {};
 	}
@@ -424,17 +428,27 @@ SciViews = "0.9-2"),
 				"/doc/html/index.html", sep = ""))
 		# I need to get the help file URL, but help() does not provide it any
 		# more! This is a temporary workaround for this problem
+
 		assignTemp("getHelpURL", function(x, ...) {
 			file <- as.character(x)
 			if (length(file) == 0) return("")
-			# Extension ".html" may be missing 
+			# Extension ".html" may be missing
 			htmlfile <- basename(file)
-			if(substring(htmlfile, nchar(htmlfile) -4) != ".html")
-				htmlfile <- paste(htmlfile, ".html", sep="")
-			return(paste("http://127.0.0.1:", tools:::httpdPort,
-			"/library/", basename(dirname(dirname(file))),
-			"/html/", htmlfile, sep = ""))
+
+			if(length(file) > 1) {
+				# If more then one topic is found
+				paste("http://127.0.0.1:", tools:::httpdPort,
+					"/library/NULL/help/", attr(x,"topic"), sep = "")
+			} else {
+				if(substring(htmlfile, nchar(htmlfile) -4) != ".html")
+					htmlfile <- paste(htmlfile, ".html", sep="")
+				return(paste("http://127.0.0.1:", tools:::httpdPort,
+				"/library/", basename(dirname(dirname(file))),
+				"/html/", htmlfile, sep = ""))
+			}
 		})
+
+
 
 # print method of object returned by help() is very unflexible for R.app and
 # does not allow in any way to use anything else than the R.app internal
@@ -522,11 +536,14 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 		}
 		# Update info in Komodo:
 		debugMsg("Contacting Komodo with koCmd")
-		invisible(koCmd("sv.socket.updateCharset();"))
-		invisible(koCmd("sv.cmdout.append('R is started');"))
-		invisible(koCmd("sv.command.updateRStatus(true);"))
-
+		invisible(koCmd(paste(
+			"sv.socket.rUpdate()",
+			"sv.cmdout.append('R is started')",
+			"sv.command.updateRStatus(true)",
+			sep=";")))
 	}
+
+	if(file.exists(".Rprofile"))	source(".Rprofile")
 	return(invisible(res))
 }
 ### SciViews install end ###
