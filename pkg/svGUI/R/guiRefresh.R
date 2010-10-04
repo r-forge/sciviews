@@ -6,11 +6,12 @@
         	res <- paste(c(.active.data.frame$object, names(obj)), "\t",
         	c(class(obj), sapply(obj, class)), "\n", sep = "")
         	return(.active.data.frame$cache <<- res)
-        } else return(.active.data.frame$cache <<- NULL)       
+        } else return(.active.data.frame$cache <<- NULL)
 	}, cache = "")
 
-guiRefresh <- function (force = FALSE)
-{    
+guiRefresh <-
+function (force = FALSE)
+{
     ## Refresh active items and the R Objects explorer
     ## If force == TRUE, do not compare with the cache
     ## Active items are represented by .active.xxx objects in .GlobalEnv
@@ -31,20 +32,20 @@ guiRefresh <- function (force = FALSE)
                     sep = ""), data = res)
         }
     }
-    
+
 	## Make sure to clear active data frame and active lm object in case none
     ## are defined in the current session
     if (!".active.data.frame" %in% aObjs)
         koCmd('sv.r.obj_refresh_dataframe("<<<data>>>");');
     if (!".active.lm" %in% aObjs)
-        koCmd('sv.r.obj_refresh_lm("<<<data>>>");');        
-    
+        koCmd('sv.r.obj_refresh_lm("<<<data>>>");');
+
 	## Refresh object browser (only data from .GlobalEnv)
     lst <- objList(envir = .GlobalEnv, all.info = FALSE, compare = TRUE)
+
     if (length(lst$Name) > 0) {
-        msg <- paste("Env=.GlobalEnv\nObj=\n", 
-            paste(t(sapply(lst, paste)), c(rep(";;", 4), "\n"), sep = "",
-            collapse = ""), sep = "")
+        msg <- paste(capture.output(print(lst, sep=";;", header = TRUE)),
+					 collapse="\n")
         koCmd('sv.r.objects.refreshGlobalEnv("<<<data>>>");', data = msg)
     }
     return(TRUE)
@@ -55,3 +56,7 @@ guiAutoRefresh <- function (...)
     try(guiRefresh(force = FALSE), silent = TRUE)
     return(TRUE)  # We need to return TRUE for callback reschedule
 }
+
+# FIXME: When Komodo server is not available:
+#> guiAutoRefresh()
+#Error in call[[1L]] : object of type 'symbol' is not subsettable

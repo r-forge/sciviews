@@ -30,7 +30,8 @@ sv.prefs.defaults = {
     "r.csv.dec": ".",
 	"r.csv.sep": ",",
 	CRANMirror: "http://cran.r-project.org/",
-	RHelpCommand: "javascript:sv.r.help(\"%w\")"
+	RHelpCommand: "javascript:sv.r.help(\"%w\")",
+    "sciviews.pkgs.sciviews" : "false"
 
 	//*Future preferences:*
 	//sciviews.rhelp.open_in = [tab, window]

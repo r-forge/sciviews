@@ -79,7 +79,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	this.write = function (filename, content, encoding, append) {
 		if (!encoding) encoding = this.defaultEncoding;
 
-		append = append ? 0x10 : 0x20;
+		append = append? 0x10 : 0x20;
 
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
@@ -146,7 +146,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	this.specDir = function(dirName) {
 		var file;
 		if (dirName == "~")
-			dirName = (navigator.platform.indexOf("Win") == 0) ? "Pers" : "Home";
+			dirName = (navigator.platform.indexOf("Win") == 0)? "Pers" : "Home";
 
 		try {
 			try {
@@ -200,22 +200,26 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		// 'flatten' the array:
 		var res = [];
 		for(var i in path) res = res.concat(path[i]);
-		path = res;
-		path = os.path.normpath(path.join(sep));
-		var dir0 = path.split(sep, 1)[0];
+		//path = os.path.normpath(res.join(sep));
+		var dir0;
+		
+		path = res.join(sep);
+		if(os.name == "nt") path = path.replace(/\/+/g, sep);
+		dir0 = path.split(sep, 1)[0];
+		
 		path = sv.tools.file.specDir(dir0) + path.substring(dir0.length);
-		path = os.path.abspath(path);
+		path = os.path.abspath(os.path.normpath(path));
 		return(path);
 	}
-	
-	this.getURI = function (file) {
-		if (typeof(file) == "string") file = this.getfile(file);
-		if (!file) return(null);
+
+	this.getURI = function(file) {
+		if (typeof file == "string") file = this.getfile(file);
+		if (!file) return (null);
 
 		var ios = Components.classes["@mozilla.org/network/io-service;1"]
-            .getService(Components.interfaces.nsIIOService);
+                    .getService(Components.interfaces.nsIIOService);
 		var URL = ios.newFileURI(file);
-		return(URL.spec);
+		return (URL.spec);
 	}
 
 	// Read data from an URI
@@ -226,34 +230,47 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		file.open('r');
 		var res = file.readfile();
 		file.close();
-		return(res);
+		return (res);
 	}
 
 	// List all files matching a given pattern in directory,
 	// python interface - ~2x faster than with nsILocalFile
 	this.list = function (dirname, pattern, noext) {
-		var os = Components.classes['@activestate.com/koOs;1']
-			.getService(Components.interfaces.koIOs);
+			var os = Components.classes['@activestate.com/koOs;1']
+				.getService(Components.interfaces.koIOs);
+			var ospath = os.path;
 
-		if (os.path.exists(dirname) && os.path.isdir(dirname)) {
-			var files = os.listdir(dirname, {});
-			var selfiles = [], file;
-			for (var i in files) {
-				file = files[i];
-				if (os.path.isfile(os.path.join(dirname, file))
-					&& file.search(pattern) != -1) {
-					file = noext ? file.substring(0, file.lastIndexOf(".")) : file;
-					selfiles.push(file);
+			if (ospath.exists(dirname) && ospath.isdir(dirname)) {
+				var files = os.listdir(dirname, {});
+				if(pattern) {
+					var selfiles = [], file;
+					for (var i in files) {
+						file = files[i];
+						if (file.search(pattern) != -1) {
+							//ospath.isfile(ospath.join(dirname, file)) &&
+
+
+							file = noext? file.substring(0, file.lastIndexOf("."))
+								: file;
+							selfiles.push(file);
+						}
+					}
+					return (selfiles);
+				} else {
+					if(noext) {
+						for (i in files)
+							files[i] = ospath.withoutExtension(files[i]);
+					}
+					return files;
 				}
+
+			} else {
+				return null;
 			}
-			return(selfiles);
-		} else {
-			return(null);
-		}
+
 		return(null);
 	}
 
-// TODO: check registry keys for Windows versions other than XP
 if (navigator.platform.indexOf("Win") == 0) {
 	function _findFileInPath(file) {
 		var os = Components.classes['@activestate.com/koOs;1']
@@ -265,9 +282,9 @@ if (navigator.platform.indexOf("Win") == 0) {
 		return(res.length ? res : null);
 	}
 
-	this.whereIs = function (appName) {
+	this.whereIs = function(appName) {
 		// add default extension for executable if none
-		if (appName.search(/\.[^\.]{3}$/) == -1) appName += ".exe";
+		if (appName.search(/\.[^\.]{3}$/) == -1) 	appName += ".exe";
 
 		var reg = Components.classes["@mozilla.org/windows-registry-key;1"]
 			.createInstance(Components.interfaces.nsIWindowsRegKey);
@@ -286,49 +303,60 @@ if (navigator.platform.indexOf("Win") == 0) {
 			}
 			if (!reg.hasValue("InstallPath") && reg.hasValue("Current Version")) {
 				reg = reg.openChild(reg.readStringValue("Current Version"),
-					reg.ACCESS_READ);
+									reg.ACCESS_READ);
 			}
+
+			var ret = [];
+			// Look for all installed paths, but default goes first
 			if (reg.hasValue("InstallPath"))
-				return(reg.readStringValue("InstallPath") + "\\bin\\" + appName);
+				ret.push(reg.readStringValue("InstallPath") + "\\bin\\" + appName);
+			for (var i = 0; i < reg.childCount; i ++) {
+				var reg2 = reg.openChild(reg.getChildName(i), reg.ACCESS_READ);
+				if (reg2.hasValue("InstallPath")) {
+					path = reg2.readStringValue("InstallPath") + "\\bin\\" + appName;
+					if (ret.indexOf(path) == -1)
+					ret.push(path);
+				}
+			}
+			return (ret);
 		}
 
-		var key = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" +
-			appName;
+		var key = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" + appName;
 		try {
 			reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ);
 			path = reg.readStringValue("");
-			return(path.replace(/(^"|"$)/g, ""));
+			return (path.replace(/(^"|"$)/g, ""));
 		} catch(e) {
 			var key = "Applications\\" + appName + "\\shell\\Open\\Command";
 			try {
 				reg.open(reg.ROOT_KEY_CLASSES_ROOT, key, reg.ACCESS_READ);
 				path = reg.readStringValue("");
 				path = path.replace(/(^"+|"*\s*"%\d.*$)/g, "");
-				return(path);
+				return (path);
 			} catch(e) {
 				// fallback: look for app in PATH:
-				return(_findFileInPath(appName));
+				return (_findFileInPath(appName));
 			}
 		}
-		return(null);
+		return (null);
 	}
 
-// Linux or Mac OS X	
 } else {
 	// Will it work on Mac too?
-	this.whereIs = function (appName) {
-		var runSvc = Components
-			.classes["@activestate.com/koRunService;1"]
-			.getService(Components.interfaces.koIRunService);
+	this.whereIs = function(appName) {
+		var runSvc = Components.
+			classes["@activestate.com/koRunService;1"].
+			getService(Components.interfaces.koIRunService);
 		var err = {}, out = {};
 		var res = runSvc.RunAndCaptureOutput("which " + appName,
 			null, null, null, out, err);
 
 		var path = sv.tools.strings.trim(out.value);
 
-		if (!path) return(null);
-		return(path.split(" "));
+		if (!path) return (null);
+		return path.split(" ");
 	}
 }
+
 
 }).apply(sv.tools.file);

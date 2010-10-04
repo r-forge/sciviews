@@ -218,7 +218,7 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 		do {
 			//  search for function pattern backwards:
 			findSvc.options.searchBackward = true;
-			findRes = findSvc.find("", // view.document.displayPath
+			findRes = findSvc.find("", // view.koDoc.displayPath
 			scimoz.text, funcRegExStr,
 			scimoz.charPosAtPosition(pos0), 0); //start, end
 			if (!findRes) break;
@@ -232,7 +232,7 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 			// find first character following the closing brace
 			findSvc.options.searchBackward = false;
-			findRes = findSvc.find("",  //view.document.displayPath
+			findRes = findSvc.find("",  //view.koDoc.displayPath
 			scimoz.text, "\\S",
 			scimoz.charPosAtPosition(pos2) + 1,
 			scimoz.charPosAtPosition(scimoz.length));
@@ -753,11 +753,13 @@ if (typeof(sv.log) == 'undefined') sv.log = {};
 //// Show Komodo log
 //sv.log.show();
 
+
+//FIXME: does not work with the new toolbox in Komodo 6.0.0-beta1
 sv.checkToolbox = function () {
     try {
 		var path, tbxs;
 		var os = Components.classes['@activestate.com/koOs;1'].
-		getService(Components.interfaces.koIOs);
+			getService(Components.interfaces.koIOs);
 
 		// Find all .kpz files in 'defaults', append/replace version string in filenames,
 		// finally install as toolbox
