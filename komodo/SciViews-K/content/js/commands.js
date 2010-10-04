@@ -101,28 +101,21 @@ this.startR = function () {
 		sv.translate("Default R interpreter is not (correctly) set in " +
 			     "Preferences. Do you want to do it now?"),
 			"OK", null, "SciViews-K") == "OK") {
-		prefs_doGlobalPrefs("svPrefRItem", true);
+			prefs_doGlobalPrefs("svPrefRItem", true);
 	    }
 	    return;
 		}
 
-	var id=sv.prefs.getString("svRApplication",
+	var isWin = navigator.platform.indexOf("Win") === 0;
+	var id = sv.prefs.getString("svRApplication",
                                 isWin? "r-gui" : "r-terminal");
 
-		var id = sv.prefs.getString("svRApplicationId");
 	// runIn = "command-output-window", "new-console",
 	// env strings: "ENV1=fooJ\nENV2=bar"
 	// gPrefSvc.prefs.getStringPref("runEnv");
 
-	// Reasonable default values are set in prefs.js... but just in case, we
-	// make sure to redefine reasonable default values here
-	var isWin = navigator.platform.indexOf("Win") === 0;
-	// Default preferredRApp on Windows is r-gui
-	var preferredRApp = sv.prefs.getString("svRApplicationId",
-		isWin? "r-gui" : "r-terminal");
-
-	var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
-		"SciViewsK"),
+	var env = [
+		"koId=" + sv.prefs.getString("sciviews.client.id", "SciViewsK"),
 		"koHost=localhost",
 		"koActivate=FALSE",
 		"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
@@ -448,7 +441,6 @@ this.startR = function () {
         window.controllers.appendController(new svController());
         //sv.log.debug("Controllers has been set.");
 }
-
 
 // Code below is for extra items in editor context menu (eg. "run selection"),
 // Commented out because it is still buggy
