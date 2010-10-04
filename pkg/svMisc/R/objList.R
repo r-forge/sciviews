@@ -56,6 +56,13 @@ path = NULL, compare = TRUE, ...)
 		}
 		res <- data.frame(t(sapply(Items, describe, all.info = all.info)),
 			stringsAsFactors = FALSE)
+
+
+		# Quote non-syntactic names
+		nsx <- res$Name != make.names(res$Name)
+		res$Full.name[!nsx] <- res$Name[!nsx]
+		res$Full.name[nsx] <- paste("`", res$Name[nsx], "`", sep = "")
+		res <- res[, c(1, 6, 2:5)]
 	}
 
 	if (NROW(res) == 0) return(Nothing)
@@ -202,18 +209,7 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 				seq_along(itemnames)[!w.names], "]]", sep = "")
 		}
 
-		ret <- t(sapply(seq_along(obj), function (i) {
-			x <- obj[[i]]
-
-			d <- dim(x)
-			if (is.null(d)) d <- length(x)
-
-			ret <- c(paste(d, collapse = "x"), mode(x), class(x)[1],
-				is.function(x) || (is.recursive(x) && !is.language(x) &&
-				sum(d) != 0)
-			)
-			return(ret)
-		}))
+		ret <- t(sapply(seq_along(obj), function (i) .objDescr(obj[[i]])))
 
 		ret <- data.frame(itemnames, fullnames, ret, stringsAsFactors = FALSE)
 	}
@@ -265,17 +261,23 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 	itemnames[nsx] <- paste("`", itemnames[nsx], "`", sep = "")
 	fullnames <- paste(objname, "@", itemnames, sep = "")
 
-	ret <- t(sapply(itemnames, function (i) {
-		x <- slot(obj, i)
-
-		d <- dim(x)
-		if (is.null(d)) d <- length(x)
-
-		ret <- c(paste(d, collapse = "x"), mode(x), class(x)[1],
-			is.function(x) || (is.recursive(x) && !is.language(x) &&
-			sum(d) != 0))
-	}))
+	ret <- t(sapply(itemnames, function (i) .objDescr(slot(obj, i))))
 
 	ret <- data.frame(itemnames, fullnames, ret, stringsAsFactors = FALSE)
 	return(ret)
+}
+
+## Returns a *character* vector with elements: dims, mode, class, rec(ursive)
+.objDescr <- function (x) {
+	d <- dim(x)
+	if (is.null(d)) d <- length(x)
+
+	return(c(
+	  dims=paste(d, collapse = "x"),
+	  mode=mode(x),
+	  class=class(x)[1],
+	  rec=mode(x) == "S4" ||
+		is.function(x) ||
+		(is.recursive(x) && !is.language(x) && sum(d) != 0)
+	  ))
 }
