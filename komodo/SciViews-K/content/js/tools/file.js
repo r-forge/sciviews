@@ -18,7 +18,8 @@
 // sv.tools.file.getfile(baseDir, [pathComponents]);
 								// Create nsILocalFile object from array and/or
 								// special dir name
-// sv.tools.file.readURI(uri);	// Read data from an URI
+// sv.tools.file.readURI(uri);		// Read data from an URI
+// sv.tools.file.pathFromURI(uri);	// Converts an URI to local path
 // sv.tools.file.list(dirname, pattern, noext); // List all files matching
 								// pattern in dirname (with/without extension)
 // sv.tools.file.whereIs(appName);
@@ -202,11 +203,11 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		for(var i in path) res = res.concat(path[i]);
 		//path = os.path.normpath(res.join(sep));
 		var dir0;
-		
+
 		path = res.join(sep);
 		if(os.name == "nt") path = path.replace(/\/+/g, sep);
 		dir0 = path.split(sep, 1)[0];
-		
+
 		path = sv.tools.file.specDir(dir0) + path.substring(dir0.length);
 		path = os.path.abspath(os.path.normpath(path));
 		return(path);
@@ -231,6 +232,13 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		var res = file.readfile();
 		file.close();
 		return (res);
+	}
+
+	// Read data from an URI
+	this.pathFromURI = function (uri) {
+		var fileSvc = Components.classes["@activestate.com/koFileService;1"]
+			.getService(Components.interfaces.koIFileService);
+		return (fileSvc.getFileFromURI(uri).path);
 	}
 
 	// List all files matching a given pattern in directory,
