@@ -329,8 +329,11 @@ this.startR = function () {
     function _setControllers () {
         //Based on: chrome://komodo/content/library/controller.js
         // backwards compatibility APIs
-        xtk.include("controller");
-        var Controller = xtk.Controller;
+		if(typeof Controller != "function") {
+			xtk.include("controller");
+			var Controller = xtk.Controller;
+		}
+
 
         const XRRunning = 1, XRStopped = 2, XisRDoc = 4, XHasSelection = 8;
         var handlers = {
@@ -351,9 +354,6 @@ this.startR = function () {
                 'cmd_svRSourceBlock': [ 'sv.r.source("block");',XisRDoc | XRRunning ],
                 'cmd_svRSourceFunction': [ 'sv.r.source("function");',XisRDoc | XRRunning ],
                 'cmd_svRSourcePara': [ 'sv.r.source("para");',XisRDoc | XRRunning ],
-                // PhG: this should really be sv.r.run(), which is supposed to be "more
-				// intelligent" and can be used to run code step by step because it
-				// moves the cursor to the next line each time...
 				'cmd_svRRunLineOrSelection': [ 'sv.r.run();', XisRDoc | XRRunning ],
                 'cmd_svRSourceLineOrSelection': [ 'sv.r.source("line/sel");', XisRDoc | XRRunning ],
                 'cmd_svRRunSelection': [ 'sv.r.send("sel");',XisRDoc | XRRunning | XHasSelection ],
@@ -364,7 +364,6 @@ this.startR = function () {
         // Temporary
         function _isRRunning () {
             return true;
-
         }
 
         function _isRCurLanguage () {
@@ -392,15 +391,13 @@ this.startR = function () {
         function svController() {}
 
         svController.prototype = new Controller();
-
         svController.prototype.constructor = svController;
-
         svController.prototype.destructor = function() { }
 
         svController.prototype.isCommandEnabled = function(command) {
-            if(!command in handlers) return(false);
-
+            if(!(command in handlers)) return(false);
 			return(true);
+		}
 
 			// TODO: Clean up the mess here.
             //var test = handlers[command][1];
@@ -429,7 +426,7 @@ this.startR = function () {
 			//	&& (((test & XHasSelection) != XHasSelection) || _hasSelection()));
 
 			//return true;
-        }
+        //}
 
         svController.prototype.supportsCommand = svController.prototype.isCommandEnabled;
 
@@ -551,14 +548,7 @@ this.startR = function () {
         //sv.log.debug("Keybindings has been applied.");
 	}
 
-	// Workaround for an apparent bug in Komodo 6.0.0-rc1, causing that some
-	// commands become inactive when _setControllers are run immediately
-	// "on load" (e.g. Save)
-	function _delayedSetControllers () {
-		window.setTimeout(_setControllers, 100);
-	}
-
-    addEventListener("load", _delayedSetControllers, false);
-    addEventListener("load", _setKeybindings, false);
+addEventListener("load", _setControllers, false);
+addEventListener("load", _setKeybindings, false);
 
 }).apply(sv.command);

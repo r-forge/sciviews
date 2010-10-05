@@ -66,7 +66,8 @@ persist="screenX screenY"
 
 // Create references to main window objects:
 var mainWin, sv, ko;
-var os = Components.classes['@activestate.com/koOs;1'].getService(Components.interfaces.koIOs);
+var os = Components.classes['@activestate.com/koOs;1']
+	.getService(Components.interfaces.koIOs);
 
 
 // Populate session directory list, insert preference values into corresponding textboxes
@@ -135,6 +136,7 @@ function OnLoad(event) {
 // Save values as preferences:
 function OK() {
 	var el = document.getElementById("sciviews.session.dir");
+	var newDir = el.value;
 	var mi, values = [];
 	for (var j = 0; j < el.itemCount; j++) {
 		values.push(homeSubst(el.getItemAtIndex(j).value));
@@ -142,28 +144,31 @@ function OK() {
 	sv.prefs.setString("sciviews.session.dir.mru", values.join(os.pathsep));
 
 	var prefEls = document.getElementsByAttribute("pref", "true");
-	var prefIds = [], prefName, prefVal, el;
+	var prefName, prefVal, el;
+	var prefAll = {};
 	for (var i = 0; i < prefEls.length; i++) {
 		el = prefEls[i];
 		prefVal = el.value;
 		if (el.getAttribute("prefsettings").indexOf("home-subst") != -1)
 		prefVal = homeSubst(prefVal);
-		sv.prefs.setString(el.id, prefVal);
+		prefAll[el.id] = prefVal;
 	}
 
-	function _getVal(id) document.getElementById(id).value;
+	sv.r.setSession(prefAll["sciviews.session.dir"],
+		prefAll["sciviews.session.data"],
+		prefAll["sciviews.session.scripts"],
+		prefAll["sciviews.session.reports"]);
 
-	sv.r.setSession (_getVal("sciviews.session.dir"),
-	_getVal("sciviews.session.data"),
-	_getVal("sciviews.session.scripts"),
-	_getVal("sciviews.session.reports"));
+
+	for (i in prefAll) sv.prefs.setString(i, prefAll[i]);
 
 	var setPlacesRoot =
 		document.getElementById("sciviews.session.placesroot").checked;
 
-	if (setPlacesRoot) {
-		ko.places.manager.openDirectory(_getVal("sciviews.session.dir"));
-	}
+	if (setPlacesRoot &&
+		(sv.tools.file.pathFromURI(ko.places.manager.currentPlace) != newDir))
+			ko.places.manager.openDirectory(newDir);
+
 	sv.prefs.setString("sciviews.session.placesroot", setPlacesRoot);
 
 	return (true);
@@ -256,8 +261,10 @@ function selectSessionDir(noReadConfig) {
 		}
 	}
 
-	printInfo("This directory contains " + (hasConfig? "a config file" : "no config file") +
-	" (\".svConfig\") and " + (hasWorkspace? "saved workspace": "no workspace") + ".");
+	printInfo("This directory contains " +
+		(hasConfig? "a config file" : "no config file") +
+		" (\".svConfig\") and " +
+		(hasWorkspace? "saved workspace": "no workspace") + ".");
 
 	document.getElementById("delete-config-button").disabled = !hasConfig;
 	document.getElementById("delete-workspace-button").disabled = !hasWorkspace;
@@ -274,7 +281,8 @@ function saveConfig() {
 	var cfg = [];
 	var cfgEls = document.getElementsByAttribute("config", "*");
 	for (var i= 0; i < cfgEls.length; i++) {
-		cfg.push(cfgEls[i].getAttribute("config") + " = " + sv.tools.strings.trim(cfgEls[i].value));
+		cfg.push(cfgEls[i].getAttribute("config") + " = " +
+				 sv.tools.strings.trim(cfgEls[i].value));
 	}
 	var cfgFile = sv.tools.file.path(dir, ".svData");
 	sv.tools.file.write(cfgFile, cfg.join("\n"), "utf-8");
@@ -288,11 +296,11 @@ function clearFiles(which) {
 	var files;
 	switch (which) {
 		case "config":
-		files = [".svData"];
-		break;
+			files = [".svData"];
+			break;
 		case "workspace":
-		files = [".RData", ".Rhistory"];
-		break;
+			files = [".RData", ".Rhistory"];
+			break;
 		default:
 	}
 
@@ -332,7 +340,7 @@ function saveWorkspace() {
 			sv.translate("Do you want to overwrite current history file in \"%S\"", dir),
 				"Cancel", null, sv.translate("Save current history")
 			) == "OK") {
-			sv.r.evalHidden('savehistory("' + addslashes(rDataFile) + '")');
+			sv.r.evalHidden('savehistory("' + addslashes(rHistoryFile) + '")');
 		}
 	}
 }

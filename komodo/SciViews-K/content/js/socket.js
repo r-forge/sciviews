@@ -31,6 +31,8 @@
 // * A method to check svSocketMinVersion, and include this in rUpdate()
 // * Correct the crash problem when Komodo exits on Windows (connections not closed?)
 // * The interface must be made 100% compatible with the HTTP server
+// * Severe! On Windows the socket server is not reachable from R after Komodo is restarted
+//   while R is running already. Executing sv.socket.serverStart() does not help at all.
 
 // Define the 'sv.socket' namespace
 if (typeof(sv.socket) == 'undefined') sv.socket = {};
@@ -58,16 +60,27 @@ this.__defineSetter__ ('charset', function (charset) {
 		try { _converter.charset = charset; } catch (e) { }
 	return(_converter.charset);
 });
-this.charset = "UTF-8"; //svConverter.charset; // Already set at UTF-8 by default
+
+this.charset = "ASCII";
+//  KB: Makes no sense to set it to UTF-8 on non-unicode systems! Causes an error on
+//  a first call to rUpdate.
+//this.charset = "UTF-8"; //svConverter.charset; // Already set at UTF-8 by default
 									// in svRinterpreter.js
+
+//TODO: charcode is not updated when Komodo starts and R is already running. 
+// rUpdate should be run at Komodo startup, but how to figure out if R is running 
+// then???  
+// Perhaps save 'charcode' as a preference
 
 // The conversion functions
 function _fromUnicode (str, charset) {
-	if (charset !== undefined && _this.charset != charset) _this.charset = charset;
+	if (charset !== undefined && _this.charset != charset) 	_this.charset = charset;
 	try {
-		str = _converter.ConvertFromUnicode(str);
+		if (_converter.charset)
+			str = _converter.ConvertFromUnicode(str) + _converter.Finish();
 	} catch(e) {
-		sv.log.exception(e, "sv.socket is unable to convert from Unicode");
+		sv.log.exception(e, "sv.socket is unable to convert from Unicode to " +
+		 	_converter.charset + ". The string was " + str);
 	}
 	return(str);
 }
@@ -75,9 +88,11 @@ function _fromUnicode (str, charset) {
 function _toUnicode (str, charset) {
 	if (charset !== undefined && _this.charset != charset) _this.charset = charset;
 	try {
-		str = _converter.ConvertToUnicode(str);
+		if (_this.charset)
+			str = _converter.ConvertToUnicode(str);
 	} catch(e) {
-		sv.log.exception(e, "sv.socket is unable to convert from Unicode");
+		sv.log.exception(e, "sv.socket is unable to convert to Unicode from " +
+			_converter.charset + ". The string was " + str);
 	}
 	return(str);
 }
@@ -286,16 +301,19 @@ this.rProcess = function (rjson) {
 // TODO: add the current working directory and report WD changes from R automagically
 this.rUpdate = function () {
 	// Make sure that dec and sep are correctly set in R
-	this.rCommand('<<<H>>>options(OutDec = "' +
+	this.rCommand('<<<h>>>options(OutDec = "' +
 		sv.prefs.getString("r.csv.dec", ".") +
 		'"); options(OutSep = "' +
 		sv.prefs.getString("r.csv.sep", ",") +
-		'"); invisible(guiRefresh(force = TRUE)); ' +
-		'cat("<<<charset=", localeToCharset()[1], ">>>", sep = "")',
+		'"); ' +
+		// ??? The following does not work.
+		//'cat("<<<charset=", localeToCharset()[1], ">>>", sep = "")',
+		'cat("", localeToCharset()[1], sep = "")',
 		false, function (s) {
-			_this.charset = s;
+			_this.charset = sv.tools.strings.trim(s);
 			if (_this.debug) sv.log.debug("R charset: " + s);
 	});
+	//invisible(guiRefresh(force = TRUE));
 }
 
 
@@ -506,6 +524,3 @@ this.serverWrite = function (data) {
 // Launch the SciViews socket server on Komodo startup
 addEventListener("load", function()
 	window.setTimeout("sv.socket.serverStart();", 500), false);
-
-//FIXME: on Windows the socket server is not reachable from R after Komodo is restarted
-//while R is running. Executing sv.socket.serverStart() does not help at all.
