@@ -312,11 +312,25 @@ function PrefR_updateCommandLine(update) {
     var appId = document.getElementById("svRApplication").value;
     var appPath = document.getElementById("svRDefaultInterpreter").value;
     var cmdArgs = document.getElementById("svRArgs").value;
-    var args1 = document.getElementById("sciviews.pkgs.sciviews").checked ?
-    " --args --pkgs=SciViews,MASS,ellipse" : "";
+	var args1 = "";
+
+	if(document.getElementById("sciviews.pkgs.sciviews").checked)
+			args1 += " --svStartPkgs=SciViews,MASS,ellipse";
 
    	var cwd = sv.tools.file.path("ProfD", "extensions",
     "sciviewsk@sciviews.org", "defaults");
+
+	cmdArgs = cmdArgs.replace(/\s*--mdi/, "");
+
+	var argsPos = cmdArgs.indexOf("--args");
+	if(argsPos != -1) {
+		args1 += " " + sv.tools.strings.trim(cmdArgs.substring(argsPos + 6));
+		cmdArgs = cmdArgs.substring(0, argsPos);
+	}
+
+	args1 = sv.tools.strings.trim(args1);
+	if(args1)
+		args1 = " --args " + args1;
 
     var cmd = apps[appId].path;
 	cmd = cmd.replace("%Path%", appPath)

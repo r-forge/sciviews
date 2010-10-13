@@ -1,23 +1,46 @@
 ### SciViews install begin ###
 # SciViews-R installation and startup for running R with Komodo/SciViews-K
 # Version 0.9.11, 2010-02-09 Ph. Grosjean (phgrosjean@sciviews.org)
-# Version 0.9.15, 2010-05-01 mod by K. Barton
+# Version 0.9.20, 2010-10-11 mod by K. Barton
 
 # TODO: also use value in koDebug to debug server from within R!
 
 "svStart" <-
-function (minVersion = c(R = "2.11.1", svMisc = "0.9-60",
-svSocket = "0.9-50", svGUI = "0.9-49", MASS = "7.2.0", ellipse = "0.3-5",
-SciViews = "0.9-2"),
+function (minRVersion = "2.11.1", minVersion = NA,
 	# NOTE: minVersion is now also used as a list of required packages
 	remote.repos = "http://R-Forge.R-project.org",
 	pkg.dir = ".",
 	debug = Sys.getenv("koDebug") == "TRUE",
-	pkgsLast = c("svGUI", "ellipse", "MASS", "SciViews") # to be loaded at the end
+	pkgsLast = c("svGUI", "ellipse", "MASS", "SciViews"), # to be loaded at the end,
+	skip = NULL
 	) {
 
 	# needed later for tryCatch'ing:
 	"err.null" <- function (e) return(NULL)
+
+	# If minVersion is not provided, get it from packages in 'default' directory
+	pkg.extpat <- switch(.Platform$pkgType, win.binary = "zip", "tar\\.gz")
+	pkgFiles <- dir(pkg.dir, pattern=pkg.extpat)
+	if (all(is.na(minVersion))) {
+		minVersion <- structure(gsub(sprintf("(^[a-zA-Z]+_|\\.%s$)",
+			pkg.extpat), "", pkgFiles), names=gsub("_.*$", "", pkgFiles))
+
+
+		minVersion <- package_version(gsub(sprintf("(^[a-zA-Z]+_|\\.%s$)",
+			pkg.extpat), "", pkgFiles))
+
+		pkgNames <- gsub("_.*$", "", pkgFiles)
+		# Select newest version if more then one exist
+		v <- tapply(minVersion, pkgNames, max)
+		minVersion <- as.character(structure(v, class=class(minVersion)))
+		names(minVersion) <- names(v)
+	}
+	pkgs <- names(minVersion)
+
+	i.skip <- !(pkgs %in% skip)
+	pkgs <- pkgs[i.skip]
+	minVersion <- minVersion[i.skip]
+	pkgFiles <- pkgFiles[i.skip]
 
 	# TODO: if R crashes before this code is done, 00LOCK remains and it is not
 	# possible to initiate SciViews extensions any more! => use a different
@@ -74,12 +97,12 @@ SciViews = "0.9-2"),
 			if (length(b) > length(a)) return(-1) else return(0)
 		}
 	}
-	rVersion <- paste(R.Version()$major, R.Version()$minor, sep = ".")
-	res <- compareVersion(rVersion, minVersion["R"])
+	rVersion <- as.character(getRversion())
+	res <- compareVersion(rVersion, minRVersion)
 	if (res < 0) {
 		res <- FALSE
 		cat("R is too old for this version of SciViews (R >=",
-			minVersion["R"], "is needed), please, upgrade it\n")
+			minRVersion, "is needed), please, upgrade it\n")
 	} else res <- TRUE
 
 	# Load main R packages (tools added to the list because now required by svMisc)
@@ -189,12 +212,11 @@ SciViews = "0.9-2"),
 		# Load packages svMisc, svSocket & svGUI (possibly after installing
 		# or upgrading them). User is supposed to agree with this install
 		# from the moment he tries to start and configure R from Komodo Edit
-		pkgs <- names(minVersion)
-		pkgs <- pkgs[!(pkgs %in% "R")]
+		###pkgs <- pkgs[!(pkgs %in% "R")]
 
-		ext <- switch(.Platform$pkgType, # There is a problem on some Macs
-			# => always install from sources there! mac.binary = "\\.tgz",
-			win.binary = "\\.zip", "\\.tar\\.gz")
+		#ext <- switch(.Platform$pkgType, # There is a problem on some Macs
+		#	# => always install from sources there! mac.binary = "\\.tgz",
+		#	win.binary = "\\.zip", "\\.tar\\.gz")
 		typ <- switch(.Platform$pkgType, # There is a problem on some Macs
 			# => always install from sources there! mac.binary = "\\.tgz",
 			win.binary = "win.binary", "source")
@@ -216,21 +238,25 @@ SciViews = "0.9-2"),
 		debugMsg("Installing packages if needed:")
 		sapply(pkgs, function (pkgName) {
 			debugMsg("Now trying package:", pkgName)
-			file <- dir(path = pkg.dir, pattern = paste(pkgName, ext, sep = ".+"))
+			pkgFile <- dir(path = pkg.dir, pattern = sprintf("%s_.*\\.%s", pkgName,
+				pkg.extpat))
 
-			if (length(file) > 0) {
-				# Better by-version sorting
-				ver <- gsub(paste("(^", pkgName, "_", "|", ext, "$)", sep = ""),
-					"", basename(file))
-				file <- tail(file[order(sapply(strsplit(ver, "[\\.\\-]"),
-					function (x) sum(as.numeric(x) * (100 ^ -seq_along(x)))))], 1)
+			if (length(pkgFile) > 0) {
+
+				pkgVersion <- gsub(sprintf("(^%s_|\\.%s$)", pkgName,  pkg.extpat),
+					"", basename(pkgFile))
+				i <- order(package_version(pkgVersion), decreasing = TRUE)[1]
+				pkgFile <-  pkgFile[i]
+				pkgVersion <-  pkgVersion[i]
+
+
 				# For some reasons (bug probably?) I cannot install a package in
 				# R 2.10.1 under Mac OS X when the path to the package has spaces
 				# Also, correct a bug here when installing package from a
 				# repository where we are not supposed to prepend a path!
 				# Copy the dfile temporarily to the temp dir
-				sourcefile <- file.path(pkg.dir, file)
-				file <- file.path(tempdir(), file)
+				sourcefile <- file.path(pkg.dir, pkgFile)
+				pkgFile <- file.path(tempdir(), pkgFile)
 				repos <- NULL
 
 				# remove directory lock if exists (happens sometimes on linux)
@@ -240,7 +266,7 @@ SciViews = "0.9-2"),
 			} else {
 				# No packages found, download from the web
 				sourcefile <- NULL
-				file <- pkgName
+				pkgFile <- pkgName
 				repos <- remote.repos
 			}
 
@@ -251,20 +277,22 @@ SciViews = "0.9-2"),
 				fields = "Version"), minVersion[pkgName]) < 0) {
 				if (!pkgIsInstalled) {
 					cat("Installing missing package", sQuote(pkgName),
+					paste("(version", pkgVersion, ")", sep=""),
 						"into", sQuote(lib), "\n")
 				} else {
-					cat("Updating package", sQuote(pkgName), "\n")
+					cat("Updating package", sQuote(pkgName), "to version",
+						pkgVersion, "\n")
 				}
 				# Copy the install file to the temporary directory
-				if (!is.null(sourcefile)) try(invisible(file.copy(sourcefile, file)))
+				if (!is.null(sourcefile)) try(invisible(file.copy(sourcefile, pkgFile)))
 				# Install or update the package
-				try(install.packages(file, lib = lib, repos = repos, type = typ))
+				try(install.packages(pkgFile, lib = lib, repos = repos, type = typ))
 				# Erase the temporary file
-				try(unlink(file))
+				try(unlink(pkgFile))
 			} else {
 				debugMsg("Package", pkgName, "is up to date")
 			}
-		})
+		}) ## end installing packages
 
 		# Split pkgs to primary and secondary
 		pkgsPrimary <- pkgs[!(pkgs %in% pkgsLast)]
@@ -283,9 +311,9 @@ SciViews = "0.9-2"),
 
 			if (!res) {
 				cat("Impossible to start the SciViews R socket server\n(socket",
-					getOption("ko.serve"), "already in use?)\n")
-				cat("Solve the problem, then type: require(svGUI)\n")
-				cat("or choose a different port for the server in Komodo\n")
+					getOption("ko.serve"), "already in use?)\n",
+				    "Solve the problem, then type: require(svGUI)\n",
+				    "or choose a different port for the server in Komodo\n")
 
 			} else {
 				# Finally, load svGUI, ellipse, MASS and SciViews
@@ -535,7 +563,7 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 				path.expand(getOption("R.initdir")), sep = ""))
 		}
 		# Update info in Komodo:
-		debugMsg("Contacting Komodo with koCmd")
+		debugMsg("Contacting Komodo using 'koCmd'")
 		invisible(koCmd(paste(
 			"sv.socket.rUpdate()",
 			"sv.cmdout.append('R is started')",

@@ -45,7 +45,7 @@
 ///// Other ////////////////////////////////////////////////////////////////////
 ///// Private methods
 // _createVisibleData () - create visibleData from treeData
-// __addObject(env, objName, callback, obj)
+// _addObject(env, objName, callback, obj)
 // _parseObjectList(data, packSelected)
 // _removeObjectList(pack)
 // _parseSubObjectList(data, obj)
@@ -125,6 +125,11 @@ sv.r.objects = {};
 		'package', 'standardGeneric', 'S3', 'S4', 'ts', 'environment',
 		'formula'];
 
+
+	// used in .contextOnShow
+	var nonDetachable = [".GlobalEnv", "TempEnv", "package:svGUI", "package:svMisc",
+		"package:svSocket", "package:base"];
+
 	// Reference to parent object for private functions
 	var _this = this;
 
@@ -136,7 +141,6 @@ sv.r.objects = {};
 
 	this.visibleData = [];
 	this.treeData = [];
-
 	this.treeBox = null;
 	this.selection = null;
 
@@ -164,6 +168,11 @@ sv.r.objects = {};
 	};
 
 	function _parseObjectList (data, packSelected) {
+		if(typeof _this.searchPaths == "undefined") {
+			_this.getPackageList(true); //TODO call _parseObjectList afterwards
+			return (false);
+		}
+
 		// Get position in the search path
 		function getPos (pack) {
 			var pos, searchPaths = _this.searchPaths;
@@ -270,12 +279,13 @@ sv.r.objects = {};
 		_createVisibleData();
 	};
 
-	function __addObject(env, objName, callback, obj) {
+	function _addObject(env, objName, callback, obj) {
 		var id = sv.prefs.getString("sciviews.client.id", "SciViewsK");
 
 		var cmd = cmdPattern.replace(/%ID%/g, id).replace(/%ENV%/g, env.addslashes())
 				.replace(/%OBJ%/g, objName.replace(/\$/g, "$$$$"));
 
+		//sv.cmdout.append(cmd);
 		sv.r.evalCallback(cmd, callback, obj);
 	};
 
@@ -613,7 +623,7 @@ sv.r.objects = {};
 		if (!item) return;
 		if (item.isList && !item.origItem.isOpen &&
 			!item.origItem.childrenLoaded) {
-			__addObject(item.origItem.env, item.origItem.fullName,
+			_addObject(item.origItem.env, item.origItem.fullName,
 						_parseSubObjectList, item);
 
 			return;
@@ -689,21 +699,13 @@ sv.r.objects = {};
 
 	this.getCellText = function (idx, column) _this.visibleData[idx].labels[column.index];
 	this.isContainer = function (idx) _this.visibleData[idx].isContainer;
-
 	this.isContainerOpen = function (idx) _this.visibleData[idx].origItem.isOpen;
-
 	this.isContainerEmpty = function (idx) _this.visibleData[idx].isContainerEmpty;
-
 	this.isSeparator = function (idx) false;
-
 	this.isSorted = function () false;
-
 	this.isEditable = function (idx, column) false;
-
 	this.getParentIndex = function (idx) this.visibleData[idx].parentIndex;
-
 	this.getLevel = function (idx) this.visibleData[idx].level;
-
 	this.hasNextSibling = function (idx, after) !this.visibleData[idx].last;
 
 	this.getImageSrc = function (row, col) {
@@ -723,15 +725,10 @@ sv.r.objects = {};
 	};
 
 	this.getCellValue = function (idx, column) {};
-
 	this.cycleHeader = function (col, elem) {};
-
 	this.selectionChanged = function () {};
-
 	this.cycleCell = function (idx, column) {};
-
 	this.performAction = function (action) {};
-
 	this.performActionOnCell = function (action, index, column) {};
 
 	this.getRowProperties = function (idx, props) {
@@ -822,7 +819,7 @@ sv.r.objects = {};
 
 	this.init = function () {
 		this.visibleData = [];
-		__addObject(".GlobalEnv", "", _parseObjectList, ".GlobalEnv");
+		_addObject(".GlobalEnv", "", _parseObjectList, ".GlobalEnv");
 		this.getPackageList();
 
 		isInitialized = true;
@@ -904,7 +901,7 @@ sv.r.objects = {};
 		if (!pack)
 			return;
 		if (el.checked) {
-			__addObject(pack, "", _parseObjectList, pack);
+			_addObject(pack, "", _parseObjectList, pack);
 		} else {
 			_removeObjectList(pack);
 		}
@@ -928,7 +925,7 @@ sv.r.objects = {};
 
 	this.refreshGlobalEnv = function (data) {
 		if(!data) {
-			__addObject(".GlobalEnv", "", _parseObjectList, ".GlobalEnv");
+			_addObject(".GlobalEnv", "", _parseObjectList, ".GlobalEnv");
 		} else {
 			_parseObjectList(data);
 		}
@@ -1131,13 +1128,18 @@ sv.r.objects = {};
 		var currentIndex = _this.selection.currentIndex;
 
 		if (currentIndex != -1) {
-			var isPackage, noDetach, isFunction;
+			var isEnvironment, isPackage, isInPackage, noDelete, isFunction;
 			var item, type, name;
 			item = _this.visibleData[currentIndex].origItem;
 			type = item.class;
 			name = item.fullName;
 
-			noDetach = isPackage && (name == ".GlobalEnv" || name == "TempEnv");
+			isEnvironment = item.type == "environment";
+			isPackage = isEnvironment && (item.name.indexOf("package:") == 0);
+			isInPackage = !isPackage && item.env && (item.env.indexOf("package:") == 0);
+
+			noDelete = (isEnvironment && (nonDetachable.indexOf(name) != -1))
+				|| isInPackage;
 			isFunction = type == "function";
 
 			var canSaveToFile = ["data.frame", "matrix", "table"]
@@ -1147,26 +1149,38 @@ sv.r.objects = {};
 
 			// help can be shown only for one object:
 			var hasHelp = (selItemCount == 1)
-				&& ((isPackage && item.name.indexOf("package:") == 0) ||
-					(!isPackage && item.env.indexOf("package:") == 0));
+				&& (isPackage || isInPackage);
+
+			sv.cmdout.append(name
+							 + "; isPackage:" + isPackage
+							 + "; isEnvironment:" + isEnvironment
+							 + "; noDelete:" + noDelete
+							 + "; isInPackage:" + isEnvironment
+							 + "; isFunction:" + isFunction
+							 + "; hasHelp:" + hasHelp
+							 )
 
 			document.getElementById("robjects_cmd_removeobj")
-				.setAttribute("disabled", noDetach);
+				.setAttribute("disabled", noDelete);
+			document.getElementById("robjects_cmd_deletenow")
+				.setAttribute("disabled", noDelete);
+
+
 			//document.getElementById("robjects_cmd_attach")
-			//	.setAttribute("disabled", noDetach || !isPackage);
+			//	.setAttribute("disabled", noDelete || !isPackage);
 			document.getElementById("robjects_cmd_summary")
-				.setAttribute("disabled", isFunction || isPackage);
+				.setAttribute("disabled", isFunction || isEnvironment);
 			document.getElementById("robjects_cmd_print")
 				.setAttribute("disabled", isPackage);
 			document.getElementById("robjects_cmd_plot")
-				.setAttribute("disabled", isFunction || isPackage);
+				.setAttribute("disabled", isFunction || isEnvironment);
 			document.getElementById("robjects_cmd_names")
 				.setAttribute("disabled", isFunction);
 			document.getElementById("robjects_cmd_str")
 				.setAttribute("disabled", isPackage);
 
-			//document.getElementById("robjects_cmd_write_table")
-			//	.setAttribute("disabled", !isDataFrame);
+			document.getElementById("robjects_cmd_write_table")
+				.setAttribute("disabled", !canSaveToFile);
 
 			// Disable help option for non-package objects,
 			// because usually there is none
@@ -1205,8 +1219,8 @@ sv.r.objects = {};
 			var cmd = [], expr;
 
 			for (i in obj) {
-				expr = "eval(expression(" + obj[i].fullName +
-					"), envir = as.environment(\"" +
+				expr = "evalq(" + obj[i].fullName +
+					", envir = as.environment(\"" +
 					obj[i].env.addslashes() + "\"))";
 
 				sv.r.saveDataFrame(expr, '', obj[i].name);
@@ -1221,8 +1235,8 @@ sv.r.objects = {};
 		default:
 			var cmd = [];
 			for (i in obj) {
-				cmd.push(action + "(eval(expression(" + obj[i].fullName +
-					"), envir = as.environment(\"" +
+				cmd.push(action + "(evalq(" + obj[i].fullName +
+					", envir = as.environment(\"" +
 					obj[i].env.addslashes() + "\")))");
 			}
 			sv.r.eval(cmd.join("\n"));
