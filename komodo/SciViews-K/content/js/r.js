@@ -425,8 +425,6 @@ sv.r.source = function (what) {
 			// After executing, tell R to delete it.
 			var code = sv.getTextRange(what);
 
-			sv.cmdout.append(code);
-
 			if (what == "function") {
 				what += " \"" + code.match("^.*\\S(?=\\s*(?:=|<-)\\s*function)") +
 				"\"";
@@ -1851,18 +1849,21 @@ sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) 
 
 		var dir = sv.prefs.getString("sciviews.session.dir");
 
-		fileName = sv.tools.fileOpen(dir, objName, "",
+		oFilterIdx = {value: filterIndex};
+
+		fileName = sv.fileOpen(dir, objName, "",
 					["Comma separated values (*.csv)|*.csv",
 					 "Tab delimited (*.txt)|*.txt",
 					 "Whitespace delimited values (*.txt)|*.txt"
-					 ], false, true, filterIndex);
+					 ], false, true, oFilterIdx);
 
-
-		// TODO: set delimiter basing on filterIndex...
+		sep = [",", "\\t", " "][oFilterIdx.value];
+		if(dec == "," && sep == ",") dec=";";
 	}
 
-	var cmd = 'write.table(' + name + ', file="' + fileName.addslashes() +
-		'", dec="' + dec + '", sep="' + sep + '")';
+	var cmd = 'write.table(' + name + ', file="' +
+		sv.tools.strings.addslashes(fileName) +
+		'", dec="' + dec + '", sep="' + sep + '", col.names=NA)';
 	sv.r.eval(cmd);
 	return(cmd);
 }
