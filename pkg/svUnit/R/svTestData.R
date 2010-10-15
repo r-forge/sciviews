@@ -90,7 +90,13 @@ protocol_junit.svTestData <- function(object, ...) {
   if(!require(XML, quietly=TRUE))
     return(invisible(FALSE))
 
-  toValidXmlString <- function(s) gsub("<", "&lt;", s)
+  toValidXmlString <- function(s) {
+    s <- gsub("<", "&lt;", s)
+    s <- gsub(">", "&gt;", s)
+    s <- gsub('"', "&quot;", s)
+    s <- gsub("'", "&apos;", s)
+    gsub("&", "&amp;", s)
+  }
 
   basename <- function(s) sub(".*/", "", s)
 
@@ -107,7 +113,7 @@ protocol_junit.svTestData <- function(object, ...) {
     failureNode <- xmlNode(elementName,
                            attrs=c(
                              'type'=elementName,
-                             'message'=object$res))  # TODO: use accessor
+                             'message'=toValidXmlString(object$res)))  # TODO: use accessor
     result <- addChildren(result, kids=list(failureNode))
   }
   if(kind == 4)
