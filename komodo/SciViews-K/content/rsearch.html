@@ -28,17 +28,16 @@ var rHelpWin, sv;
 function askR(topic) {
 	if (!topic)	return;
 
-	var cmd = 'svtmp <- help.search("' + topic + '")[];' +
+	var cmd = 'local({ svtmp <- help.search("' + topic + '")[];' +
 		'cat(svtmp$pattern, "\\n"); ' +
 		'if (nrow(svtmp$matches)) {' +
 		'svtmp$matches <- cbind(svtmp$matches, Path = apply(matrix(svtmp$matches[, c(1,3)], ncol=2), 1, function(z) c(help(z[1],  package = z[2]))));' +
 		'write.table(svtmp$matches, sep=";", row.names = F, col.names = F, quote = F); ' +
 		'}; ' +
-		'rm(svtmp);';
+		'rm(svtmp); }); ';
 
 	sv.r.evalCallback(cmd, displayResults);
 }
-
 
 function appendElem(parent, tagName, textContent, attributes) {
 	var el = document.createElement(tagName);
@@ -131,7 +130,7 @@ function rHelp (topic, pkg) {
 		cmd += topic? ' topic = "' + topic + '", ' : "";
 		//cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
 		// For R 2.10:
-		cmd = 'cat(getHelpURL(help(' + cmd + ' htmlhelp = TRUE)))';
+		cmd = 'cat(getHelpURL(help(' + cmd + ')))';
 
 		res = sv.r.evalCallback(cmd, function(path) {
 			rHelpWin.go(path, Components.interfaces.nsIWebNavigation
