@@ -90,7 +90,7 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 					<label value="Command line arguments:"
 								control="svRArgs" pref="false" />
 					<textbox id="svRArgs" pref="true" editable="true" flex="1"
-						oninput="PrefR_svRApplicationUpdate(event);"
+						oninput="PrefR_updateCommandLine(event);"
 					/>
 					<toolbarbutton
 						oncommand="sv.r.help(&quot;Startup&quot;)"
