@@ -22,11 +22,13 @@ parseError <- function (err)
 	line <- try(as.integer(sub(rx, "\\2", msg, perl = TRUE)), silent = TRUE)
 	if (inherits(line, "try-error")) line <- NA_integer_
 	column <- try(as.integer(sub(rx, "\\3", msg, perl = TRUE)), silent = TRUE)
-	if (inherits(column, "try-error")) {
+	if (inherits(column, "try-error"))
 		column <- NA_integer_
-	} else {
-		message <- sub(rx, "\\4", msg, perl = TRUE)
-	}
+	## FIXME: there is a bug here: if we use tabulations, they are converted into
+	## four spaces somewhere... That means the column number is not correct any more
+	## For now, we prefer to return column 1 everytime until the bug is fixed!
+	column <- 1
+	message <- sub(rx, "\\4", msg, perl = TRUE)
   
 	return(structure(data.frame(file = file, line = line, column = column,
 		message = message, type = "error", stringsAsFactors = FALSE),

@@ -5,8 +5,11 @@ svTools.env <- new.env()
 
 .looksLikeAFunction <- function (p)
 {
-	if (length(p[[1]]) != 1) return(FALSE)
-	if (!as.character(p[[1]]) %in% c("<-", "<<-", "=")) return(FALSE)
+	# Sometimes, p is not subsettable => use try here
+	p1 <- try(p[[1]], silent = TRUE)
+	if (inherits(p1, "try-error")) return(FALSE)
+	if (length(p1) != 1) return(FALSE)
+	if (!as.character(p1) %in% c("<-", "<<-", "=")) return(FALSE)
 	if (length(p) <= 2) return(FALSE) 
 	if (is.null(p[[3]])) return(FALSE)
 	if (length(p[[3]]) == 1) return(FALSE)
@@ -17,8 +20,10 @@ svTools.env <- new.env()
 
 .looksLikeAnIf <- function (p)
 {
-	if(length(p[[1]]) != 1) return(FALSE)
-	return(as.character(p[[1]]) == "if")
+	# Sometimes, p is not subsettable => use try here
+	p1 <- try(p[[1]], silent = TRUE)
+	if(length(p1) != 1) return(FALSE)
+	return(as.character(p1) == "if")
 }
 
 .getIfSrcRef <- function (p)
