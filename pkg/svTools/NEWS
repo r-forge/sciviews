@@ -1,6 +1,18 @@
 = svTools News
 
-== Change in svTools 0.9-0
+== Changes in svTools 0.9-1
+
+* Several bugs eliminated in tryParse() and lintUsage().
+
+* lintUsage() renamed lint() for simplicity.
+
+* lint() added to support code linter for Komodo with new 'flat' or 'rjson'
+  output format. The function takes R code as a character string, or the name of
+  a file and it outputs a data.frame, text, or rjson object that contains the
+  error messages.
+
+
+== Changes in svTools 0.9-0
 
 * This is a major rewriting of the package. Dependency to operators was
   eliminated, and most functions and arguments have changed!
