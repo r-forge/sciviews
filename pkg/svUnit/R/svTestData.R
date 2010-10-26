@@ -91,11 +91,12 @@ protocol_junit.svTestData <- function(object, ...) {
     return(invisible(FALSE))
 
   toValidXmlString <- function(s) {
+    s <- gsub("&", "&amp;", s)
     s <- gsub("<", "&lt;", s)
     s <- gsub(">", "&gt;", s)
     s <- gsub('"', "&quot;", s)
     s <- gsub("'", "&apos;", s)
-    gsub("&", "&amp;", s)
+    s
   }
 
   basename <- function(s) sub(".*/", "", s)
