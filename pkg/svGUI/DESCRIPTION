@@ -7,8 +7,8 @@ Suggests: svSocket (>= 0.9-50)
 SystemRequirements: Komodo Edit (http://www.openkomodo.com), SciViews-K (http://www.sciviews.org/SciViews-K)
 Description: Functions to manage the GUI client, like Komodo with the
   SciViews-K extension
-Version: 0.9-49
-Date: 2010-09-11
+Version: 0.9-50
+Date: 2010-10-01
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL-2

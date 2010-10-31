@@ -63,10 +63,18 @@ class KoRLanguage(KoUDLLanguage):
         "line": [ "#", ],
     }
 
+    #downloadURL = "http://cran.r-project.org"
+    #searchURL = "http://www.rseek.org/"
+
     variableIndicators = '$'
     _dedenting_statements = [u'return', u'break', u'else', u'next']
     _indenting_statements = [u'switch', u'if', u'ifelse', u'while', u'for', u'repeat']
     supportsSmartIndent = "brace"
+
+    #styleStdin = components.interfaces.ISciMoz.SCE_C_STDIN
+    #styleStdout = components.interfaces.ISciMoz.SCE_C_STDOUT
+    #styleStderr = components.interfaces.ISciMoz.SCE_C_STDERR
+
 
     sample = """`cube`<- function(x, na.rm = FALSE) {
     if (isTRUE(na.rm))
@@ -80,6 +88,16 @@ a$y <- NULL; a"""
 
     # Overriding these base methods to work around bug 81066.
     def get_linter(self):
-        return None
+        return self._get_linter_from_lang("R")
     def get_interpreter(self):
         None
+
+    #def get_lexer(self):
+    #    return None
+    #    if self._lexer is None:
+    #        self._lexer = KoLexerLanguageService()
+    #        self._lexer.setLexer(components.interfaces.ISciMoz.SCLEX_CPP)
+    #        self._lexer.setKeywords(0, lang_r.keywords)
+    #        self._lexer.setKeywords(1, lang_r.builtins)
+    #        self._lexer.supportsFolding = 1
+    #    return self._lexer

@@ -19,6 +19,7 @@ if (typeof(sv.prefs) == "undefined") sv.prefs = {};
 // sv.prefs.defaults[preferenceName] = preferenceValue
 sv.prefs.defaults = {
 	"sciviews.server.socket": "7052",
+	"sciviews.client.type": "http",
 	"sciviews.client.socket": "8888",
 	"sciviews.client.id": "SciViewsK",
 	"sciviews.server.host": "127.0.0.1",
@@ -29,6 +30,7 @@ sv.prefs.defaults = {
 	svRArgs: "--quiet", // For future use, replaces svRQuiet
     "r.csv.dec": ".",
 	"r.csv.sep": ",",
+	"r.application": "",
 	CRANMirror: "http://cran.r-project.org/",
 	RHelpCommand: "javascript:sv.r.help(\"%w\")",
     "sciviews.pkgs.sciviews" : "false"

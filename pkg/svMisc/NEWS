@@ -1,5 +1,10 @@
 = svMisc News
 
+== Changes in svMisc 0.9-61
+
+* Better handling of non syntactically correct names in objList().
+
+
 == Changes in svMisc 0.9-60
 
 * A couple of functions are renamed: Parse() -> parseText(), clipsource() ->

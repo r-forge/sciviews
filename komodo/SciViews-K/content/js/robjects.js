@@ -20,9 +20,9 @@
 // setCellValue
 // getCellText
 // isContainer
-// isContainerOpen
+//isContainerOpen
 // isContainerEmpty
-// isSeparator
+//isSeparator
 // isSorted
 // isEditable
 // getParentIndex
@@ -45,15 +45,17 @@
 ///// Other ////////////////////////////////////////////////////////////////////
 ///// Private methods
 // _createVisibleData () - create visibleData from treeData
-// _addObject(env, objName, callback, obj)
+// _addObjectList(pack)
 // _parseObjectList(data, packSelected)
 // _removeObjectList(pack)
+// _addSubObject(obj)
 // _parseSubObjectList(data, obj)
 // _getFilter()
 // _addVItems(item, parentIndex, level, parentUid)
 // _addVIChildren(vItem, parentIndex, isOpen)
 // _getVItem(obj, index, level, first, last, parentIndex, parentUid)
-//TODO: Merge _parseSubObjectList and _parseObjectList
+//TODO: _addSubObject, _parseSubObjectList - should be possibly merged with
+//      _addObjectList and _parseObjectList
 //
 ///// Private properties
 // iconTypes - icons to display
@@ -102,8 +104,9 @@
 //TODO: renaming objects on the list - editable names
 //TODO: add context menu item for environments: remove all objects
 //TODO: add a checkbutton to show also hidden objects (starting with a dot)
-//TODO: delegate context menu calculation to R (why????)
+//TODO: delegate context menu calculation to R
 //TODO: smart refresh: keep opened nodes, preserve scrolling
+//TODO: automatic refresh of the browser from R
 ////////////////////////////////////////////////////////////////////////////////
 
 // TODO: make this a sv.robjects.tree instead!
@@ -114,8 +117,9 @@ sv.r.objects = {};
 
 	// Item separator for objList
 	var sep = ";;";
-	var cmdPattern = 'print(objList(id="%ID%_%ENV%_%OBJ%", envir="%ENV%",' +
-		' object="%OBJ%", all.info=FALSE, compare=FALSE), sep = "' + sep +
+
+	var cmdPattern = 'print(objList(id = "$ID$_$ENV$_$OBJ$", envir = "$ENV$",' +
+		' object = "$ENV$", all.info = FALSE, compare = FALSE), sep = "' + sep +
 		'", eol = "\\n")';
 
 	// This should be changed if new icons are added
@@ -125,10 +129,9 @@ sv.r.objects = {};
 		'package', 'standardGeneric', 'S3', 'S4', 'ts', 'environment',
 		'formula'];
 
-
-	// used in .contextOnShow
+	// Used in .contextOnShow
 	var nonDetachable = [".GlobalEnv", "TempEnv", "package:svGUI", "package:svMisc",
-		"package:svSocket", "package:base"];
+		"package:svSocket", "package:svGUI", "package:base"];
 
 	// Reference to parent object for private functions
 	var _this = this;
@@ -141,6 +144,7 @@ sv.r.objects = {};
 
 	this.visibleData = [];
 	this.treeData = [];
+
 	this.treeBox = null;
 	this.selection = null;
 
@@ -162,17 +166,17 @@ sv.r.objects = {};
 		var rowsChanged = _this.visibleData.length - rowsBefore;
 
 		if (rowsChanged) _this.treeBox.rowCountChanged(0, rowsChanged);
-
+		
 		_this.treeBox.invalidateRange(_this.treeBox.getFirstVisibleRow(),
 			_this.treeBox.getLastVisibleRow());
 	};
 
 	function _parseObjectList (data, packSelected) {
-		if(typeof _this.searchPaths == "undefined") {
-			_this.getPackageList(true); //TODO call _parseObjectList afterwards
+		if(_this.searchPaths === undefined) {
+			_this.getPackageList(true);  //TODO call _parseObjectList afterwards
 			return (false);
 		}
-
+		
 		// Get position in the search path
 		function getPos (pack) {
 			var pos, searchPaths = _this.searchPaths;
@@ -185,9 +189,8 @@ sv.r.objects = {};
 		if (data.trim() != "") {
 			var lines = data.split(/[\r\n]{1,2}/);
 
-			//// Get rid of the "Objects list:" line
-			//if (lines[0].indexOf("Objects list:") != -1)
-			//	lines.shift();
+			// Get rid of the "Objects list:" line
+			//if (lines[0].indexOf("Objects list:") != -1) lines.shift();
 
 			var item, line, pack, idx;
 			var packIdx = [];
@@ -228,10 +231,10 @@ sv.r.objects = {};
 				} else {
 					line = lines[i].split(sep);
 
-					if (line.length < 5)	continue;
+					if (line.length < 5) continue;
 
 					dimNumeric = 1;
-					if (dimRegExp.test(line[2])) {
+					if (dimRegExp.test(line[1])) {
 						dim = line[2].split(/x/);
 						for (var j in dim)
 							dimNumeric *= parseInt(dim[j]);
@@ -279,11 +282,12 @@ sv.r.objects = {};
 		_createVisibleData();
 	};
 
-	function _addObject(env, objName, callback, obj) {
+	function _addObject (env, objName, callback, obj) {
 		var id = sv.prefs.getString("sciviews.client.id", "SciViewsK");
 
-		var cmd = cmdPattern.replace(/%ID%/g, id).replace(/%ENV%/g, env.addslashes())
-				.replace(/%OBJ%/g, objName.replace(/\$/g, "$$$$"));
+		var cmd = cmdPattern.replace(/%ID%/g, id)
+			.replace(/%ENV%/g, env.addslashes())
+			.replace(/%OBJ%/g, objName.replace(/\$/g, "$$$$"));
 
 		//sv.cmdout.append(cmd);
 		sv.r.evalCallback(cmd, callback, obj);
@@ -325,7 +329,7 @@ sv.r.objects = {};
 		var origItem = obj.origItem;
 		origItem.childrenLoaded = true;
 
-		var childType = origItem.group == "function"? "args" : "sub-object";
+		var childType = origItem.group == "function" ? "args" : "sub-object";
 		var dimNumeric, dim, dimRegExp = /^(\d+x)*\d+$/;
 
 		origItem.children = [];
@@ -383,7 +387,7 @@ sv.r.objects = {};
 		} catch (e) {
 			obRx = tb.value;
 			tb.className = "badRegEx";
-			return (function(x) {
+			return(function(x) {
 				return(x.indexOf(obRx) > -1);
 			})
 		}
@@ -460,7 +464,7 @@ sv.r.objects = {};
 				.push(_getVItem(children[i], idx, vItem.level + 1,
 					i == 0, i == len - 1,
 					// Closed subtree elements have 0-based parentIndex
-					isOpen? parentIndex : 0,
+					isOpen ? parentIndex : 0,
 					vItem.uid + "»"));
 		}
 		vItem.isContainerEmpty = vItem.children.length == 0;
@@ -473,7 +477,7 @@ sv.r.objects = {};
 			vItem.isContainer = true;
 			vItem.isContainerEmpty = false;
 			vItem.childrenLength =
-				(typeof(obj.children) == "undefined")? 0 : obj.children.length;
+				(typeof(obj.children) == "undefined") ? 0 : obj.children.length;
 			vItem.isOpen = (typeof(obj.isOpen) != "undefined") && obj.isOpen;
 			vItem.isList = true;
 		} else {
@@ -514,10 +518,11 @@ sv.r.objects = {};
 		// If the column is passed and sort already done, reverse it
 		if (column) {
 			columnName = column.id;
-			if (tree.getAttribute("sortResource") == columnName)
+			if (tree.getAttribute("sortResource") == columnName) {
 				realOrder = ((realOrder + 2) % 3) - 1;
-			else
+			} else {
 				realOrder = 1;
+			}
 		} else {
 			columnName = tree.getAttribute("sortResource");
 		}
@@ -542,18 +547,18 @@ sv.r.objects = {};
 
 			if (sCol != defaultSortCol) {
 				if (a.sortData[defaultSortCol] > b.sortData[defaultSortCol])
-					return 1;
+					return(1);
 				if (a.sortData[defaultSortCol] < b.sortData[defaultSortCol])
-					return -1;
+					return(-1);
 			}
-			return 0;
+			return(0);
 		}
 
 		function _sortComparePkgs (a, b) {
 			// Index 1 is the package's position in the search path
-			if (a.sortData[1] > b.sortData[1]) return 1;
-			if (a.sortData[1] < b.sortData[1]) return -1;
-			return 0;
+			if (a.sortData[1] > b.sortData[1]) return(1);
+			if (a.sortData[1] < b.sortData[1]) return(-1);
+			return(0);
 		}
 
 		function _sortRecursive (arr) {
@@ -597,9 +602,9 @@ sv.r.objects = {};
 
 	this.foldAll = function (open) {
 		if (!this.rowCount) return;
-
+		
 		var idx = this.selection.currentIndex;
-		if (idx == -1) 	idx = 0;
+		if (idx == -1) idx = 0;
 
 		var curItem = this.visibleData[idx].origItem;
 		var parentObject = curItem.parentObject;
@@ -624,15 +629,14 @@ sv.r.objects = {};
 		if (item.isList && !item.origItem.isOpen &&
 			!item.origItem.childrenLoaded) {
 			_addObject(item.origItem.env, item.origItem.fullName,
-						_parseSubObjectList, item);
-
+				_parseSubObjectList, item);
 			return;
 		}
 		var rowsChanged;
 		var iLevel = item.level;
 
 		if (!item.childrenLength) return;
-
+		
 		if (item.origItem.isOpen) { // Closing subtree
 			var k;
 			for (k = idx + 1; k < vd.length && vd[k].level > iLevel; k++) { }
@@ -643,7 +647,6 @@ sv.r.objects = {};
 			for (var i = 0; i < item.children.length; i++)
 				item.children[i].parentIndex -= idx;
 
-
 			// Decrease parentIndexes of subsequent rows
 			for (var i = idx + 1; i < vd.length; i++) {
 				if (vd[i].parentIndex > idx)
@@ -653,7 +656,6 @@ sv.r.objects = {};
 		} else { // Opening subtree
 			if (typeof(item.children) == "undefined")
 				_addVIChildren(item, idx, false);
-
 
 			// Filter child items
 			var insertItems = [];
@@ -695,18 +697,47 @@ sv.r.objects = {};
 		this.visibleData[idx].labels[col.index] = value;
 	};
 
-	this.setCellValue = function (idx, col, value) {	};
+	this.setCellValue = function (idx, col, value) { };
 
-	this.getCellText = function (idx, column) _this.visibleData[idx].labels[column.index];
-	this.isContainer = function (idx) _this.visibleData[idx].isContainer;
-	this.isContainerOpen = function (idx) _this.visibleData[idx].origItem.isOpen;
-	this.isContainerEmpty = function (idx) _this.visibleData[idx].isContainerEmpty;
-	this.isSeparator = function (idx) false;
-	this.isSorted = function () false;
-	this.isEditable = function (idx, column) false;
-	this.getParentIndex = function (idx) this.visibleData[idx].parentIndex;
-	this.getLevel = function (idx) this.visibleData[idx].level;
-	this.hasNextSibling = function (idx, after) !this.visibleData[idx].last;
+	this.getCellText = function (idx, column) {
+		return(_this.visibleData[idx].labels[column.index]);
+	};
+
+	this.isContainer = function (idx) {
+		return(_this.visibleData[idx].isContainer);
+	};
+
+	this.isContainerOpen = function (idx) {
+		return(this.visibleData[idx].origItem.isOpen);
+	};
+
+	this.isContainerEmpty = function (idx) {
+		return(_this.visibleData[idx].isContainerEmpty);
+	};
+
+	this.isSeparator = function (idx) {
+		return(false);
+	};
+
+	this.isSorted = function () {
+		return(false);
+	};
+
+	this.isEditable = function (idx, column) {
+		return(false);
+	};
+
+	this.getParentIndex = function (idx) {
+		return(this.visibleData[idx].parentIndex);
+	};
+
+	this.getLevel = function (idx) {
+		return(this.visibleData[idx].level);
+	};
+
+	this.hasNextSibling = function (idx, after) {
+		return(!this.visibleData[idx].last);
+	};
 
 	this.getImageSrc = function (row, col) {
 		if (col.index == 0) {
@@ -717,19 +748,23 @@ sv.r.objects = {};
 			} else if (iconTypes.indexOf(Class) == -1) {
 				Class = this.visibleData[row].origItem.group;
 				if (iconTypes.indexOf(Class) == -1) return("");
-
 			}
 			return("chrome://sciviewsk/skin/images/" + Class + ".png");
 		} else
 			return("");
 	};
 
-	this.getCellValue = function (idx, column) {};
-	this.cycleHeader = function (col, elem) {};
-	this.selectionChanged = function () {};
-	this.cycleCell = function (idx, column) {};
-	this.performAction = function (action) {};
-	this.performActionOnCell = function (action, index, column) {};
+	this.getCellValue = function (idx, column) { };
+
+	this.cycleHeader = function (col, elem) { };
+
+	this.selectionChanged = function () { };
+
+	this.cycleCell = function (idx, column) { };
+
+	this.performAction = function (action) { };
+
+	this.performActionOnCell = function (action, index, column) { };
 
 	this.getRowProperties = function (idx, props) {
 		var item = this.visibleData[idx]
@@ -756,14 +791,14 @@ sv.r.objects = {};
 		}
 	};
 
-	this.getColumnProperties = function (column, element, prop) {};
+	this.getColumnProperties = function (column, element, prop) { };
 
 	this.getSelectedRows = function () {
 		var start = new Object();
 		var end = new Object();
 		var rows = new Array();
 		var numRanges = this.selection.getRangeCount();
-		for (var t = 0; t < numRanges; t++){
+		for (var t = 0; t < numRanges; t++) {
 			this.selection.getRangeAt(t, start, end);
 			for (var v = start.value; v <= end.value; v++)
 				rows.push(v);
@@ -785,19 +820,17 @@ sv.r.objects = {};
 		onDrop: function (event, transferData, session) {
 			var path, pos;
 			var data = transferData;
-			if (transferData.flavour.contentType == "text/unicode")
+			if (transferData.flavour.contentType == "text/unicode") {
 				path = new String(transferData.data).trim();
-			else
-				return (false);
+			} else {
+				return(false);
+			}
 			pos = _this.searchPaths.indexOf(path);
-			if (pos == -1)
-				return false;
+			if (pos == -1) return(false);
 
 			document.getElementById("sciviews_robjects_searchpath_listbox")
 				.getItemAtIndex(pos).checked = true;
-
-			__addObject(path, "", _parseObjectList, path);
-
+			_addObject(path, "", _parseObjectList, path);
 			return(true);
 		},
 
@@ -814,8 +847,11 @@ sv.r.objects = {};
 		}
 	};
 
-	this.canDrop = function () false;
-	this.drop = function (idx, orientation) {};
+	this.canDrop = function () {
+		return(false);
+	};
+
+	this.drop = function (idx, orientation) { };
 
 	this.init = function () {
 		this.visibleData = [];
@@ -830,7 +866,7 @@ sv.r.objects = {};
 
 	// Callback to process the list of packages in the search path from R
 	function _processPackageList (data, refreshObjects) {
-		if (data == "") return; // No changes
+		if (data == "") return; // No changes			
 		_this.searchPaths = data.replace(/[\n\r]/g, "").split(sep);
 		_this.displayPackageList(refreshObjects);
 	};
@@ -861,7 +897,7 @@ sv.r.objects = {};
 			box.collapsed = !box.collapsed;
 			broadcaster.setAttribute("checked", !box.collapsed);
 			broadcaster.setAttribute("state",
-				box.collapsed? "collapsed" : "open");
+				box.collapsed ? "collapsed" : "open");
 		}
 
 		if (!box.collapsed) {
@@ -871,6 +907,8 @@ sv.r.objects = {};
 
 	// Display the list of packages in the search path
 	this.displayPackageList = function (refreshObjects) {
+		// refreshObjects is made optional and is true in this case
+		if (refreshObjects === undefined) refreshObjects = true;
 		var pack;
 		var node = document
 			.getElementById("sciviews_robjects_searchpath_listbox");
@@ -931,7 +969,7 @@ sv.r.objects = {};
 		}
 	}
 
-	//TODO: On package deletion -> remove it also from the search path
+	//TODO: on package deletion -> remove it also from the search path
 	this.removeSelected = function (doRemove) {
 		var item, type, name, vItem, cmd = [];
 		var rmItems = {}, ObjectsToRemove = {}, envToDetach = [];
@@ -950,19 +988,19 @@ sv.r.objects = {};
 			// Remove backticks from names, as they are used as strings anyway
 			if (rxBackticked.test(name)) name = name.substr(1, name.length - 2);
 
-			switch (type){
-				case "environment":
-					if (name != ".GlobalEnv" && name != "TempEnv")
-						envToDetach.push(name);
-					break;
-				case "object":
-				case "sub-object":
-					var env = item.env;
-					thisItem:
-					if (envToDetach.indexOf(env) == -1) {
-						var parent = vItem;
-						while (parent && parent.parentIndex &&
-							parent.parentIndex != -1) {
+			switch (type) {
+			 case "environment":
+				if (name != ".GlobalEnv" && name != "TempEnv")
+					envToDetach.push(name);
+				break;
+			 case "object":
+			 case "sub-object":
+				var env = item.env;
+				thisItem:
+				if (envToDetach.indexOf(env) == -1) {
+					var parent = vItem;
+					while (parent && parent.parentIndex &&
+						parent.parentIndex != -1) {
 							parent = this.visibleData[parent.parentIndex].origItem;
 
 							if (!parent || (rmItems[env] &&
@@ -970,32 +1008,32 @@ sv.r.objects = {};
 								|| (parent.type == "environment" &&
 								(envToDetach.indexOf(parent.name) != -1)))
 								break thisItem;
-						}
-						if (typeof rmItems[env] == "undefined")
-							rmItems[env] = [];
+					}
+					if (typeof(rmItems[env]) == "undefined")
+						rmItems[env] = [];
 
-						rmItems[env].push(name);
+					rmItems[env].push(name);
 
-						if (type == "sub-object") {
-							if (typeof ObjectsToSetNull[env] == "undefined")
-								ObjectsToSetNull[env] = [];
-							ObjectsToSetNull[env].push(name);
-						} else {
-							if (typeof ObjectsToRemove[env] == "undefined")
-								ObjectsToRemove[env] = [];
-							ObjectsToRemove[env].push(name);
-						}
+					if (type == "sub-object") {
+						if (typeof(ObjectsToSetNull[env]) == "undefined")
+							ObjectsToSetNull[env] = [];
+						ObjectsToSetNull[env].push(name);
+					} else {
+						if (typeof(ObjectsToRemove[env]) == "undefined")
+							ObjectsToRemove[env] = [];
+						ObjectsToRemove[env].push(name);
+					}
 
-						var siblings = item.parentObject.children;
-						for (var j in siblings) {
-							if (siblings[j] == item) {
-								siblings.splice(j, 1);
-								break;
-							}
+					var siblings = item.parentObject.children;
+					for (var j in siblings) {
+						if (siblings[j] == item) {
+							siblings.splice(j, 1);
+							break;
 						}
 					}
-					break;
-				default:
+				}
+				break;
+			 default:
 			}
 		}
 
@@ -1008,8 +1046,6 @@ sv.r.objects = {};
 				}
 			}
 		}
-
-
 
 		for (var env in ObjectsToRemove)
 			cmd.push('rm(list = c("' + ObjectsToRemove[env].join('", "') +
@@ -1025,7 +1061,7 @@ sv.r.objects = {};
 
 		if (!cmd.length) return(false);
 
-		if(doRemove) {
+		if (doRemove) {
 			// Remove immediately
 			sv.r.evalCallback(cmd.join("\n"), sv.cmdout.append);
 		} else {
@@ -1049,7 +1085,7 @@ sv.r.objects = {};
 		var rows = this.getSelectedRows();
 		var namesArr = new Array();
 		var cellText, item;
-		var name = fullNames? "fullName" : "name";
+		var name = fullNames ? "fullName" : "name";
 		var selectedItemsOrd = _this.selectedItemsOrd;
 		for (i in selectedItemsOrd) {
 			item = selectedItemsOrd[i];
@@ -1057,21 +1093,21 @@ sv.r.objects = {};
 
 			if (cellText) {
 				if ((!fullNames || item.type == "object")
-					&& cellText.search(/^[a-z\.][\w\._]*$/i) == -1) {
+					&& cellText.search(/^[a-z\.][\w\._]*$/i) == -1)
 					cellText = "`" + cellText + "`";
-				}
 				if (!fullNames && extended) {
-					if (item.type == "sub-object")
+					if (item.type == "sub-object") {
 						cellText = '"' + cellText + '"';
-					else if (item.group == "function")
+					} else if (item.group == "function") {
 						cellText += "()";
-					else if (item.type == "args")
+					} else if (item.type == "args") {
 						cellText += "="; // Attach '=' to function args
+					}
 				}
 			}
 			namesArr.push(cellText);
 		}
-		return (namesArr);
+		return(namesArr);
 	}
 
 	this.insertName = function (fullNames, extended) {
@@ -1108,14 +1144,14 @@ sv.r.objects = {};
 
 			filterBy = newFilterBy;
 			this.applyFilter();
-		 } else {
+		} else {
 			menuItem.setAttribute("checked", true);
-		 }
+		}
 
-		 var filterBox = document.getElementById("sciviews_robjects_filterbox") ;
+		var filterBox = document.getElementById("sciviews_robjects_filterbox");
 
-		 filterBox.emptyText = menuItem.getAttribute("label") + "...";
-		 filterBox.focus();
+		filterBox.emptyText = menuItem.getAttribute("label") + "...";
+		filterBox.focus();
 
 		//document.getElementById("sciviews_robjects_filterbox")
 		//    .setAttribute("emptytext", menuItem.getAttribute("label"));
@@ -1136,7 +1172,8 @@ sv.r.objects = {};
 
 			isEnvironment = item.type == "environment";
 			isPackage = isEnvironment && (item.name.indexOf("package:") == 0);
-			isInPackage = !isPackage && item.env && (item.env.indexOf("package:") == 0);
+			isInPackage = !isPackage && item.env &&
+				(item.env.indexOf("package:") == 0);
 
 			noDelete = (isEnvironment && (nonDetachable.indexOf(name) != -1))
 				|| isInPackage;
@@ -1147,25 +1184,23 @@ sv.r.objects = {};
 
 			var selItemCount = _this.selection.count;
 
-			// help can be shown only for one object:
+			// Help can be shown only for one object:
 			var hasHelp = (selItemCount == 1)
 				&& (isPackage || isInPackage);
 
-			sv.cmdout.append(name
-							 + "; isPackage:" + isPackage
-							 + "; isEnvironment:" + isEnvironment
-							 + "; noDelete:" + noDelete
-							 + "; isInPackage:" + isEnvironment
-							 + "; isFunction:" + isFunction
-							 + "; hasHelp:" + hasHelp
-							 )
-
+			//sv.cmdout.append(name
+			//	+ "; isPackage:" + isPackage
+			//	+ "; isEnvironment:" + isEnvironment
+			//	+ "; noDelete:" + noDelete
+			//	+ "; isInPackage:" + isEnvironment
+			//	+ "; isFunction:" + isFunction
+			//	+ "; hasHelp:" + hasHelp
+			//)
+			
 			document.getElementById("robjects_cmd_removeobj")
 				.setAttribute("disabled", noDelete);
 			document.getElementById("robjects_cmd_deletenow")
 				.setAttribute("disabled", noDelete);
-
-
 			//document.getElementById("robjects_cmd_attach")
 			//	.setAttribute("disabled", noDelete || !isPackage);
 			document.getElementById("robjects_cmd_summary")
@@ -1178,7 +1213,6 @@ sv.r.objects = {};
 				.setAttribute("disabled", isFunction);
 			document.getElementById("robjects_cmd_str")
 				.setAttribute("disabled", isPackage);
-
 			document.getElementById("robjects_cmd_write_table")
 				.setAttribute("disabled", !canSaveToFile);
 
@@ -1199,8 +1233,8 @@ sv.r.objects = {};
 		var command;
 
 		switch(action) {
-		// Special handling for help
-		case 'help':
+		 // Special handling for help
+		 case 'help':
 			for (i in obj) {
 				// Help only for packages and objects inside a package
 				if (obj[i].env.indexOf("package:") == 0) {
@@ -1211,28 +1245,27 @@ sv.r.objects = {};
 					sv.r.help(obj[i].fullName);
 				}
 			}
-		break;
+			break;
 
-		//TODO: dump data for objects other than 'data.frame'
-		case 'write.table':
-		case 'writeToFile':
+		 //TODO: dump data for objects other than 'data.frame'
+		 case 'write.table':
+		 case 'writeToFile':
 			var cmd = [], expr;
 
 			for (i in obj) {
 				expr = "evalq(" + obj[i].fullName +
 					", envir = as.environment(\"" +
 					obj[i].env.addslashes() + "\"))";
-
 				sv.r.saveDataFrame(expr, '', obj[i].name);
 			}
-		break;
+			break;
 
-		// Default is to just execute command and display results
-		case 'summary':
-		case 'plot':
-		case 'str':
-		case 'names':
-		default:
+		 // Default is to just execute command and display results
+		 case 'summary':
+		 case 'plot':
+		 case 'str':
+		 case 'names':
+		 default:
 			var cmd = [];
 			for (i in obj) {
 				cmd.push(action + "(evalq(" + obj[i].fullName +
@@ -1254,87 +1287,86 @@ sv.r.objects = {};
 
 	this.onEvent = function (event) {
 		switch (event.type) {
-			case "select":
-				var selectedRows = _this.getSelectedRows();
-				var selectedItems = [];
-				for (var i = 0; i < selectedRows.length; i++)
-					selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
-				var curRowIdx = selectedRows.indexOf(_this.selection.currentIndex);
+		 case "select":
+			var selectedRows = _this.getSelectedRows();
+			var selectedItems = [];
+			for (var i = 0; i < selectedRows.length; i++)
+				selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
+			var curRowIdx = selectedRows.indexOf(_this.selection.currentIndex);
 
-				// This maintains array of selected items in order they were
-				// added to selection
-				var prevItems = _this.selectedItemsOrd;
-				var newItems = [];
-				for (var i = 0; i < prevItems.length; i++) {
-					var j = selectedItems.indexOf(prevItems[i]);
-					if (j != -1) // Present in Prev, but not in Cur
-						newItems.push(prevItems[i])
+			// This maintains array of selected items in order they were
+			// added to selection
+			var prevItems = _this.selectedItemsOrd;
+			var newItems = [];
+			for (var i = 0; i < prevItems.length; i++) {
+				var j = selectedItems.indexOf(prevItems[i]);
+				if (j != -1) // Present in Prev, but not in Cur
+					newItems.push(prevItems[i])
+			}
+			for (var i = 0; i < selectedItems.length; i++) {
+				if (prevItems.indexOf(selectedItems[i]) == -1) {
+					// Present in Cur, but not in Prev
+					newItems.push(selectedItems[i]);
 				}
-				for (var i = 0; i < selectedItems.length; i++) {
-					if (prevItems.indexOf(selectedItems[i]) == -1) {
-						// Present in Cur, but not in Prev
-						newItems.push(selectedItems[i]);
+			}
+			_this.selectedItemsOrd = newItems;
+			return;
+		 case "keyup":
+		 case "keypress":
+			var key = event.keyCode ? event.keyCode : event.charCode;
+			switch (key) {
+			 //case 38: // up
+			 //case 40: // down
+			//	if (event.shiftKey) {
+			//		sv.log.debug("Select: " +
+			//          _this.visibleData[_this.selection.currentIndex]
+			//          .origItem.name);
+			//	}
+			//	return;
+			 case 46: // Delete key
+				_this.removeSelected(event.shiftKey);
+				event.originalTarget.focus();
+				return;
+			 case 45: // Insert
+			 case 32: // Space
+				//sv.log.debug("Insert");
+				break;
+			 case 65: // Ctrl + A
+			 case 97: // Ctrl + a
+				if (event.ctrlKey) {
+					if (event.shiftKey) {
+						_this.selectAllSiblings(_this.selection.currentIndex, false);
+					} else {
+						_this.selection.selectAll();
 					}
 				}
-				_this.selectedItemsOrd = newItems;
+			 case 0:
 				return;
-			case "keyup":
-			case "keypress":
-				var key = event.keyCode? event.keyCode : event.charCode;
-				switch (key) {
-					//case 38: // up
-					//case 40: // down
-					//	if (event.shiftKey) {
-					//		sv.log.debug("Select: " +
-					//          _this.visibleData[_this.selection.currentIndex]
-					//          .origItem.name);
-					//	}
-					//	return;
-					case 46: // Delete key
-						_this.removeSelected(event.shiftKey);
-						event.originalTarget.focus();
-						return;
-					case 45: // Insert
-					case 32: // Space
-						//sv.log.debug("Insert");
-						break;
-					case 65: // Ctrl + A
-					case 97: // Ctrl + a
-						if (event.ctrlKey) {
-							if (event.shiftKey) {
-								_this.selectAllSiblings(_this.selection.currentIndex, false);
-							} else
-								_this.selection.selectAll();
-						}
-					case 0:
-						return;
-					case 93:
-						// Windows context menu key
-						var contextMenu = document.
-							getElementById("rObjectsContext");
-						_this.treeBox.
-							ensureRowIsVisible(_this.selection.currentIndex);
-						var y = ((2 + _this.selection.currentIndex -
-							_this.treeBox.getFirstVisibleRow())
-							* _this.treeBox.rowHeight)	+ _this.treeBox.y;
-						var x = _this.treeBox.x;
-						contextMenu.openPopup(null, "after_pointer", x, y, true);
+			 case 93:
+				// Windows context menu key
+				var contextMenu = document.getElementById("rObjectsContext");
+				_this.treeBox.ensureRowIsVisible(_this.selection.currentIndex);
+				var y = ((2 + _this.selection.currentIndex -
+					_this.treeBox.getFirstVisibleRow())
+					* _this.treeBox.rowHeight)	+ _this.treeBox.y;
+				var x = _this.treeBox.x;
+				contextMenu.openPopup(null, "after_pointer", x, y, true);
 
-					// TODO: Escape key stops retrieval of R objects
-					default:
-						return;
-				}
-				break;
-			case "dblclick":
-				if (event.button != 0)	return;
-				if (_this.selection && (_this.selection.currentIndex == -1
-					|| _this.isContainer(_this.selection.currentIndex)))
-					return;
-				break;
-			case "click":
-			case "draggesture":
+			 // TODO: Escape key stops retrieval of R objects
+			 default:
 				return;
-			default:
+			}
+			break;
+		 case "dblclick":
+			if (event.button != 0) return;
+			if (_this.selection && (_this.selection.currentIndex == -1
+				|| _this.isContainer(_this.selection.currentIndex)))
+				return;
+			break;
+		 case "click":
+		 case "draggesture":
+			return;
+		 default:
 		}
 
 		// Default action: insert selected names
@@ -1360,7 +1392,7 @@ sv.r.objects = {};
 			// Attach the file if it is an R workspace
 			if (path.search(/\.RData$/i) > 0) {
 				//sv.alert("will attach: " + path);
-				sv.r.loadWorkspace(path, true, function(message) {
+				sv.r.loadWorkspace(path, true, function (message) {
 					_this.getPackageList();
 					sv.alert(sv.translate("Attach workspace, R said:"), message);
 				});
@@ -1368,7 +1400,7 @@ sv.r.objects = {};
 				path = path.replace(/^package:/, "");
 
 				sv.r.evalCallback("tryCatch(library(\"" + path +
-					"\"), error=function(e) {cat(\"<error>\"); message(e)})",
+					"\"), error = function(e) {cat(\"<error>\"); message(e)})",
 					function (message) {
 						if (message.indexOf('<error>') > -1) {
 							message = message.replace('<error>', '');
@@ -1406,7 +1438,7 @@ sv.r.objects = {};
 
 		onDragOver: function (event, flavour, session) {
 			session.canDrop = flavour.contentType == 'text/unicode'
-							   || flavour.contentType == 'application/x-moz-file';
+				|| flavour.contentType == 'application/x-moz-file';
 		},
 
 		getSupportedFlavours: function () {
@@ -1420,31 +1452,31 @@ sv.r.objects = {};
 	this.packageListKeyEvent = function (event) {
 		var keyCode = event.keyCode;
 		switch(keyCode) {
-			case 46: // Delete key
-				var listbox = event.target;
-				var listItem = listbox.selectedItem;
-				var pkg = listItem.getAttribute("label");
+		 case 46: // Delete key
+			var listbox = event.target;
+			var listItem = listbox.selectedItem;
+			var pkg = listItem.getAttribute("label");
 
 			if (pkg == ".GlobalEnv" || pkg == "TempEnv") return;
 
-				sv.r.evalCallback(
-					'tryCatch(detach("' + pkg.addslashes() +
-					'"), error = function(e) cat("<error>"));',
-					function (data) {
-						sv.log.debug(data);
-						if (data.trim() != "<error>") {
-							_removeObjectList(pkg);
-							listbox.removeChild(listItem);
-							sv.cmdout.append(sv.translate(
-								"Namespace \"%S\" detached.", pkg));
-						} else {
-							sv.cmdout.append(sv.translate(
-								"Namespace \"%S\" could not be detached.", pkg));
-						}
-				});
-				return;
-			default:
-				return;
+			sv.r.evalCallback(
+				'tryCatch(detach("' + pkg.addslashes() +
+				'"), error = function(e) cat("<error>"));',
+				function (data) {
+					sv.log.debug(data);
+					if (data.trim() != "<error>") {
+						_removeObjectList(pkg);
+						listbox.removeChild(listItem);
+						sv.cmdout.append(sv.translate(
+							"Namespace \"%S\" detached.", pkg));
+					} else {
+						sv.cmdout.append(sv.translate(
+							"Namespace \"%S\" could not be detached.", pkg));
+					}
+			});
+			return;
+		default:
+			return;
 		}
 	}
 
@@ -1453,9 +1485,9 @@ sv.r.objects = {};
 		var curLvl = _this.visibleData[idx].level;
 		var endIndex;
 		for (endIndex = startIndex;
-			 endIndex < _this.visibleData.length &&
-			 _this.visibleData[endIndex].level >= curLvl;
-			 endIndex++) { }
+			endIndex < _this.visibleData.length &&
+			_this.visibleData[endIndex].level >= curLvl;
+			endIndex++) { }
 		endIndex--;
 		_this.selection.rangedSelect(startIndex, endIndex, augment)
 	}
@@ -1480,4 +1512,4 @@ sv.r.objects = {};
 	//		"nsDragAndDrop.drop(event, sv.r.objects.listObserver);"
 	//		);
 
-} ).apply(sv.r.objects);
+}).apply(sv.r.objects);

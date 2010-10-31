@@ -42,27 +42,6 @@ function askR(topic) {
 function appendElem(parent, tagName, textContent, attributes) {
 	var el = document.createElement(tagName);
 
-	if (textContent)
-		el.textContent = textContent;
-
-	if (attributes) {
-		for (i in attributes) {
-			el.setAttribute(i, attributes[i]);
-		}
-	}
-	if (parent) {
-		if (typeof parent == "string")
-			parent = document.getElementById(parent);
-
-		if (parent) parent.appendChild(el);
-	}
-
-	return(el);
-}
-
-function appendElem(parent, tagName, textContent, attributes) {
-	var el = document.createElement(tagName);
-
 	if (textContent) el.textContent = textContent;
 
 	if (attributes) {
@@ -130,7 +109,7 @@ function rHelp (topic, pkg) {
 		cmd += topic? ' topic = "' + topic + '", ' : "";
 		//cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
 		// For R 2.10:
-		cmd = 'cat(getHelpURL(help(' + cmd + ')))';
+		cmd = 'cat(getHelpURL(help(' + cmd + ' help_type = "html")))';
 
 		res = sv.r.evalCallback(cmd, function(path) {
 			rHelpWin.go(path, Components.interfaces.nsIWebNavigation

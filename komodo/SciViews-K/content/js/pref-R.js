@@ -1,9 +1,9 @@
 // SciViews-K R preferences panel functions
-// Copyright (c) 2009, Ph. Grosjean (phgrosjean@sciviews.org) & Kamil Barton
+// Copyright (c) 2009-2010 Ph. Grosjean (phgrosjean@sciviews.org) & Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // svPrefR_OnPreferencePageOK(prefset);         // User click OK
-// PrefR_OnLoad();                            // R preference widow loaded
+// PrefR_OnLoad();                            	// R preference widow loaded
 // TODO: update this list...
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -248,6 +248,14 @@ function OnPreferencePageOK(prefset) {
         'OutSep="' + outSep + '")', true);
 	}
 
+	// Set the client type
+	var clientType = document.getElementById('sciviews.client.type').value;
+	prefset.setStringPref("sciviews.client.type", clientType);
+	// Check if selected item is different from current sv.clientType
+	if (clientType != sv.clientType)
+		sv.alert("R server type changed", "The server type you selected will be" +
+			" used after restarting of both R and Komodo!")
+
 	menuListGetValues();
 
     // Restart socket server if running and port changed
@@ -323,13 +331,13 @@ function PrefR_updateCommandLine(update) {
 	cmdArgs = cmdArgs.replace(/\s*--mdi/, "");
 
 	var argsPos = cmdArgs.indexOf("--args");
-	if(argsPos != -1) {
+	if (argsPos != -1) {
 		args1 += " " + sv.tools.strings.trim(cmdArgs.substring(argsPos + 6));
 		cmdArgs = cmdArgs.substring(0, argsPos);
 	}
 
 	args1 = sv.tools.strings.trim(args1);
-	if(args1)
+	if (args1)
 		args1 = " --args " + args1;
 
     var cmd = apps[appId].path;

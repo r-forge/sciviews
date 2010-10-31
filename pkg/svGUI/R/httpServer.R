@@ -292,13 +292,15 @@ name = HttpServerName())
 				Continue <- pars$continue
 				Echo <- pars$echo
 			}
+			## Eliminate last carriage return
+			msg <- sub("(.*)[\n][^\n]*$", "\\1", msg)
 			if (!hiddenMode) {
 				if (Echo) {
 					if (pars$code == "") Pre <- Prompt else Pre <- Continue
 					cat(Pre, msg, "\n", sep = "")
 				}
 				## Add previous content if we were in multiline mode
-				msg <- paste(pars$code, msg, sep = "\n")
+				if (pars$code != "") msg <- paste(pars$code, msg, sep = "\n")
 				pars$code <- ""  # This changes the original data too!
 			}
 			

@@ -1,5 +1,10 @@
 = svGUI News
 
+== Changes in svGUI 0.9-50
+
+* HTTP server now works correctly with incomplete commands (bug corrected).
+
+
 == Changes in svGUI 0.9-49
 
 * HTTP server code processing now uses parseText() of svMisc >= 0.9-60 instead

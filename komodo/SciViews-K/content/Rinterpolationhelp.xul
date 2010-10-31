@@ -86,7 +86,7 @@ function OnLoad() {
     }
 	
 	// Set home page to the page provided on startup
-	if (typeof window.arguments[0].uri != "undefined" &&
+	if (typeof(window.arguments[0].uri) != "undefined" &&
         window.arguments[0].uri != null) {
 		rHomepage = window.arguments[0].uri;
 	} else {

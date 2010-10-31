@@ -114,6 +114,13 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 
 	<groupbox orient="vertical">
 		<caption label="Socket connection"/>
+		<hbox align="center">
+		  <label value="Server type:" control="sciviews.client.type"/>
+		  <menulist pref="true" id="sciviews.client.type"
+		   values="http socket" persist="values">
+		   <menupopup />
+		  </menulist>
+		</hbox>
 		<grid>
 		  <columns>
 				<column flex="1"/> <column flex="2"/> <column flex="1"/> <column

@@ -5,13 +5,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 /////// Socket client //////
+// sv.clientType				// A global variable with 'http' or 'socket'
 // sv.socket.svSocketMinVersion // Minimum version of svSocket R package required
 // sv.socket.svGUIMinVersion    // Minimum version of svGUI package required
 // sv.socket.partial	// In case of multiline mode, current command is partial
 // sv.socket.rClientSocket(host, port, cmd, listener, echo, procname);
 // sv.socket.rClientHttp(host, port, cmd, listener, echo, procname);
 // 		Main client fonction, SciViews socket server and SciViews HTTP server versions)
-
+														
 // sv.socket.rCommand(cmd, echo, procfun, ...); 	 	// Send cmd to R
 // sv.socket.rProcess(rjson);	// Default RJSONp function called back
 // sv.socket.rUpdate();								  	// Update R options
@@ -29,10 +30,12 @@
 //
 // TODO:
 // * A method to check svSocketMinVersion, and include this in rUpdate()
-// * Correct the crash problem when Komodo exits on Windows (connections not closed?)
-// * The interface must be made 100% compatible with the HTTP server
 // * Severe! On Windows the socket server is not reachable from R after Komodo is restarted
 //   while R is running already. Executing sv.socket.serverStart() does not help at all.
+
+
+// Make sure sv.clientType is defined according to current prefs
+sv.clientType = sv.prefs.getString("sciviews.client.type", "http");
 
 // Define the 'sv.socket' namespace
 if (typeof(sv.socket) == 'undefined') sv.socket = {};
@@ -47,7 +50,6 @@ var _this = this;
 this.svSocketMinVersion = "0.9-50";	// Min version of svSocket package required
 this.svGUIMinVersion = "0.9-49";	// Minimum version of svGUI package required
 this.partial = false;				// Is the last command send to R partial?
-this.type = "socket";
 // String converter used between Komodo and R (localeToCharset()[1] in R)
 var _converter = Components
 	.classes["@mozilla.org/intl/scriptableunicodeconverter"]
@@ -60,13 +62,7 @@ this.__defineSetter__ ('charset', function (charset) {
 		try { _converter.charset = charset; } catch (e) { }
 	return(_converter.charset);
 });
-
 this.charset = "ASCII";
-//  KB: Makes no sense to set it to UTF-8 on non-unicode systems! Causes an error on
-//  a first call to rUpdate.
-//this.charset = "UTF-8"; //svConverter.charset; // Already set at UTF-8 by default
-									// in svRinterpreter.js
-
 //TODO: charcode is not updated when Komodo starts and R is already running. 
 // rUpdate should be run at Komodo startup, but how to figure out if R is running 
 // then???  
@@ -74,25 +70,25 @@ this.charset = "ASCII";
 
 // The conversion functions
 function _fromUnicode (str, charset) {
-	if (charset !== undefined && _this.charset != charset) 	_this.charset = charset;
-	try {
+	if (charset !== undefined && this.charset != charset) this.charset = charset;
+	try { 
 		if (_converter.charset)
-			str = _converter.ConvertFromUnicode(str) + _converter.Finish();
+			str = _converter.ConvertFromUnicode(str);
 	} catch(e) {
 		sv.log.exception(e, "sv.socket is unable to convert from Unicode to " +
-		 	_converter.charset + ". The string was " + str);
+			_converter.charset + ". The message was " + str);
 	}
 	return(str);
 }
 
 function _toUnicode (str, charset) {
-	if (charset !== undefined && _this.charset != charset) _this.charset = charset;
-	try {
-		if (_this.charset)
+	if (charset !== undefined && this.charset != charset) this.charset = charset;
+	try { 
+		if (_converter.charset)
 			str = _converter.ConvertToUnicode(str);
 	} catch(e) {
-		sv.log.exception(e, "sv.socket is unable to convert to Unicode from " +
-			_converter.charset + ". The string was " + str);
+		sv.log.exception(e, "sv.socket is unable to convert from Unicode from " +
+			_converter.charset + ". The message was " + str);
 	}
 	return(str);
 }
@@ -105,23 +101,24 @@ this.rClientSocket = function (host, port, cmd, listener, echo, procname) {
 	if (!navigator.onLine) Components
 		.classes["@mozilla.org/network/io-service;1"]
 		.getService(Components.interfaces.nsIIOService2).offline = false;
-
+		
 	try {
 		var transport = Components
 			.classes["@mozilla.org/network/socket-transport-service;1"]
 			.getService(Components.interfaces.nsISocketTransportService)
 			.createTransport(null, 0, host, port, null);
-
+		
 		var outstream = transport.openOutputStream(0, 0, 0);
 		cmd = _fromUnicode(cmd);
+		// TODO: if procname != null, instruct to return a RJsonP result!
 		outstream.write(cmd, cmd.length);
-
+		
 		var stream = transport.openInputStream(0, 0, 0);
 		var instream = Components
 			.classes["@mozilla.org/scriptableinputstream;1"]
 			.createInstance(Components.interfaces.nsIScriptableInputStream);
 		instream.init(stream);
-
+		
 		var dataListener = {
 			data: "",
 			onStartRequest: function(request, context) { _this.data = ""; },
@@ -146,7 +143,7 @@ this.rClientSocket = function (host, port, cmd, listener, echo, procname) {
 					// Eliminate the last carriage return after the prompt
 					chunk = chunk.replace(/(\r?\n\f|\s+$)/, "");
 				}
-
+				
 				// Determine if we have a prompt at the end
 				if (chunk.search(/\+\s+$/) > -1) {
 					_this.partial = true;
@@ -173,29 +170,43 @@ this.rClientSocket = function (host, port, cmd, listener, echo, procname) {
 }
 
 // The main http client function to connect to R socket server
-this.rClientHttp = function (host, port, cmd, callback, echo) {
+this.rClientHttp = function (host, port, cmd, listener, echo, procname) {
 	// Workaround for NS_ERROR_OFFLINE returned by 'createTransport' when
 	// there is no network connection (when network goes down). Based on
 	// toggleOfflineStatus() in chrome://browser/content/browser.js.
 	if (!navigator.onLine) Components
 		.classes["@mozilla.org/network/io-service;1"]
 		.getService(Components.interfaces.nsIIOService2).offline = false;
-
+	
 	try {
 		var httpRequest, url;
 		httpRequest = new XMLHttpRequest();
 		httpRequest.onreadystatechange = function () {
 			try {
 				if (httpRequest.readyState == 4) {
-					if (httpRequest.status == 200) {
-						var res = httpRequest.responseText;
-						//alert(res);
-						// This is a RJSONP object that we evaluated now
-						// TODO: deal also with normal input and check for continuation
-						// and issue message at Command Output
-						// TODO: deal with echo!!!
-						return(sv.rjson.eval(_toUnicode(res)));
-					} else {
+					// For reasons I don't know, R HTTP server version 2.11.1
+					// returns 500 instead of 200 upon correct completion of
+					// the command...
+					if (httpRequest.status == 200 | httpRequest.status == 500) {
+						var res = _toUnicode(httpRequest.responseText);
+						if (res.match("\n\f") == "\n\f") {
+							// Eliminate trailing (\r)\n\f chars before the prompt
+							// Eliminate the last carriage return after the prompt
+							res = res.replace(/(\r?\n\f|\s+$)/, "");
+						}
+				
+						// Determine if we have a prompt at the end
+						if (res.search(/\+\s+$/) > -1) {
+							_this.partial = true;
+							res = res.rtrim() + " ";
+							if (echo) sv.r.print(res, false, true, true);
+						} else if (res.search(/>\s+$/) > -1) {
+							_this.partial = false;
+							if (echo) sv.r.print(res, false, false, false);
+						} else if (echo) sv.r.print(res, false, false, true);
+						// Finish command in case there is a callback
+						listener.finished(sv.tools.strings.removeLastCRLF(res));
+					} else if (httpRequest.status > 0) {
 						sv.log.error(
 							"sv.http.rCallback() got a communication error. " +
 							"Status: " + httpRequest.status);
@@ -208,13 +219,14 @@ this.rClientHttp = function (host, port, cmd, callback, echo) {
 			}
 			return(null);
 		};
-
+				
 		//url is http://<host>:<port>/custom/SciViews?<cmd>&<callback>
 		url = "http://" + host + ":" + port + "/custom/SciViews?" +
-			encodeURIComponent(_fromUnicode(cmd)) + "&" + callback;
+			encodeURIComponent(_fromUnicode(cmd))
+		if (procname != null) url = url + "&" + procname;
 		httpRequest.open('GET', url, true);
 		httpRequest.send('');
-
+		
 	} catch (e) {
 		sv.log.exception(e, "sv.socket.rClientHttp() raises an unknown error");
 		return(e);
@@ -228,7 +240,7 @@ this.rClientHttp = function (host, port, cmd, callback, echo) {
 this.rCommand = function (cmd, echo, procfun) {
 	if (echo === undefined) echo = true;
 	//if (procfun === undefined) procfun = "sv.socket.rProcess";
-
+	
 	var host = sv.prefs.getString("sciviews.server.host", "127.0.0.1");
 	var port = sv.prefs.getString("sciviews.client.socket", "8888");
 	var id = "<<<id=" +
@@ -241,14 +253,14 @@ this.rCommand = function (cmd, echo, procfun) {
 	} else if (typeof(procfun) == "string") { // This is a RjsonP call
 		listener = { finished: function(data) {
 				// The call is constructed as a RjsonP object => evaluate it
-				return(sv.rjson.eval(_toUnicode(data)));
+				return(sv.rjson.eval(data));	
 			}
 		}
 		procname = procfun;
 	} else { 				// Call procfun at the end
 		// Convert all arguments to an Array
 		var args = Array.apply(null, arguments);
-		listener = { finished: function (data) {
+		listener = { finished: function (data) {			
 				// Keep only arguments after procfun, and add "data"
 				args.splice(0, 3, data);
 				if (typeof(procfun) == "function") {
@@ -260,11 +272,11 @@ this.rCommand = function (cmd, echo, procfun) {
 		}
 	}
 	var res = "";
-	if (sv.r.server == "socket") {	// Socket server in svSocket
-		res = _this.rClientSocket(host, port, id + cmd + "\n", listener,
+	if (sv.clientType == "socket") {	// Socket server in svSocket
+		res = this.rClientSocket(host, port, id + cmd + "\n", listener,
 			echo, procname);
 	} else {						// Http server in svGUI
-		res = _this.rClientHttp(host, port, id + cmd + "\n", listener,
+		res = this.rClientHttp(host, port, id + cmd + "\n", listener,
 			echo, procname);
 	}
 	if (res && res.name && res.name == "NS_ERROR_OFFLINE")
@@ -279,7 +291,7 @@ this.rCommand = function (cmd, echo, procfun) {
 this.rProcess = function (rjson) {
 	// If an encoding is returned by R, reset it
 	if (rjson.encoding != null)
-		_this.charset = rjson.encoding;
+		this.charset = rjson.encoding;
 	// Are we in partial code mode?
 	if (rjson.options.partial != null)
 		_this.partial = (rjson.options.partial == true);
@@ -301,19 +313,18 @@ this.rProcess = function (rjson) {
 // TODO: add the current working directory and report WD changes from R automagically
 this.rUpdate = function () {
 	// Make sure that dec and sep are correctly set in R
-	this.rCommand('<<<h>>>options(OutDec = "' +
+	this.rCommand('<<<H>>>options(OutDec = "' +
 		sv.prefs.getString("r.csv.dec", ".") +
 		'"); options(OutSep = "' +
 		sv.prefs.getString("r.csv.sep", ",") +
-		'"); ' +
+		'"); invisible(guiRefresh(force = TRUE)); ' +
 		// ??? The following does not work.
 		//'cat("<<<charset=", localeToCharset()[1], ">>>", sep = "")',
 		'cat("", localeToCharset()[1], sep = "")',
 		false, function (s) {
 			_this.charset = sv.tools.strings.trim(s);
-			if (_this.debug) sv.log.debug("R charset: " + s);
+			if (_this.debug) sv.log.debug("R charset: " + _this.charset);
 	});
-	//invisible(guiRefresh(force = TRUE));
 }
 
 
@@ -326,7 +337,7 @@ var _serverSocket;				// The SciViews-K socket server object
 var _inputString;				// The string with command send by R
 var _outputString;				// The string with the result to send to R
 var _output = [];				// An array with outputs
-var _timeout = 250;				// Maximal ms to wait for input
+var _timeout = 500;				// Maximal ms to wait for input
 
 // Debug only
 this.serverSocket = _serverSocket;
@@ -372,7 +383,7 @@ this.onSocketAccepted = function (socket, transport) {
 			// Convert to unicode
 			_inputString = _toUnicode(_inputString);
 			// Process the command
-			if (_this.debug)
+			if (this.debug)
 				sv.log.debug("Command send by the client:\n" + _inputString);
 			try {
 				if (_inputString.match(/^<<<js>>>/)) {
@@ -381,10 +392,10 @@ this.onSocketAccepted = function (socket, transport) {
 					sv.rjson.eval(_inputString.substring(12));
 				} else {
 					// TODO: this is some output data... wait that R finishes
-					// sending the output and echo it into the local R console
-					//sv.r.print(chunk, false, false, false);
+					// Sending the output and echo it into the local R console
+					sv.r.print(_inputString, false, false, false);
 					// TODO: change this (just to test if it is the cause of the problems)!
-					eval(_inputString);
+					//eval(_inputString);
 				}
 			} catch(e) {
 				_output.push(e.toString());
@@ -420,9 +431,9 @@ this.onStopListening = function (socket, status) {
 // Core function for the SciViews-K socket server
 // Create the _serverSocket object
 this.serverStart = function () {
-	if (_this.debug) sv.log.debug("Socket server: serverStart");
+	if (this.debug) sv.log.debug("Socket server: serverStart");
 
-	if (_this.serverIsStarted) try {
+	if (this.serverIsStarted) try {
 		_serverSocket.close();
 	} catch(e) {
 		sv.log.exception(e, "sv.socket.serverStart() failed to close the" +
@@ -433,22 +444,21 @@ this.serverStart = function () {
 			.classes["@mozilla.org/network/server-socket;1"]
 			.createInstance(Components.interfaces.nsIServerSocket);
 		var port = sv.prefs.getString("sciviews.server.socket", "7052");
-		_serverSocket.init(port, _this.serverIsLocal, -1);
+		_serverSocket.init(port, this.serverIsLocal, -1);
 		_serverSocket.asyncListen(_this);
 		this.serverSocket = _serverSocket;
 	} catch(e) {
-			//TODO: add exception type checking here (see below)
-			port = parseInt(port);
-			if (ko.dialogs.okCancel(
-				sv.translate("Cannot open a server socket to allow communication "
-					+ " from R to Komodo on port %S.\n" +
-					"Click OK to change port to %S and try again.", port, port + 1),
-					"OK", null, "SciViews-K") == "OK") {
-				sv.prefs.setString("sciviews.server.socket", port + 1);
-				_this.serverStart();
-			}
-			return;
-
+		//TODO: add exception type checking here (see below)
+		port = parseInt(port);
+		if (ko.dialogs.okCancel(
+			sv.translate("Cannot open a server socket to allow communication "
+				+ " from R to Komodo on port %S.\n" +
+				"Click OK to change port to %S and try again.", port, port + 1),
+				"OK", null, "SciViews-K") == "OK") {
+			sv.prefs.setString("sciviews.server.socket", port + 1);
+			_this.serverStart();
+		}
+		return;
 
 		/*sv.log.exception(e, "SciViews-K cannot open a server socket on port " +
 			port + ".\nMake sure the port is not already used by another" +
@@ -487,7 +497,7 @@ this.__defineGetter__ ('serverIsStarted', function () {
 	// Use brute force to find out whether socketServer is initiated and listening
 	if (typeof(sv.socket.serverSocket) == "undefined") return(false);
 	try {
-		_this.serverSocket.asyncListen(_this);
+		this.serverSocket.asyncListen(this);
 	} catch(e) {
 		if (e.name == "NS_ERROR_IN_PROGRESS") return(true);
 		else if (e.name == "NS_ERROR_NOT_INITIALIZED") return(false);
@@ -499,9 +509,9 @@ this.__defineGetter__ ('serverIsStarted', function () {
 // What is the current SciViews-K socket server config?
 this.serverConfig = function () {
 	var serverStatus = " (stopped)"
-	if (_this.serverIsStarted) serverStatus = " (started)"
+	if (this.serverIsStarted) serverStatus = " (started)"
 	var port = sv.prefs.getString("sciviews.server.socket", "7052");
-	if (_this.serverIsLocal) {
+	if (this.serverIsLocal) {
 		return("Local socket server on port " + port + serverStatus);
 	} else {
 		return("Global socket server on port " + port + serverStatus);
@@ -510,7 +520,7 @@ this.serverConfig = function () {
 
 // Write to the socket server, use this to return something to the client
 this.serverWrite = function (data) {
-	if (_this.serverIsStarted) {
+	if (this.serverIsStarted) {
 		_output.push(data);
 	} else {
 		sv.alert("The socket server in unavailable",

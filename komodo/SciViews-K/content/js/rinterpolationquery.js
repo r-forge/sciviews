@@ -75,7 +75,7 @@ function OnLoad() {
     helpButton.setAttribute("hidden", "true"); // Hidden by default
 
     // Process input arguments.
-    if (typeof window.arguments[0].title != "undefined" &&
+    if (typeof(window.arguments[0].title) != "undefined" &&
         window.arguments[0].title != null) {
         document.title = window.arguments[0].title;
     } else {

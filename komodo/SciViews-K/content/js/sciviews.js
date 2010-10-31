@@ -1,6 +1,6 @@
 // SciViews-K general functions
 // Define the basic 'sv' namespace, plus 'sv.cmdout', 'sv.log' & 'sv.prefs'
-// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2008-2010, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // _(); // A fake function used only to tag strings to be translated in projects
@@ -14,6 +14,7 @@
 // sv.alert(header, text); // Own alert box; text is optional
 // sv.getTextRange(what, gotoend, select);  // Get a part of text in the buffer,
 // but do not operate on selection
+// sv.marginClick(modifiers, position, margin);  // Custom margin click behaviour
 // sv.fileOpen(directory, filename, title, filter, multiple); // file open dlg,
 // more customizable replacement for ko.filepicker.open()
 
@@ -336,6 +337,63 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 	return(text);
 }
 
+// Custom margin click behaviour
+sv.marginClick = function (modifiers, position, margin) {
+    //sv.log.info("Bookmark click");
+    try {
+        var v = ko.views.manager.currentView;
+        // There is a problem with split pane and an error message when currentView is null
+        // The following line was added, but it does not seem to solve the problem
+        if (!v) return;
+        var ke = v.scintilla.scimoz;
+        //var ke = v.scimoz;
+        var lineClicked = ke.lineFromPosition(position);    
+        if (margin == 2) {
+            if (modifiers == 0) {
+                // Simple click
+                // From editor.js. This is implementation of do_cmd_bookmarkToggle with
+                // different arguments
+                var markerState = ke.markerGet(lineClicked);
+            
+                if (markerState & (1 << ko.markers.MARKNUM_BOOKMARK)) {
+                    ke.markerDelete(lineClicked, ko.markers.MARKNUM_BOOKMARK);
+                } else {
+                    ko.history.note_curr_loc(v);
+                    ke.markerAdd(lineClicked, ko.markers.MARKNUM_BOOKMARK);
+                    //ke.markerAdd(lineClicked, ko.markers.MARKNUM_STDIN_PROMPT);
+                }
+            } else if (modifiers == 1) {
+                // Shift click
+                var markerState = ke.markerGet(lineClicked);
+            
+                if (markerState & (1 << ko.markers.MARKNUM_TRANSIENTMARK)) {
+                    ke.markerDelete(lineClicked, ko.markers.MARKNUM_TRANSIENTMARK);
+                } else {
+                    ke.markerAdd(lineClicked, ko.markers.MARKNUM_TRANSIENTMARK);
+                    //ke.markerAdd(lineClicked, ko.markers.MARKNUM_STDIN_PROMPT);
+                }
+                
+            }
+        } else if (margin == 1) {
+            // From views-buffer.xml, method onMarginClick (original comments removed)
+            if (ke.getFoldLevel(lineClicked) & ke.SC_FOLDLEVELHEADERFLAG) {
+                if (ke.getFoldExpanded(lineClicked)) {
+                    var level = ke.getFoldLevel(lineClicked);
+                    var lineMaxSubord = ke.getLastChild(lineClicked, level);
+                    var currentLine = ke.lineFromPosition(ke.currentPos);
+                    if (currentLine > lineClicked && currentLine <= lineMaxSubord) {
+                        var pos = ke.positionFromLine(lineClicked);
+                        ke.selectionStart = pos;
+                        ke.selectionEnd = pos;
+                        ke.currentPos = pos;
+                    }
+                }
+                ke.toggleFold(lineClicked);
+            }
+        }
+    } catch(e) {};
+}
+
 // file open dialog, more customizable replacement for ko.filepicker.open
 sv.fileOpen = function (directory, filename, title, filter, multiple, save,
 filterIndex) {
@@ -479,12 +537,19 @@ sv.helpURL = function (URL) {
 	return(false);
 }
 
-// Get some help for a snippet, or a word in the buffer by hitting Shift+F1
+// Get some help for a snippet, or a word in the buffer by hitting Alt+F1
 sv.helpContext = function () {
 	try {
 		if (ko.window.focusedView() == null) {
 			if (ko.projects.active) {
-				var item = ko.projects.active.getSelectedItem();
+				var item;
+				if (ko.toolbox2 === undefined) {
+					// Komodo 5 code
+					item = ko.projects.active.getSelectedItem();
+				} else {
+					// Komodo 6 code
+					item = ko.toolbox2.getSelectedItem();
+				}
 				var content = item.value;
 				// We need to eliminate newlines for easier regexp search
 				content = content.replace(/[\n\r]/g, "\t");
@@ -715,7 +780,8 @@ if (typeof(sv.log) == 'undefined') sv.log = {};
 		var os = Components.classes['@activestate.com/koOs;1']
 			.getService(Components.interfaces.koIOs);
 		try {
-			appdir = ko.interpolate.interpolateStrings('%(path:hostUserDataDir)');
+			// Note that in Komodo 6, interpolateStrings is deprecated in favor of interpolateString!
+			var appdir = ko.interpolate.interpolateStrings('%(path:userDataDir)');
 			var logFile = os.path.join(appdir,'pystderr.log');
 			var winOpts = "centerscreen,chrome,resizable,scrollbars,dialog=no,close";
 			window.openDialog('chrome://komodo/content/tail/tail.xul',
@@ -789,7 +855,8 @@ sv.checkToolbox = function () {
 		//// This is old code kept if we want to take something back from it!
 		// Important! this code is dangerous, as it removes current SciViews-K toolbox
 		// without notice, all user modifications are lost!!
-		//var pkg = ko.interpolate.interpolateStrings("%(path:hostUserDataDir)");
+		// Note that in Komodo 6, interpolateStrings is deprecated in favor of interpolateString!
+		//var pkg = ko.interpolate.interpolateStrings("%(path:userDataDir)");
 		//pkg += "/XRE/extensions/sciviewsk@sciviews.org/templates/SciViews-K.kpz";
 		//var partSvc = Components.classes["@activestate.com/koPartService;1"]
 		//	.getService(Components.interfaces.koIPartService);
