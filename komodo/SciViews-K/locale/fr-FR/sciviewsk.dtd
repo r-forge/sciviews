@@ -32,7 +32,7 @@
 
 <!ENTITY sciviews.robjects.insName "Insérer le nom dans le texte">
 <!ENTITY sciviews.robjects.insFullName "Insérer le nom complet dans le texte">
-<!ENTITY sciviews.robjects.rmObj "Effacer les objets">
+<!ENTITY sciviews.robjects.rmObj "Insérer du code pour effacer les objets">
 <!ENTITY sciviews.robjects.loadPkg "Charger un package" >
 <!ENTITY sciviews.robjects.detach "Détacher un package">
 <!ENTITY sciviews.robjects.clrFilter "Effacer les critères de filtration">
@@ -47,6 +47,7 @@
 <!ENTITY sciviews.robjects.print "Contenu">
 <!ENTITY sciviews.robjects.summary "Résumé">
 <!ENTITY sciviews.robjects.write_table "Write to textfile">
+
 <!ENTITY sciviews.robjects.deleteNow "Effacer tout de suite">
 <!ENTITY sciviews.robjects.deleteNow.acc "E">
 <!ENTITY sciviews.robjects.insertQuoted "Insérer avec guillemets">
@@ -63,7 +64,7 @@
 <!ENTITY rSendBlock "Exécuter le bloc marqué">
 <!ENTITY rSendBlock.key "B">
 <!ENTITY rSendFile "Exécuter le fichier">
-<!ENTITY rSendFile.key "S">
+<!ENTITY rSendFile.key "A">
 <!ENTITY rSendFun "Exécuter la fonction">
 <!ENTITY rSendFun.key "F">
 <!ENTITY rSendLine "Exécuter la ligne courante">
@@ -107,3 +108,9 @@
 
 <!ENTITY svOpenSessMgr "Répertoire de session">
 <!ENTITY svOpenSessMgr.key "S">
+
+<!ENTITY rEscape "Annuler le calcul en cours">
+<!ENTITY rEscape.key "E">
+
+<!ENTITY RToolbar.label "barre d'outil R">
+<!ENTITY userInterfaceShowHideRToolbar.desc "Afficher/cacher la barre d'outil R">

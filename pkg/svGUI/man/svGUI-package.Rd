@@ -13,8 +13,8 @@
   \tabular{ll}{
     Package: \tab svGUI\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-49\cr
-    Date: \tab 2010-09-11\cr
+    Version: \tab 0.9-50\cr
+    Date: \tab 2010-10-01\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples

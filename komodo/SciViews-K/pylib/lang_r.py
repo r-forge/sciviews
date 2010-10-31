@@ -2654,18 +2654,18 @@ builtins = [
 # is the name of a package that provides Python module APIs for Scintilla
 # lexers.
 #
-#   import SilverCity
-#   from SilverCity.Lexer import Lexer
-#   from SilverCity import ScintillaConstants
-#   class RLexer(Lexer):
-#       lang = lang
-#       def __init__(self):
-#           self._properties = SilverCity.PropertySet()
-#           self._lexer = SilverCity.find_lexer_module_by_id(ScintillaConstants.SCLEX_R)
-#           self._keyword_lists = [
-#               # Dev Notes: What goes here depends on the C++ lexer
-#               # implementation.
-#           ]
+#import SilverCity
+#from SilverCity.Lexer import Lexer
+#from SilverCity import ScintillaConstants
+#class RLexer(Lexer):
+#    lang = lang
+#    def __init__(self):
+#        self._properties = SilverCity.PropertySet()
+#        self._lexer = SilverCity.find_lexer_module_by_id(ScintillaConstants.SCLEX_R)
+#        self._keyword_lists = [
+#           # Dev Notes: What goes here depends on the C++ lexer
+#           # implementation.
+#        ]
 class RLexer(UDLLexer):
     lang = lang
 
@@ -3012,4 +3012,4 @@ def register(mgr):
         import_handler_class=None,
         cile_driver_class=RCILEDriver,
         is_cpln_lang=True)
-    
+

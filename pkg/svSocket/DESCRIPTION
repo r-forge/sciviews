@@ -4,8 +4,8 @@ Title: SciViews GUI API - R Socket Server
 Depends: R (>= 2.6.0)
 Imports: tcltk, svMisc (>= 0.9-60)
 Description: Implements a simple socket server allowing to connect GUI clients to R
-Version: 0.9-50
-Date: 2010-09-11
+Version: 0.9-51
+Date: 2010-10-01
 Author: Philippe Grosjean & Matthew Dowle
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL-2

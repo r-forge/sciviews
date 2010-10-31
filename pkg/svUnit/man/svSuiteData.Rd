@@ -40,9 +40,13 @@ metadata(object, \dots)
 protocol(object, type = "text", file = "", append = FALSE, \dots)
 \method{protocol}{default}(object, type = "text", file = "", append = FALSE, \dots)
 \method{protocol}{svSuiteData}(object, type = "text", file = "", append = FALSE, \dots)
+
 protocol_text(object, file = "", append = FALSE, \dots)
-\method{protocol_text}{svSuiteData}(object, file = "", append = FALSE, ...)
-\method{protocol_junit}{svSuiteData}(object, file = "", append = FALSE, ...)
+\method{protocol_text}{svSuiteData}(object, file = "", append = FALSE, \dots)
+
+protocol_junit(object, \dots)
+\method{protocol_junit}{svSuiteData}(object, file = "", append = FALSE, \dots)
+\method{protocol_junit}{svTestData}(object, \dots)
 }
 
 \arguments{
@@ -81,7 +85,8 @@ protocol_text(object, file = "", append = FALSE, \dots)
   centralized in the same log ('svSuiteData' object).
 }
 
-\author{ Philippe Grosjean <phgrosjean@sciviews.org> }
+\author{ Philippe Grosjean <phgrosjean@sciviews.org>; Mario Frasca for the junit
+  protocol. }
 
 \seealso{ \code{\link{svSuite}}, \code{\link{is.svTestData}},
   \code{\link{check}}, \code{\link{Log}} }

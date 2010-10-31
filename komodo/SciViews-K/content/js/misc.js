@@ -127,8 +127,9 @@ sv.misc.sessionReport = function (rep) {
         file.append(rep + ".odt");
         if (!file.exists()) {
             // Copy the report template from SciViews-K templates
-            var tpl = ko.interpolate.
-                interpolateStrings("%(path:hostUserDataDir)");
+            // Note that in Komodo 6, interpolateStrings is deprecated in favor of interpolateString!
+			var tpl = ko.interpolate.
+                interpolateStrings("%(path:userDataDir)");
             var os = Components.classes['@activestate.com/koOs;1'].
                 getService(Components.interfaces.koIOs);
         if (os.sep == "/") {

@@ -32,7 +32,7 @@
 
 <!ENTITY sciviews.robjects.insName "Insert name into text">
 <!ENTITY sciviews.robjects.insFullName "Insert full name into text">
-<!ENTITY sciviews.robjects.rmObj "Insert remove code">
+<!ENTITY sciviews.robjects.rmObj "Insert code to remove objects">
 <!ENTITY sciviews.robjects.loadPkg "Load package">
 <!ENTITY sciviews.robjects.detach "Detach package">
 <!ENTITY sciviews.robjects.clrFilter "Clear filter text">
@@ -107,10 +107,10 @@
 <!ENTITY helpStart.key "h">
 
 <!ENTITY svOpenSessMgr "Session directory">
-<!ENTITY svOpenSessMgr.key "C">
+<!ENTITY svOpenSessMgr.key "S">
 
 <!ENTITY rEscape "Escape current calculation">
 <!ENTITY rEscape.key "E">
 
 <!ENTITY RToolbar.label "R toolbar">
-<!ENTITY userInterfaceShowHideRToolbar.desc "User Interface: Show/Hide R toolbar">
+<!ENTITY userInterfaceShowHideRToolbar.desc "Show/Hide R toolbar">

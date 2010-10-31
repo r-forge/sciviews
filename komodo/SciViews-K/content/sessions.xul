@@ -70,7 +70,8 @@ var os = Components.classes['@activestate.com/koOs;1']
 	.getService(Components.interfaces.koIOs);
 
 
-// Populate session directory list, insert preference values into corresponding textboxes
+// Populate session directory list,
+// insert preference values into corresponding textboxes
 function OnLoad(event) {
 	var p = parent;
 	while (p = p.opener) {

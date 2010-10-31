@@ -9,8 +9,7 @@
         } else return(.active.data.frame$cache <<- NULL)
 	}, cache = "")
 
-guiRefresh <-
-function (force = FALSE)
+guiRefresh <- function (force = FALSE)
 {
     ## Refresh active items and the R Objects explorer
     ## If force == TRUE, do not compare with the cache
@@ -36,16 +35,16 @@ function (force = FALSE)
 	## Make sure to clear active data frame and active lm object in case none
     ## are defined in the current session
     if (!".active.data.frame" %in% aObjs)
-        koCmd('sv.r.obj_refresh_dataframe("<<<data>>>");');
+        koCmd('sv.r.obj_refresh_dataframe("<<<data>>>");')
     if (!".active.lm" %in% aObjs)
-        koCmd('sv.r.obj_refresh_lm("<<<data>>>");');
+        koCmd('sv.r.obj_refresh_lm("<<<data>>>");')
 
 	## Refresh object browser (only data from .GlobalEnv)
     lst <- objList(envir = .GlobalEnv, all.info = FALSE, compare = TRUE)
 
     if (length(lst$Name) > 0) {
-        msg <- paste(capture.output(print(lst, sep=";;", header = TRUE)),
-					 collapse="\n")
+        msg <- paste(capture.output(print(lst, sep = ";;", header = TRUE)),
+			collapse = "\n")
         koCmd('sv.r.objects.refreshGlobalEnv("<<<data>>>");', data = msg)
     }
     return(TRUE)

@@ -6,25 +6,25 @@
 // sv.tools.file.defaultEncoding;			// Default file encoding to use
 // sv.tools.file.read(filename, encoding);	// Read a file with encoding
 // sv.tools.file.write(filename, content, encoding, append);
-								// Write in a file with encoding
-// sv.tools.file.exists(file); 	// Checks for file existence, returns 2 for
-								// directory, 1 for file, otherwise 0
-// sv.tools.file.temp(prefix);	// Creates unique temporary file, accessible
-								// by all users, and returns its name
+									// Write in a file with encoding
+// sv.tools.file.exists(file); 		// Checks for file existence, returns 2 for
+									// directory, 1 for file, otherwise 0
+// sv.tools.file.temp(prefix);		// Creates unique temporary file, accessible
+									// by all users, and returns its name
 // sv.tools.file.specDir(dirName)	// Translate special directory name
-// sv.tools.file.path(...); 		// Create a file path from concatenated arguments:
-								// - special directory names are translated,
-								// - relative paths are expanded into real paths.
+// sv.tools.file.path(...); 		// Create path from concatenated arguments:
+									// - special directory names are translated,
+									// - relative paths are expanded.
 // sv.tools.file.getfile(baseDir, [pathComponents]);
-								// Create nsILocalFile object from array and/or
-								// special dir name
+									// Create nsILocalFile object from array
+									// and/or special dir name
 // sv.tools.file.readURI(uri);		// Read data from an URI
 // sv.tools.file.pathFromURI(uri);	// Converts an URI to local path
 // sv.tools.file.list(dirname, pattern, noext); // List all files matching
-								// pattern in dirname (with/without extension)
+									// pattern in dirname with(out) extension
 // sv.tools.file.whereIs(appName);
-								// Tries to find full application path,
-								// returns null if not found
+									// Tries to find full application path,
+									// returns null if not found
 ////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') var sv = {};
@@ -183,7 +183,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	// 	eg. "ProfD", "TmpD", "Home", "Pers", "Desk", "Progs". For all possibilities,
 	//	see reference at https://developer.mozilla.org/En/Code_snippets:File_I/O
 	// Additionally, Komodo paths are translated:
-	//  "userDataDir", "supportDir", "hostUserDataDir", "factoryCommonDataDir",
+	//  "userDataDir", "supportDir", "factoryCommonDataDir",
 	//  "commonDataDir, "userCacheDir", "sdkDir", "docDir", "installDir", "mozBinDir",
 	//  "binDir", "pythonExe", "binDBGPDir", "perlDBGPDir" and "pythonDBGPDir".
 	// Leading "~" is expanded to a path of a home directory ("My documents" on windows).
@@ -350,7 +350,6 @@ if (navigator.platform.indexOf("Win") == 0) {
 	}
 
 } else {
-	// Will it work on Mac too?
 	this.whereIs = function(appName) {
 		var runSvc = Components.
 			classes["@activestate.com/koRunService;1"].

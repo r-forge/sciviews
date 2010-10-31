@@ -157,7 +157,7 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 	viewData /* =<determined from current view> */)
 {
     try {
-    if (typeof queryTitle == 'undefined') queryTitle = null;
+    if (typeof(queryTitle) == 'undefined') queryTitle = null;
 	log.info("interpolate.interpolate(editor, strings=[" + strings +
         "], bracketedStrings=[" + bracketedStrings + "], queryTitle='" +
         queryTitle + "', viewData)");

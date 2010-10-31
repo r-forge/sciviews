@@ -290,12 +290,8 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 	d <- dim(x)
 	if (is.null(d)) d <- length(x)
 
-	return(c(
-	  dims=paste(d, collapse = "x"),
-	  mode=mode(x),
-	  class=class(x)[1],
-	  rec=mode(x) == "S4" ||
-		is.function(x) ||
-		(is.recursive(x) && !is.language(x) && sum(d) != 0)
-	  ))
+	return(c(dims = paste(d, collapse = "x"),
+		mode = mode(x), class = class(x)[1],
+		rec = mode(x) == "S4" || is.function(x) ||
+		(is.recursive(x) && !is.language(x) && sum(d) != 0)))
 }
