@@ -819,9 +819,21 @@ if (typeof(sv.log) == 'undefined') sv.log = {};
 //// Show Komodo log
 //sv.log.show();
 
-
+// Installs toolboxes
 sv.checkToolbox = function () {
-	sv.cmdout.message("(Re-)installing SciViews-K toolboxes...");
+
+	var svFile = sv.tools.file;
+
+	// If Komodo 6, and new-style, zipped toolbox is present, redirect to sv.checkToolbox2
+	if(ko.toolbox2 &&
+	   svFile.getfile("ProfD", "extensions/sciviewsk@sciviews.org/defaults",
+	   "toolbox.zip").exists()) {
+		sv.checkToolbox2();
+		return;
+	}
+
+	// otherwise, look for version 5 (kpf) toolboxes (DEPRECATED)
+	sv.cmdout.message(sv.translate("(Re-)installing SciViews-K toolboxes..."));
     try {
 		var path, tbxs;
 		var os = Components.classes['@activestate.com/koOs;1'].
@@ -840,25 +852,24 @@ sv.checkToolbox = function () {
 
 		// Find all .kpz files in 'defaults', append/replace version string in filenames,
 		// finally install as toolbox
-		path = sv.tools.file.path("ProfD", "extensions",
+		path = svFile.path("ProfD", "extensions",
 			"sciviewsk@sciviews.org", "defaults");
-		tbxs = sv.tools.file.list(path, "\\.kpz$");
+		tbxs = svFile.list(path, "\\.kpz$");
 
 		var file1, file2, path1, path2;
 		for (var i in tbxs) {
 			file1 = tbxs[i];
-			path1 = sv.tools.file.path(path, file1);
+			path1 = svFile.path(path, file1);
 			file2 = os.path.withoutExtension(file1.replace(/\s*(\([\s0-9a-c\.]+\)\s*)+/, ""));
 			tbxs[i] = file2 + " (" + sv.version + ")";
 			file2 = file2 + " (" + sv.version + ").kpz";
-			path2 = sv.tools.file.path(path, file2);
+			path2 = svFile.path(path, file2);
 			os.rename(path1, path2);
 			try { 	_installPkg(path2);	} catch(e) { /***/ }
 
 		}
 
 		if(tbxMgr) tbxMgr.view.reloadToolsDirectoryView(-1);
-
 		//Message prompting for removing old or duplicated toolboxes
 		sv.alert(sv.translate("Toolboxes %S have been added. " +
 			"To avoid conflicts, you should remove any previous or duplicated " +
@@ -875,16 +886,17 @@ sv.checkToolbox = function () {
 }
 
 // Use toolbox.zip file in 'defaults', unpack to toolbox directory
-// appending/replacing version string in root directory names
+// appending version string in root folders names
 sv.checkToolbox2 = function (path) {
-	sv.cmdout.message("(Re-)installing SciViews-K toolboxes...");
+	sv.cmdout.clear();
+	sv.cmdout.message(sv.translate("(Re-)installing SciViews-K toolboxes..."));
+	ko.dialogs.alert("SciViews-K toolboxes will be installed now. This may take some time.");
 
 	var svFile = sv.tools.file;
 	if(!path) path = svFile.path("ProfD", "extensions",
 		"sciviewsk@sciviews.org", "defaults", "toolbox.zip");
 
 	var tbxFile = svFile.getfile(path);
-
 	if(!tbxFile.exists()) return;
 
 	var os = Components.classes['@activestate.com/koOs;1'].
@@ -894,30 +906,67 @@ sv.checkToolbox2 = function (path) {
 	var zipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
 	   .createInstance(Components.interfaces.nsIZipReader);
 
-	var pathRx = /^([^\/]+)/;
-	var pathReplacePat =  "$1 (" + sv.version + ")";
-	var targetDir = toolbox2Svc.getStandardToolbox().path;
+	var rxFolder1 = /^[^\/]+\/$/; // first level folder
+	var tbxFolderPaths = [];
 
-	zipReader.open();
+	// Need to replace name of top directories anyway, to avoid overwriting ones from
+	// previous version. Appending also a short random string to make it unique
+	var pathRx = /^([^\/]+)/;
+	var pathReplacePat =  "$1_" + sv.version + "_" +
+		Math.floor(Math.random() * 65536).toString(36);
+
+	var fTargetDir = svFile.getfile("TmpD", "svtoolbox");
+	if (fTargetDir.exists()) fTargetDir.remove(true);
+	var targetDir = fTargetDir.path;
+
+	var toolsDirectory = toolbox2Svc.getStandardToolbox().path;
+
+	zipReader.open(tbxFile);
 	var entries = zipReader.findEntries(null);
-	var entryName, outFile, isFile;
+	var entryName, outFile, isFile, folderdata, tbxNames = [];
 	while (entries.hasMore()) {
 		entryName = entries.getNext();
-		//TODO: below works only if there is no .folderdata:
-		entryName = entryName.replace(pathRx, pathReplacePat);
-		outFile = svFile.getfile(targetDir, entryName);
+		//Note, renaming directory works only if there is no .folderdata:
+		outFile = svFile.getfile(targetDir, entryName.replace(pathRx, pathReplacePat));
 		isFile = !(zipReader.getEntry(entryName).isDirectory);
 		svFile.getDir(outFile, isFile, false);
-		//sv.cmdout.append(outFile.path);
+		// Careful! This replaces current folders in 'tools' directory
 		if(isFile) zipReader.extract(entryName, outFile);
 	}
 	zipReader.close();
-	toolbox2Svc.reloadToolsDirectory(targetDir);
+
+	var tbxs = svFile.list(targetDir);
+	for (var i = 0; i < tbxs.length; i++) {
+		path = svFile.path(targetDir, tbxs[i]);
+		toolbox2Svc.importDirectory(toolsDirectory, path);
+		//sv.cmdout.append("path ->" + tbxs[i]);
+	}
+
+	toolbox2Svc.reloadToolsDirectory(toolsDirectory);
 	tbxMgr.view.reloadToolsDirectoryView(-1);
+
+	var rowCount = tbxMgr.view.rowCount;
+	for (var i = 0; i < rowCount; i++) {
+		toolPath = os.path.relpath(tbxMgr.view.getPathFromIndex(i), toolsDirectory);
+		if (tbxs.indexOf(toolPath) != -1) {
+			toolName = tbxMgr.view.getCellText(i, {}) + " (" + sv.version + ")";
+			tbxNames.push(toolName);
+			try { tbxMgr.view.renameTool(i, toolName) } catch(e) {
+				// this giver error on Linux. Bug in ko.toolbox2?
+				// the same when trying to rename manually.
+				// "NameError: global name 'path' is not defined"
+				// try other methods... edit .folderdata directly ???
+			}
+			//sv.cmdout.append("toolPath ->" + toolPath + " :: " + toolName);
+		}
+	}
 	sv.cmdout.message("");
+
+	sv.alert(sv.translate("Toolboxes %S have been added. " +
+		"To avoid conflicts, you should remove any previous or duplicated " +
+		"versions. To update the toolbars, restart Komodo.", "\"" +
+		tbxNames.join("\" and \"") + "\""));
 }
-
-
 
 // Ensure we check the toolbox is installed once the extension is loaded
 //addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
