@@ -843,34 +843,81 @@ sv.checkToolbox = function () {
 		path = sv.tools.file.path("ProfD", "extensions",
 			"sciviewsk@sciviews.org", "defaults");
 		tbxs = sv.tools.file.list(path, "\\.kpz$");
-		var file1, file2;
+
+		var file1, file2, path1, path2;
 		for (var i in tbxs) {
 			file1 = tbxs[i];
+			path1 = sv.tools.file.path(path, file1);
 			file2 = os.path.withoutExtension(file1.replace(/\s*(\([\s0-9a-c\.]+\)\s*)+/, ""));
 			tbxs[i] = file2 + " (" + sv.version + ")";
 			file2 = file2 + " (" + sv.version + ").kpz";
-			file1 = sv.tools.file.path(path, file1);
-			file2 = sv.tools.file.path(path, file2);
-			os.rename(file1, file2);
-			_installPkg(file2);
+			path2 = sv.tools.file.path(path, file2);
+			os.rename(path1, path2);
+			try { 	_installPkg(path2);	} catch(e) { /***/ }
+
 		}
 
 		if(tbxMgr) tbxMgr.view.reloadToolsDirectoryView(-1);
 
-		// Message prompting for removing old or duplicated toolboxes
+		//Message prompting for removing old or duplicated toolboxes
 		sv.alert(sv.translate("Toolboxes %S have been added. " +
 			"To avoid conflicts, you should remove any previous or duplicated " +
 			"versions. To update the toolbars, restart Komodo.", "\"" +
 			tbxs.join("\" and \"") + "\""));
 
 	} catch(e) {
-        sv.log.exception(e, "Error while installing the SciViews-K & R reference toolboxes");
+		sv.log.exception(e, "Error while installing the SciViews-K & R reference toolboxes");
     }
 	finally {
 		sv.showVersion = true;
 		sv.cmdout.message();
 	}
 }
+
+// Use toolbox.zip file in 'defaults', unpack to toolbox directory
+// appending/replacing version string in root directory names
+sv.checkToolbox2 = function (path) {
+	sv.cmdout.message("(Re-)installing SciViews-K toolboxes...");
+
+	var svFile = sv.tools.file;
+	if(!path) path = svFile.path("ProfD", "extensions",
+		"sciviewsk@sciviews.org", "defaults", "toolbox.zip");
+
+	var tbxFile = svFile.getfile(path);
+
+	if(!tbxFile.exists()) return;
+
+	var os = Components.classes['@activestate.com/koOs;1'].
+		getService(Components.interfaces.koIOs);
+	var tbxMgr = ko.toolbox2.manager;
+	var toolbox2Svc = tbxMgr.toolbox2Svc;
+	var zipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
+	   .createInstance(Components.interfaces.nsIZipReader);
+
+	var pathRx = /^([^\/]+)/;
+	var pathReplacePat =  "$1 (" + sv.version + ")";
+	var targetDir = toolbox2Svc.getStandardToolbox().path;
+
+	zipReader.open();
+	var entries = zipReader.findEntries(null);
+	var entryName, outFile, isFile;
+	while (entries.hasMore()) {
+		entryName = entries.getNext();
+		//TODO: below works only if there is no .folderdata:
+		entryName = entryName.replace(pathRx, pathReplacePat);
+		outFile = svFile.getfile(targetDir, entryName);
+		isFile = !(zipReader.getEntry(entryName).isDirectory);
+		svFile.getDir(outFile, isFile, false);
+		//sv.cmdout.append(outFile.path);
+		if(isFile) zipReader.extract(entryName, outFile);
+	}
+	zipReader.close();
+	toolbox2Svc.reloadToolsDirectory(targetDir);
+	tbxMgr.view.reloadToolsDirectoryView(-1);
+	sv.cmdout.message("");
+}
+
+
 
 // Ensure we check the toolbox is installed once the extension is loaded
 //addEventListener("load", function() {setTimeout (sv.checkToolbox, 5000) }, false);
