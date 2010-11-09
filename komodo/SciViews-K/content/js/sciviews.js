@@ -347,14 +347,14 @@ sv.marginClick = function (modifiers, position, margin) {
         if (!v) return;
         var ke = v.scintilla.scimoz;
         //var ke = v.scimoz;
-        var lineClicked = ke.lineFromPosition(position);    
+        var lineClicked = ke.lineFromPosition(position);
         if (margin == 2) {
             if (modifiers == 0) {
                 // Simple click
                 // From editor.js. This is implementation of do_cmd_bookmarkToggle with
                 // different arguments
                 var markerState = ke.markerGet(lineClicked);
-            
+
                 if (markerState & (1 << ko.markers.MARKNUM_BOOKMARK)) {
                     ke.markerDelete(lineClicked, ko.markers.MARKNUM_BOOKMARK);
                 } else {
@@ -365,14 +365,14 @@ sv.marginClick = function (modifiers, position, margin) {
             } else if (modifiers == 1) {
                 // Shift click
                 var markerState = ke.markerGet(lineClicked);
-            
+
                 if (markerState & (1 << ko.markers.MARKNUM_TRANSIENTMARK)) {
                     ke.markerDelete(lineClicked, ko.markers.MARKNUM_TRANSIENTMARK);
                 } else {
                     ke.markerAdd(lineClicked, ko.markers.MARKNUM_TRANSIENTMARK);
                     //ke.markerAdd(lineClicked, ko.markers.MARKNUM_STDIN_PROMPT);
                 }
-                
+
             }
         } else if (margin == 1) {
             // From views-buffer.xml, method onMarginClick (original comments removed)
@@ -649,10 +649,10 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 // Append text to the Command Output pane
 // TODO: handle \b correctly to delete char up to the beginning of line
 // TODO: what to do with \a? I already have a bell in R console...
-sv.cmdout.append = function (str, newline, scrollToStart) {	
+sv.cmdout.append = function (str, newline, scrollToStart) {
 	if (newline === undefined) newline = true;
 	if (scrollToStart === undefined) scrollToStart = false;
-	
+
 	try {
 		var runout = ko.run.output;
 		// Make sure the command output window is visible
@@ -820,90 +820,56 @@ if (typeof(sv.log) == 'undefined') sv.log = {};
 //sv.log.show();
 
 
-//FIXME: does not work with the new toolbox in Komodo 6.0.0-beta1
 sv.checkToolbox = function () {
+	sv.cmdout.message("(Re-)installing SciViews-K toolboxes...");
     try {
 		var path, tbxs;
 		var os = Components.classes['@activestate.com/koOs;1'].
 			getService(Components.interfaces.koIOs);
 
+		var tbxMgr;
+		if (ko.toolbox2 && ko.toolbox2.manager) { // Komodo >= 6.0.0?
+			tbxMgr = ko.toolbox2.manager;
+			var toolbox2Svc = tbxMgr.toolbox2Svc;
+			var targetDirectory = toolbox2Svc.getStandardToolbox().path;
+			function _installPkg(path) toolbox2Svc.importV5Package(targetDirectory, path);
+		} else { // Komodo 5: (TODO: test is on Komodo 5!)
+			function _installPkg(path) ko.toolboxes.importPackage(path);
+			tbxMgr = null;
+		}
+
 		// Find all .kpz files in 'defaults', append/replace version string in filenames,
 		// finally install as toolbox
 		path = sv.tools.file.path("ProfD", "extensions",
-		"sciviewsk@sciviews.org", "defaults");
+			"sciviewsk@sciviews.org", "defaults");
 		tbxs = sv.tools.file.list(path, "\\.kpz$");
 		var file1, file2;
 		for (var i in tbxs) {
-			file1 = file2 = tbxs[i];
-			file2 = os.path.withoutExtension(file1.replace(/\s*\([\s0-9\.]+\)\s*/, ""));
+			file1 = tbxs[i];
+			file2 = os.path.withoutExtension(file1.replace(/\s*(\([\s0-9a-c\.]+\)\s*)+/, ""));
 			tbxs[i] = file2 + " (" + sv.version + ")";
 			file2 = file2 + " (" + sv.version + ").kpz";
 			file1 = sv.tools.file.path(path, file1);
 			file2 = sv.tools.file.path(path, file2);
 			os.rename(file1, file2);
-			ko.toolboxes.importPackage(file2);
+			_installPkg(file2);
 		}
+
+		if(tbxMgr) tbxMgr.view.reloadToolsDirectoryView(-1);
 
 		// Message prompting for removing old or duplicated toolboxes
 		sv.alert(sv.translate("Toolboxes %S have been added. " +
-			"To avoid conflicts, you should remove any previous or duplicated versions." +
-			" To update the toolbars, restart Komodo.", "\"" +
+			"To avoid conflicts, you should remove any previous or duplicated " +
+			"versions. To update the toolbars, restart Komodo.", "\"" +
 			tbxs.join("\" and \"") + "\""));
 
-		//document.getElementById("toolboxview").tree.view.invalidate();
-
-		//// This is old code kept if we want to take something back from it!
-		// Important! this code is dangerous, as it removes current SciViews-K toolbox
-		// without notice, all user modifications are lost!!
-		// Note that in Komodo 6, interpolateStrings is deprecated in favor of interpolateString!
-		//var pkg = ko.interpolate.interpolateStrings("%(path:userDataDir)");
-		//pkg += "/XRE/extensions/sciviewsk@sciviews.org/templates/SciViews-K.kpz";
-		//var partSvc = Components.classes["@activestate.com/koPartService;1"]
-		//	.getService(Components.interfaces.koIPartService);
-		//var SciViewsK_folders = partSvc.getParts("folder", "name", "SciViews-K",
-		//	"*", partSvc.currentProject, new Object());
-		//if (SciViewsK_folders.length == 0) {
-		//	// The SciViews-K toolbox is not installed yet... do it now
-		//	ko.toolboxes.importPackage(pkg);
-		//} else {
-		//	// First, eliminate all SciViews-K toolboxes that are too old
-		//	var VersionMacro;
-		//	var SciViewsK_folder;
-		//	sv.showVersion = false;
-		//	for (var i = 0; i < SciViewsK_folders.length; i++) {
-		//		SciViewsK_folder = SciViewsK_folders[i];
-		//		VersionMacro = SciViewsK_folder.
-        //           getChildWithTypeAndStringAttribute(
-		//			"macro", "name", "Version", true);
-		//		if (VersionMacro) {
-		//			ko.projects.executeMacro(VersionMacro);
-		//			if (SciViewsKtoolboxVersion < sv.version) {
-		//				// This toolbox is too old for our extension
-		//				ko.toolboxes.user.removeItem(SciViewsK_folder, true);
-		//			}
-		//		} else {
-		//			// Probably a corrupted SciViews-K toolbox => eliminate it
-		//			ko.toolboxes.user.removeItem(SciViewsK_folder, true);
-		//		}
-		//	}
-		//	// Recheck how many SciViews-K toolboxes are left
-		//	SciViewsK_folders = partSvc.getParts("folder", "name", "SciViews-K",
-		//		"*", partSvc.currentProject, new Object());
-		//	if (SciViewsK_folders.length == 0) {
-		//		// Install the new one now
-		//		ko.toolboxes.importPackage(pkg);
-		//	} else if (SciViewsK_folders.length > 1) {
-		//		// There are duplications, keep only last one
-		//		for (var i = 0; i < (SciViewsK_folders.length - 1); i++) {
-		//			SciViewsK_folder = SciViewsK_folders[i];
-		//			ko.toolboxes.user.removeItem(SciViewsK_folder, true);
-		//		}
-		//	}
-		//}
 	} catch(e) {
         sv.log.exception(e, "Error while installing the SciViews-K & R reference toolboxes");
     }
-	finally { sv.showVersion = true; }
+	finally {
+		sv.showVersion = true;
+		sv.cmdout.message();
+	}
 }
 
 // Ensure we check the toolbox is installed once the extension is loaded

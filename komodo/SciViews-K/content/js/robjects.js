@@ -270,6 +270,7 @@ sv.r.objects = {};
 			_this.treeBox.ensureRowIsVisible(currentElement.index);
 			_this.selection.select(currentElement.index);
 		}
+		return (true);
 	};
 
 	function _removeObjectList (pack) {
@@ -369,27 +370,30 @@ sv.r.objects = {};
 		_this.toggleOpenState(origItem.index);
 	};
 
+// New: allow for filtering by exclusion: prepend with "!"
 	function _getFilter () {
 		var tb = document.getElementById("sciviews_robjects_filterbox");
-		var obRx, filterRegExp, test;
+		var obRx, text, not;
+		text = tb.value;
+		not = (text[0] == "!");
+		if (not) {
+			text = text.substr(1);
+		}
 
-		if (!tb.value)
-			return(function (x) {
-				return(true);
-			})
+		if (!text) return(function (x) true);
+
 
 		try {
-			obRx = new RegExp(tb.value, "i");
+			obRx = new RegExp(text, "i");
 			tb.className = "";
-			return(function (x) {
-				return(obRx.test(x));
-			})
+			if (not)
+				return(function (x) !(obRx.test(x)));
+			else
+				return(function (x) obRx.test(x));
+
 		} catch (e) {
-			obRx = tb.value;
 			tb.className = "badRegEx";
-			return(function(x) {
-				return(x.indexOf(obRx) > -1);
-			})
+			return (function(x) (x.indexOf(text) > -1));
 		}
 	};
 
