@@ -941,6 +941,7 @@ sv.checkToolbox2 = function (path) {
 		toolbox2Svc.importDirectory(toolsDirectory, path);
 		//sv.cmdout.append("path ->" + tbxs[i]);
 	}
+	fTargetDir.remove(true);
 
 	toolbox2Svc.reloadToolsDirectory(toolsDirectory);
 	tbxMgr.view.reloadToolsDirectoryView(-1);

@@ -4,6 +4,7 @@
 ## Version 0.9.15, 2010-05-01 mod by K. Barton
 ## Version 0.9.19, 2010-10-03 mod by Ph. Grosjean
 ## Version 0.9.20, 2010-10-11 mod by K. Barton
+## Version 0.9.21, 2010-11-10 mod by K. Barton
 
 ## TODO: also use value in koDebug to debug server from within R!
 
@@ -19,13 +20,15 @@ skip = NULL)
 {
 	## Needed later for tryCatch'ing:
 	err.null <- function (e) return(NULL)
-	
+
 	## If minVersion is not provided, get it from packages in 'default' directory
 	pkg.extpat <- switch(.Platform$pkgType, win.binary = "zip", "tar\\.gz")
-	pkgFiles <- dir(pkg.dir, pattern = pkg.extpat)
+	pkgFiles <- dir(pkg.dir, pattern = paste("^.*_[0-9\\.\\-]+\\.", pkg.extpat,
+											"$", sep=""))
+
 	if (all(is.na(minVersion))) {
-		minVersion <- structure(gsub(sprintf("(^[a-zA-Z]+_|\\.%s$)",
-			pkg.extpat), "", pkgFiles), names = gsub("_.*$", "", pkgFiles))
+		#minVersion <- structure(gsub(sprintf("(^[a-zA-Z]+_|\\.%s$)",
+			#pkg.extpat), "", pkgFiles), names = gsub("_.*$", "", pkgFiles))
 
 		minVersion <- package_version(gsub(sprintf("(^[a-zA-Z]+_|\\.%s$)",
 			pkg.extpat), "", pkgFiles))
@@ -258,7 +261,7 @@ skip = NULL)
 				i <- order(package_version(pkgVersion), decreasing = TRUE)[1]
 				pkgFile <-  pkgFile[i]
 				pkgVersion <-  pkgVersion[i]
-				
+
 				## For some reasons (bug probably?) I cannot install a package
 				## in R 2.10.1 under Mac OS X when the path to the package has
 				## spaces. Also, correct a bug here when installing package
@@ -307,7 +310,7 @@ skip = NULL)
 
 		## Determine which packages we don't want to load
 		pkgs <- pkgs[!(pkgs %in% pkgsDontLoad)]
-		
+
 		## Split pkgs to primary and secondary
 		pkgsPrimary <- pkgs[!(pkgs %in% pkgsLast)]
 		pkgsSecondary <- pkgs[pkgs %in% pkgsLast]
@@ -342,12 +345,12 @@ skip = NULL)
 						res <- !inherits(try(startHttpServer(port =
 							getOption("ko.serve")), silent = TRUE), "try-error")
 					} else res <- TRUE
-					
+
 					if (!all(res)) {
 						cat("Impossible to start the SciViews R HTTP server\n(port",
 							getOption("ko.serve"), "already in use?)\n")
 						cat("Solve the problem, then type: require(svGUI)\n")
-						cat("or choose a different port for the server in Komodo\n")						
+						cat("or choose a different port for the server in Komodo\n")
 					} else {
 						cat("R is SciViews ready!\n")
 						assignTemp(".SciViewsReady", TRUE)
@@ -488,13 +491,13 @@ skip = NULL)
 		## Record the home page for the help server in an option
 		options(helphome = paste("http://127.0.0.1:", tools:::httpdPort,
 				"/doc/html/index.html", sep = ""))
-		
+
 		## I need to get the help file URL, but help() does not provide it any
 		## more! This is a temporary workaround for this problem
 		assignTemp("getHelpURL", function (x, ...) {
 			file <- as.character(x)
 			if (length(file) == 0) return("")
-			## Extension ".html" may be missing 
+			## Extension ".html" may be missing
 			htmlfile <- basename(file)
 			if (length(file) > 1) {
 				## If more then one topic is found
@@ -605,10 +608,10 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			sep = ";"))
 		)
 	}
-	
+
 	## Do we have a .Rprofile file to source?
 	if (file.exists(".Rprofile")) source(".Rprofile")
-	
+
 	return(invisible(res))
 }
 ### SciViews install end ###
