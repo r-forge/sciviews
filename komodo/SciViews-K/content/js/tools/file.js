@@ -311,25 +311,39 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 				}
 				if (!reg.hasValue("InstallPath") && reg.hasValue("Current Version")) {
 					reg = reg.openChild(reg.readStringValue("Current Version"),
-					reg.ACCESS_READ);
+						reg.ACCESS_READ);
 				}
 
-				var ret = [];
+				var ret = [],  et2 = [];
 				// Look for all installed paths, but default goes first
 				if (reg.hasValue("InstallPath"))
-				ret.push(reg.readStringValue("InstallPath") + "\\bin\\" + appName);
+					ret.push(reg.readStringValue("InstallPath"));
+
 				for (var i = 0; i < reg.childCount; i ++) {
 					var reg2 = reg.openChild(reg.getChildName(i), reg.ACCESS_READ);
 					if (reg2.hasValue("InstallPath")) {
-						path = reg2.readStringValue("InstallPath") + "\\bin\\" + appName;
+						path = reg2.readStringValue("InstallPath");
 						if (ret.indexOf(path) == -1)
 						ret.push(path);
 					}
 				}
-				return (ret);
+
+				if (appName.search(/\.exe$/) == -1) appName += ".exe";
+				// from 2.12 R executables may reside also in bin/i386 directory
+				var binDir = ["\\bin\\", "\\bin\\i386\\"];
+
+				for (var i in ret) {
+					for (var j in binDir) {
+						app = ret[i] + binDir[j] + appName;
+						if (this.exists(app)) ret2.push(app);
+						sv.cmdout.append(app);
+					}
+				}
+
+				return (ret2);
 			}
 
-			var key = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" + appName;
+			key = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" + appName;
 			try {
 				reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ);
 				path = reg.readStringValue("");
@@ -387,32 +401,23 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		return key;
 	}
 
-this.zipUnpack = function(zipPath, targetDir) {
-	var zipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
-                .createInstance(Components.interfaces.nsIZipReader);
-	zipReader.open(this.getfile(zipPath));
-	var entries = zipReader.findEntries(null);
-	var entryName, outFile, isFile;
-	while (entries.hasMore()) {
-		entryName = entries.getNext();
-		outFile = this.getfile(targetDir, entryName);
-		isFile = !(zipReader.getEntry(entryName).isDirectory);
-		this.getDir(outFile, isFile, false);
-		//sv.cmdout.append(outFile.path + " = " + outFile.exists());
-		if(isFile) {
-			try{ zipReader.extract(entryName, outFile);
-			} catch(e) {	}
+	this.zipUnpack = function(zipPath, targetDir) {
+		var zipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
+					.createInstance(Components.interfaces.nsIZipReader);
+		zipReader.open(this.getfile(zipPath));
+		var entries = zipReader.findEntries(null);
+		var entryName, outFile, isFile;
+		while (entries.hasMore()) {
+			entryName = entries.getNext();
+			outFile = this.getfile(targetDir, entryName);
+			isFile = !(zipReader.getEntry(entryName).isDirectory);
+			this.getDir(outFile, isFile, false);
+			//sv.cmdout.append(outFile.path + " = " + outFile.exists());
+			if(isFile) {
+				try{ zipReader.extract(entryName, outFile);
+				} catch(e) {	}
+			}
 		}
+		zipReader.close();
 	}
-	zipReader.close();
-}
-
-
-
-
-
-
-
-
-
 }).apply(sv.tools.file);
