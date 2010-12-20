@@ -269,12 +269,14 @@ function _getHomePage(browser, goTo) {
 	//var cmd = 'suppressMessages(make.packages.html()); ';
 	//cmd += 'options(htmlhelp = TRUE); ';
 	//cmd += "cat(" + (isWin? "R.home()" : "tempdir()") + ");";
-    
+
 	// If it is the http server, we know that the help server is launched
 	// (it is the same), and we also know the port!
 	var res = false;
 	var cmd = "";
-	if (sv.r.server == "http") {
+	// Use only one type of connection for both client and server!
+	//if (sv.r.server == "http") {
+	if (sv.prefs.getString("sciviews.client.type", "socket") == "http") {
         var port = sv.prefs.getString("sciviews.client.socket", "8888");
 		var path = "http://127.0.0.1:" + port + "/doc/html/index.html";
 		browser.homePage = sv.helpStartURI = path;

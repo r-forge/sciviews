@@ -18,7 +18,7 @@
 // sv.r.setwd(); // Set the working dir (choose or set to current buffer)
 // sv.r.run(); // Run current selection or line in R and goto next line
 // sv.r.runEnter(breakLine = false); // Run current line to pos in R
-									 // and add a line feed
+// and add a line feed
 // sv.r.source(what); // Source various part of current buffer to R
 // sv.r.send(what); // Send various part of current buffer to R
 // sv.r.calltip(code); // Get a calltip for a piece of code (current code if "")
@@ -29,7 +29,7 @@
 // sv.r.example(topic); // Run example in R for 'topic', 'topic' is optional
 // sv.r.search(topic); // Search R help for 'topic'
 // sv.r.search_select(topics); // Callback function: display a list of
-                               // choices to select help page from
+// choices to select help page from
 // sv.r.siteSearch(topic); // Search R web sites for 'topic'
 // sv.r.dataList(loaded); // List R datasets in "loaded" or "all" packages
 // sv.r.data(); // Select one dataset to load
@@ -37,7 +37,7 @@
 // sv.r.browseVignettes(); // Open a web page listing all installed vignettes
 // sv.r.saveWorkspace(file, title);  // Save data in a .Rdata file
 // sv.r.loadWorkspace(file, attach); // Load the content of a .RData file into
-									 // the workspace, or attach it
+// the workspace, or attach it
 // sv.r.saveHistory(file, title); // Save the history in a file
 // sv.r.loadHistory(file, title); // Load the history from a file
 // sv.r.saveGraph(type, file, title, height, width, method);
@@ -52,12 +52,12 @@
 // sv.r.refreshSession(); // Refresh MRU lists associated with current session
 // sv.r.initSession(dir, datadir, scriptdir, reportdir);
 // sv.r.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
-                    // Initialize R session with corresponding directories
-					// setSession() also do the change in R and is to be used
-					// preferably, except at Komodo startup!
-                    // dir: session directory, xxxdir: xxx subdirectory,
-                    // saveOld (default true): do we save old session data?
-                    // loadNew (default true): do we load data from new session?
+// Initialize R session with corresponding directories
+// setSession() also do the change in R and is to be used
+// preferably, except at Komodo startup!
+// dir: session directory, xxxdir: xxx subdirectory,
+// saveOld (default true): do we save old session data?
+// loadNew (default true): do we load data from new session?
 // sv.r.switchSession(inDoc); // Switch to another R session (possibly create it)
 // sv.r.exploreSession(); // Explore the session dirs in default file browser
 // sv.r.clearSession();   // Clear session's .RData and .Rhistory files
@@ -74,7 +74,7 @@
 // sv.r.pkg namespace: /////////////////////////////////////////////////////////
 // sv.r.pkg.repositories(); // Select repositories for installing R packages
 // sv.r.pkg.chooseCRANMirror(andInstall); // replacement for .CRANmirror,
-							// optionally calls .install after execution
+// optionally calls .install after execution
 // sv.r.pkg.available();    // List available R packages on selected repository
 // sv.r.pkg.installed();    // List installed R packages
 // sv.r.pkg.new(); // List new R packages available on CRAN
@@ -94,7 +94,7 @@
 // sv.r.pkg.installLocal(); // Install one or more R packages from local files
 // sv.r.pkg.installSV(); // Install the SciViews-R packages from CRAN
 // sv.r.pkg.installSVrforge(); // Install development versions of SciViews-R
-                               // from R-Forge
+// from R-Forge
 // sv.r.pkg.CRANmirror();   // Select preferred CRAN mirror
 
 /// REMOVED! use sv.command.openHelp instead
@@ -107,25 +107,30 @@
 
 // Define the 'sv.r' namespace
 if (typeof(sv.r) == 'undefined')
-	sv.r = {
-		RMinVersion: "2.11.0",	// Minimum version of R required
-		server: "http", 		// Currently, either 'http' or 'socket'
-		sep: ";;",				// Separator used for items
-		running: true			// Indicate if R is currently running
-								// FIXME: before we solve the issue of updating R status
-	};
+sv.r = {
+	RMinVersion: "2.11.0",	// Minimum version of R required
+
+//	server: "http", 		// Currently, either 'http' or 'socket'
+	server: "socket", 		// KB: http is still problematic, changed the default
+	sep: ";;",				// Separator used for items
+	running: true			// Indicate if R is currently running
+	// FIXME: before we solve the issue of updating R status
+};
+
+
+
 
 // Check where the R executable can be found
 sv.r.application = function (warn) {
 	if (warn === undefined) warn = false;
-	
+
 	// Look for R executable for batch processes
 	var R = sv.tools.file.whereIs("R")
 	if (R == null & warn)
-		sv.alert("R is not found", "You should install or reinstall R" +
-			" on this machine (see http://cran.r-project.org). Under Windows" +
-			" you could also run RSetReg.exe from the /bin subdirectory of R" +
-			" install in case R is installed, but not recognized by SciViews).");
+	sv.alert("R is not found", "You should install or reinstall R" +
+	" on this machine (see http://cran.r-project.org). Under Windows" +
+	" you could also run RSetReg.exe from the /bin subdirectory of R" +
+	" install in case R is installed, but not recognized by SciViews).");
 	// Save the path in r.application prefs
 	if (R == null) R = "";
 	sv.prefs.setString("r.application", R, true);
@@ -136,7 +141,7 @@ sv.r.application = function (warn) {
 sv.r.test = function sv_RTest () {
 	var res = "";
 	res = sv.socket.rCommand("<<<h>>>cat('ok!');", false,
-		sv_RTest_callback);
+	sv_RTest_callback);
 	return res;
 }
 
@@ -155,7 +160,7 @@ sv.r.test_callback = function sv_RTest_callback (response) {
 			// Possibly refresh the GUI by running SciViews-specific
 			// R task callbacks and make sure R Objects pane is updated
 			sv.r.evalCallback("try(guiRefresh(force = TRUE), silent = TRUE)",
-				function () { sv.r.objects.getPackageList(true); });
+			function () { sv.r.objects.getPackageList(true); });
 		}
 		//xtk.domutils.fireEvent(window, 'r_app_started_closed');
 		// PhG: currently disabled: all menus enabled all the time!
@@ -170,7 +175,7 @@ sv.r.print = function (text, newline, command, partial) {
 	if (newline === undefined) newline = true;
 	if (command === undefined) command = false;
 	if (partial === undefined) partial = false;
-	
+
 	// For now, use the command output pane
 	if (command) { // This is a R command
 		if (partial) {
@@ -178,9 +183,9 @@ sv.r.print = function (text, newline, command, partial) {
 		} else { // This is a new command
 			sv.cmdout.clear();
 			sv.cmdout.message("R is calculating... " +
-				"(if it takes too long, switch to the R console:" +
-				" it could be waiting for some input)!", 0, true);
-			text = ":> " + text;	
+			"(if it takes too long, switch to the R console:" +
+			" it could be waiting for some input)!", 0, true);
+			text = ":> " + text;
 		}
 	} else { // This is some data returned by R
 		if (!partial) sv.cmdout.message("R is ready!", 0, false);
@@ -194,14 +199,14 @@ sv.r.eval = function (cmd) {
 	if (!sv.r.running) {
 		// Indicate R should be started
 		ko.statusBar.AddMessage(
-			sv.translate("R must be started for this command (R -> Start R)"),
-			"SciViews-K", 5000, true);
+		sv.translate("R must be started for this command (R -> Start R)"),
+		"SciViews-K", 5000, true);
 		return(null);
 	}
 	cmd = cmd.rtrim();
 	// Special case for q() and quit() => use sv.r.quit() instead
 	if (cmd.search(/^(?:base::)?q(?:uit)?\s*\(\s*\)$/) > -1)
-		return(sv.r.quit());
+	return(sv.r.quit());
 	// TODO: special cases for ? and ??
 	var res = "";
 	sv.r.print(cmd, true, true, sv.socket.partial);
@@ -234,8 +239,8 @@ sv.r.evalCallback = function (cmd, procfun) {
 	if (!sv.r.running) {
 		// Indicate R should be started
 		ko.statusBar.AddMessage(
-			sv.translate("R must be started for this command (R -> Start R)"),
-			"SciViews-K", 5000, true);
+		sv.translate("R must be started for this command (R -> Start R)"),
+		"SciViews-K", 5000, true);
 		return(null);
 	}
 	var res = "";
@@ -254,10 +259,10 @@ sv.r.evalCallback = function (cmd, procfun) {
 // Escape R calculation
 sv.r.escape = function (cmd) {
 	if (cmd === undefined) cmd = "";
-	
+
 	// If R is not running, do nothing
 	if (!sv.r.running) return(null);
-	
+
 	// Send an <<<esc>>> sequence that breaks multiline mode
 	sv.r.print("<command cancelled!>", false, false, false);
 	var res = "";
@@ -271,16 +276,16 @@ sv.r.setwd = function (dir, ask, type) {
 	// TODO: simplify this:
 	// for compatibility with previous versions
 	switch (arguments.length) {
-	 case 1:
+		case 1:
 		type = dir;
 		dir = null;
 		ask = false;
 		break;
-	 case 2:
+		case 2:
 		type = dir;
 		dir = null;
 		break;
-	 default:
+		default:
 	}
 
 	var getDirFromR = "";
@@ -289,22 +294,22 @@ sv.r.setwd = function (dir, ask, type) {
 		//sv.log.debug(dir + ":" + type)
 		checkType:
 		switch (type) {
-		 case "this":
+			case "this":
 			break;
-		 case "session":
+			case "session":
 			getDirFromR = "getOption(\"R.initdir\")";
 			break;
-		 case "previous":
+			case "previous":
 			getDirFromR = "if (exists(\".odir\")) .odir else getwd()";
 			break;
-		 case "init":
+			case "init":
 			getDirFromR = "getOption(\"R.initdir\")";
 			break;
-		 case "current":
+			case "current":
 			getDirFromR = "getwd()";
 			ask = true;	// Assume ask is always true in this case
 			break;
-		 case "file":
+			case "file":
 			var kv = ko.views.manager.currentView;
 			if (kv) {
 				kv.setFocus();
@@ -314,8 +319,8 @@ sv.r.setwd = function (dir, ask, type) {
 				}
 				break;
 			}
-		 case "project":
-		 default:
+			case "project":
+			default:
 			dir = "";
 			// try to set current project dir ar default directory
 			var ap = ko.projects.manager.getCurrentProject();
@@ -334,13 +339,13 @@ sv.r.setwd = function (dir, ask, type) {
 	if (getDirFromR) {
 		var cmd = "cat(path.expand(" + getDirFromR + "))";
 		ko.statusBar.AddMessage(sv.translate("Asking R for directory..."),
-			"SciViews-K");
+		"SciViews-K");
 
 		res = sv.r.evalCallback(cmd, function(curDir) {
 			ko.statusBar.AddMessage("", "SciViews-K");
 			if (!curDir) {
 				sv.alert(sv.translate("Cannot retrieve directory from R." +
-					" Make sure R is running."));
+				" Make sure R is running."));
 				return(null);
 			}
 			if (navigator.platform.search(/^Win/) == 0) {
@@ -351,11 +356,11 @@ sv.r.setwd = function (dir, ask, type) {
 		return(res);
 	}
 	if (ask || !dir)
-		dir = ko.filepicker.getFolder(dir,
-			sv.translate("Choose working directory"));
+	dir = ko.filepicker.getFolder(dir,
+	sv.translate("Choose working directory"));
 
 	if (dir != null)
-		sv.r.eval(".odir <- setwd(\"" + dir.addslashes() + "\")");
+	sv.r.eval(".odir <- setwd(\"" + dir.addslashes() + "\")");
     return(res);
 }
 
@@ -435,9 +440,9 @@ sv.r.source = function (what) {
 		// Special case: if "all" and local document is saved,
 		// source as the original file
 		if (what == "all" && doc.file && doc.file.isLocal &&
-			!doc.isUntitled && !doc.isDirty) {
+		!doc.isUntitled && !doc.isDirty) {
 			res = sv.r.eval('source("' + file +  '", encoding = "' +
-				kv.encoding + '")');
+			kv.encoding + '")');
 		} else {
 			// Save all or part in the temporary file and source that file.
 			// After executing, tell R to delete it.
@@ -454,14 +459,14 @@ sv.r.source = function (what) {
 			tempFile = tempFile.addslashes();
 
 			var cmd = 'tryCatch(source("' + tempFile + '", encoding =' +
-				' "utf-8"), finally = {unlink("' + tempFile + '")});';
+			' "utf-8"), finally = {unlink("' + tempFile + '")});';
 
 			sv.cmdout.append(":>");
 			sv.r.evalHidden(cmd, true);
 		}
 	} catch(e) {
 		sv.log.exception(e, "Unknown error while sourcing R code in"
-			+ " sv.r.source():\n\n (" + e + ")", true);
+		+ " sv.r.source():\n\n (" + e + ")", true);
 	}
 	return(res);
 }
@@ -485,7 +490,7 @@ sv.r.send = function (what) {
 			res = sv.r.eval(cmd);
 		}
 		if (what == "line" || what == "linetoend") // || what == "para"
-			ke.charRight();
+		ke.charRight();
 
 	} catch(e) { return(e); }
 	return(res);
@@ -495,9 +500,9 @@ sv.r.send = function (what) {
 sv.r.calltip = function (code) {
 	// If code is not defined, get currently edited code
 	if (typeof(code) == "undefined" | code == "")
-		code = sv.getTextRange("codefrag");
+	code = sv.getTextRange("codefrag");
 	var cmd = 'cat(callTip("' + code.replace(/(")/g, "\\$1") +
-		'", location = TRUE, description = TRUE, methods = TRUE, width = 80))';
+	'", location = TRUE, description = TRUE, methods = TRUE, width = 80))';
 	var res = "";
 	res = sv.r.evalCallback(cmd, sv.r.calltip_show);
 	return(res);
@@ -520,7 +525,7 @@ sv.r.calltip_show = function (tip) {
 sv.r.complete = function (code) {
 	// If code is not defined, get currently edited code
 	if (typeof(code) == "undefined" | code == "")
-		code = sv.getTextRange("codefrag");
+	code = sv.getTextRange("codefrag");
 	code = code.replace(/(")/g, "\\$1");
 	// TODO: add and use description too here!
 	var cmd = 'completion("' + code + '", print = TRUE, types = "scintilla", field.sep = "?")';
@@ -532,9 +537,9 @@ sv.r.complete = function (code) {
 sv.r.complete_show = function (autoCstring) {
 	// In the case of http server, we got a more complex object!
 	if (autoCstring.result !== undefined) autoCstring = autoCstring.result;
-	
+
 	var scimoz = ko.views.manager.currentView.scimoz;
-	
+
 	// these should be set only once?:
 	scimoz.autoCSeparator = 9;
 	scimoz.autoCSetFillUps(" []{}<>/():;%+-*@!\t\n\r=$`");
@@ -550,15 +555,15 @@ sv.r.complete_show = function (autoCstring) {
 	// TODO: replace this by the same icons as in the object explorer!
 	var iface = Components.interfaces.koICodeIntelCompletionUIHandler;
 	scimoz.registerImage(iface.ACIID_FUNCTION, ko.markers.
-		getPixmap("chrome://komodo/skin/images/ac_function.xpm"));
+	getPixmap("chrome://komodo/skin/images/ac_function.xpm"));
 	scimoz.registerImage(iface.ACIID_VARIABLE, ko.markers.
-		getPixmap("chrome://komodo/skin/images/ac_variable.xpm"));
+	getPixmap("chrome://komodo/skin/images/ac_variable.xpm"));
 	scimoz.registerImage(iface.ACIID_XML_ATTRIBUTE, ko.markers.
-		getPixmap("chrome://komodo/skin/images/ac_xml_attribute.xpm"));
+	getPixmap("chrome://komodo/skin/images/ac_xml_attribute.xpm"));
 	scimoz.registerImage(iface.ACIID_NAMESPACE, ko.markers.
-		getPixmap("chrome://komodo/skin/images/ac_namespace.xpm"));
+	getPixmap("chrome://komodo/skin/images/ac_namespace.xpm"));
 	scimoz.registerImage(iface.ACIID_KEYWORD, ko.markers.
-		getPixmap("chrome://komodo/skin/images/ac_interface.xpm"));
+	getPixmap("chrome://komodo/skin/images/ac_interface.xpm"));
 	scimoz.autoCChooseSingle = true;
 	scimoz.autoCShow(trigPos, autoCstring);
 }
@@ -569,28 +574,28 @@ sv.r.complete_show = function (autoCstring) {
 sv.r.display = function (topic, what) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "")
-		topic = sv.getTextRange("word");
+	topic = sv.getTextRange("word");
 	if (topic == "") {
 		//sv.alert("Nothing is selected!");
 	} else {
 		// Display data in different ways, depending on what
 		switch(what) {
-		 case "names":
+			case "names":
 			res = sv.r.eval("names(" + topic + ")");
 			break;
-		 case "structure":
+			case "structure":
 			res = sv.r.eval("str(" + topic + ")");
 			break;
-		 case "summary":
+			case "summary":
 			res = sv.r.eval("summary(" + topic + ")");
 			break;
-		 case "plot":
+			case "plot":
 			res = sv.r.eval("plot(" + topic + ")");
 			break;
-		 case "content":
-		 case "print":
-		 case "show":
-		 default:
+			case "content":
+			case "print":
+			case "show":
+			default:
 			res = sv.r.eval(topic);
 		}
 	}
@@ -602,11 +607,11 @@ sv.r.help = function (topic, pkg) {
 	var res = false;
 
 	if (typeof(topic) == "undefined" || topic == "")
-		topic = sv.getTextRange("word");
+	topic = sv.getTextRange("word");
 
 	if (topic == "")
-		ko.statusBar.AddMessage(sv.translate("Selection is empty..."),
-			"SciViews-K", 1000);
+	ko.statusBar.AddMessage(sv.translate("Selection is empty..."),
+	"SciViews-K", 1000);
 
 	if (!topic && !pkg) {
 		return(false);
@@ -620,7 +625,7 @@ sv.r.help = function (topic, pkg) {
 		// TODO: error handling when package does not exists
 		res = sv.r.evalCallback(cmd, sv.command.openHelp);
 		ko.statusBar.AddMessage(sv.translate("R help asked for \"%S\"", topic),
-			"SciViews-K", 5000, true);
+		"SciViews-K", 5000, true);
 	}
 	return(res);
 }
@@ -629,14 +634,14 @@ sv.r.help = function (topic, pkg) {
 sv.r.example = function (topic) {
 	var res = false;
 	if (typeof(topic) == "undefined" | topic == "")
-		topic = sv.getTextRange("word");
+	topic = sv.getTextRange("word");
 	if (topic == "") {
 		ko.statusBar.AddMessage(sv.translate("Selection is empty..."),
-			"SciViews-K", 1000, false);
+		"SciViews-K", 1000, false);
 	} else {
 		res = sv.r.eval("example(" + topic + ")");
 		ko.statusBar.AddMessage(sv.translate("R example run for \"%S\"", topic),
-			"SciViews-K", 5000, true);
+		"SciViews-K", 5000, true);
 	}
 	return(res);
 }
@@ -646,9 +651,9 @@ sv.r.pager = function(file, title) {
 	var rSearchUrl = "chrome://sciviewsk/content/rsearch.html";
 	var content = sv.tools.file.read(file);
 	content = content.replace(/([\w\.\-]+)::([\w\.\-\[]+)/ig,
-		'<a href="' + rSearchUrl + '?$1::$2">$1::$2</a>');
+	'<a href="' + rSearchUrl + '?$1::$2">$1::$2</a>');
 	content = "<pre id=\"rPagerTextContent\" title=\"" + title + "\">" +
-		content + "</div>";
+	content + "</div>";
 	var charset = sv.socket.charset;
 	sv.tools.file.write(file, content, charset);
 	sv.command.openHelp(rSearchUrl + "?file:" + file);
@@ -661,16 +666,16 @@ sv.r.search = function (topic, internal) {
 		topic = sv.getTextRange("word");
 		// Ask for the search string
 		topic = ko.dialogs.prompt(sv.translate("Search R objects using a regular" +
-			" expression (e.g. '^log' for objects starting with 'log')"),
-			sv.translate("Pattern"), topic,
-			sv.translate("Search R help"), "okRsearchPattern");
+		" expression (e.g. '^log' for objects starting with 'log')"),
+		sv.translate("Pattern"), topic,
+		sv.translate("Search R help"), "okRsearchPattern");
 	}
 	if (topic) {
 		// Get list of matching items and evaluate it with sv.r.search_select()
 		var cmd = 'cat(apropos("' + topic + '"), sep = "' + sv.r.sep + '")';
 		res = sv.r.evalCallback(cmd, sv.r.search_select);
 		ko.statusBar.AddMessage(sv.translate("Searching_R_help_for", topic),
-			"SciViews-K", 5000, true);
+		"SciViews-K", 5000, true);
 	}
 	return(res);
 }
@@ -679,12 +684,12 @@ sv.r.search = function (topic, internal) {
 // TODO: make private
 sv.r.search_select = function (topics) {
 	if (topics.result !== undefined) topics = topics.result;
-	
+
 	ko.statusBar.AddMessage("", "SciViews-K");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(topics) == "") {
 		ko.statusBar.AddMessage(sv.translate("R help for %S not found.", topics),
-			"SciViews-K");
+		"SciViews-K");
 	} else {	// Something is returned
 		var items = topics.split(sv.r.sep);
 		if (items.length == 1) {
@@ -693,9 +698,9 @@ sv.r.search_select = function (topics) {
 		} else {
 			// Select the item you want in the list
 			var topic = ko.dialogs.selectFromList("R help topics",
-				"Select a topic:", items, "one");
+			"Select a topic:", items, "one");
 			if (topic != null)
-				res = sv.r.help(sv.tools.strings.removeLastCRLF(topic.join("")));
+			res = sv.r.help(sv.tools.strings.removeLastCRLF(topic.join("")));
 		}
 	}
 	return(res);
@@ -711,15 +716,15 @@ sv.r.siteSearch = function (topic, idxname) {
 	else {
 		var idxsep = "&idxname=";
 		var idxnameAllow = ["Rhelp08", "Rhelp01", "Rhelp02", "functions",
-		"views", "R-devel", "R-sig-mixed-models"];
+			"views", "R-devel", "R-sig-mixed-models"];
 
 		for (var i in idxname)
-			if (idxnameAllow.indexOf(idxname[i]) == -1) idxname.splice(i, 1);
+		if (idxnameAllow.indexOf(idxname[i]) == -1) idxname.splice(i, 1);
 	}
 
 	if (!topic) {
 		ko.statusBar.AddMessage(sv.translate("Selection is empty..."),
-			"SciViews-K", 1000, false);
+		"SciViews-K", 1000, false);
 		return;
 	}
 
@@ -749,18 +754,18 @@ sv.r.data = function () {
 	var res = false;
 	// Get list of all datasets
 	var cmd = '.tmp <- data();' +
-		'cat(paste(.tmp$results[, "Item"], .tmp$results[, "Title"],' +
-		' sep = "\t  -  "), sep = "\n"); rm(.tmp)';
+	'cat(paste(.tmp$results[, "Item"], .tmp$results[, "Title"],' +
+	' sep = "\t  -  "), sep = "\n"); rm(.tmp)';
 	res = sv.r.evalCallback(cmd, sv.r.data_select);
 	ko.statusBar.AddMessage(sv.translate("Listing available R datasets... please wait"),
-		"SciViews-K", 20000, true);
+	"SciViews-K", 20000, true);
 	return(res);
 }
 
 // The callback for sv.r.data
 sv.r.data_select = function (data) {
 	if (data.result !== undefined) data = data.result;
-	
+
 	ko.statusBar.AddMessage("", "SciViews-K");
 	var res = false;
 	if (sv.tools.strings.removeLastCRLF(data) == "") {
@@ -769,7 +774,7 @@ sv.r.data_select = function (data) {
 		var items = data.split("\n");
 		// Select the item you want in the list
 		var item = ko.dialogs.selectFromList("R Datasets",
-			"Select one R dataset:", items, "one");
+		"Select one R dataset:", items, "one");
 		if (item != null) {
 			// We need to eliminate the definition
 			var dat = item[0].split("\t");
@@ -778,7 +783,7 @@ sv.r.data_select = function (data) {
 			datname = datname.replace(/^[a-zA-Z0-9._ ]*[(]/, "");
 			datname = datname.replace(/[)]$/, "");
 			var cmd = 'data(' + datname + '); cat("' + datname +
-				'"); invisible(try(guiRefresh(force = TRUE), silent = TRUE))';
+			'"); invisible(try(guiRefresh(force = TRUE), silent = TRUE))';
 			res = sv.r.evalCallback(cmd, sv.r.obj_select_dataframe);
 		}
 	}
@@ -809,7 +814,7 @@ sv.r.loadWorkspace = function (file, attach, callback, param) {
 	// Ask for the filename if not provided
 	if (!file) {
 		file = sv.fileOpen("", ".RData",
-			sv.translate("Browse for R workspace file"),
+		sv.translate("Browse for R workspace file"),
 		    [sv.translate("R workspace") + " (*.RData)|*.RData"], true);
 	} else if (typeof file == "string") {
 		file = file.split(/[;,]/);
@@ -819,7 +824,7 @@ sv.r.loadWorkspace = function (file, attach, callback, param) {
 	var load = attach ? "attach" : "load";
 	var cmd = [];
 	for (var i in file)
-		cmd[i] = load + "(\"" + (new String(file[i])).addslashes() + "\")";
+	cmd[i] = load + "(\"" + (new String(file[i])).addslashes() + "\")";
 	cmd = cmd.join("\n");
 	// Note: callback is currently not available with the HTTP server!
 	if (callback) {
@@ -834,7 +839,7 @@ sv.r.saveHistory = function (file, title) {
 	// Ask for the filename if not provided
 	if (typeof(file) == "undefined") {
 		if (typeof(title) == "undefined")
-			title = 'Save the command history in a file';
+		title = 'Save the command history in a file';
 		file = ko.filepicker.saveFile("", ".Rhistory", title);
 		if (file == null) return;	// User clicked cancel
 	}
@@ -846,7 +851,7 @@ sv.r.loadHistory = function (file, title) {
 	// Ask for the filename if not provided
 	if (typeof(file) == "undefined") {
 		if (typeof(title) == "undefined")
-			title = 'Load the history from a file';
+		title = 'Load the history from a file';
 		file = ko.filepicker.openFile("", ".Rhistory", title);
 		if (file == null) return;	// User clicked cancel
 	}
@@ -861,24 +866,24 @@ sv.r.saveGraph = function (type, file, title, height, width, method) {
 	if (height === undefined) height = 'dev.size()[2]';
 	if (width === undefined) width = 'dev.size()[1]';
 	if (method === undefined) method = "pdf";
-	
+
 	// Get the file extension according to type
 	var ext = type.substring(0, 4);
 	if (ext != "pgnm" & ext != "tiff" & ext != "jpeg") ext = ext.substring(0, 3);
 	if (ext.substring(0, 2) == "ps") ext = "ps";
 	if (ext == "jpeg") ext = "jpg";
-	
+
 	// Ask for the filename if not provided
 	if (typeof(file) == "undefined") {
 		if (typeof(title) == "undefined")
-			title = 'Save the graph as "' + type + '"';
+		title = 'Save the graph as "' + type + '"';
 		file = ko.filepicker.saveFile("", "Rplot." + ext, title);
 		if (file == null) return;	// User clicked cancel
 	}
 	// Save the current device in R using dev2bitmap()... needs gostscript!
 	sv.r.eval('dev2bitmap("' + file.addslashes() + '", type = "' + type +
-		'", height = ' + height + ', width = ' + width + ', method = "' +
-		method + '")');
+	'", height = ' + height + ', width = ' + width + ', method = "' +
+	method + '")');
 }
 
 //  TODO: (Suggestion) Replace this mechanism (default data.frame, lm..., etc) with
@@ -893,13 +898,13 @@ sv.r.obj = function (objClass) {
 	// Get list of all objects with such a specification loaded in R
 	// If there is a comment attribute, also get it
 	var cmd = 'cat("' + objClass + '\n");' +
-		'cat(unlist(apply(matrix(objects(pos = 1)), 1, ' +
-		'function(x) try(if (inherits(get(x), "' + objClass +
-		'")) paste(x, "\t     ",  sub("[\t\n\r].*$", "", ' +
-		'comment(get(x))), sep = ""), silent = TRUE))), sep = ",,,")';
+	'cat(unlist(apply(matrix(objects(pos = 1)), 1, ' +
+	'function(x) try(if (inherits(get(x), "' + objClass +
+	'")) paste(x, "\t     ",  sub("[\t\n\r].*$", "", ' +
+	'comment(get(x))), sep = ""), silent = TRUE))), sep = ",,,")';
 	res = sv.r.evalCallback(cmd, sv.r.obj_select);
 	ko.statusBar.AddMessage("Listing available '" + objClass + "'... please wait",
-		"SciViews-K", 20000, true);
+	"SciViews-K", 20000, true);
 	return(res);
 }
 
@@ -915,15 +920,15 @@ sv.r.obj_select = function (data) {
 		var objclass = sv.tools.strings.removeLastCRLF(res[0]);
 		if (typeof(res[1]) == "undefined") {
 			sv.alert("Select R objects", "No object of class '" + objclass +
-				"' currently loaded in R memory!");
+			"' currently loaded in R memory!");
 		} else {	// At least one object, display a selection list
 			var items = res[1].split(",,,");
 			// TODO: highlight current active object...
 			// Select the item you want in the list
 			var item = ko.dialogs.selectFromList("Currently loaded '" +
-				objclass + "' objects in R",
-				"Select one '" + objclass + "' to make it active in Komodo:",
-				items, "one");
+			objclass + "' objects in R",
+			"Select one '" + objclass + "' to make it active in Komodo:",
+			items, "one");
 			if (item != null) {
 				// Update default object
 				// We need to eliminate the comment first
@@ -960,7 +965,7 @@ sv.r.obj_message = function () {
 	var lm = sv.prefs.getString("r.active.lm", "<none>")
 	if (lm == "<lm>") lm = "<none>";
 	ko.statusBar.AddMessage(sv.translate(
-		"R session: %S  data: %S linear model: %S", ses, df, lm), "SciViews-K");
+	"R session: %S  data: %S linear model: %S", ses, df, lm), "SciViews-K");
 }
 
 // Select one data frame
@@ -968,15 +973,15 @@ sv.r.obj_select_dataframe = function (objname) {
 	// Refresh the default val and list of vars
 	var res = false;
 	var cmd = '.active.data.frame <- list(object = "' + objname +
-		'", fun = function () {\n' +
-		'	if (exists(.active.data.frame$object, envir = .GlobalEnv)) {\n' +
-		'		obj <- get(.active.data.frame$object, envir = .GlobalEnv)\n' +
-		'		res <- paste(c(.active.data.frame$object, names(obj)), "\t",\n' +
-		'		c(class(obj), sapply(obj, class)), "\n", sep = "")\n' +
-		'		return(.active.data.frame$cache <<- res)\n' +
-		'	} else return(.active.data.frame$cache <<- NULL)\n' +
-		'}, cache = "")\n' +
-		'cat(.active.data.frame$fun(), sep = "")';
+	'", fun = function () {\n' +
+	'	if (exists(.active.data.frame$object, envir = .GlobalEnv)) {\n' +
+	'		obj <- get(.active.data.frame$object, envir = .GlobalEnv)\n' +
+	'		res <- paste(c(.active.data.frame$object, names(obj)), "\t",\n' +
+	'		c(class(obj), sapply(obj, class)), "\n", sep = "")\n' +
+	'		return(.active.data.frame$cache <<- res)\n' +
+	'	} else return(.active.data.frame$cache <<- NULL)\n' +
+	'}, cache = "")\n' +
+	'cat(.active.data.frame$fun(), sep = "")';
 	res = sv.r.evalCallback(cmd, sv.r.obj_refresh_dataframe);
 }
 
@@ -1018,7 +1023,7 @@ sv.r.obj_refresh_dataframe = function (data) {
 		// Fill the various lists according to the nature of item
 		vars = vars + "|" + item[0];
 		if (item[1] == "numeric" | item[1] == "integer")
-			nums = nums + "|" + item[0];
+		nums = nums + "|" + item[0];
 		if (item[1] == "factor") facts = facts + "|" + item[0];
 	}
 	// Eliminate first "|"
@@ -1047,14 +1052,14 @@ sv.r.obj_select_lm = function (objname) {
 	// Refresh the default lm object in R session
 	var res = false;
 	var cmd = '.active.lm <- list(object = "' + objname +
-		'", fun = function () {\n' +
-		'	if (exists(.active.lm$object, envir = .GlobalEnv)) {\n' +
-		'		obj <- get(.active.lm$object, envir = .GlobalEnv)\n' +
-		'		res <- paste(.active.lm$object, class(obj), sep = "\t")\n' +
-		'		return(.active.lm$cache <<- res)\n' +
-		'	} else return(.active.lm$cache <<- NULL)\n' +
-		'}, cache = "")\n' +
-		'cat(.active.lm$fun(), sep = "")';
+	'", fun = function () {\n' +
+	'	if (exists(.active.lm$object, envir = .GlobalEnv)) {\n' +
+	'		obj <- get(.active.lm$object, envir = .GlobalEnv)\n' +
+	'		res <- paste(.active.lm$object, class(obj), sep = "\t")\n' +
+	'		return(.active.lm$cache <<- res)\n' +
+	'	} else return(.active.lm$cache <<- NULL)\n' +
+	'}, cache = "")\n' +
+	'cat(.active.lm$fun(), sep = "")';
 	res = sv.r.evalCallback(cmd, sv.r.obj_refresh_lm);
 }
 
@@ -1087,32 +1092,32 @@ sv.r.refreshSession = function () {
 	var i;
 	// Refresh lists of dataset
 	var items = sv.tools.file.list(sv.prefs.getString("sciviews.data.localdir"),
-		/\.[cC][sS][vV]$/, true);
+	/\.[cC][sS][vV]$/, true);
 	sv.prefs.mru("datafile", true, items);
 	ko.mru.reset("datafile_mru");
 	for (i = items.length - 1; i >= 0; i--) {
 		if (items[i] != "")
-			ko.mru.add("datafile_mru", items[i], true);
+		ko.mru.add("datafile_mru", items[i], true);
 	}
 
 	// Refresh lists of scripts
 	items = sv.tools.file.list(sv.prefs.getString("sciviews.scripts.localdir"),
-		/\.[rR]$/, true);
+	/\.[rR]$/, true);
 	sv.prefs.mru("scriptfile", true, items);
 	ko.mru.reset("scriptfile_mru");
 	for (i = items.length - 1; i >= 0; i--) {
 		if (items[i] != "")
-			ko.mru.add("scriptfile_mru", items[i], true);
+		ko.mru.add("scriptfile_mru", items[i], true);
 	}
 
 	// Refresh lists of reports
 	items = sv.tools.file.list(sv.prefs.getString("sciviews.reports.localdir"),
-		/\.[oO][dD][tT]$/, true);
+	/\.[oO][dD][tT]$/, true);
 	sv.prefs.mru("reportfile", true, items);
 	ko.mru.reset("reportfile_mru");
 	for (i = items.length - 1; i >= 0; i--) {
 		if (items[i] != "")
-			ko.mru.add("reportfile_mru", items[i], true);
+		ko.mru.add("reportfile_mru", items[i], true);
 	}
 }
 
@@ -1121,13 +1126,13 @@ sv.r.refreshSession = function () {
 sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	// Initialize the various arguments
 	if (typeof(dir) == "undefined")
-		dir = sv.prefs.getString("sciviews.session.dir", "~");
+	dir = sv.prefs.getString("sciviews.session.dir", "~");
 	if (typeof(datadir) == "undefined")
-		datadir = sv.prefs.getString("sciviews.session.data", "");
+	datadir = sv.prefs.getString("sciviews.session.data", "");
 	if (typeof(scriptdir) == "undefined")
-		scriptdir = sv.prefs.getString("sciviews.session.scripts", "");
+	scriptdir = sv.prefs.getString("sciviews.session.scripts", "");
 	if (typeof(reportdir) == "undefined")
-		reportdir = sv.prefs.getString("sciviews.session.reports", "");
+	reportdir = sv.prefs.getString("sciviews.session.reports", "");
 
 	var localdir = sv.tools.file.path(dir);
 	var sep = "/";
@@ -1146,7 +1151,7 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	} else {
 		sv.prefs.setString("sciviews.data.dir", dir + sep + datadir, true);
 		sv.prefs.setString("sciviews.data.localdir",
-			sv.tools.file.path(localdir, datadir), true);
+		sv.tools.file.path(localdir, datadir), true);
 	}
 	if (scriptdir == "") {
 		sv.prefs.setString("sciviews.scripts.dir", dir, true);
@@ -1154,7 +1159,7 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	} else {
 		sv.prefs.setString("sciviews.scripts.dir", dir + sep + scriptdir, true);
 		sv.prefs.setString("sciviews.scripts.localdir",
-			sv.tools.file.path(localdir, scriptdir), true);
+		sv.tools.file.path(localdir, scriptdir), true);
 	}
 	if (reportdir == "") {
 		sv.prefs.setString("sciviews.reports.dir", dir, true);
@@ -1162,7 +1167,7 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	} else {
 		sv.prefs.setString("sciviews.reports.dir", dir + sep + reportdir, true);
 		sv.prefs.setString("sciviews.reports.localdir",
-			sv.tools.file.path(localdir, reportdir), true);
+		sv.tools.file.path(localdir, reportdir), true);
 	}
 
 	var DIRECTORY_TYPE = Components.interfaces.nsIFile.DIRECTORY_TYPE;
@@ -1181,7 +1186,7 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
             var file = sv.tools.file.getfile(sv.tools.file.path(dir, subdirs[i]));
             // TODO: check for error and issue a message if the file is not a dir
 			if (!file.exists() || !file.isDirectory())
-            	file.create(DIRECTORY_TYPE, 511);
+			file.create(DIRECTORY_TYPE, 511);
             delete(file);
         }
 	}
@@ -1210,13 +1215,13 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	if (saveOld) {
 		// Save .RData & .Rhistory in the the session directory and clean WS
 		// We need also to restore .required variable (only if it exists)
-		cmd = 'if (exists(.required)) assignTemp(".required", .required)\n' +
+		cmd += 'if (exists(.required)) assignTemp(".required", .required)\n' +
 			'TempEnv()$.Last.sys()\n' +
 			'save.image()\nsavehistory()\nrm(list = ls())\n' +
 			'.required <- getTemp(".required")\n';
 	} else {
 		// Clear workspace (hint, we don't clear hidden objects!)
-		cmd = 'rm(list = ls())\n'
+		cmd += 'rm(list = ls())\n'
 	}
 	// TODO: possibly close the associated Komodo project
 
@@ -1224,29 +1229,49 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	dir = sv.r.initSession(dir, datadir, scriptdir, reportdir);
 
 	// Switch to the new session directory in R
-	cmd = cmd + 'setwd("' + dir.addslashes() + '")\noptions(R.initdir = "' +
-		dir.addslashes() + '")\n';
+	cmd += 'setwd("' + dir.addslashes() + '")\noptions(R.initdir = "' +
+	dir.addslashes() + '")\n';
+
+	var svFile = sv.tools.file;
 
 	// Do we load .RData and .Rhistory?
 	// TODO: loadhistory APPENDS a history. Make R clear the current history first.
 	// Note: there seems to be no way to clear history without restarting R!
-	if (loadNew)
-		cmd = cmd + 'if (file.exists(".RData")) load(".RData")\n' +
-			'if (file.exists(".Rhistory")) loadhistory()\n';
+	if (loadNew) {
+		cmd += 'if (file.exists(".RData")) load(".RData");\n' +
+			'if (file.exists(".Rhistory")) loadhistory();\n';
+
+		// Look for .Rprofile, in current, then in user directory (where else R looks for it?)
+		// if exists, source the first one.
+		var Rprofile = [
+			svFile.path(sv.prefs.getString("sciviews.session.dir", "~"), ".Rprofile"),
+			svFile.path("~", ".Rprofile")
+		]
+
+		for(i in Rprofile) {
+			sv.cmdout.append(Rprofile[i]);
+			if(svFile.exists(Rprofile[i])) {
+				cmd += 'source("' + (Rprofile[i]).addslashes() + '");\n';
+				break;
+			}
+		}
+	} 
 
 	// Execute the command in R (TODO: check for possible error here!)
 	// TODO: run first in R; make dirs in R; then change in Komodo!
 	sv.r.evalCallback(cmd, function(data) {
-			// Indicate everything is fine
+		// Indicate everything is fine
 		ko.statusBar.AddMessage(sv.translate("R session directory set to '%S'", dir),
-			"SciViews-K", 20000, true);
+		"SciViews-K", 20000, true);
 		// Break possible partial multiline command in R from previous session
 		// and indicate that we are in a new session now in the R console
 		// TODO: report if we load something or not
 		sv.r.escape('cat("Session directory is now", dQuote("' + dir.addslashes() +
-		    '"), "\\n", file = stderr())');
+		'"), "\\n", file = stderr())');
 		// Refresh active objects support and object explorer, ...
-		sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
+		// KB: on Win, Komodo socket server gets stuck constantly, and below causes problems
+		//     so temporarily commented out
+		//sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
 	});
 	// TODO: possibly open the Komodo project associated with this session
 	return(true);
@@ -1266,9 +1291,9 @@ sv.r.switchSession = function (inDoc) {
 		// Ask for the session subdirectory
 		var Session = "SciViews R Session"
 		Session = ko.dialogs.prompt(sv.translate("Session in my documents " +
-			"(use '/' for subdirs, like in 'dir/session')"),
-			sv.translate("Session"), Session,
-			sv.translate("Switch to R session"), "okRsession");
+		"(use '/' for subdirs, like in 'dir/session')"),
+		sv.translate("Session"), Session,
+		sv.translate("Switch to R session"), "okRsession");
 		if (Session != null & Session != "") {
 			// Make sure that Session does not start with /, or ./, or ../
 			Session = Session.replace(/\^.{0,2}\//, "");
@@ -1278,7 +1303,7 @@ sv.r.switchSession = function (inDoc) {
 	} else {
 		// Ask for the session path
 		sessionDir = ko.filepicker
-			.getFolder(baseDir, sv.translate("Choose session directory"));
+		.getFolder(baseDir, sv.translate("Choose session directory"));
 	}
 	if (sessionDir != null & sessionDir != "") {
 		// Subdirectories for data, scripts and reports
@@ -1290,7 +1315,7 @@ sv.r.switchSession = function (inDoc) {
 		var filefound = false;
 		// Look if this directory already exists and contains a .svData file
 		if (sv.tools.file.exists(sessionDir) == 2 &
-			sv.tools.file.exists(cfgfile) == 1) {
+		sv.tools.file.exists(cfgfile) == 1) {
 			// Try reading .svData file
 			try {
 				cfg = sv.tools.file.read(cfgfile, "utf-8");
@@ -1309,16 +1334,16 @@ sv.r.switchSession = function (inDoc) {
 		// If no .svData file found, ask for respective directories
 		if (!filefound) {
 			datadir = ko.dialogs.prompt(
-				sv.translate("Subdirectory for datasets (nothing for none):"),
-				"", "data", sv.translate("R session configuration"), "okRsesData");
+			sv.translate("Subdirectory for datasets (nothing for none):"),
+			"", "data", sv.translate("R session configuration"), "okRsesData");
 			if (datadir == null) return(false);
 			scriptdir = ko.dialogs.prompt(
-				sv.translate("Subdirectory for R scripts (nothing for none):"),
-				"", "R", sv.translate("R session configuration"), "okRsesScript");
+			sv.translate("Subdirectory for R scripts (nothing for none):"),
+			"", "R", sv.translate("R session configuration"), "okRsesScript");
 			if (scriptdir == null) return(false);
 			reportdir = ko.dialogs.prompt(
-				sv.translate("Subdirectory for reports (nothing for none):"),
-				"", "doc", sv.translate("R session configuration"), "okRsesReport");
+			sv.translate("Subdirectory for reports (nothing for none):"),
+			"", "doc", sv.translate("R session configuration"), "okRsesReport");
 			if (reportdir == null) return(false);
 		}
 		// Now create or switch to this session directory
@@ -1327,7 +1352,7 @@ sv.r.switchSession = function (inDoc) {
 		if (!filefound) {
 			// Save these informations to the .svData file in the session dir
 			sv.tools.file.write(cfgfile, "datadir=" + datadir + "\nscriptdir=" +
-				scriptdir + "\nreportdir=" + reportdir, "utf-8", false);
+			scriptdir + "\nreportdir=" + reportdir, "utf-8", false);
 		}
 		return(true);
 	}
@@ -1340,7 +1365,7 @@ sv.r.switchSession = function (inDoc) {
 sv.r.exploreSession = function () {
 	var dataDir = sv.prefs.getString("sciviews.session.localdir", "~");
 	var file = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
+	.createInstance(Components.interfaces.nsILocalFile);
 	file.initWithPath(dataDir);
 	if (file.exists() == true) {
 		try {
@@ -1349,10 +1374,10 @@ sv.r.exploreSession = function () {
 			// First try nautilus, and then, try konqueror
 			try {
 				ko.run.runEncodedCommand(window,
-					'nautilus "' + file.path + '" & ');
+				'nautilus "' + file.path + '" & ');
 			} catch(e) {
 				ko.run.runEncodedCommand(window,
-					'konqueror --profile filemanagement "' + file.path + '" & ');
+				'konqueror --profile filemanagement "' + file.path + '" & ');
 			}
 		}
 	}
@@ -1362,18 +1387,18 @@ sv.r.exploreSession = function () {
 sv.r.reloadSession = function () {
 	// Ask for confirmation first
 	if (ko.dialogs.okCancel("Are you sure you want to delete all objects " +
-		"and reload them from disk?", "OK", "You are about to delete all " +
-		"objects currently in R memory, and reload the initial content from " +
-		"disk (.RData and .Rhistory files)...", "Reload session") == "OK") {
+	"and reload them from disk?", "OK", "You are about to delete all " +
+	"objects currently in R memory, and reload the initial content from " +
+	"disk (.RData and .Rhistory files)...", "Reload session") == "OK") {
 		// Switch temporarily to the session directory and try loading
 		// .RData and Rhistory files
 		var dir = sv.prefs.getString("sciviews.session.dir", "");
 		var cmd = 'rm(list = ls(pattern = "[.]active[.]", all.names = TRUE))\n' +
-			'rm(list = ls()); .savdir. <- setwd("' + dir + '")\n' +
-			'if (file.exists(".RData")) load(".RData")\n' +
-			'if (file.exists(".Rhistory")) loadhistory()\n' +
-			'setwd(.savdir.); rm(.savdir.)\n' +
-			'try(guiRefresh(force = TRUE), silent = TRUE)';
+		'rm(list = ls()); .savdir. <- setwd("' + dir + '")\n' +
+		'if (file.exists(".RData")) load(".RData")\n' +
+		'if (file.exists(".Rhistory")) loadhistory()\n' +
+		'setwd(.savdir.); rm(.savdir.)\n' +
+		'try(guiRefresh(force = TRUE), silent = TRUE)';
 		sv.r.evalHidden(cmd);
 	}
 }
@@ -1382,14 +1407,14 @@ sv.r.reloadSession = function () {
 sv.r.clearSession = function () {
 	// Ask for confirmation first
 	if (ko.dialogs.okCancel("Are you sure you want to delete .RData and " +
-		".Rhistory files from disk?", "OK", "You are about to delete the data" +
-		" saved in .RData and the command history saved in .Rhistory for the " +
-		"current session...", "Clear session") == "OK") {
+	".Rhistory files from disk?", "OK", "You are about to delete the data" +
+	" saved in .RData and the command history saved in .Rhistory for the " +
+	"current session...", "Clear session") == "OK") {
 		// Delete .RData and Rhistory files
 		var dir = sv.prefs.getString("sciviews.session.dir", "");
 		var cmd = '.savdir. <- setwd("' + dir + '")\n' +
-			'unlink(".RData"); unlink(".Rhistory")\n' +
-			'setwd(.savdir.); rm(.savdir.)';
+		'unlink(".RData"); unlink(".Rhistory")\n' +
+		'setwd(.savdir.); rm(.savdir.)';
 		sv.r.evalHidden(cmd);
 	}
 }
@@ -1399,9 +1424,9 @@ sv.r.quit = function (save) {
 	if (typeof(save) == "undefined") {
 		// Ask for saving or not
 		var response = ko.dialogs.customButtons("Do you want to save the" +
-			" workspace (.RData) and the command history (.Rhistory) in" +
-			" the session directory first?", ["Yes", "No", "Cancel"], "No",
-			null, "Exiting R");
+		" workspace (.RData) and the command history (.Rhistory) in" +
+		" the session directory first?", ["Yes", "No", "Cancel"], "No",
+		null, "Exiting R");
 		if (response == "Cancel") return;
 	} else response = save ? "yes" : "no";
 	// Quit R
@@ -1414,6 +1439,9 @@ sv.r.quit = function (save) {
 	sv.r.objects.clearPackageList();
 }
 
+
+// KB: I think these functions should be included only in a "developer's version", 
+//     most users will not need them
 // Create a translation (.pot) file for a project
 sv.r.kpf2pot = function (kpfFile) {
 	try {
@@ -1500,8 +1528,8 @@ sv.r.pkg.repositories = function () {
 	var res = sv.r.eval('setRepositories(TRUE)');
 	return(res);
 
-//on Linux, try reading data from: "<HOME>/.R/repositories", "/usr/lib/R/etc/repositories", "usr/local/lib/R/etc/repositories"
-//on Windows, "<HOME>/.R/repositories", "<R_installPath>/etc/repositories"
+	//on Linux, try reading data from: "<HOME>/.R/repositories", "/usr/lib/R/etc/repositories", "usr/local/lib/R/etc/repositories"
+	//on Windows, "<HOME>/.R/repositories", "<R_installPath>/etc/repositories"
 }
 
 // Select CRAN mirror, with optional callback
@@ -1509,8 +1537,8 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 	var res = false;
 
 	var cmd = 'assignTemp("cranMirrors", getCRANmirrors(all = FALSE, local.only = FALSE));' +
-		'write.table(getTemp("cranMirrors")[, c("Name", "URL")], col.names = FALSE, quote = FALSE, sep ="' +
-		sv.r.sep + '", row.names = FALSE)';
+	'write.table(getTemp("cranMirrors")[, c("Name", "URL")], col.names = FALSE, quote = FALSE, sep ="' +
+	sv.r.sep + '", row.names = FALSE)';
 
 	res = sv.r.evalCallback(cmd, function (repos) {
 		var res = false;
@@ -1526,41 +1554,41 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 				urls.push(m[1]);
 			}
 			items = ko.dialogs.selectFromList(sv.translate("CRAN mirrors"),
-				sv.translate("Select CRAN mirror to use:"), names, "one");
-	
+			sv.translate("Select CRAN mirror to use:"), names, "one");
+
 			repos = urls[names.indexOf(items[0])].replace(/\/$/, "");
 			ko.statusBar.AddMessage(sv.translate("Current CRAN mirror is set to %S",
-				repos), "SciViews-K", 5000, false);
-	
+			repos), "SciViews-K", 5000, false);
+
 			sv.r.eval('with(TempEnv(), {repos <- getOption("repos");' +
-				'repos["CRAN"] <- "' + repos + '"; ' + 'options(repos = repos)})');
+			'repos["CRAN"] <- "' + repos + '"; ' + 'options(repos = repos)})');
 			cran = sv.prefs.setString("CRANMirror", repos);
 			if (callback) callback(repos);
 		}
 		return(res);
 	});
 	ko.statusBar.AddMessage(sv.translate(
-		"Retrieving CRAN mirrors list... please wait."), "SciViews-K", 20000, true);
+	"Retrieving CRAN mirrors list... please wait."), "SciViews-K", 20000, true);
 	return(res);
 }
 
 // List available packages on the selected repositories
 sv.r.pkg.available = function () {
 	var res = sv.r.eval('.pkgAvailable <- available.packages()\n' +
-		'as.character(.pkgAvailable[, "Package"])');
+	'as.character(.pkgAvailable[, "Package"])');
 	ko.statusBar.AddMessage(sv.translate(
-		"Looking for available R packages... please wait"),
-		"SciViews-K", 5000, true);
+	"Looking for available R packages... please wait"),
+	"SciViews-K", 5000, true);
 	return(res);
 }
 
 // List installed packages
 sv.r.pkg.installed = function () {
 	var res = sv.r.eval('.pkgInstalled <- installed.packages()\n' +
-		'as.character(.pkgInstalled[, "Package"])');
+	'as.character(.pkgInstalled[, "Package"])');
 	ko.statusBar.AddMessage(sv.translate(
-		"Looking for installed R packages... please wait"),
-		"SciViews-K", 5000, true);
+	"Looking for installed R packages... please wait"),
+	"SciViews-K", 5000, true);
 	return(res);
 }
 
@@ -1568,16 +1596,16 @@ sv.r.pkg.installed = function () {
 sv.r.pkg.new = function () {
 	var res = sv.r.eval('(.pkgNew <- new.packages())');
 	ko.statusBar.AddMessage(sv.translate(
-		"Looking for new R packages... please wait"), "SciViews-K", 5000, true);
+	"Looking for new R packages... please wait"), "SciViews-K", 5000, true);
 	return(res);
 }
 
 // List installed packages which are older than those in repository (+ versions)
 sv.r.pkg.old = function () {
 	var res = sv.r.eval('.pkgOld <- old.packages()\n' +
-		'if (is.null(.pkgOld)) cat("none!\n") else\n    noquote(.pkgOld[, c("Installed", "ReposVer")])');
+	'if (is.null(.pkgOld)) cat("none!\n") else\n    noquote(.pkgOld[, c("Installed", "ReposVer")])');
 	ko.statusBar.AddMessage(sv.translate(
-		"Looking for old R packages... please wait"), "SciViews-K", 5000, true);
+	"Looking for old R packages... please wait"), "SciViews-K", 5000, true);
 	return(res);
 }
 
@@ -1585,7 +1613,7 @@ sv.r.pkg.old = function () {
 sv.r.pkg.update = function () {
 	var res = sv.r.eval('update.packages(ask = "graphics")');
 	ko.statusBar.AddMessage(sv.translate(
-		"Updating R packages... please wait"), "SciViews-K", 5000, true);
+	"Updating R packages... please wait"), "SciViews-K", 5000, true);
 	return(res);
 }
 
@@ -1593,7 +1621,7 @@ sv.r.pkg.update = function () {
 sv.r.pkg.status = function () {
 	var res = sv.r.eval('(.pkgStatus <- packageStatus())');
 	ko.statusBar.AddMessage(sv.translate(
-		"Compiling R packages status... please wait"), "SciViews-K", 5000, true);
+	"Compiling R packages status... please wait"), "SciViews-K", 5000, true);
 	return(res);
 }
 
@@ -1607,33 +1635,33 @@ sv.r.pkg.loaded = function () {
 sv.r.pkg.load = function () {
 	var res = false;
 	ko.statusBar.AddMessage(sv.translate("ListingPackages"),
-		"SciViews-K", 20000, true);
+	"SciViews-K", 20000, true);
 
 	// Get list of installed R packages that are not loaded yet
 	res = sv.r.evalCallback('.tmp <- .packages(all.available = TRUE);' +
-		'cat(.tmp[!.tmp %in% .packages()], sep = "' + sv.r.sep + '"); rm(.tmp)',
-		function (pkgs) {
-			ko.statusBar.AddMessage("", "SciViews-K");
-			var res = false;
-			if (pkgs.trim() == "") {
-				sv.alert("All installed R packages seem to be already loaded!");
-			} else {	// Something is returned
-				var items = pkgs.split(sv.r.sep);
-				// Select the item you want in the list
-				var topic = ko.dialogs.selectFromList(
-					sv.translate("Load R package"),
-					sv.translate("Select R package(s) to load") + ":", items);
-				if (topic != null) {
-					// TODO: make a R function in svMisc instead!
-					res = sv.r.evalCallback('cat(paste(lapply(c("' +
-						topic.join('", "') + '"), function(pkg) { res <- try('
-						+ 'library(package = pkg, character.only = TRUE)); ' +
-						'paste("Package", sQuote(pkg), if (inherits(res,' +
-						' "try-error")) "could not be loaded" else "loaded")' +
-						'}), collapse = "\\n"), "\\n")', sv.cmdout.append);
-				}
+	'cat(.tmp[!.tmp %in% .packages()], sep = "' + sv.r.sep + '"); rm(.tmp)',
+	function (pkgs) {
+		ko.statusBar.AddMessage("", "SciViews-K");
+		var res = false;
+		if (pkgs.trim() == "") {
+			sv.alert("All installed R packages seem to be already loaded!");
+		} else {	// Something is returned
+			var items = pkgs.split(sv.r.sep);
+			// Select the item you want in the list
+			var topic = ko.dialogs.selectFromList(
+			sv.translate("Load R package"),
+			sv.translate("Select R package(s) to load") + ":", items);
+			if (topic != null) {
+				// TODO: make a R function in svMisc instead!
+				res = sv.r.evalCallback('cat(paste(lapply(c("' +
+				topic.join('", "') + '"), function(pkg) { res <- try('
+				+ 'library(package = pkg, character.only = TRUE)); ' +
+				'paste("Package", sQuote(pkg), if (inherits(res,' +
+				' "try-error")) "could not be loaded" else "loaded")' +
+				'}), collapse = "\\n"), "\\n")', sv.cmdout.append);
 			}
-			return(res);
+		}
+		return(res);
 	});
 	return(res);
 }
@@ -1643,11 +1671,11 @@ sv.r.pkg.unload = function () {
 	var res = false;
 	// Get list of loaded packages, minus required ones we cannot unload
 	var cmd = '.tmp <- .packages(); cat(.tmp[!.tmp %in%' +
-		' c(if (exists(".required")) .required else NULL, "base")],' +
-		' sep = "' + sv.r.sep + '"); rm(.tmp)';
+	' c(if (exists(".required")) .required else NULL, "base")],' +
+	' sep = "' + sv.r.sep + '"); rm(.tmp)';
 	res = sv.r.evalCallback(cmd, sv.r.pkg.unload_select);
 	ko.statusBar.AddMessage(sv.translate(
-		"Listing loaded R packages... please wait"), "SciViews-K", 20000, true);
+	"Listing loaded R packages... please wait"), "SciViews-K", 20000, true);
 	return(res);
 }
 
@@ -1662,9 +1690,9 @@ sv.r.pkg.unload_select = function (pkgs) {
 		var items = pkgs.split(sv.r.sep);
 		// Select the item you want in the list
 		var topic = ko.dialogs.selectFromList("Unload R package",
-			"Select one R package to unload:", items, "one");
+		"Select one R package to unload:", items, "one");
 		if (topic != null)
-            res = sv.r.eval("detach(\"package:" + topic[0].trim()+ "\")");
+		res = sv.r.eval("detach(\"package:" + topic[0].trim()+ "\")");
 	}
 	return(res);
 }
@@ -1674,13 +1702,13 @@ sv.r.pkg.remove = function () {
 	var res = false;
 	// Get list of all packages, minus required/recommended we cannot remove
 	var cmd = '.tmp <- installed.packages(); ' +
-		'.tmp <- rownames(.tmp)[is.na(.tmp[, "Priority"])]; ' +
-		'cat(.tmp[!.tmp %in% c(if (exists(".required")) .required else NULL,' +
-		' "svMisc", "svIDE", "svGUI", "svSocket", "svIO", "svViews",' +
-		' "svWidgets", "svDialogs")], sep = "' + sv.r.sep + '"); rm(.tmp)';
+	'.tmp <- rownames(.tmp)[is.na(.tmp[, "Priority"])]; ' +
+	'cat(.tmp[!.tmp %in% c(if (exists(".required")) .required else NULL,' +
+	' "svMisc", "svIDE", "svGUI", "svSocket", "svIO", "svViews",' +
+	' "svWidgets", "svDialogs")], sep = "' + sv.r.sep + '"); rm(.tmp)';
 	res = sv.r.evalCallback(cmd, sv.r.pkg.remove_select);
 	ko.statusBar.AddMessage(sv.translate(
-		"Listing removable R packages... please wait"), "SciViews-K", 20000, true);
+	"Listing removable R packages... please wait"), "SciViews-K", 20000, true);
 	return(res);
 }
 
@@ -1694,18 +1722,18 @@ sv.r.pkg.remove_select = function (pkgs) {
 		var items = pkgs.split(sv.r.sep);
 		// Select the item you want in the list
 		var topic = ko.dialogs.selectFromList("Remove R package",
-			"Select one R package to remove:", items, "one");
+		"Select one R package to remove:", items, "one");
 		if (topic != null) {
 			var pkg = (sv.tools.strings.removeLastCRLF(topic.join('')));
 			var response = ko.dialogs.customButtons(
-				"You are about to remove the '" + pkg +
-				"' R package from disk! Are you sure?",
+			"You are about to remove the '" + pkg +
+			"' R package from disk! Are you sure?",
 				["&Continue...", "Cancel"], "Continue...", null,
-				"Removing an R package");
+			"Removing an R package");
 			if (response == "Cancel") return(res);
 
 			res = sv.r.eval('remove.packages("' + pkg +
-				'", lib = installed.packages()["' + pkg + '", "LibPath"])');
+			'", lib = installed.packages()["' + pkg + '", "LibPath"])');
 		}
 	}
 	return(res);
@@ -1731,7 +1759,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 
 	var defaultRepos = sv.prefs.getString("CRANMirror");
 	if (defaultRepos == "None") defaultRepos = "";
-		//defaultRepos = "http://cran.r-project.org/";
+	//defaultRepos = "http://cran.r-project.org/";
 
 	function _installCallback() {
 		sv.r.pkg.install(pkgs, defaultRepos, true);
@@ -1744,17 +1772,17 @@ sv.r.pkg.install = function (pkgs, repos) {
 		return;
 	} else if (!repos && allowCCM) {
 		res = sv.r.evalCallback("cat(getOption(\"repos\")[\"CRAN\"])",
-			function(cran) {
-				var res = false;
-				cran = cran.trim();
-				if (cran == "@CRAN@") {
-					res = sv.r.pkg.chooseCRANMirror(_installCallback);
-				} else {
-					sv.prefs.setString("CRANMirror", cran);
-					res = sv.r.pkg.install(pkgs, cran, true);
-				}
-				return;
+		function(cran) {
+			var res = false;
+			cran = cran.trim();
+			if (cran == "@CRAN@") {
+				res = sv.r.pkg.chooseCRANMirror(_installCallback);
+			} else {
+				sv.prefs.setString("CRANMirror", cran);
+				res = sv.r.pkg.install(pkgs, cran, true);
 			}
+			return;
+		}
 		);
 		return;
 	}
@@ -1766,7 +1794,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 
 	var startDir = null;
 	if (typeof pkgs == "string" &&
-		sv.tools.file.exists(pkgs) == sv.tools.file.TYPE_DIRECTORY) {
+	sv.tools.file.exists(pkgs) == sv.tools.file.TYPE_DIRECTORY) {
 		repos = "local";
 		startDir = pkgs;
 	}
@@ -1774,27 +1802,27 @@ sv.r.pkg.install = function (pkgs, repos) {
 	// no packages provided, popup a list with available ones then callback again
 	if (!pkgs && repos != "local") {
 		ko.statusBar.AddMessage(sv.translate("Listing available packages..."),
-			"SciViews-K", 5000, true);
+		"SciViews-K", 5000, true);
 		res = sv.r.evalCallback('cat(available.packages(contriburl=contrib.url("'
-			+ repos + '", getOption("pkgType")))[,1], sep="' +
-			sv.r.sep + '")', function (pkgs) {
-				ko.statusBar.AddMessage("", "SciViews-K");
+		+ repos + '", getOption("pkgType")))[,1], sep="' +
+		sv.r.sep + '")', function (pkgs) {
+			ko.statusBar.AddMessage("", "SciViews-K");
 
-				var res = false;
-				if (pkgs.trim() != "") {
-					pkgs = pkgs.split(sv.r.sep);
-					// Case insensitive sorting:
-					pkgs.sort(function(a,b) a.toUpperCase() > b.toUpperCase());
+			var res = false;
+			if (pkgs.trim() != "") {
+				pkgs = pkgs.split(sv.r.sep);
+				// Case insensitive sorting:
+				pkgs.sort(function(a,b) a.toUpperCase() > b.toUpperCase());
 
-					pkgs = ko.dialogs.selectFromList(
-						sv.translate("Install R package"),
-						sv.translate("Select package(s) to install") + ":", pkgs);
+				pkgs = ko.dialogs.selectFromList(
+				sv.translate("Install R package"),
+				sv.translate("Select package(s) to install") + ":", pkgs);
 
-					if (pkgs != null) {
-						res = sv.r.pkg.install(pkgs, repos, true);
-					}
+				if (pkgs != null) {
+					res = sv.r.pkg.install(pkgs, repos, true);
 				}
-			});
+			}
+		});
 		return;
 	}
 
@@ -1807,7 +1835,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 		if (!pkgs || startDir) {
 			// Get list of files to install
 			pkgs = sv.fileOpen(startDir, null,
-				sv.translate("Select package(s) to install"),
+			sv.translate("Select package(s) to install"),
 				['Zip archive (*.zip)|*.zip', 'Gzip archive (*.tgz;*.tar.gz)|*.tgz;*.tar.gz'], true);
 
 			if (pkgs == null) return;
@@ -1828,7 +1856,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 	}
 
 	var cmd = "install.packages(c(\"" + pkgs.join('", "') + "\"), repos = " +
-		repos + ")";
+	repos + ")";
 	//sv.cmdout.append(cmd);
 	sv.r.eval(cmd);
 }
@@ -1844,17 +1872,17 @@ sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) 
 	if (!fileName) {
 		var filterIndex;
 		switch(sep) {
-		 case '\\t':
+			case '\\t':
 			filterIndex = 1;
 			break;
-		 case ';':
-		 case ',':
+			case ';':
+			case ',':
 			filterIndex = 0;
 			break;
-		 case ' ':
+			case ' ':
 			filterIndex = 2;
 			break;
-		 default:
+			default:
 			filterIndex = 3;
 		}
 
@@ -1871,8 +1899,8 @@ sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) 
 	}
 
 	var cmd = 'write.table(' + name + ', file="' +
-		sv.tools.strings.addslashes(fileName) +
-		'", dec="' + dec + '", sep="' + sep + '", col.names=NA)';
+	sv.tools.strings.addslashes(fileName) +
+	'", dec="' + dec + '", sep="' + sep + '", col.names=NA)';
 	sv.r.eval(cmd);
 	return(cmd);
 }

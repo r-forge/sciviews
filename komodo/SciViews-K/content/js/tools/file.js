@@ -314,7 +314,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 						reg.ACCESS_READ);
 				}
 
-				var ret = [],  et2 = [];
+				var ret = [], ret2 = [];
 				// Look for all installed paths, but default goes first
 				if (reg.hasValue("InstallPath"))
 					ret.push(reg.readStringValue("InstallPath"));
@@ -329,17 +329,16 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 				}
 
 				if (appName.search(/\.exe$/) == -1) appName += ".exe";
-				// from 2.12 R executables may reside also in bin/i386 directory
 				var binDir = ["\\bin\\", "\\bin\\i386\\"];
+				// from 2.12 R executables may reside also in bin/i386 directory
+
 
 				for (var i in ret) {
 					for (var j in binDir) {
 						app = ret[i] + binDir[j] + appName;
 						if (this.exists(app)) ret2.push(app);
-						sv.cmdout.append(app);
 					}
 				}
-
 				return (ret2);
 			}
 
