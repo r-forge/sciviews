@@ -118,8 +118,8 @@ sv.r.objects = {};
 	// Item separator for objList
 	var sep = ";;";
 
-	var cmdPattern = 'print(objList(id = "$ID$_$ENV$_$OBJ$", envir = "$ENV$",' +
-		' object = "$ENV$", all.info = FALSE, compare = FALSE), sep = "' + sep +
+	var cmdPattern = 'print(objList(id = "%ID%_%ENV%_%OBJ%", envir = "%ENV%",' +
+		' object = "%OBJ%", all.info = FALSE, compare = FALSE), sep = "' + sep +
 		'", eol = "\\n")';
 
 	// This should be changed if new icons are added
@@ -166,7 +166,7 @@ sv.r.objects = {};
 		var rowsChanged = _this.visibleData.length - rowsBefore;
 
 		if (rowsChanged) _this.treeBox.rowCountChanged(0, rowsChanged);
-		
+
 		_this.treeBox.invalidateRange(_this.treeBox.getFirstVisibleRow(),
 			_this.treeBox.getLastVisibleRow());
 	};
@@ -176,7 +176,7 @@ sv.r.objects = {};
 			_this.getPackageList(true);  //TODO call _parseObjectList afterwards
 			return (false);
 		}
-		
+
 		// Get position in the search path
 		function getPos (pack) {
 			var pos, searchPaths = _this.searchPaths;
@@ -606,7 +606,7 @@ sv.r.objects = {};
 
 	this.foldAll = function (open) {
 		if (!this.rowCount) return;
-		
+
 		var idx = this.selection.currentIndex;
 		if (idx == -1) idx = 0;
 
@@ -640,7 +640,7 @@ sv.r.objects = {};
 		var iLevel = item.level;
 
 		if (!item.childrenLength) return;
-		
+
 		if (item.origItem.isOpen) { // Closing subtree
 			var k;
 			for (k = idx + 1; k < vd.length && vd[k].level > iLevel; k++) { }
@@ -870,7 +870,7 @@ sv.r.objects = {};
 
 	// Callback to process the list of packages in the search path from R
 	function _processPackageList (data, refreshObjects) {
-		if (data == "") return; // No changes			
+		if (data == "") return; // No changes
 		_this.searchPaths = data.replace(/[\n\r]/g, "").split(sep);
 		_this.displayPackageList(refreshObjects);
 	};
@@ -1200,7 +1200,7 @@ sv.r.objects = {};
 			//	+ "; isFunction:" + isFunction
 			//	+ "; hasHelp:" + hasHelp
 			//)
-			
+
 			document.getElementById("robjects_cmd_removeobj")
 				.setAttribute("disabled", noDelete);
 			document.getElementById("robjects_cmd_deletenow")

@@ -653,34 +653,30 @@ sv.cmdout.append = function (str, newline, scrollToStart) {
 	if (newline === undefined) newline = true;
 	if (scrollToStart === undefined) scrollToStart = false;
 
-	try {
-		var runout = ko.run.output;
-		// Make sure the command output window is visible
-		runout.show(window, false);
-		// Make sure we're showing the output pane
-		var deckWidget = document.getElementById("runoutput-deck");
-		if (deckWidget.getAttribute("selectedIndex") != 0)
-			runout.toggleView();
+	//try {
+		//// Make sure the command output window is visible
+		ko.uilayout.ensureOutputPaneShown();
+		ko.uilayout.ensureTabShown("runoutput_tab", false);
+
 		// Find out the newline sequence uses, and write the text to it.
 		var scimoz = document.getElementById("runoutput-scintilla").scimoz;
 		var prevLength = scimoz.length;
+		var goToLine = scimoz.lineCount + 1;
 		if (newline) str += ["\r\n", "\n", "\r"][scimoz.eOLMode];
 		var str_byte_length = ko.stringutils.bytelength(str);
-		var ro = scimoz.readOnly;
+		var readOnly = scimoz.readOnly;
 		try {
 			scimoz.readOnly = false;
 			scimoz.appendText(str_byte_length, str);
-		} finally { scimoz.readOnly = ro; }
+		} finally { scimoz.readOnly = readOnly; }
 
-		if (scrollToStart) {
-			// Bring the new text into view
-			scimoz.gotoPos(prevLength + 1);
-		} else {
-			scimoz.gotoLine(scimoz.lineCount);
-		}
-	} catch(e) {
-        sv.log.exception(e, "Problems printing [" + str + "]", true);
-    }
+		if (!scrollToStart) goToLine = scimoz.lineCount;
+		scimoz.firstVisibleLine = goToLine;
+
+	//} catch(e) {
+        //logging here is dangerous. If logger prints to the output pane, it causes infinite loop...
+		//sv.log.exception(e, "Problems printing [" + str + "]", true);
+    //}
 }
 
 // Clear text in the Output Command pane

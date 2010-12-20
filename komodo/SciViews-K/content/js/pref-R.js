@@ -6,8 +6,7 @@
 // PrefR_OnLoad();                            	// R preference widow loaded
 // TODO: update this list...
 //////////////////////////////////////////////////////////////////////////////
-//
-// TODO: use 'R' simply as default R (terminal on Win/Mac, or on Linux)
+
 
 /* TODO: prefs to include:
 * address for remote R (sv.socket.host)? (if not localhost - disable source* commands)
@@ -216,13 +215,13 @@ function OnPreferencePageLoading(prefset) {
 
 function OnPreferencePageOK(prefset) {
 	prefset = parent.hPrefWindow.prefset;
-    prefset.setStringPref("svRDefaultInterpreter",
-    document.getElementById("svRDefaultInterpreter").value);
-    prefset.setStringPref("svRApplication",
-    document.getElementById('svRApplication')
+	prefset.setStringPref("svRDefaultInterpreter",
+	document.getElementById("svRDefaultInterpreter").value);
+	prefset.setStringPref("svRApplication",
+	document.getElementById('svRApplication')
 		.selectedItem.getAttribute("value"));
 	prefset.setStringPref("svRApplicationId",
-    document.getElementById('svRApplication').selectedItem.id);
+	document.getElementById('svRApplication').selectedItem.id);
 
 
 	var outDec = document.getElementById('r.csv.dec').value;
@@ -245,7 +244,7 @@ function OnPreferencePageOK(prefset) {
 
 	if (sv.r.running) {
 		sv.r.eval('options(OutDec="' + outDec + '", ' +
-        'OutSep="' + outSep + '")', true);
+		'OutSep="' + outSep + '")', true);
 	}
 
 	// Set the client type
@@ -258,13 +257,13 @@ function OnPreferencePageOK(prefset) {
 
 	menuListGetValues();
 
-    // Restart socket server if running and port changed
-    var serverPort = document.getElementById('sciviews.server.socket').value;
-    if(sv.socket.serverIsStarted &&
-       serverPort != prefset.getStringPref("sciviews.server.socket")){
-        prefset.setStringPref("sciviews.server.socket", serverPort);
-        sv.socket.serverStart();
-    }
+	// Restart socket server if running and port changed
+	var serverPort = document.getElementById('sciviews.server.socket').value;
+	if(sv.socket.serverIsStarted &&
+		serverPort != prefset.getStringPref("sciviews.server.socket")){
+		prefset.setStringPref("sciviews.server.socket", serverPort);
+		sv.socket.serverStart();
+	}
 	return(true);
 }
 
@@ -274,6 +273,11 @@ function svRDefaultInterpreterOnSelect(event) {
 
 	var menuApplication = document.getElementById("svRApplication");
     var menuInterpreters = document.getElementById("svRDefaultInterpreter");
+
+	// Just in case
+	if(sv.tools.file.exists(menuInterpreters.value) == sv.tools.file.TYPE_NONE) {
+		ko.dialogs.alert("Cannot find file: " + menuInterpreters.value, null, "SciViews-K preferences");
+	}
 
     var app = os.path.basename(menuInterpreters.value);
 
@@ -379,47 +383,47 @@ function PrefR_setExecutable(path) {
 
 // Get CRAN mirrors list - independently of R
 function PrefR_UpdateCranMirrors(localOnly) {
-	var sv_file = sv.tools.file;
+	var svFile = sv.tools.file;
 
 	// Get data in as CSV:
 	var csvName = "CRAN_mirrors.csv";
-	var localDir = sv_file.path("PrefD", "extensions", "sciviewsk@sciviews.org");
+	var localDir = svFile.path("PrefD", "extensions", "sciviewsk@sciviews.org");
 	var path, csvContent;
 	var arrData;
 	if (!localOnly) {
 		try {
-			csvContent = sv_file.readURI("http://cran.r-project.org/" + csvName);
-			//sv_file.write(localCopy, csvContent, 'utf-8');
+			csvContent = svFile.readURI("http://cran.r-project.org/" + csvName);
+			//svFile.write(localCopy, csvContent, 'utf-8');
 		} catch(e) {}
 	}
 
 	var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
     .createInstance(Components.interfaces.nsIJSON);
 
-	var jsonFile = sv_file.path(localDir, "CRAN_mirrors.json");
+	var jsonFile = svFile.path(localDir, "CRAN_mirrors.json");
 	var alreadyCached = false;
 	if (!csvContent) {
 		// First, check if there is serialized version:
-		alreadyCached = sv_file.exists(jsonFile);
+		alreadyCached = svFile.exists(jsonFile);
 		if (alreadyCached) {
-			arrData = nativeJSON.decode(sv_file.read(jsonFile));
+			arrData = nativeJSON.decode(svFile.read(jsonFile));
 			//sv.cmdout.append("Read from: JSON");
 		} else {
 			var localPaths = [ ];
 
 			var platform = navigator.platform.toLowerCase().substr(0,3);
-			if (platform == "win") // TODO: what is the pref is not set??
-            localPaths.push(sv_file.path(sv.prefs.getString("svRDefaultInterpreter"),
-            "../../doc"));
+			if (platform == "win") // TODO: what if the pref is not set??
+				localPaths.push(svFile.path(sv.prefs.getString("svRDefaultInterpreter"),
+					"../../doc"));
 			else { // if (platform == "lin")
 				localPaths.push('/usr/share/R/doc'); 	// try other paths: // mac: ????
 				localPaths.push('/usr/local/share/R/doc');
 			}
 			var file;
 			for (i in localPaths) {
-				file = sv_file.getfile(localPaths[i], csvName);
+				file = svFile.getfile(localPaths[i], csvName);
 				if (file.exists()) {
-					csvContent = sv_file.read(file.path);
+					csvContent = svFile.read(file.path);
 					//sv.cmdout.append("Read from: " + localPaths[i]);
 					break;
 				}
@@ -453,7 +457,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
 	if (!localOnly || !alreadyCached) {
 		// If updated from web, or not cached yet,
 		// serialize and save to file for faster later use:
-		sv_file.write(jsonFile, nativeJSON.encode(arrData), 'utf-8');
+		svFile.write(jsonFile, nativeJSON.encode(arrData), 'utf-8');
 	}
 
 	// Put arrData into MenuList
