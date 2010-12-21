@@ -19,14 +19,14 @@ if (typeof(sv.prefs) == "undefined") sv.prefs = {};
 // sv.prefs.defaults[preferenceName] = preferenceValue
 sv.prefs.defaults = {
 	"sciviews.server.socket": "7052",
-	"sciviews.client.type": "http",
+	"sciviews.client.type": "socket", // temporarily changed from "http"
 	"sciviews.client.socket": "8888",
 	"sciviews.client.id": "SciViewsK",
 	"sciviews.server.host": "127.0.0.1",
 	svRDefaultInterpreter: "", //????
 	svRApplication: "", //????
-	svRApplicationId: "", //????
-	svRQuiet: "", // Must be string, otherwise sv.prefs.getString will fail
+	//svRApplicationId: "", //????
+	//svRQuiet: "", // Must be string, otherwise sv.prefs.getString will fail
 	svRArgs: "--quiet", // For future use, replaces svRQuiet
     "r.csv.dec": ".",
 	"r.csv.sep": ",",
@@ -135,11 +135,11 @@ var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
 //TODO: Rework this with respect to Mac and R.app
 // Default R interpreter Id: use a reasonable default, given the platform
 if (navigator.platform.indexOf("Win") === 0) {
-	sv.prefs.setString("svRApplicationId", "r-gui", false);
+	sv.prefs.setString("svRApplication", "r-gui", false);
 	if (!svRDefaultInterpreter)
 		svRDefaultInterpreter = sv.tools.file.whereIs("Rgui");
 } else {
-	sv.prefs.setString("svRApplicationId", "r-terminal", false);
+	sv.prefs.setString("svRApplication", "r-terminal", false);
 	if (!svRDefaultInterpreter)
 		svRDefaultInterpreter = sv.tools.file.whereIs("R");
 }
@@ -153,6 +153,7 @@ sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, false);
 // for this snippet
 // Help page triggered by a given URL
 sv.prefs.setString("URL-help", "", true);
+
 // R HTML help pages triggered with '?topic'
 sv.prefs.setString("R-help", "", true);
 // Help page on the R Wiki

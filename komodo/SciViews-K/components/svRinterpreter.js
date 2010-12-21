@@ -25,26 +25,26 @@ Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 function svRinterpreter() {}
 
 svRinterpreter.prototype = {
-    
+
     // Properties required for XPCOM registration
     classDescription: "The SciViews-K R interpreter",
     classID:          Components.ID("{57dbf673-ce91-4858-93f9-2e47fea3495d}"),
     contractID:       "@sciviews.org/svRinterpreter;1",
-    
+
     // Category: An array of categories to register this component in.
     _xpcom_categories: [{
-  
+
       // Each object in the array specifies the parameters to pass to
       // nsICategoryManager.addCategoryEntry(). 'true' is passed for both
       // aPersist and aReplace params.
       category: "r",
-  
+
       // Optional, defaults to the object's classDescription
       //entry: "",
-  
+
       // Optional, defaults to object's contractID (unless 'service' specified)
       //value: "...",
-  
+
       // Optional, defaults to false. When set to true, and only if 'value' is
       // not specified, the concatenation of the string "service," and the
       // object's contractID is passed as aValue parameter of addCategoryEntry.
@@ -56,7 +56,7 @@ svRinterpreter.prototype = {
     QueryInterface: XPCOMUtils.generateQI([Components.interfaces.svIRinterpreter]),
 
     //chromeURL: "chrome://komodo/content/colorpicker/colorpicker.html",
-    	
+
     /**
     * Escape from multiline mode in the R interpreter.
     */
@@ -64,7 +64,7 @@ svRinterpreter.prototype = {
 		// Currently do noting
 		return null;
 	},
-    
+
     /**
     * Query the R interpreter to get a calltip.
     * @param code - The piece of code currently edited requiring calltip.
@@ -82,7 +82,7 @@ svRinterpreter.prototype = {
 					var kvSvc = Components
 						.classes["@activestate.com/koViewService;1"]
 						.getService(Components.interfaces.koIViewService);
-					var ke = kvSvc.currentView.document.getView().scimoz;					
+					var ke = kvSvc.currentView.document.getView().scimoz;
 					try {
 						if (ke.callTipActive()) ke.callTipCancel();
 						ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
@@ -94,7 +94,7 @@ svRinterpreter.prototype = {
 		);
 		return(res);
     },
-    
+
     /**
     * Query the R interpreter to get a completion list.
     * @param code - The piece of code currently edited requiring completion.
@@ -131,7 +131,7 @@ svRinterpreter.prototype = {
 					// otherwise, the algorithm does not find them (try: typing T, then ctrl+J, then R)
 					// TODO: there is a problem with items with special character (conversion problems)
 					autoCstring = autoCstring.replace(/\r?\n/g, autoCSeparatorChar);
-					
+
 					// code below taken from "CodeIntelCompletionUIHandler"
 				//	var iface = Components.interfaces.koICodeIntelCompletionUIHandler;
 				//	ke.registerImage(iface.ACIID_FUNCTION, ko.markers.
@@ -187,7 +187,7 @@ function koLoggerException(e, msg, showMsg) {
 
 
 //// Komodo statusbar access ///////////////////////////////////////////////////
-function clearCodeintelMessage () {					
+function clearCodeintelMessage () {
 	var sm = Components
 		.classes["@activestate.com/koStatusMessage;1"]
 		.createInstance(Components.interfaces.koIStatusMessage);
@@ -203,7 +203,7 @@ function clearCodeintelMessage () {
 		.classes["@mozilla.org/appshell/window-mediator;1"]
 		.getService(Components.interfaces.nsIWindowMediator)
 		.getMostRecentWindow("Komodo")
-		.document.getElementById('statusbar-message');	
+		.document.getElementById('statusbar-message');
 	//messageWidget.setAttribute("category", sm.category);
 	//messageWidget.setAttribute("value", sm.msg);
 	//messageWidget.setAttribute("tooltiptext", sm.msg);
@@ -236,42 +236,46 @@ function setPrefString (pref, value, overwrite) {
 //// R socket server configuration /////////////////////////////////////////////
 // Get server type preference and set sv.clientType accordingly
 if (typeof(sv) == "undefined") var sv = {};
-sv.clientType = getPrefString("sciviews.client.type", "http"); // We use http by default
+sv.clientType = getPrefString("sciviews.client.type", "socket"); // We use http by default
 
 // String converter used between Komodo and R (localeToCharset()[1] in R)
 var converter = Components
 	.classes["@mozilla.org/intl/scriptableunicodeconverter"]
 	.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
+
 // Use ASCII encoding by default
 try { converter.charset = "ASCII"; } catch (e) { }
 
+
 // The conversion functions
 function _fromUnicode (str, charset) {
-	if (charset !== undefined && converter.charset != charset) {
+	if (charset !== undefined && converter.charset != charset)
 		converter.charset = charset;
-	}
-	try { 
-		str = converter.ConvertFromUnicode(str);
+	try {
+		if (converter.charset)
+			str = converter.ConvertFromUnicode(str) + converter.Finish();
 	} catch(e) {
-		koLoggerException(e, "Unable to convert from Unicode");
+		koLoggerException(e, "sv.socket is unable to convert from Unicode to " +
+		 	converter.charset + ". The string was " + str);
 	}
 	return(str);
 }
 
 function _toUnicode (str, charset) {
-	if (charset !== undefined && converter.charset != charset) {
+	if (charset !== undefined && converter.charset != charset)
 		converter.charset = charset;
-	}
-	try { 
-		str = converter.ConvertToUnicode(str);
+	try {
+		if (converter.charset)
+			str = converter.ConvertToUnicode(str);
 	} catch(e) {
-		koLoggerException(e, "Unable to convert from Unicode");
+		koLoggerException(e, "sv.socket is unable to convert to Unicode from " +
+			converter.charset + ". The string was " + str);
 	}
 	return(str);
 }
 
-// The main socket client function to connect to R socket server				
-function rClientSocket(host, port, cmd, listener) {	
+// The main socket client function to connect to R socket server
+function rClientSocket(host, port, cmd, listener) {
 	// Workaround for NS_ERROR_OFFLINE returned by 'createTransport' when
 	// there is no network connection (when network goes down). Based on
 	// toggleOfflineStatus() in chrome://browser/content/browser.js.
@@ -289,13 +293,13 @@ function rClientSocket(host, port, cmd, listener) {
 		var outstream = transport.openOutputStream(0, 0, 0);
 		cmd = _fromUnicode(cmd);
 		outstream.write(cmd, cmd.length);
-	
+
 		var stream = transport.openInputStream(0, 0, 0);
 		var instream = Components
 			.classes["@mozilla.org/scriptableinputstream;1"]
 			.createInstance(Components.interfaces.nsIScriptableInputStream);
 		instream.init(stream);
-	
+
 		var dataListener = {
 			data: "",
 			onStartRequest: function(request, context) { this.data = ""; },
@@ -323,12 +327,12 @@ function rClientSocket(host, port, cmd, listener) {
 
 				// Determine if we have a prompt at the end
 				if (chunk.search(/\+\s+$/) > -1) {
-					chunk = chunk.rtrim() + " ";
+					chunk = chunk.replace(/\s+$/g, "") + " ";
 				}
 				this.data += chunk;
 			}
 		}
-	
+
 		var pump = Components
 			.classes["@mozilla.org/network/input-stream-pump;1"]
 			.createInstance(Components.interfaces.nsIInputStreamPump);
@@ -350,10 +354,10 @@ function rClientHttp(host, port, cmd, listener) {
 //	if (!navigator.onLine) Components
 //		.classes["@mozilla.org/network/io-service;1"]
 //		.getService(Components.interfaces.nsIIOService2).offline = false;
-	
+
 	try {
 		var httpRequest = Components
-			.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]  
+			.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
             .createInstance(Components.interfaces.nsIXMLHttpRequest);
 		httpRequest.onreadystatechange = function () {
 			try {
@@ -382,20 +386,20 @@ function rClientHttp(host, port, cmd, listener) {
 			}
 			return(null);
 		};
-				
+
 		//url is http://<host>:<port>/custom/SciViews?<cmd>
 		var url = "http://" + host + ":" + port + "/custom/SciViews?" +
 			encodeURIComponent(_fromUnicode(cmd))
 		httpRequest.open('GET', url, true);
 		httpRequest.send('');
-		
+
 	} catch (e) {
 		koLogger.error("rClientHttp() raises an unknown error: " + e);
 		return(e);
 	}
 	return(null);
 }
-	
+
 // Send an R command through the socket
 function rCommand(cmd, procfun) {
 	var host = getPrefString("sciviews.server.host", "127.0.0.1");
@@ -418,7 +422,7 @@ function rCommand(cmd, procfun) {
 				} else { // In fact we can add a property even to a function
 					procfun.value = data;
 				}
-			}	
+			}
 		}
 	}
 	var res = "";

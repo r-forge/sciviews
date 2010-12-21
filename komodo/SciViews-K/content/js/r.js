@@ -367,53 +367,45 @@ sv.r.setwd = function (dir, ask, type) {
 // Run current selection or line buffer in R
 sv.r.run = function () {
 	try {
-		var kv = ko.views.manager.currentView;
-		if (!kv) return(false); // No current view, do nothing!
-		kv.setFocus();
-		var ke = kv.scimoz;
-		var currentLine = ke.lineFromPosition(ke.currentPos);
-		if (ke.selText == "") {
-			ke.home();
-			ke.lineEndExtend();
-			// while ke.selText contains no code, look for next line
-			while (ke.selText.replace(/^\s*$/, "") == "") {
-				//Are we at the last line?
-				currentLine = ke.lineFromPosition(ke.currentPos);
-				if (currentLine == (ke.lineCount - 1)) return(false);
-				// Select next line
-				ke.lineDown();
-				ke.home();
-				ke.lineEndExtend();
-			}
+		var view = ko.views.manager.currentView;
+		if (!view) return(false); // No current view, do nothing!
+		view.setFocus();
+
+		var text = sv.getTextRange("sel", true);
+		if(text == "") { // No selection
+			var scimoz = view.scimoz;
+			var currentLine = scimoz.lineFromPosition(scimoz.currentPos);
+			var scimoz = view.scimoz;
+			var oText = { value: ''};
+			var lineCount =	scimoz.lineCount;
+			while(currentLine < lineCount && !(text = oText.value.trim()))
+				scimoz.getLine(currentLine++, oText);
+			scimoz.gotoLine(currentLine);
 		}
-		var res = sv.r.eval(ke.selText);
-		ke.currentPos = ke.selectionEnd; // We want to go past the highest pos
-		ke.lineDown();
-		ke.homeDisplay();
+
+		if(text != "") 	return(sv.r.eval(text));
+		return(false);
+
 	} catch(e) { return(e); }
-	return(res);
+
 }
 
 // Run current line (or selection) up to position and optionally add line feed
 sv.r.runEnter = function (breakLine) {
 	try {
-		var res = false;
-		var kv = ko.views.manager.currentView;
-		if (!kv) return(false); // No current view, do nothing!
-		kv.setFocus();
-		var ke = kv.scimoz;
-		if (ke.selText == "") {	// Only proceed if selection is empty
+		var view = ko.views.manager.currentView;
+		if (!view) return(false); // No current view, do nothing!
+		view.setFocus();
+		var scimoz = view.scimoz;
+		var text = sv.getTextRange("sel", true);
+		if (!text) {	// Only proceed if selection is empty
 			// Get text from a line and move caret to the eol
 			// Do we want to break line here or execute it to the end?
-			var text = sv.getTextRange(breakLine? "linetobegin" : "line", true);
-			ko.commands.doCommand('cmd_newlineExtra');
-			if (text != "") res = sv.r.eval(text);
-		} else {
-			var res = sv.r.eval(ke.selText);
-			ke.currentPos = ke.selectionEnd; // We want to go past the highest pos
-			ke.selectionStart = ke.selectionEnd; // Collapse selection
-			ko.commands.doCommand('cmd_newlineExtra');
+			text = sv.getTextRange(breakLine? "linetobegin" : "line", true);
 		}
+		ko.commands.doCommand('cmd_newlineExtra');
+		var res = sv.r.eval(text);
+
 	} catch(e) { return(e); }
 	return(res);
 }
@@ -422,11 +414,11 @@ sv.r.runEnter = function (breakLine) {
 sv.r.source = function (what) {
 	var res = false;
 	try {
-		var kv = ko.views.manager.currentView;
-		if (!kv) return(false); // No current view, do nothing!
-		kv.setFocus();
-		var scimoz = kv.scimoz;
-		var doc = kv.document;
+		var view = ko.views.manager.currentView;
+		if (!view) return(false); // No current view, do nothing!
+		view.setFocus();
+		var scimoz = view.scimoz;
+		var doc = view.document;
 
 		var file;
 		if (!doc.isUntitled && doc.file) {
@@ -442,7 +434,7 @@ sv.r.source = function (what) {
 		if (what == "all" && doc.file && doc.file.isLocal &&
 		!doc.isUntitled && !doc.isDirty) {
 			res = sv.r.eval('source("' + file +  '", encoding = "' +
-			kv.encoding + '")');
+			view.encoding + '")');
 		} else {
 			// Save all or part in the temporary file and source that file.
 			// After executing, tell R to delete it.
@@ -475,10 +467,10 @@ sv.r.source = function (what) {
 sv.r.send = function (what) {
 	//sv.log.debug("sv.r.send " + what);
 	var res = false;
-	var kv = ko.views.manager.currentView;
-	if (!kv) return(false); // No current view, do nothing!
-	kv.setFocus();
-	var ke = kv.scimoz;
+	var view = ko.views.manager.currentView;
+	if (!view) return(false); // No current view, do nothing!
+	view.setFocus();
+	var ke = view.scimoz;
 
 	try {
 		if (!what) what = "all"; // Default value
@@ -1255,7 +1247,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 				break;
 			}
 		}
-	} 
+	}
 
 	// Execute the command in R (TODO: check for possible error here!)
 	// TODO: run first in R; make dirs in R; then change in Komodo!
@@ -1440,7 +1432,7 @@ sv.r.quit = function (save) {
 }
 
 
-// KB: I think these functions should be included only in a "developer's version", 
+// KB: I think these functions should be included only in a "developer's version",
 //     most users will not need them
 // Create a translation (.pot) file for a project
 sv.r.kpf2pot = function (kpfFile) {

@@ -238,9 +238,11 @@ this.rClientHttp = function (host, port, cmd, listener, echo, procname) {
 	return(null);
 }
 
+this.rClient = this.rClientSocket; // default client type
+
 // TODO: use this on preference change "sciviews.client.type"
 this.setSocketType = function (type) {
-	switch(serverType) {
+	switch(type) {
 		case "http":
 			_this.rClient = this.rClientHttp;
 			break;
@@ -252,12 +254,13 @@ this.setSocketType = function (type) {
 	}
 }
 
+this.setSocketType(sv.prefs.getString("sciviews.client.type", "socket"));
+
 // Send an R command through the socket
 // any additional arguments will be passed to procfun
 // procfun can be also an object, then the result will be stored in procfun.value
 this.rCommand = function (cmd, echo, procfun) {
-	sv.cmdout.append("rCommand:: " + cmd);
-
+	//sv.cmdout.append("rCommand:: " + cmd);
 
 	if (echo === undefined) echo = true;
 	//if (procfun === undefined) procfun = "sv.socket.rProcess";
@@ -292,20 +295,18 @@ this.rCommand = function (cmd, echo, procfun) {
 			}
 		}
 	}
-	var res = "";
 
-	// TODO: use .rClient instead
-	//res = _this.rClient(host, port, id + cmd + "\n", listener,
-	//		echo, procname);
-
+	var res = _this.rClient(host, port, id + cmd + "\n", listener,
+			echo, procname);
 	// Socket server in svSocket
-	if (sv.prefs.getString("sciviews.client.type", "socket") == "socket") {
-		res = _this.rClientSocket(host, port, id + cmd + "\n", listener,
-			echo, procname);
-	} else {						// Http server in svGUI
-		res = _this.rClientHttp(host, port, id + cmd + "\n", listener,
-			echo, procname);
-	}
+	//if (sv.prefs.getString("sciviews.client.type", "socket") == "socket") {
+	//if (sv.clientType == "socket") {
+	//	res = _this.rClientSocket(host, port, id + cmd + "\n", listener,
+	//		echo, procname);
+	//} else {						// Http server in svGUI
+	//	res = _this.rClientHttp(host, port, id + cmd + "\n", listener,
+	//		echo, procname);
+	//}
 	if (res && res.name && res.name == "NS_ERROR_OFFLINE")
 		ko.statusBar.AddMessage("Error: Komodo went offline!",
 			"SciViews-K client", 5000, true);
@@ -340,15 +341,14 @@ this.rProcess = function (rjson) {
 // TODO: add the current working directory and report WD changes from R automagically
 this.rUpdate = function () {
 	// Make sure that dec and sep are correctly set in R
-	this.rCommand('<<<H>>>options(OutDec = "' +
-		sv.prefs.getString("r.csv.dec", ".") +
-		'", OutSep = "' +
-		sv.prefs.getString("r.csv.sep", ",") +
+	this.rCommand('<<<h>>>options(' +
+		'OutDec = "' + sv.prefs.getString("r.csv.dec", ".") +
+		'", OutSep = "' + sv.prefs.getString("r.csv.sep", ",") +
 		'"); invisible(guiRefresh(force = TRUE)); ' +
+		'cat("", localeToCharset()[1], sep="");',
 		// ??? The following does not work.
 		//'cat("<<<charset=", localeToCharset()[1], ">>>", sep = "")',
-		'cat("", localeToCharset()[1], sep="")',
-		false, function (s) {
+		false, function (s) { // this is a callback receiving the character set
 			_this.charset = sv.tools.strings.trim(s);
 			if (_this.debug) sv.log.debug("R charset: " + _this.charset);
 	});

@@ -146,10 +146,8 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 	var currentView = ko.views.manager.currentView;
 	if (!currentView) return("");
-
 	currentView.setFocus();
 	var scimoz = currentView.scimoz;
-
 	var text = "";
 	var curPos = scimoz.currentPos;
 	var curLine = scimoz.lineFromPosition(curPos);
@@ -165,6 +163,17 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 	switch(what) {
 	 case "sel":
 		// Simply retain current selection
+		var nSelections = scimoz.selections;
+		if(nSelections > 1) { // rectangular selection
+			var msel = [];
+			for (var i = 0; i < scimoz.selections; i++) {
+				msel.push(scimoz.getTextRange(scimoz.getSelectionNStart(i), scimoz.getSelectionNEnd(i)));
+			}
+			text = msel.join("\n");
+			// TODO: What to do with multiple ranges?
+			pStart = scimoz.getSelectionNStart(0);
+			pEnd = 	scimoz.getSelectionNEnd(nSelections - 1);
+		}
 		break;
 	 case "word":
 		if (pStart == pEnd) { // only return word if no selection
@@ -326,12 +335,13 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 		text = scimoz.text;
 	}
 
-	if (what != "all") {
-		text = scimoz.getTextRange(pStart, pEnd).replace(/(^[\n\r]+|[\n\r]+$)/, "");
-		if (gotoend) scimoz.gotoPos(pEnd);
-		if (select) scimoz.setSel(pStart, pEnd);
-	}
-	if ((typeof range == "object") && (range != null)) {
+	if (!text) text = scimoz.getTextRange(pStart, pEnd).trim();
+
+	if (gotoend) scimoz.gotoPos(pEnd);
+	if (select && what !="sel") scimoz.setSel(pStart, pEnd);
+
+
+	if (range != undefined && (typeof range == "object")) {
 		range.value = {start: pStart, end: pEnd};
 	}
 	return(text);
