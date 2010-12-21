@@ -215,13 +215,15 @@ function OnPreferencePageLoading(prefset) {
 
 function OnPreferencePageOK(prefset) {
 	prefset = parent.hPrefWindow.prefset;
-	prefset.setStringPref("svRDefaultInterpreter",
-	document.getElementById("svRDefaultInterpreter").value);
-	prefset.setStringPref("svRApplication",
-	document.getElementById('svRApplication')
-		.selectedItem.getAttribute("value"));
-	prefset.setStringPref("svRApplicationId",
-	document.getElementById('svRApplication').selectedItem.id);
+
+	//prefset.setStringPref("svRDefaultInterpreter",
+	//document.getElementById("svRDefaultInterpreter").value);
+	//prefset.setStringPref("svRApplication",
+	//	document.getElementById('svRApplication')
+	//	.selectedItem.getAttribute("value"));
+
+	//prefset.setStringPref("svRApplicationId",
+	//	document.getElementById('svRApplication').selectedItem.id);
 
 
 	var outDec = document.getElementById('r.csv.dec').value;
@@ -253,7 +255,9 @@ function OnPreferencePageOK(prefset) {
 	// Check if selected item is different from current sv.clientType
 	if (clientType != sv.clientType)
 		sv.alert("R server type changed", "The server type you selected will be" +
-			" used after restarting of both R and Komodo!")
+			" used after restarting of both R and Komodo!");
+
+	//sv.socket.setSocketType(clientType);
 
 	menuListGetValues();
 
