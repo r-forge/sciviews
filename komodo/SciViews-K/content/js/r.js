@@ -1207,7 +1207,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	if (saveOld) {
 		// Save .RData & .Rhistory in the the session directory and clean WS
 		// We need also to restore .required variable (only if it exists)
-		cmd += 'if (exists(.required)) assignTemp(".required", .required)\n' +
+		cmd += 'if (exists(".required")) assignTemp(".required", .required)\n' +
 			'TempEnv()$.Last.sys()\n' +
 			'save.image()\nsavehistory()\nrm(list = ls())\n' +
 			'.required <- getTemp(".required")\n';
@@ -1241,7 +1241,6 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 		]
 
 		for(i in Rprofile) {
-			sv.cmdout.append(Rprofile[i]);
 			if(svFile.exists(Rprofile[i])) {
 				cmd += 'source("' + (Rprofile[i]).addslashes() + '");\n';
 				break;
@@ -1252,14 +1251,17 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	// Execute the command in R (TODO: check for possible error here!)
 	// TODO: run first in R; make dirs in R; then change in Komodo!
 	sv.r.evalCallback(cmd, function(data) {
-		// Indicate everything is fine
+		sv.cmdout.append(data);
+
+	// Indicate everything is fine
 		ko.statusBar.AddMessage(sv.translate("R session directory set to '%S'", dir),
 		"SciViews-K", 20000, true);
 		// Break possible partial multiline command in R from previous session
 		// and indicate that we are in a new session now in the R console
+		// TODO: Breaking should be done *before* the last command
 		// TODO: report if we load something or not
-		sv.r.escape('cat("Session directory is now", dQuote("' + dir.addslashes() +
-		'"), "\\n", file = stderr())');
+		sv.r.evalCallback('cat("Session directory is now", dQuote("' + dir.addslashes() +
+		'"), "\\n", file = stderr())', null);
 		// Refresh active objects support and object explorer, ...
 		// KB: on Win, Komodo socket server gets stuck constantly, and below causes problems
 		//     so temporarily commented out
