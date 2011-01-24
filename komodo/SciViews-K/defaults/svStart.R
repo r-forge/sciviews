@@ -22,7 +22,7 @@ skip = NULL)
 
 	## Needed later for tryCatch'ing:
 	err.null <- function (e) return(NULL)
-	
+
 	## If minVersion is not provided, get it from packages in 'default' directory
 	pkg.extpat <- switch(.Platform$pkgType, win.binary = "zip", "tar\\.gz")
 	pkgFiles <- dir(pkg.dir, pattern = paste("^.*_[0-9\\.\\-]+\\.", pkg.extpat,
@@ -41,13 +41,13 @@ skip = NULL)
 		names(minVersion) <- names(v)
 	}
 	pkgs <- names(minVersion)
-	
+
 	i.skip <- !(pkgs %in% skip)
 	pkgs <- pkgs[i.skip]
 	minVersion <- minVersion[i.skip]
 	pkgFiles <- pkgFiles[i.skip]
 
-	
+
 	# Needed because of dependency errors during a fresh installation...
 	pkgs <- pkgs[order(match(pkgs, c("svMisc", "svSocket","svGUI")))]
 
@@ -145,7 +145,7 @@ skip = NULL)
 
 		## Collect SciViews socket client/server config from command line or vars
 		## Type of server to use (either http or socket)
-		svOption("ko.type", default = "http", args = args)
+		svOption("ko.type", default = "socket", args = args)
 		## Port used by the R socket server
 		svOption("ko.serve", default = 8888, args = args, as.type = as.integer)
 		## Machine where Komodo is running
@@ -266,7 +266,7 @@ skip = NULL)
 				i <- order(package_version(pkgVersion), decreasing = TRUE)[1]
 				pkgFile <-  pkgFile[i]
 				pkgVersion <-  pkgVersion[i]
-				
+
 				## For some reasons (bug probably?) I cannot install a package
 				## in R 2.10.1 under Mac OS X when the path to the package has
 				## spaces. Also, correct a bug here when installing package
@@ -315,7 +315,7 @@ skip = NULL)
 
 		## Determine which packages we don't want to load
 		pkgs <- pkgs[!(pkgs %in% pkgsDontLoad)]
-		
+
 		## Split pkgs to primary and secondary
 		pkgsPrimary <- pkgs[!(pkgs %in% pkgsLast)]
 		pkgsSecondary <- pkgs[pkgs %in% pkgsLast]
@@ -332,6 +332,7 @@ skip = NULL)
 				# Try starting the R socket server now
 				res <- !inherits(try(startSocketServer(port =
 					getOption("ko.serve")), silent = TRUE), "try-error")
+				debugMsg("Starting *socket* server")
 			} else res <- TRUE
 
 			if (!res) {
@@ -349,13 +350,14 @@ skip = NULL)
 						## It is now time to start the HTTP server
 						res <- !inherits(try(startHttpServer(port =
 							getOption("ko.serve")), silent = TRUE), "try-error")
+						debugMsg("Starting *http* server")
 					} else res <- TRUE
-					
+
 					if (!all(res)) {
 						cat("Impossible to start the SciViews R HTTP server\n(port",
 							getOption("ko.serve"), "already in use?)\n")
 						cat("Solve the problem, then type: require(svGUI)\n")
-						cat("or choose a different port for the server in Komodo\n")						
+						cat("or choose a different port for the server in Komodo\n")
 					} else {
 						cat("R is SciViews ready!\n")
 						assignTemp(".SciViewsReady", TRUE)
@@ -496,13 +498,13 @@ skip = NULL)
 		## Record the home page for the help server in an option
 		options(helphome = paste("http://127.0.0.1:", tools:::httpdPort,
 				"/doc/html/index.html", sep = ""))
-		
+
 		## I need to get the help file URL, but help() does not provide it any
 		## more! This is a temporary workaround for this problem
 		assignTemp("getHelpURL", function (x, ...) {
 			file <- as.character(x)
 			if (length(file) == 0) return("")
-			## Extension ".html" may be missing 
+			## Extension ".html" may be missing
 			htmlfile <- basename(file)
 			if (length(file) > 1) {
 				## If more then one topic is found
@@ -615,7 +617,13 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 	}
 	
 	## Do we have a .Rprofile file to source?
-	if (file.exists(".Rprofile")) source(".Rprofile")
+	rprofile <- file.path(c(getwd(), Sys.getenv("R_USER")), ".Rprofile")
+	rprofile <- rprofile[file.exists(rprofile)][1]
+	if (!is.na(rprofile)) {
+		source(rprofile)
+		debugMsg("Loaded file:", rprofile)
+	}
+
 	
 	return(invisible(res))
 }
