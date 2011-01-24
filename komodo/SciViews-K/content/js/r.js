@@ -372,7 +372,7 @@ sv.r.run = function () {
 		view.setFocus();
 
 		var text = sv.getTextRange("sel", true);
-		if(text == "") { // No selection
+		if(!text) { // No selection
 			var scimoz = view.scimoz;
 			var currentLine = scimoz.lineFromPosition(scimoz.currentPos);
 			var scimoz = view.scimoz;
@@ -381,9 +381,10 @@ sv.r.run = function () {
 			while(currentLine < lineCount && !(text = oText.value.trim()))
 				scimoz.getLine(currentLine++, oText);
 			scimoz.gotoLine(currentLine);
+			text = oText.value;
 		}
 
-		if(text != "") 	return(sv.r.eval(text));
+		if(text) 	return(sv.r.eval(text));
 		return(false);
 
 	} catch(e) { return(e); }
@@ -1432,7 +1433,6 @@ sv.r.quit = function (save) {
 	// Clear the objects browser
 	sv.r.objects.clearPackageList();
 }
-
 
 // KB: I think these functions should be included only in a "developer's version",
 //     most users will not need them
