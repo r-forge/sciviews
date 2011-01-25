@@ -381,7 +381,7 @@ sv.r.run = function () {
 			while(currentLine < lineCount && !(text = oText.value.trim()))
 				scimoz.getLine(currentLine++, oText);
 			scimoz.gotoLine(currentLine);
-			text = oText.value;
+			text = oText.value.trim();
 		}
 
 		if(text) 	return(sv.r.eval(text));
@@ -454,8 +454,9 @@ sv.r.source = function (what) {
 			var cmd = 'tryCatch(source("' + tempFile + '", encoding =' +
 			' "utf-8"), finally = {unlink("' + tempFile + '")});';
 
-			sv.cmdout.append(":>");
-			sv.r.evalHidden(cmd, true);
+			sv.r.evalCallback(cmd, function(ret) {
+				sv.cmdout.append(ret + "\n:>");
+			});
 		}
 	} catch(e) {
 		sv.log.exception(e, "Unknown error while sourcing R code in"
