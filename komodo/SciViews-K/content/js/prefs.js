@@ -135,15 +135,19 @@ var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
 //TODO: Rework this with respect to Mac and R.app
 // Default R interpreter Id: use a reasonable default, given the platform
 if (navigator.platform.indexOf("Win") === 0) {
-	sv.prefs.setString("svRApplication", "r-gui", false);
+	sv.prefs.setString("svRApplication", "r-gui", !sv.prefs.getString("svRApplication", "r-gui"));
 	if (!svRDefaultInterpreter)
 		svRDefaultInterpreter = sv.tools.file.whereIs("Rgui");
 } else {
-	sv.prefs.setString("svRApplication", "r-terminal", false);
+	sv.prefs.setString("svRApplication", "r-terminal", !sv.prefs.getString("svRApplication", "r-gui"));
 	if (!svRDefaultInterpreter)
 		svRDefaultInterpreter = sv.tools.file.whereIs("R");
 }
-sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, false);
+sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, 
+	!sv.prefs.getString("svRDefaultInterpreter", "r-gui"));
+
+
+sv.prefs.setString("sciviews.client.type", "socket", true); // DEBUG: Force "socket"
 
 
 // This is required by sv.helpContext() for attaching help to snippets (hack!)
