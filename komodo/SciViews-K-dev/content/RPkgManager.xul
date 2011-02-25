@@ -1,0 +1,394 @@
+<?xml version="1.0"?>
+<!-- ***** BEGIN LICENSE BLOCK *****
+ Version: MPL 1.1/GPL 2.0/LGPL 2.1
+
+ The contents of this file are subject to the Mozilla Public License
+ Version 1.1 (the "License"); you may not use this file except in
+ compliance with the License. You may obtain a copy of the License at
+ http://www.mozilla.org/MPL/
+
+ Software distributed under the License is distributed on an "AS IS"
+ basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ License for the specific language governing rights and limitations
+ under the License.
+
+ The Original Code is SciViews-K by Philippe Grosjean et al.
+
+ Contributor(s):
+   Kamil Barton
+   ActiveState Software Inc (code inspired from)
+
+ Alternatively, the contents of this file may be used under the terms of
+ either the GNU General Public License Version 2 or later (the "GPL"), or
+ the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ in which case the provisions of the GPL or the LGPL are applicable instead
+ of those above. If you wish to allow use of your version of this file only
+ under the terms of either the GPL or the LGPL, and not to allow others to
+ use your version of this file under the terms of the MPL, indicate your
+ decision by deleting the provisions above and replace them with the notice
+ and other provisions required by the GPL or the LGPL. If you do not delete
+ the provisions above, a recipient may use your version of this file under
+ the terms of any one of the MPL, the GPL or the LGPL.
+
+ ***** END LICENSE BLOCK ***** -->
+
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
+"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/sidebar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/scrolltabs.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/pkgManager.css" type="text/css"?>
+
+<window id="RPackageManager" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	height="500" width="500" persist="width height"
+	style="min-height: 500px; min-width: 500px;" title="Manage R Packages">
+
+<script type="text/javascript">
+<![CDATA[
+//TODO: 	use xbl bindings
+// 		list of available packages at CRAN
+// 		repository selection + custom repositories
+// 		installing packages - to be finished
+// 		add pkgManager() common function for svMisc - wrap commands into it
+
+var sv;
+var packages = {};
+
+function pkgLoadToggle (pkg, button) {
+		var item = document.getElementById(pkg);
+		var loaded = item.getAttribute("loaded") == "true";
+		var cmd = loaded? "detach(package:" + pkg + ")" :
+				"library(" + pkg + ")";
+
+		button.setAttribute("label", (loaded? "Detaching" : "Loading") + " package...");
+		button.setAttribute("disabled", "true");
+
+		// sv.log.debug(loaded + cmd);
+
+		sv.r.evalCallback(cmd, function(data) {
+				sv.cmdout.append(":> " + cmd);
+				sv.cmdout.append(data);
+				reloadList();
+		}, cmd);
+}
+
+function pkgRemove (pkg, button) {
+		var item = document.getElementById(pkg);
+		var loaded = item.getAttribute("loaded") == "true";
+		var cmd = 'remove.packages("' + pkg + '", lib = installed.packages()["' +
+				pkg + '", "LibPath"])';
+
+		button.setAttribute("label", "Removing package...");
+		button.setAttribute("disabled", "true");
+
+		sv.r.evalCallback(cmd, function(data) {
+				sv.cmdout.append(":> " + cmd);
+				sv.cmdout.append(data + "\n:> \n");
+				reloadList();
+		}, cmd);
+}
+
+function pkgUpdate () {
+		var theUpdatesList = document.getElementById("TheUpdatesList");
+		var x = theUpdatesList.getElementsByTagName("checkbox");
+		var toBeUpdated = [];
+		for (var i = 0; i < x.length; i++) {
+				if (x[i].checked)
+						toBeUpdated.push(x[i].getAttribute("package"));
+		}
+}
+
+function addcslashes (str, charlist) {
+		str = str.replace(
+				new RegExp('([' + charlist.replace(/([\[\]\(\)\\])/g, "\\$1") + '])', "g"),
+				"\\$1");
+
+		if (charlist.indexOf("\n") >-1)
+				str = str.replace(/\n/g, "n");
+		if (charlist.indexOf("\t") >-1)
+				str = str.replace(/\t/g, "t");
+		if (charlist.indexOf("\f") >-1)
+				str = str.replace(/\f/g, "f");
+		if (charlist.indexOf("\r") >-1)
+				str = str.replace(/\r/g, "r");
+		if (charlist.indexOf("\0") >-1)
+				str = str.replace(/\000/g, "0");
+		return str;
+}
+
+function reloadList () {
+
+		var theList = document.getElementById("TheList");
+		sv.r.evalCallback('pkgManList()', function (data) {
+				data = data.replace(/\r\n/g, "\n");
+				data = data.split(/\n{2,4}/);
+
+				var selectIdx = theList.selectedIndex;
+
+				var newPackages = [], pkgs = [], pkg, name, required, loaded;
+
+				for (i in data) {
+						pkg = data[i].split("\t");
+						if (pkg.length < 6)
+							break;
+						pkgs[i] = pkg;
+						newPackages.push(pkg[0]);
+				}
+
+				var items = theList.childNodes;
+
+				var j, curItem;
+				for (var i = 0; i < items.length; i++) {
+						curItem = theList.getItemAtIndex(i);
+						j = newPackages.indexOf(curItem.id);
+						if (j == -1) {
+								theList.removeChild(curItem);
+						} else {
+								theList.replaceChild(getRichListItem(pkgs[j]), curItem);
+						}
+				}
+
+				for (var i = 0; i < newPackages.length; i++) {
+						if (i + 1 > theList.itemCount) {
+								theList.appendChild(getRichListItem(pkgs[i]));
+						} else if (items[i].id != newPackages[i]) {
+								theList.insertBefore(getRichListItem(pkgs[i]), theList.getItemAtIndex(i));
+						}
+				}
+
+				theList.removeAttribute("empty");
+				if (selectIdx != -1) {
+						if (selectIdx + 1 > theList.itemCount)
+								selectIdx = theList.itemCount - 1;
+						theList.selectItem(theList.getItemAtIndex(selectIdx))
+				}
+
+				//
+				//for (i in data) {
+				//	  pkg = data[i].split("\t");
+				//	  theList.appendChild(getRichListItem(pkg));
+				//}
+
+		});
+}
+
+function getRichListItem (pkg) {
+		name = pkg[0];
+		required = pkg[4] == "TRUE";
+		loaded = pkg[3] == "TRUE";
+
+		var item = document.createElement("richlistitem");
+		item.setAttribute("name", name);
+		item.setAttribute("id", name);
+		item.setAttribute("loaded", loaded );
+		item.setAttribute("required", required && loaded);
+		item.setAttribute("flex", "1");
+		var vbox = item.appendChild(document.createElement("vbox"));
+		vbox.setAttribute("flex", "1");
+		var titleEl = vbox.appendChild(document.createElement("description"));
+
+		titleEl.className = "title";
+		titleEl.setAttribute("value", name + " (" + pkg[1] + ")");
+
+		var descrEl = vbox.appendChild(document.createElement("description"));
+		descrEl.className = "description";
+		descrEl.setAttribute("crop", "end");
+		descrEl.setAttribute("value", pkg[2].replace(/\n/g, " "));
+
+		var descrFullEl = vbox.appendChild(document.createElement("description"));
+		descrFullEl.className = "description-full";
+		descrFullEl.appendChild(document.createTextNode(pkg[2]));
+
+		var buttonBox = vbox.appendChild(document.createElement("hbox"));
+
+		buttonBox.appendChild(document.createElement("spacer"));
+		buttonBox.setAttribute("flex", "1");
+		buttonBox.setAttribute("align", "right");
+		buttonBox.className = "buttons";
+
+		var button = buttonBox.appendChild(document.createElement("button"));
+		button.setAttribute("label", loaded? "Detach package" : "Load package");
+		//if (required && loaded)
+		//	  button.setAttribute("disabled", "true");
+
+		button.setAttribute("oncommand", "pkgLoadToggle(\""+ pkg[0] + "\", this);");
+		//button.oncommand = ;
+		var button2 = buttonBox.appendChild(document.createElement("button"));
+		button2.setAttribute("label", "Remove package");
+		button2.setAttribute("oncommand", "pkgRemove(\""+ pkg[0] + "\", this);");
+		return (item);
+}
+
+function getUpdateItem (pkg) {
+		var name = pkg[0];
+		var ver = pkg[1];
+		var newVer = pkg[3];
+
+		var item = document.createElement("richlistitem");
+		item.setAttribute("name", "update-" + name);
+		item.setAttribute("id", "update-" + name);
+		item.setAttribute("update", true);
+
+		item.setAttribute("flex", "1");
+		var vbox = item.appendChild(document.createElement("vbox"));
+		vbox.setAttribute("flex", "1");
+
+		var titlebox = vbox.appendChild(document.createElement("hbox"));
+		titlebox.setAttribute("flex", "1");
+
+		var titleEl = titlebox.appendChild(document.createElement("description"));
+		titleEl.className = "title";
+		titleEl.setAttribute("value", name);
+
+		var spacer = titlebox.appendChild(document.createElement("spacer"));
+		spacer.setAttribute("flex", "1");
+
+		verEl = titlebox.appendChild(document.createElement("description"));
+		verEl.className = "version";
+		verEl.setAttribute("value", ver);
+
+		//var descrEl = vbox.appendChild(document.createElement("description"));
+		//descrEl.className = "description";
+		//descrEl.setAttribute("crop", "end");
+		//descrEl.setAttribute("value", "Installed version: " + ver + ")");
+
+		var descrEl = vbox.appendChild(document.createElement("description"));
+		//descrEl.className = "description";
+		descrEl.setAttribute("crop", "end");
+		descrEl.setAttribute("value", "Version " + newVer + " is available");
+
+		var buttonBox = vbox.appendChild(document.createElement("hbox"));
+		buttonBox.appendChild(document.createElement("spacer"));
+		buttonBox.setAttribute("flex", "1");
+		buttonBox.setAttribute("align", "right");
+		buttonBox.className = "buttons";
+
+		var button = buttonBox.appendChild(document.createElement("checkbox"));
+		button.setAttribute("label", "Update this package");
+		button.setAttribute("checked", "true");
+		button.setAttribute("package", name);
+		//button.setAttribute("oncommand", "pkgUpdate(\""+ pkg[0] + "\", this);");
+		button.setAttribute("oncommand", "document.getElementById('update-"+name+"').setAttribute(\"update\", this.checked);");
+
+		return (item);
+}
+
+function pkgFindUpdates () {
+		var sep = ";;";
+		var cmd = 'write.table(svtmp.updatePkgs()[,-2], sep="' + sep + '", quote=FALSE, na="", eol="\n", row.names = FALSE, col.names = FALSE)';
+
+		var theList = document.getElementById("TheList");
+		var theUpdatesList = document.getElementById("TheUpdatesList");
+		while(theUpdatesList.firstChild) {
+				theUpdatesList.removeChild(theUpdatesList.firstChild);
+		}
+		sv.r.evalCallback(cmd, function (data) {
+				sv.cmdout.clear();
+				sv.cmdout.append(data);
+
+				var lines = data.split(/\r?\n/);
+				var items, name, el, updateInfo, pkg;
+				for (var i in lines) {
+						pkg = lines[i].split(sep);
+						name = pkg[0];
+						//el = document.getElementById(name);
+						//updateInfo = el.appendChild(document.createElement("label"));
+						//updateInfo.setAttribute("value", "New version available: " + pkg[3]);
+						//theUpdatesList.appendChild(el.cloneNode(true));
+						//var uItem = el.appendChild(getUpdateItem(pkg));
+						theUpdatesList.appendChild(getUpdateItem(pkg));
+				}
+				//document.getElementById("pkgPanels").selectedIndex = 2;
+				document.getElementById("pkgPanelButtons").childNodes[2].click();
+
+				//ade4;;1.4-9;;2.8.0;;1.4-10;;http://r.meteo.uni.wroc.pl/bin/windows/contrib/2.8
+		});
+}
+
+self.onload = function () {
+		var args = window.arguments;
+		if (args) {
+			sv = args[0];
+		} else {
+			var p = parent;
+			while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
+		}
+
+		var file = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org",
+							"defaults", "pkgMan.R").replace(/\\/g, "/");
+
+		sv.r.evalCallback("source(\"" + file + "\")", function(data) {
+			reloadList();
+		});
+}
+
+]]>
+	</script>
+
+	<script>
+	function richSelect(aControl) {
+			//document.getElementById("selection-name").value = aControl.selectedItem ? aControl.selectedItem.getAttribute("name") : "";
+			// document.getElementById("selection-index").value = aControl.selectedIndex;
+	}
+	</script>
+
+	<hbox>
+		<radiogroup id="pkgPanelButtons" orient="horizontal" disabled="true">
+			<radio label="Available"
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 0;"/>
+			<radio label="Installed" selected="true"
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 1;"/>
+			<radio label="Updates"
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 2;"/>
+		</radiogroup>
+		<spacer flex = "2"/>
+		<button label="Close" onclick="self.close();"/>
+	</hbox>
+
+	<vbox style="font-weight:bold; background-color: #feac01; border: 1px black solid; margin: 2px; padding: 3px;">
+<description>
+    This package manager is an experimental feature of SciViews-K. It is not fully functional yet.
+</description>
+</vbox>
+
+	<deck id="pkgPanels" flex="1" style="padding: 0px; border: none;"
+		selectedIndex="1" persists="selectedIndex">
+
+		<box><!-- tabpanel First elements go here --></box>
+
+		<box>
+			<!--<notificationbox flex="1">-->
+			<vbox flex="1">
+				<hbox flex="5">
+					<richlistbox id = "TheList" onselect="richSelect(this)" flex="1"/>
+				</hbox>
+				<hbox align="left" flex="1" maxheight="20">
+					<button label="Find updates" accesskey="F"
+						oncommand="pkgFindUpdates();" align="left"
+						 disabled="true" />
+					<spacer flex="1"/>
+				</hbox>
+			</vbox>
+			<!--</notificationbox>-->
+		</box>
+
+		<box>
+			<vbox flex="1">
+				<hbox flex="5">
+					<richlistbox id = "TheUpdatesList" flex="1"
+						onselect="this.selectedItem.getElementsByTagName('checkbox')[0].focus();"/>
+				</hbox>
+				<hbox align="left" flex="1" maxheight="20">
+					<button label="Install updates" accesskey="I" oncommand=""
+						align="left" disabled="disabled"/>
+					<spacer flex="1"/>
+				</hbox>
+			</vbox>
+		</box>
+	</deck>
+</window>
