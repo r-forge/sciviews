@@ -1,0 +1,93 @@
+
+Windows Batchfiles 0.5-0
+
+This is a set of Windows batch and javascript 
+utilities for use with R. 
+
+They run R and perform associated tasks involving
+R by finding R in the registry and then calling
+the appropraite utility so that no paths need be
+set -- an otherwise significant source of
+potential error when using R.  Also  the R
+installer inserts a key into the registry each
+each time R is upgraded and these utilities detect
+that and run accordingly simplifying upgrades
+by eliminating the need to reset paths.
+
+The following utilities are provided.  They are
+each mutually independent so any can be used
+without the others.  Installation consists only of
+copying whichever file or files is desired to any
+folder in the Windows PATH.  
+
+Legend:
+h = no args gives help
+0 = common usage is to enter command name without arguments
+
+#Rscript.bat - put at top of R file to make it a batch file (h)
+copydir.bat - copy a library from one version of R to another (h)
+el.js - run elevated - Vista and up, e.g. el Rgui  runs R elevated
+find-miktex.hta - GUI to find MiKTeX (0)
+jgr.bat - like jgr.exe but finds R from registry as well as JGR library (0)
+kopy.bat - copy Rcmd to other batch files (h)
+movedir.bat - move library from one version of R to another (h)
+R.bat - like R.exe but finds R from registry (0)
+Rcmd.bat - like Rcmd.exe but finds R from registry (h)
+RExcelVersion.hta - like Rversions.hta but also sets .RData association (0)
+Rgui.bat - like Rgui.exe but finds R from registry (0)
+RguiStart.bat - like Rgui.bat but arg1 defines folder to start R in
+Rscript.bat - run .R script (h)
+Rterm.bat - like rterm.exe but finds R from registry (h)
+Rtidy.bat - reformat a .R file, e.g. Rtidy myfile.R > outfile.R
+Rtools.bat - place Rtools on path for remainder of console session (0)
+Rversions.bat - list which versions of R are in registry (0)
+Rversions.hta - GUI interface to RSetReg.  List and set R version (0)
+show-svn-info.hta - show svn info if current folder is an svn checkout (0)
+Stangle.bat - run arg1 through Stangle (h)
+Sweave.bat - run arg1 through Sweave (h)
+
+Note that #Rscript.bat, R.bat, Rcmd.bat, Rgui.bat,
+RguiStart.bat, Rscript.bat, Rterm.bat, Rtools.bat
+and jgr.bat are all the same file but with
+different names.  The program checks what name it
+was called by and acts accordingly.  Similarly
+Sweave.bat and Stangle.bat are the same file with
+different names.
+
+The main new features in version 0.5-0 are:
+
+  o testing on XP32, XPx64, Vista32, Win7x64.
+    Thanks to Nicholas Hirschey.
+
+  o added defensive code to batch files to work
+    even in the presence of certain bad components
+    in pre-existing PATH variables.
+
+  o new command show-svn-info.hta which when run 
+    from a Tortoise SVN checkout folder shows some 
+    info about it.  Requires Tortoise SVN version 
+    1.5 or higher.
+
+  o new command find-miktex.hta can be run without
+	arguments from the Windows command line (or
+	double clicked from Windows Explorer).  It
+	will show the path to the MiKTeX bin folder.
+
+  o Rversions.hta now also changes the .RData
+    association and has been verified to work on
+    both XP and Vista.
+
+  o new RExcelversion.hta (also distributed with
+    RExcel) that is like Rversions.hta but also sets
+    the version for Rexcel at the same time.  Thanks 
+    to Erich Neumann.
+
+  o jgr.bat now passes the Windows library
+    directory name and R home directory name to
+    jgr.exe automatically
+
+More info and pointers to download site on CRAN
+can be found on the home page:
+
+	http://batchfiles.googlecode.com
+
