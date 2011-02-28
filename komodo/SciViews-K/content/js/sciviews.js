@@ -64,6 +64,7 @@ Key conflicts in toolbox: (to be removed/changed to unused combinations in SciVi
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
 // This function is used to tag strings to be translated in projects/toolbox
 var _ = function(str) { return(str) }
 
@@ -74,9 +75,9 @@ if (typeof(sv.tools) == "undefined") sv.tools = {};
 
 // IMPORTANT: now sv.version is a "X.X.X" string, and sv.checkVersion accepts only such format
 // please update all macros using sv.checkVersion
-sv.version = Components.classes["@mozilla.org/extensions/manager;1"]
+sv.__defineGetter__("version", function() Components.classes["@mozilla.org/extensions/manager;1"]
 	.getService(Components.interfaces.nsIExtensionManager)
-	.getItemForID("sciviewsk@sciviews.org").version;
+	.getItemForID("sciviewsk@sciviews.org").version);
 sv.showVersion = true;
 
 sv._compareVersion = function (a, b) {
@@ -84,7 +85,7 @@ sv._compareVersion = function (a, b) {
 	if (!b)	return(1);
 
 	// try is necessary only till I find where is that damn macro causing an error
-	// at startup (-;
+	// at startup /-;
 	try {
 		a = a.split(/[.\-]/);
 		for (i in a) a[i] = parseInt(a[i]);
@@ -128,17 +129,11 @@ sv.checkVersion = function (version) {
 
 //// Other functions directly defined in the 'sv' namespace ////////////////////
 // Our own alert box
-sv.alert = function (header, text) {
-    ko.dialogs.alert(header, text, "SciViews-K");
-}
+sv.alert = function (header, text) ko.dialogs.alert(header, text, "SciViews-K");
+
 //sv.alert("Error:", "Some message");
 // -or-
 //sv.alert("Message");
-
-// Gets current selection, or word under the cursor in the active buffer
-//DEPRECATED, use sv.getTextRange
-sv.getText = function (includeChars)
-	sv.getTextRange("word", false, false, null, includeChars);
 
 // Select a part of text in the current buffer and return it
 // differs from sv.getPart that it does not touch the selection
@@ -229,8 +224,8 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 			//  search for function pattern backwards:
 			findSvc.options.searchBackward = true;
 			findRes = findSvc.find("", // view.koDoc.displayPath
-			scimoz.text, funcRegExStr,
-			scimoz.charPosAtPosition(pos0), 0); //start, end
+				scimoz.text, funcRegExStr,
+				scimoz.charPosAtPosition(pos0), 0); //start, end
 			if (!findRes) break;
 
 			// function declaration start:
@@ -238,7 +233,7 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 			// opening brace of function declaration
 			pos1 = scimoz.positionAtChar(0, findRes.end);
 			// closing brace of function declaration
-			pos2 = scimoz.braceMatch(pos1 - 1) + 1;
+			pos2 = scimoz.braceMatch(pos1 - 1); //+ 1;
 
 			// find first character following the closing brace
 			findSvc.options.searchBackward = false;
@@ -335,7 +330,7 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 		text = scimoz.text;
 	}
 
-	if (!text) text = scimoz.getTextRange(pStart, pEnd).trim();
+	if (!text) text = scimoz.getTextRange(pStart, pEnd);
 
 	if (gotoend) scimoz.gotoPos(pEnd);
 	if (select && what !="sel") scimoz.setSel(pStart, pEnd);
@@ -488,8 +483,8 @@ sv.browseURI = function (URI, internal) {
         // other functions that return "" when they don't find it, see sv.r.help
 	} else {
 		if (internal == null)
-			internal = (sv.prefs.getString("sciviews.r.help",
-			"internal") == "internal");
+			internal = (sv.pref.getPref("sciviews.r.help",
+				"internal") == "internal");
 		if (internal == true) {
 			// TODO: open this in the R help pane, or in a buffer
 			ko.open.URI(URI, "browser");
@@ -659,60 +654,69 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 // Append text to the Command Output pane
 // TODO: handle \b correctly to delete char up to the beginning of line
 // TODO: what to do with \a? I already have a bell in R console...
-sv.cmdout.append = function (str, newline, scrollToStart) {
-	if (newline === undefined) newline = true;
+
+sv.cmdout = {};
+(function() {
+
+var _this = this;
+var scimoz, eolChar;
+
+this.__defineGetter__('eolChar', function() {
+	if (!eolChar) _init();
+	return eolChar;
+});
+
+function _init() {
+	scimoz = document.getElementById("runoutput-scintilla").scimoz;
+	eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
+}
+
+this.print = function (str) {
+	_this.clear();
+	_this.append(str, true, false);
+}
+
+this.append = function (str, newline, scrollToStart) {
+	if (!scimoz) _init();
 	if (scrollToStart === undefined) scrollToStart = false;
 
-	//try {
-		//// Make sure the command output window is visible
-		ko.uilayout.ensureOutputPaneShown();
-		ko.uilayout.ensureTabShown("runoutput_tab", false);
+	ko.uilayout.ensureOutputPaneShown();
+	ko.uilayout.ensureTabShown("runoutput_tab", false);
 
-		// Find out the newline sequence uses, and write the text to it.
-		var scimoz = document.getElementById("runoutput-scintilla").scimoz;
-		var prevLength = scimoz.length;
-		var goToLine = scimoz.lineCount + 1;
-		if (newline) str += ["\r\n", "\n", "\r"][scimoz.eOLMode];
-		var str_byte_length = ko.stringutils.bytelength(str);
-		var readOnly = scimoz.readOnly;
-		try {
-			scimoz.readOnly = false;
-			scimoz.appendText(str_byte_length, str);
-		} finally { scimoz.readOnly = readOnly; }
+	// Find out the newline sequence uses, and write the text to it.
+	var goToLine = scimoz.lineCount;
 
-		if (!scrollToStart) goToLine = scimoz.lineCount;
-		scimoz.firstVisibleLine = goToLine;
+	if (newline || newline === undefined) str += eolChar;
+	var str_bytelength = ko.stringutils.bytelength(str);
+	var readOnly = scimoz.readOnly;
+	try {
+		scimoz.readOnly = false;
+		scimoz.appendText(str_bytelength, str);
+	} finally {
+		scimoz.readOnly = readOnly;
+	}
 
-	//} catch(e) {
-        //logging here is dangerous. If logger prints to the output pane, it causes infinite loop...
-		//sv.log.exception(e, "Problems printing [" + str + "]", true);
-    //}
+	if (!scrollToStart) goToLine = scimoz.lineCount;
+	//scimoz.firstVisibleLine = goToLine;
+	scimoz.ensureVisible(goToLine);
+	scimoz.scrollCaret();
 }
 
 // Clear text in the Output Command pane
-sv.cmdout.clear = function () {
-	sv.cmdout.message();
-
+this.clear = function (all) {
+	if (!scimoz) _init();
+	if (all) _this.message();
+	var readOnly = scimoz.readOnly;
 	try {
-		var runout = ko.run.output;
-		// Make sure the command output window is visible
-		runout.show(window, false);
-		// Make sure we're showing the output pane
-		var deckWidget = document.getElementById("runoutput-deck");
-		if (deckWidget.getAttribute("selectedIndex") != 0)
-			runout.toggleView();
-		var scimoz = document.getElementById("runoutput-scintilla").scimoz;
-		var ro = scimoz.readOnly;
-		try {
-			scimoz.readOnly = false;
-			scimoz.clearAll();
-		} finally { scimoz.readOnly = ro; }
-	} catch(e) {
-        sv.log.exception(e, "Problems clearing the Command Output pane", true);
-    }
+		scimoz.readOnly = false;
+		scimoz.clearAll();
+	} finally {
+		scimoz.readOnly = readOnly;
+	}
+
 }
 // Display message on the status bar (default) or command output bar
-sv.cmdout.message = function (msg, timeout, highlight) {
+this.message = function (msg, timeout, highlight) {
 	document.getElementById('output_tabpanels').selectedIndex = 0;
 	var runoutputDesc = document.getElementById('runoutput-desc');
 	if (msg == null) msg = "";
@@ -721,10 +725,14 @@ sv.cmdout.message = function (msg, timeout, highlight) {
 	runoutputDesc.style.color = "rgb(0, 0, 0)";
 	runoutputDesc.setAttribute("value", msg);
 	window.clearTimeout(runoutputDesc.timeout);
-	if (timeout > 0)
-		runoutputDesc.timeout = window
-			.setTimeout("sv.cmdout.message('', 0);", timeout);
+	if (timeout > 0) runoutputDesc.timeout = window
+		.setTimeout("sv.cmdout.message('', 0);", timeout);
 }
+
+
+}).apply(sv.cmdout);
+
+
 
 
 //// Logging management ////////////////////////////////////////////////////////
@@ -800,6 +808,8 @@ if (typeof(sv.log) == 'undefined') sv.log = {};
 
 }).apply(sv.log);
 
+
+//sv.log.all(true);
 
 //// Tests... default level do not print debug and infos!
 //sv.log.all(false);
