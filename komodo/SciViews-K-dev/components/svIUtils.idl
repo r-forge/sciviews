@@ -33,23 +33,45 @@
 
 #include "nsISupports.idl"
 #include "nsISimpleEnumerator.idl"
+//#include "koIRunService.idl"
 
-// This is implemented in sv.rnew's JavaScript code.
-[scriptable, uuid(ca1bcf00-394d-11e0-bd69-0002a5d5c51b)]
+// This is implemented in sv.rconn's JavaScript code.
+[scriptable, uuid(CA1BCF00-394D-11E0-BD69-0002A5D5C51B)]
 interface svIStuffListener: nsISupports {
     wstring onStuff(in wstring data);
 };
 
-[scriptable, uuid(5f82d460-37b6-11e0-b897-0002a5d5c51b)]
-interface svIUtils : nsISupports {
-	wstring execFun(in svIStuffListener stuffLlistener);
-	void execFunInBgr(in svIStuffListener requestHandler);
-    nsISimpleEnumerator getproc(in string propertyName);
-	wstring	execInR(in wstring command, in string host, in long port, in string mode);
-	void	execInRBgr(in wstring command, in string host, in long port, in string mode);
-	boolean startSocketServer(in string host, in long port, in svIStuffListener requestHandler);
-	void stopSocketServer();
-	attribute wstring lastCommand;
-	attribute wstring lastResult;
-	attribute wstring id;
+[scriptable, uuid(22D0115A-0BC6-609F-194A-6F79EEA56633)]
+interface svICommandInfo: nsISupports {
+    readonly attribute string commandId;
+    readonly attribute wstring command;
+    readonly attribute string mode;
 };
+
+
+[scriptable, uuid(22A6C234-CC35-D374-2F01-FD4C605C905C)]
+interface svIUtils : nsISupports {
+    nsISimpleEnumerator getproc(in string propertyName);
+	wstring	execInR(in wstring command, in string mode);
+	void	execInRBgr(in wstring command, in string mode, in string uid);
+	PRInt32 startSocketServer(in svIStuffListener requestHandler);
+	void stopSocketServer();
+	void setSocketInfo(in string host, in long port, in boolean outgoing);
+	readonly attribute wstring lastCommand;
+	readonly attribute wstring lastResult;
+	attribute wstring id;
+	readonly attribute boolean serverIsUp;
+	wstring pushLeft(in wstring text, in string eol, in long indent, in long tabwidth);
+
+    void escape();
+    void calltip(in wstring text);
+    void complete(in wstring text);
+};
+
+//[scriptable, uuid(16F32A31-EA47-5079-2F26-D98DC068E776)]
+//interface svRunService : nsISupports {
+//	koIRunProcess RunAndNotify(in wstring command, in wstring cwd,
+//        in wstring env, in AString input);
+//	koIRunProcess RunInTerminalAndNotify(in wstring command, in wstring cwd,
+//        in wstring env, in AString input);
+//};

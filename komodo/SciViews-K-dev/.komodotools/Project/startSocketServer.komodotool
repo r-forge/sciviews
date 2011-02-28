@@ -1,0 +1,16 @@
+{
+  "keyboard_shortcut": "", 
+  "name": "startSocketServer", 
+  "language": "JavaScript", 
+  "trigger_enabled": false, 
+  "value": [
+    "sv.cmdout.append(sv.rconn.startSocketServer());", 
+    ""
+  ], 
+  "trigger": "trigger_postopen", 
+  "rank": 100, 
+  "version": "1.0.7", 
+  "async": false, 
+  "type": "macro", 
+  "icon": "chrome://famfamfamsilk/skin/icons/server_go.png"
+}

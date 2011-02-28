@@ -51,21 +51,22 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/file.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/e4x2dom.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/file.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/rjson.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
+	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/rconnection.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r-help.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
+
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/ask.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/interpolate.js"/>
+
+
 
 	<broadcasterset id="broadcasterset_global">
 		<broadcaster id="sv_r_is_running" disabled="false"/>
@@ -79,13 +80,6 @@
 		/>
 	</broadcasterset>
 
-<!-- PhG: commands updating disabled because it does not always work
-          => sometimes, required commands remain disabled!!!!
-	KB: re-enabled commandupdater for now, but before we work out better
-	mechanism to check for R availability now it assumes that R is always on
-	(whether it really is or not), (see commands.js)
-
--->
 	<commandset id="allcommands">
 		<commandset id="cmdset_rApp" commandupdater="true"
 			oncommandupdate="ko.commands.updateCommandset(this);"
@@ -167,11 +161,6 @@
 			</commandset>
 		</commandset>
 	</commandset>
-
-	<menupopup id="popup_tools">
-		<menuitem id="menu_sciviewsk" label="SciViews-K" observes="Tasks:svAbout"
-			class="menu-iconic-wide"/>
-	</menupopup>
 
 	<!--<menupopup id="editorContextMenu">-->
 	<!--	<menuseparator id="editor-context-sep-sv"-->

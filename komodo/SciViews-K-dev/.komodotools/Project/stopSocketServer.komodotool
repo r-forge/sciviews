@@ -1,0 +1,15 @@
+{
+  "keyboard_shortcut": "", 
+  "name": "stopSocketServer", 
+  "language": "JavaScript", 
+  "trigger_enabled": false, 
+  "value": [
+    "sv.rconn.stopSocketServer();"
+  ], 
+  "trigger": "trigger_postopen", 
+  "rank": 100, 
+  "version": "1.0.7", 
+  "async": false, 
+  "type": "macro", 
+  "icon": "chrome://famfamfamsilk/skin/icons/server_delete.png"
+}

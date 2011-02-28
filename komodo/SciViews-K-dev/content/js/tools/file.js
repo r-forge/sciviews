@@ -1,6 +1,6 @@
 // SciViews-K file related functions
 // Various file related functions in 'sv.tools.file' namespace
-// Copyright (c) 2008-2010, Kamil Barton
+// Copyright (c) 2008-2011, Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.tools.file.defaultEncoding;			// Default file encoding to use
@@ -28,10 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') var sv = {};
-
-// Define the 'sv.tools' namespace
 if (typeof(sv.tools) == 'undefined') sv.tools = {};
-// Define the 'sv.tools.file' namespace
 if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 (function () {
@@ -83,11 +80,11 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		append = append? 0x10 : 0x20;
 
 		var file = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
+			.createInstance(Components.interfaces.nsILocalFile);
 		var fos = Components.classes["@mozilla.org/network/file-output-stream;1"]
-		.createInstance(Components.interfaces.nsIFileOutputStream);
+			.createInstance(Components.interfaces.nsIFileOutputStream);
 		var os = Components.classes["@mozilla.org/intl/converter-output-stream;1"]
-		.createInstance(Components.interfaces.nsIConverterOutputStream);
+			.createInstance(Components.interfaces.nsIConverterOutputStream);
 
 		//PR_CREATE_FILE = 0x08	PR_WRONLY 	 = 0x02
 		//PR_APPEND 	 = 0x10		PR_TRUNCATE 	 = 0x20
@@ -108,7 +105,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	// Checks for file existence, returns 2 for dir, 1 for file, otherwise 0
 	this.exists = function (path) {
 		var file = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
+			.createInstance(Components.interfaces.nsILocalFile);
 
 		try {
 			file.initWithPath(path);
@@ -123,8 +120,19 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 				return(this.TYPE_FILE);
 			}
 		}
-		return(0);
+		return(this.TYPE_NONE);
 	}
+
+	this.exists2 = function (path) {
+		var sysutils = Components.classes['@activestate.com/koSysUtils;1']
+			.getService(Components.interfaces.koISysUtils);
+
+		if(sysutils.IsDir(path)) return(this.TYPE_DIRECTORY);
+		if(sysutils.IsFile(path)) return(this.TYPE_FILE);
+		return(this.TYPE_NONE);
+	}
+
+
 
 	// Creates unique temporary file, accessible by all users; returns its name
 	this.temp = function (prefix) {
@@ -245,7 +253,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	// python interface - ~2x faster than with nsILocalFile
 	this.list = function (dirname, pattern, noext) {
 		var os = Components.classes['@activestate.com/koOs;1']
-		.getService(Components.interfaces.koIOs);
+			.getService(Components.interfaces.koIOs);
 		var ospath = os.path;
 
 		if (ospath.exists(dirname) && ospath.isdir(dirname)) {
@@ -279,23 +287,21 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		return(null);
 	}
 
-	if (navigator.platform.indexOf("Win") == 0) {
-		function _findFileInPath(file) {
-			var os = Components.classes['@activestate.com/koOs;1']
-			.getService(Components.interfaces.koIOs);
-			var dirs = os.getenv("PATH").split(os.pathsep);
-			var res = [];
-			for (var i in dirs)
-			if (os.path.exists(os.path.join(dirs[i], file))) res.push(dirs[i]);
-			return(res.length ? res : null);
-		}
 
+	function _WhichAll(file) {
+		var sysutils = Components.classes['@activestate.com/koSysUtils;1']
+			.getService(Components.interfaces.koISysUtils);
+		return sysutils.WhichAll(file, {});
+	}
+
+
+	if (navigator.platform.indexOf("Win") == 0) {
 		this.whereIs = function(appName) {
 			// add default extension for executable if none
 			if (appName.search(/\.[^\.]{3}$/) == -1) 	appName += ".exe";
 
 			var reg = Components.classes["@mozilla.org/windows-registry-key;1"]
-			.createInstance(Components.interfaces.nsIWindowsRegKey);
+				.createInstance(Components.interfaces.nsIWindowsRegKey);
 			var key, path;
 
 			//alert(appName);
@@ -356,26 +362,14 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 					return (path);
 				} catch(e) {
 					// fallback: look for app in PATH:
-					return (_findFileInPath(appName));
+					return (_WhichAll(appName));
 				}
 			}
 			return (null);
 		}
 
 	} else {
-		this.whereIs = function(appName) {
-			var runSvc = Components.
-			classes["@activestate.com/koRunService;1"].
-			getService(Components.interfaces.koIRunService);
-			var err = {}, out = {};
-			var res = runSvc.RunAndCaptureOutput("which " + appName,
-			null, null, null, out, err);
-
-			var path = sv.tools.strings.trim(out.value);
-
-			if (!path) return (null);
-			return path.split(" ");
-		}
+		this.whereIs = _WhichAll;
 	}
 
 

@@ -1,0 +1,16 @@
+{
+  "keyboard_shortcut": "", 
+  "name": "restartSocketServer", 
+  "language": "JavaScript", 
+  "trigger_enabled": false, 
+  "value": [
+    "sv.rconn.restartSocketServer();", 
+    ""
+  ], 
+  "trigger": "trigger_postopen", 
+  "rank": 100, 
+  "version": "1.0.7", 
+  "async": false, 
+  "type": "macro", 
+  "icon": "chrome://famfamfamsilk/skin/icons/server_lightning.png"
+}

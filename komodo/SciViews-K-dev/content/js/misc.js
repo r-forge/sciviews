@@ -29,7 +29,7 @@ sv.misc.sessionData = function (data) {
             "Dataset name:", "Dataset", "Select a dataset", "datafile");
     }
     if (data != null & data != "") {
-        var dataDir = sv.prefs.getString("sciviews.data.localdir", "~");
+        var dataDir = sv.pref.getPref("sciviews.data.localdir", "~");
         var file = Components.classes["@mozilla.org/file/local;1"]
             .createInstance(Components.interfaces.nsILocalFile);
         file.initWithPath(dataDir);
@@ -67,7 +67,7 @@ sv.misc.sessionData = function (data) {
 			**   00001   Execute by others.
 			*/
 			outputStream.init(file, 0x04 | 0x08 | 0x20, 438, 0);
-			var sep = sv.prefs.getString("r.csv.sep", "\t");
+			var sep = sv.pref.getPref("r.csv.sep", "\t");
             var content = '"var1"' + sep + '"var2"\n';
 			var result = outputStream.write(content, content.length);
 			outputStream.close();
@@ -97,7 +97,7 @@ sv.misc.sessionScript = function (script) {
             "Script name:", "Script", "Select a script", "scriptfile");
     }
     if (script != null & script != "") {
-        var scriptsDir = sv.prefs.getString("sciviews.scripts.localdir",
+        var scriptsDir = sv.pref.getPref("sciviews.scripts.localdir",
             "~/Scripts");
         var file = Components.classes["@mozilla.org/file/local;1"]
             .createInstance(Components.interfaces.nsILocalFile);
@@ -119,7 +119,7 @@ sv.misc.sessionReport = function (rep) {
             "Report name:", "Report", "Select a report", "reportfile");
     }
     if (rep != null & rep != "") {
-        var reportsDir = sv.prefs.getString("sciviews.reports.localdir",
+        var reportsDir = sv.pref.getPref("sciviews.reports.localdir",
             "~/Reports");
         var file = Components.classes["@mozilla.org/file/local;1"]
             .createInstance(Components.interfaces.nsILocalFile);
@@ -429,7 +429,7 @@ sv.misc.timeStamp = function (format) {
 			.getService(Components.interfaces.koITime);
 		var secsNow = timeSvc.time();
 		var timeTupleNow = timeSvc.localtime(secsNow, new Object());
-		if (!format) format = sv.prefs.getString("defaultDateFormat");
+		if (!format) format = sv.pref.getPref("defaultDateFormat");
 		var timeStr = timeSvc.strftime(format, timeTupleNow.length, timeTupleNow);
 		ke.replaceSel(timeStr);
     } catch(e) {
