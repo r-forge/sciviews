@@ -1,0 +1,22 @@
+{
+  "keyboard_shortcut": "", 
+  "name": "R: test for connection with R", 
+  "language": "JavaScript", 
+  "trigger_enabled": false, 
+  "value": [
+    "var RConnectionSuccess = sv.rconn.testRAvailability();", 
+    "sv.command.updateRStatus(RConnectionSuccess);", 
+    "", 
+    "var ltb = document.getElementById(\"leftTabBox\");", 
+    "var rotp = document.getElementById(\"sciviews_robjects_tabpanel\");", 
+    "var rot = document.getElementById(\"sciviews_robjects_tab\");", 
+    "rotp.disabled = rot.disabled = !RConnectionSuccess;", 
+    ""
+  ], 
+  "trigger": "trigger_postopen", 
+  "rank": 100, 
+  "version": "1.0.7", 
+  "async": false, 
+  "type": "macro", 
+  "icon": "chrome://famfamfamsilk/skin/icons/connect.png"
+}

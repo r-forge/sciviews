@@ -1,27 +1,27 @@
 #!python
 # ***** BEGIN LICENSE BLOCK *****
 # Version: MPL 1.1/GPL 2.0/LGPL 2.1
-# 
+#
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.1 (the "License"); you may not use this file except in
 # compliance with the License. You may obtain a copy of the License at
 # http://www.mozilla.org/MPL/
-# 
+#
 # Software distributed under the License is distributed on an "AS IS"
 # basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
 # License for the specific language governing rights and limitations
 # under the License.
-# 
+#
 # The Original Code is SciViews code, inspired from koPHPLinter.py.
-# 
+#
 # The Initial Developer of the Original Code is ActiveState Software Inc.
 # Portions created by ActiveState Software Inc are Copyright (C) 2000-2007
 # ActiveState Software Inc. All Rights Reserved.
-# 
+#
 # Contributor(s):
-#   ActiveState Software Inc
+#   K. Barton
 #   Ph. Grosjean <phgrosjean@sciviews.org>
-# 
+#
 # Alternatively, the contents of this file may be used under the terms of
 # either the GNU General Public License Version 2 or later (the "GPL"), or
 # the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -33,23 +33,24 @@
 # and other provisions required by the GPL or the LGPL. If you do not delete
 # the provisions above, a recipient may use your version of this file under
 # the terms of any one of the MPL, the GPL or the LGPL.
-# 
+#
 # ***** END LICENSE BLOCK *****
 
-from xpcom import components, nsError, COMException
+from xpcom import components, nsError, COMException, ServerException
 from xpcom._xpcom import PROXY_SYNC, PROXY_ALWAYS, PROXY_ASYNC
 from koLintResult import *
 from koLintResults import koLintResults
 import os, sys, re
 import tempfile
 import string
-import process
-import koprocessutils
+#import process
+#import koprocessutils
+import logging
 
-# R error line format with svTools:::koLint(..., type = "flat")
-# warning|error+++line+++column+++error message\n
+log = logging.getLogger('RLinter')
+log.setLevel(logging.DEBUG)
 
-class KoRCompileLinter:
+class KoRLinter:
     _com_interfaces_ = [components.interfaces.koILinter]
     _reg_desc_ = "Komodo R Linter"
     _reg_clsid_ = "{E5B7415C-81C6-4185-8B53-B527193D251E}"
@@ -59,90 +60,59 @@ class KoRCompileLinter:
          ]
 
     def __init__(self):
-        R = ""  # Default value points (no R application)
-    
-    # This is not used (yet) but kept for possible future reference
-    def checkValidVersion(self):
-        version = 1
-        if not version:
-            # Allow for None or empty string
-            reject = True
-        else:
-            # Last point can be something like 10-beta
-            #version = tuple([int(x) for x in re.match(r"(\d+)\.(\d+)\.(\d+)", version).groups()])
-            #reject = (version < (4,0,5))
-            reject = False
-        if reject:
-            errmsg = "Could not find a suitable R interpreter for "\
-                     "linting."
-            raise COMException(nsError.NS_ERROR_NOT_AVAILABLE, errmsg)
-        
+        self.pattern = re.compile('^(?:.*:)?(?P<line>\d+):(?P<col>\d+):(?P<descr>.*?)(?=[\r\n])')
+        ##self.pattern = re.compile('^(.*):(?P<line>\d+):(?P<col>\d+):(?P<descr>.*?)(?=[\r\n])[\s\S]*(?<=[\r\n])(?P=line): (?P<code>.*?)(?=[\r\n])')
+        self.sv_utils = components.classes["@sciviews.org/svUtils;1"].\
+            getService(components.interfaces.svIUtils)
+        pass
+
     def lint(self, request):
-        """Lint the given R content.
-        
-        Raise an exception if there is a problem.
-        """        
         # TODO: R does not like utf-8 produced by Komodo => use a different encoding?
         text = request.content.encode("utf-8")
 
-        # Retrieve the path to R...
-        R = ""
-        prefs = components.classes["@activestate.com/koPrefService;1"].\
-            getService(components.interfaces.koIPrefService).prefs
-        if prefs.hasStringPref("r.application"):
-            R = prefs.getStringPref("r.application")
-        if R == "":
-            errmsg = "Could not find a suitable R interpreter for linting."
-            raise COMException(nsError.NS_ERROR_NOT_AVAILABLE, errmsg)
-        R = "R"
-        #self.checkValidVersion()
+        tabWidth = request.koDoc.tabWidth
+        log.debug("linting %s" % text[1:15])
 
-        # Save R buffer to a temporary file
-        Rfilename = tempfile.mktemp()
-        fout = open(Rfilename, 'wb')
-        fout.write(text)
-        fout.close()
-
-        p = None
-        try:
-            argv = [R] + ["--slave"] + ["-e", "if(isTRUE(require('svTools',quietly=TRUE)))lint('" + os.path.basename(Rfilename) + "',type='flat')"]
-            env = koprocessutils.getUserEnv()
-            cwd = os.path.dirname(Rfilename)
-            p = process.ProcessOpen(argv, cwd=cwd, env=env)
-            stdout, stderr = p.communicate()
-            # TODO: check stderr to see if an error was generated here!
-            # The relevant output is contained in stdout.
-            lines = stdout.splitlines(1)
-        finally:
-            os.unlink(Rfilename)
-        
         results = koLintResults()
-        
-        if lines:
-            datalines = re.split('\r\n|\r|\n', text)
-            numLines = len(datalines)
-            lines = [l for l in lines if l.find('+++') != -1]
-            
-            for line in lines:
+        try:
+            tmp_filename = tempfile.mktemp()
+            fout = open(tmp_filename, 'wb')
+            fout.write(text)
+            fout.close()
+            command = 'cat(quick.lint(\"' + tmp_filename.replace('\\', '/') + '", encoding="UTF-8"))'
+            #log.debug(command)
+        except Exception, e:
+            log.exception(e)
+        try:
+            lines = self.sv_utils.execInR(command, "h").rstrip()
+            if lines == 'timed out':
+                raise ServerException(nsError.NS_ERROR_NOT_AVAILABLE)
+
+            log.debug("lint: " + lines)
+            ma = self.pattern.match(lines)
+            if (ma):
+                lineNo = int(ma.group("line"))
+                datalines = re.split('\r\n|\r|\n', request.content, lineNo) # must not to be encoded
+                columnNo = int(ma.group("col"))
+                description = ma.group("descr")
+                #code = ma.group("code")
+
                 result = KoLintResult()
-                line = line.strip()
-                items = line.split('+++')
-                # Is this a warning or error?
-                if items[0] == 'warning':
-                     result.severity = result.SEV_WARNING
-                else:
-                     result.severity = result.SEV_ERROR
-                # Get line and column number
-                lineNo = int(items[1])
-                columnNo = int(items[2])
+                result.severity = result.SEV_ERROR
                 result.lineStart = result.lineEnd = lineNo
-                result.columnStart = columnNo
-                result.columnEnd = len(datalines[result.lineEnd-1]) + 1
-                # Get the error message
-                if items[3]:
-                    result.description = items[3]
-                    #result.description = string.join(items[3].groups())
-                else:
-                    result.description = line
+                l1 = datalines[lineNo - 1][:columnNo]
+
+                ntabs = l1.count("\t")
+                result.columnStart = columnNo - (ntabs * 7)
+                result.columnEnd = len(datalines[lineNo - 1]) + 1
+                log.debug("tabWidth = %d" % tabWidth)
+
+                result.description = "Syntax error: %s (on column %d)" % \
+                    (description, columnNo - (ntabs * (8 - tabWidth)))
                 results.addResult(result)
+
+        except Exception, e:
+            log.exception(e)
+        finally:
+            os.unlink(tmp_filename)
         return results

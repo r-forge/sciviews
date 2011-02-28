@@ -179,7 +179,7 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 						tooltiptext="&sciviews.robjects.refresh.tip;"
 						buttonstyle="pictures"
 						label="&sciviews.robjects.refresh;" class="refresh-icon"
-						oncommand="sv.r.objects.getPackageList(true);"/>
+						oncommand="sv.r.objects.refreshAll();"/>
 						<toolbarbutton id="sciviews_robjects_searchpath_button"
 						observes="cmd_robjects_viewSearchPath"
 						buttonstyle="pictures" class="searchPath-icon"

@@ -31,10 +31,6 @@
 // sv.r.search_select(topics); // Callback function: display a list of
 // choices to select help page from
 // sv.r.siteSearch(topic); // Search R web sites for 'topic'
-// sv.r.dataList(loaded); // List R datasets in "loaded" or "all" packages
-// sv.r.data(); // Select one dataset to load
-// sv.r.data_select(data); // Callback function for sv.r.data()
-// sv.r.browseVignettes(); // Open a web page listing all installed vignettes
 // sv.r.saveWorkspace(file, title);  // Save data in a .Rdata file
 // sv.r.loadWorkspace(file, attach); // Load the content of a .RData file into
 // the workspace, or attach it
@@ -42,13 +38,6 @@
 // sv.r.loadHistory(file, title); // Load the history from a file
 // sv.r.saveGraph(type, file, title, height, width, method);
 //                  // Save the current R graph in different formats
-// sv.r.obj(objClass); // Set active object for objClass (data.frame if omitted)
-// sv.r.obj_select(data); // The callback for sv.r.obj() to select an object
-// sv.r.obj_select_dataframe(objname); // Select one data frame to activate
-// sv.r.obj_select_lm(objname);		   // Select one lm object to activate
-// sv.r.obj_refresh_dataframe(data);   // Refresh active data frame's MRUs
-// sv.r.obj_refresh_lm(data); 		   // Refresh active 'lm' object
-// sv.r.obj_message(); // Refresh statusbar message about active df and lm
 // sv.r.refreshSession(); // Refresh MRU lists associated with current session
 // sv.r.initSession(dir, datadir, scriptdir, reportdir);
 // sv.r.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
@@ -63,6 +52,7 @@
 // sv.r.clearSession();   // Clear session's .RData and .Rhistory files
 // sv.r.reloadSession();  // Reload .RData nd .Rhistory files from session dir
 // sv.r.quit(save); // Quit R (ask to save in save in not defined)
+
 // sv.r.kpf2pot(kpfFile); // Create a translation (.pot) file for a project
 // sv.r.kpz2pot(kpzFile); // Create a translation (.pot) file for a package
 // sv.r.kpfTranslate(kpfFile); // Translate a project
@@ -109,17 +99,14 @@
 if (typeof(sv.r) == 'undefined')
 sv.r = {
 	RMinVersion: "2.11.0",	// Minimum version of R required
-
 //	server: "http", 		// Currently, either 'http' or 'socket'
 	server: "socket", 		// KB: http is still problematic, changed the default
 	sep: ";;",				// Separator used for items
-	running: true			// Indicate if R is currently running
+	running: false			// Indicate if R is currently running
 	// FIXME: before we solve the issue of updating R status
 };
 
-
-
-
+// XXX: Not needed anymore
 // Check where the R executable can be found
 sv.r.application = function (warn) {
 	if (warn === undefined) warn = false;
@@ -128,45 +115,13 @@ sv.r.application = function (warn) {
 	var R = sv.tools.file.whereIs("R")
 	if (R == null & warn)
 	sv.alert("R is not found", "You should install or reinstall R" +
-	" on this machine (see http://cran.r-project.org). Under Windows" +
-	" you could also run RSetReg.exe from the /bin subdirectory of R" +
-	" install in case R is installed, but not recognized by SciViews).");
+		" on this machine (see http://cran.r-project.org). Under Windows" +
+		" you could also run RSetReg.exe from the /bin subdirectory of R" +
+		" install in case R is installed, but not recognized by SciViews).");
 	// Save the path in r.application prefs
 	if (R == null) R = "";
-	sv.prefs.setString("r.application", R, true);
+	sv.pref.setPref("r.application", R, true);
 	return(R);
-}
-
-// Test if R is running
-sv.r.test = function sv_RTest () {
-	var res = "";
-	res = sv.socket.rCommand("<<<h>>>cat('ok!');", false,
-	sv_RTest_callback);
-	return res;
-}
-
-sv.r.test_callback = function sv_RTest_callback (response) {
-	var wasRRunning = sv.r.running;
-	// In the case of http server, we got a more complex object!
-	if (response.result !== undefined) response = response.result;
-	var isRRunning = (response == "ok!");
-
-	sv.r.running = isRRunning;
-	if (wasRRunning != isRRunning) {
-		if (isRRunning) {
-			// Remove message in the statusbar
-			ko.statusBar.AddMessage("", "SciViews-K");
-			sv.socket.rUpdate();
-			// Possibly refresh the GUI by running SciViews-specific
-			// R task callbacks and make sure R Objects pane is updated
-			sv.r.evalCallback("try(guiRefresh(force = TRUE), silent = TRUE)",
-			function () { sv.r.objects.getPackageList(true); });
-		}
-		//xtk.domutils.fireEvent(window, 'r_app_started_closed');
-		// PhG: currently disabled: all menus enabled all the time!
-		//window.updateCommands('r_app_started_closed');
-		sv.log.debug("R state changed: " + wasRRunning + "->" + isRRunning);
-	}
 }
 
 //// Print some text (command or results) in the local R console
@@ -193,38 +148,6 @@ sv.r.print = function (text, newline, command, partial) {
 	sv.cmdout.append(text, newline);
 }
 
-// Evaluate code in R
-sv.r.eval = function (cmd) {
-	// If R is not running, start it now
-	if (!sv.r.running) {
-		// Indicate R should be started
-		ko.statusBar.AddMessage(
-		sv.translate("R must be started for this command (R -> Start R)"),
-		"SciViews-K", 5000, true);
-		return(null);
-	}
-	cmd = cmd.rtrim();
-	// Special case for q() and quit() => use sv.r.quit() instead
-	if (cmd.search(/^(?:base::)?q(?:uit)?\s*\(\s*\)$/) > -1)
-	return(sv.r.quit());
-	// TODO: special cases for ? and ??
-	var res = "";
-	sv.r.print(cmd, true, true, sv.socket.partial);
-	res = sv.socket.rCommand('<<<e>>>' + cmd);
-	return(res);
-}
-// Test: sv.r.eval("ls()");
-
-// Evaluate code in R in a hidden way
-sv.r.evalHidden = function (cmd, earlyExit) {
-	// If R is not running, do nothing
-	if (!sv.r.running) return(null);
-	var preCode = "<<<h>>>";
-	if (earlyExit) preCode = "<<<H>>>";
-	// Evaluate a command in hidden mode (contextual help, calltip, etc.)
-	var res = sv.socket.rCommand(preCode + cmd, false);
-	return(res);
-}
 // Tests:
 //sv.r.evalHidden("Sys.sleep(5); cat('done\n')");
 //sv.r.evalHidden("Sys.sleep(5); cat('done\n')", earlyExit = true);
@@ -232,136 +155,75 @@ sv.r.evalHidden = function (cmd, earlyExit) {
 //   " koCmd('alert(\"koCmd is back\");')", earlyExit = true);
 
 // Evaluate R expression and call procfun in Komodo with the result as argument
-// all additional arguments will be passed to procfun,
-// result will be stored in procfun.value
-sv.r.evalCallback = function (cmd, procfun) {
-	// If R is not running, do nothing
-	if (!sv.r.running) {
-		// Indicate R should be started
-		ko.statusBar.AddMessage(
-		sv.translate("R must be started for this command (R -> Start R)"),
-		"SciViews-K", 5000, true);
-		return(null);
-	}
-	var res = "";
-	// Evaluate a command in hidden mode (contextual help, calltip, etc.)
-	// and call 'procfun' at the end of the evaluation
-	// Note: with http using RJSONp protocol, this is done automatically!
-	// Note2: sv.r.evalCallback now needs a named function for the http
-	// version to work!
-	// Treatment is different if we use http or socket
-	var args = Array.apply(null, arguments);
-	args.splice(0, 1, "<<<h>>>" + cmd, false);
-	res = sv.socket.rCommand.apply(sv.socket, args);
-	return(res);
+// all additional arguments will be passed to procfun
+sv.r.evalCallback = function(cmd, procfun, context) {
+	var args = Array.apply(null, arguments)
+	args.splice(2,  0, true, null, false)
+	sv.rconn.eval.apply(sv.rconn, args)
 }
-
+sv.r.eval = function(cmd) sv.rconn.eval.call(sv.rconn, cmd)
+sv.r.evalHidden = function(cmd, earlyExit) sv.rconn.eval.call(sv.rconn, cmd)
 // Escape R calculation
-sv.r.escape = function (cmd) {
-	if (cmd === undefined) cmd = "";
-
-	// If R is not running, do nothing
-	if (!sv.r.running) return(null);
-
-	// Send an <<<esc>>> sequence that breaks multiline mode
-	sv.r.print("<command cancelled!>", false, false, false);
-	var res = "";
-	sv.socket.partial = false; // Reset this
-	res = sv.socket.rCommand('<<<esc>>>' + cmd, false);
-	return(res);
-}
+sv.r.escape = function (cmd) sv.rconn.escape(cmd);
 
 // Set the current working directory (to current buffer dir, or ask for it)
 sv.r.setwd = function (dir, ask, type) {
-	// TODO: simplify this:
 	// for compatibility with previous versions
 	switch (arguments.length) {
-		case 1:
-		type = dir;
-		dir = null;
-		ask = false;
-		break;
-		case 2:
-		type = dir;
-		dir = null;
-		break;
+		case 1: type = dir; dir = null; ask = false; break;
+		case 2: type = dir; dir = null; break;
 		default:
 	}
-
 	var getDirFromR = "";
 
 	if (!dir || (sv.tools.file.exists(dir) == 2)) { // Not there or unspecified
-		//sv.log.debug(dir + ":" + type)
-		checkType:
 		switch (type) {
 			case "this":
-			break;
-			case "session":
-			getDirFromR = "getOption(\"R.initdir\")";
-			break;
-			case "previous":
-			getDirFromR = "if (exists(\".odir\")) .odir else getwd()";
-			break;
-			case "init":
-			getDirFromR = "getOption(\"R.initdir\")";
-			break;
-			case "current":
-			getDirFromR = "getwd()";
-			ask = true;	// Assume ask is always true in this case
-			break;
-			case "file":
-			var kv = ko.views.manager.currentView;
-			if (kv) {
-				kv.setFocus();
-				if (!kv.koDoc.isUntitled) {
-					// If not, look for current file directory
-					dir = kv.koDoc.file.dirName;
-				}
 				break;
-			}
+			case "session":
+				getDirFromR = "getOption(\"R.initdir\")";
+				break;
+			case "previous":
+				getDirFromR = "if (exists(\".odir\")) .odir else getwd()";
+				break;
+			case "init":
+				getDirFromR = "getOption(\"R.initdir\")";
+				break;
+			case "current":
+				getDirFromR = "getwd()";
+				ask = true;	// Assume ask is always true in this case
+				break;
+			case "file":
+				var view = ko.views.manager.currentView;
+				if (view) {
+					view.setFocus();
+					if (!view.koDoc.isUntitled) dir = view.koDoc.file.dirName;
+					break;
+				}
 			case "project":
+				try {
+					dir = ko.places.manager.getSelectedItem().file.dirName;
+				} catch(e) {
+					dir = sv.tools.file.pathFromURI(ko.places.manager.currentPlace);
+				}
 			default:
-			dir = "";
-			// try to set current project dir ar default directory
-			var ap = ko.projects.manager.getCurrentProject();
-			var kv = ko.views.manager.currentView;
-			if (ap != null) {
-				// TODO: this does not work any more under Komodo 6!
-				dir = ko.projects.getDefaultDirectory(ap);
-			} else {
-				type = "file";
-				break checkType;
-			}
 		}
 	}
-
-	var res = "";
 	if (getDirFromR) {
-		var cmd = "cat(path.expand(" + getDirFromR + "))";
-		ko.statusBar.AddMessage(sv.translate("Asking R for directory..."),
-		"SciViews-K");
-
-		res = sv.r.evalCallback(cmd, function(curDir) {
-			ko.statusBar.AddMessage("", "SciViews-K");
-			if (!curDir) {
-				sv.alert(sv.translate("Cannot retrieve directory from R." +
+		dir = sv.rconn.evalAtOnce("cat(path.expand(" + getDirFromR + "))");
+		if (!dir) {
+			sv.alert(sv.translate("Cannot retrieve directory from R." +
 				" Make sure R is running."));
 				return(null);
-			}
-			if (navigator.platform.search(/^Win/) == 0) {
-				curDir = curDir.replace(/\//g, '\\');
-			}
-			return(sv.r.setwd(curDir, ask, "this"));
-		});
-		return(res);
+		}
+		if (navigator.platform.search(/^Win/) == 0) dir = dir.replace(/\//g, '\\');
 	}
-	if (ask || !dir)
-	dir = ko.filepicker.getFolder(dir,
-	sv.translate("Choose working directory"));
 
-	if (dir != null)
-	sv.r.eval(".odir <- setwd(\"" + dir.addslashes() + "\")");
-    return(res);
+	if (ask || !dir)
+		dir = ko.filepicker.getFolder(dir, sv.translate("Choose working directory"));
+
+	if (dir != null) sv.r.eval(".odir <- setwd(\"" + dir.addslashes() + "\")");
+    return(dir);
 }
 
 // Run current selection or line buffer in R
@@ -384,7 +246,7 @@ sv.r.run = function () {
 			text = oText.value.trim();
 		}
 
-		if(text) 	return(sv.r.eval(text));
+		if(text) 	return(sv.rconn.eval(text));
 		return(false);
 
 	} catch(e) { return(e); }
@@ -440,9 +302,12 @@ sv.r.source = function (what) {
 			// Save all or part in the temporary file and source that file.
 			// After executing, tell R to delete it.
 			var code = sv.getTextRange(what);
+
 			if (what == "function") {
-				what += " \"" +
-				code.match("^.*\\S(?=\\s*(?:=|<-)\\s*function)") + "\"";
+				var rx = /(([`'"])(.+)\2|([\w\u00c0-\uFFFF\.]+))(?=\s*<-\s*function)/;
+				var match = code.match(rx);
+				what += " \"" + (match? match[3] || match[4] : '') + "\"";
+				//.replace(/^(['"`])(.*)\1/, "$2")
 			}
 			sv.cmdout.clear();
 			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' + what);
@@ -478,138 +343,49 @@ sv.r.send = function (what) {
 		if (!what) what = "all"; // Default value
 
 		var cmd = sv.getTextRange(what, what.indexOf("sel") == -1).rtrim();
-		if (cmd) {
-			// indent multiline commands
-			cmd = cmd.replace(/\r?\n/g, "\n   ")
-			res = sv.r.eval(cmd);
-		}
+		if (cmd) res = sv.rconn.eval(cmd);
+
 		if (what == "line" || what == "linetoend") // || what == "para"
-		ke.charRight();
+			ke.charRight();
 
 	} catch(e) { return(e); }
 	return(res);
 }
 
-// Get a calltip for a R function
-sv.r.calltip = function (code) {
-	// If code is not defined, get currently edited code
-	if (typeof(code) == "undefined" | code == "")
-	code = sv.getTextRange("codefrag");
-	var cmd = 'cat(callTip("' + code.replace(/(")/g, "\\$1") +
-	'", location = TRUE, description = TRUE, methods = TRUE, width = 80))';
-	var res = "";
-	res = sv.r.evalCallback(cmd, sv.r.calltip_show);
-	return(res);
-}
-
-// The callback for sv.r.calltip
-// TODO: make private
-sv.r.calltip_show = function (tip) {
-	if (tip.result !== undefined) tip = tip.result;
-	if (tip != "") {
-		//ko.statusBar.AddMessage(tip, "SciViews-K", 2000, true);
-		var ke = ko.views.manager.currentView.scimoz;
-		ke.callTipCancel();
-		ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
-	}
-}
-
-// AutoComplete mechanism for R
-// XXX: deprecated??
-sv.r.complete = function (code) {
-	// If code is not defined, get currently edited code
-	if (typeof(code) == "undefined" | code == "")
-	code = sv.getTextRange("codefrag");
-	code = code.replace(/(")/g, "\\$1");
-	// TODO: add and use description too here!
-	var cmd = 'completion("' + code + '", print = TRUE, types = "scintilla", field.sep = "?")';
-	var res = sv.r.evalCallback(cmd, sv.r.complete_show);
-	return(res);
-}
-
-// The callback for sv.r.complete
-sv.r.complete_show = function (autoCstring) {
-	// In the case of http server, we got a more complex object!
-	if (autoCstring.result !== undefined) autoCstring = autoCstring.result;
-
-	var scimoz = ko.views.manager.currentView.scimoz;
-
-	// these should be set only once?:
-	scimoz.autoCSeparator = 9;
-	scimoz.autoCSetFillUps(" []{}<>/():;%+-*@!\t\n\r=$`");
-
-	var autoCSeparatorChar = String.fromCharCode(scimoz.autoCSeparator);
-	autoCstring = autoCstring.replace(/^(.*)[\r\n]+/, "");
-
-	var trigPos = RegExp.$1;
-
-	autoCstring = autoCstring.replace(/\r?\n/g, autoCSeparatorChar);
-
-	// Code below taken from "CodeIntelCompletionUIHandler"
-	// TODO: replace this by the same icons as in the object explorer!
-	var iface = Components.interfaces.koICodeIntelCompletionUIHandler;
-	scimoz.registerImage(iface.ACIID_FUNCTION, ko.markers.
-	getPixmap("chrome://komodo/skin/images/ac_function.xpm"));
-	scimoz.registerImage(iface.ACIID_VARIABLE, ko.markers.
-	getPixmap("chrome://komodo/skin/images/ac_variable.xpm"));
-	scimoz.registerImage(iface.ACIID_XML_ATTRIBUTE, ko.markers.
-	getPixmap("chrome://komodo/skin/images/ac_xml_attribute.xpm"));
-	scimoz.registerImage(iface.ACIID_NAMESPACE, ko.markers.
-	getPixmap("chrome://komodo/skin/images/ac_namespace.xpm"));
-	scimoz.registerImage(iface.ACIID_KEYWORD, ko.markers.
-	getPixmap("chrome://komodo/skin/images/ac_interface.xpm"));
-	scimoz.autoCChooseSingle = true;
-	scimoz.autoCShow(trigPos, autoCstring);
-}
-
-// Display R objects in different ways
-// TODO: allow custom methods + arguments + forcevisible + affect to var
-// TODO: this duplicates rObjectsTree.do(), so do something with it
-sv.r.display = function (topic, what) {
-	var res = false;
-	if (typeof(topic) == "undefined" | topic == "")
-	topic = sv.getTextRange("word");
-	if (topic == "") {
-		//sv.alert("Nothing is selected!");
-	} else {
-		// Display data in different ways, depending on what
-		switch(what) {
-			case "names":
-			res = sv.r.eval("names(" + topic + ")");
-			break;
-			case "structure":
-			res = sv.r.eval("str(" + topic + ")");
-			break;
-			case "summary":
-			res = sv.r.eval("summary(" + topic + ")");
-			break;
-			case "plot":
-			res = sv.r.eval("plot(" + topic + ")");
-			break;
-			case "content":
-			case "print":
-			case "show":
-			default:
-			res = sv.r.eval(topic);
-		}
-	}
-	return(res);
-}
+//// Get a calltip for a R function
+//sv.r.calltip = function (code) {
+//	// If code is not defined, get currently edited code
+//	if (typeof(code) == "undefined" | code == "")
+//	code = sv.getTextRange("codefrag");
+//	var cmd = 'cat(callTip("' + code.replace(/(")/g, "\\$1") +
+//	'", location = TRUE, description = TRUE, methods = TRUE, width = 80))';
+//	var res = "";
+//	res = sv.r.evalCallback(cmd, sv.r.calltip_show);
+//	return(res);
+//}
+//
+//// The callback for sv.r.calltip
+//// TODO: make private
+//sv.r.calltip_show = function (tip) {
+//	if (tip.result !== undefined) tip = tip.result;
+//	if (tip != "") {
+//		//ko.statusBar.AddMessage(tip, "SciViews-K", 2000, true);
+//		var ke = ko.views.manager.currentView.scimoz;
+//		ke.callTipCancel();
+//		ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
+//	}
+//}
 
 // Get help in R (HTML format)
 sv.r.help = function (topic, pkg) {
 	var res = false;
-
 	if (typeof(topic) == "undefined" || topic == "")
 	topic = sv.getTextRange("word");
 
 	if (topic == "")
-	ko.statusBar.AddMessage(sv.translate("Selection is empty..."),
-	"SciViews-K", 1000);
+	ko.statusBar.AddMessage(sv.translate("Selection is empty..."), "SciViews-K", 1000);
 
-	if (!topic && !pkg) {
-		return(false);
-	} else {
+	if (topic || pkg) {
 		var cmd = "";
 		cmd += pkg ? ' package = "' + pkg + '", ' : "";
 		cmd += topic ? ' topic = "' + topic + '", ' : "";
@@ -617,9 +393,11 @@ sv.r.help = function (topic, pkg) {
 		// Old version for R < 2.10:
 		// cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
 		// TODO: error handling when package does not exists
-		res = sv.r.evalCallback(cmd, sv.command.openHelp);
+		//res = sv.r.evalCallback(cmd, sv.command.openHelp);
+		res = sv.rconn.evalAtOnce(cmd);
+		sv.command.openHelp(res);
 		ko.statusBar.AddMessage(sv.translate("R help asked for \"%S\"", topic),
-		"SciViews-K", 5000, true);
+			"SciViews-K", 2000, false);
 	}
 	return(res);
 }
@@ -681,20 +459,20 @@ sv.r.search_select = function (topics) {
 
 	ko.statusBar.AddMessage("", "SciViews-K");
 	var res = false;
-	if (sv.tools.strings.removeLastCRLF(topics) == "") {
+	if (sv.tools.string.removeLastCRLF(topics) == "") {
 		ko.statusBar.AddMessage(sv.translate("R help for %S not found.", topics),
 		"SciViews-K");
 	} else {	// Something is returned
 		var items = topics.split(sv.r.sep);
 		if (items.length == 1) {
 			// Only one item, show help for it
-			res = sv.r.help(sv.tools.strings.removeLastCRLF(topics));
+			res = sv.r.help(sv.tools.string.removeLastCRLF(topics));
 		} else {
 			// Select the item you want in the list
 			var topic = ko.dialogs.selectFromList("R help topics",
 			"Select a topic:", items, "one");
 			if (topic != null)
-			res = sv.r.help(sv.tools.strings.removeLastCRLF(topic.join("")));
+			res = sv.r.help(sv.tools.string.removeLastCRLF(topic.join("")));
 		}
 	}
 	return(res);
@@ -729,65 +507,6 @@ sv.r.siteSearch = function (topic, idxname) {
 	"&max=20&result=normal&sort=score" + idxname;
 
 	sv.command.openHelp(url);
-}
-
-// List available datasets ("loaded" or not defined = loaded packages, or "all")
-// TODO: display results in RHelp window
-sv.r.dataList = function (which) {
-	var res = false;
-	if (typeof(which) == "undefined" | which == "" | which == "loaded") {
-		res = sv.r.eval('data()');
-	} else {	// which == "all"
-		res = sv.r.eval('data(package = .packages(all.available = TRUE))');
-	}
-	return(res);
-}
-
-// Load one R dataset
-sv.r.data = function () {
-	var res = false;
-	// Get list of all datasets
-	var cmd = '.tmp <- data();' +
-	'cat(paste(.tmp$results[, "Item"], .tmp$results[, "Title"],' +
-	' sep = "\t  -  "), sep = "\n"); rm(.tmp)';
-	res = sv.r.evalCallback(cmd, sv.r.data_select);
-	ko.statusBar.AddMessage(sv.translate("Listing available R datasets... please wait"),
-	"SciViews-K", 20000, true);
-	return(res);
-}
-
-// The callback for sv.r.data
-sv.r.data_select = function (data) {
-	if (data.result !== undefined) data = data.result;
-
-	ko.statusBar.AddMessage("", "SciViews-K");
-	var res = false;
-	if (sv.tools.strings.removeLastCRLF(data) == "") {
-		sv.alert("Problem retrieving the list of R datasets!");
-	} else {	// Something is returned
-		var items = data.split("\n");
-		// Select the item you want in the list
-		var item = ko.dialogs.selectFromList("R Datasets",
-		"Select one R dataset:", items, "one");
-		if (item != null) {
-			// We need to eliminate the definition
-			var dat = item[0].split("\t");
-			var datname = dat[0];
-			// Sometimes, we got 'item (data)' => retrieve 'data' in this case
-			datname = datname.replace(/^[a-zA-Z0-9._ ]*[(]/, "");
-			datname = datname.replace(/[)]$/, "");
-			var cmd = 'data(' + datname + '); cat("' + datname +
-			'"); invisible(try(guiRefresh(force = TRUE), silent = TRUE))';
-			res = sv.r.evalCallback(cmd, sv.r.obj_select_dataframe);
-		}
-	}
-	return(res);
-}
-
-// Open a menu with all installed vignettes in the default web browser
-sv.r.browseVignettes = function () {
-	var res = sv.r.eval('browseVignettes()');
-	return(res);
 }
 
 // Save the content of the workspace in a file
@@ -880,239 +599,38 @@ sv.r.saveGraph = function (type, file, title, height, width, method) {
 	method + '")');
 }
 
-//  TODO: (Suggestion) Replace this mechanism (default data.frame, lm..., etc) with
-//  automatic selection of all objects highlighted in the object browser.
-//  To do that svMisc::completion should list also contents of these objects.
-//  Then all sv.r.obj* functions would not be needed at all.
-// Select one object of class 'objClass' from .GlobalEnv
-sv.r.obj = function (objClass) {
-	// By default, we look at data.frames in .GlobalEnv
-	if (objClass === undefined) objClass = "data.frame";
-	var res = false;
-	// Get list of all objects with such a specification loaded in R
-	// If there is a comment attribute, also get it
-	var cmd = 'cat("' + objClass + '\n");' +
-	'cat(unlist(apply(matrix(objects(pos = 1)), 1, ' +
-	'function(x) try(if (inherits(get(x), "' + objClass +
-	'")) paste(x, "\t     ",  sub("[\t\n\r].*$", "", ' +
-	'comment(get(x))), sep = ""), silent = TRUE))), sep = ",,,")';
-	res = sv.r.evalCallback(cmd, sv.r.obj_select);
-	ko.statusBar.AddMessage("Listing available '" + objClass + "'... please wait",
-	"SciViews-K", 20000, true);
-	return(res);
-}
-
-// The callback for sv.r.obj
-sv.r.obj_select = function (data) {
-	ko.statusBar.AddMessage("", "SciViews-K");
-	var res = false;
-	if (sv.tools.strings.removeLastCRLF(data) == "") {
-		sv.alert("Select R objects", "Problem retrieving the list of objects!");
-	} else {	// Something is returned
-		var res = data.split("\n");
-		// First item is objClass, second one is the list of objects
-		var objclass = sv.tools.strings.removeLastCRLF(res[0]);
-		if (typeof(res[1]) == "undefined") {
-			sv.alert("Select R objects", "No object of class '" + objclass +
-			"' currently loaded in R memory!");
-		} else {	// At least one object, display a selection list
-			var items = res[1].split(",,,");
-			// TODO: highlight current active object...
-			// Select the item you want in the list
-			var item = ko.dialogs.selectFromList("Currently loaded '" +
-			objclass + "' objects in R",
-			"Select one '" + objclass + "' to make it active in Komodo:",
-			items, "one");
-			if (item != null) {
-				// Update default object
-				// We need to eliminate the comment first
-				var obj = item[0].split("\t");
-				var objname = obj[0];
-				// The rest of the treatment depends on objClass
-				if (objclass == "data.frame") {
-					sv.r.obj_select_dataframe(objname);
-				} else if (objclass == "lm") {
-					sv.r.obj_select_lm(objname);
-				} else {
-					// Not implemented yet for other objects!
-					//alert("Update of MRU lists not implemented yet for other " +
-					//	"objects than 'data.frame'");
-					// Temporary code: at least set pref value
-					sv.prefs.setString("r.active." + objclass, objname, true);
-				}
-			}
-		}
-	}
-	return(res);
-}
-
-// Display which objects (data frame and lm model, as for Rcmdr) are currently
-// active in the Komodo statusbar
-sv.r.obj_message = function () {
-	// Get the directory of current session
-	var ses = sv.prefs.getString("sciviews.session.dir", "~");
-	ses = sv.tools.strings.filename(ses);
-	// Get currently active data frame
-	var df = sv.prefs.getString("r.active.data.frame", "<none>");
-	if (df == "<df>") df = "<none>";
-	// Get currently active 'lm' object
-	var lm = sv.prefs.getString("r.active.lm", "<none>")
-	if (lm == "<lm>") lm = "<none>";
-	ko.statusBar.AddMessage(sv.translate(
-	"R session: %S  data: %S linear model: %S", ses, df, lm), "SciViews-K");
-}
-
-// Select one data frame
-sv.r.obj_select_dataframe = function (objname) {
-	// Refresh the default val and list of vars
-	var res = false;
-	var cmd = '.active.data.frame <- list(object = "' + objname +
-	'", fun = function () {\n' +
-	'	if (exists(.active.data.frame$object, envir = .GlobalEnv)) {\n' +
-	'		obj <- get(.active.data.frame$object, envir = .GlobalEnv)\n' +
-	'		res <- paste(c(.active.data.frame$object, names(obj)), "\t",\n' +
-	'		c(class(obj), sapply(obj, class)), "\n", sep = "")\n' +
-	'		return(.active.data.frame$cache <<- res)\n' +
-	'	} else return(.active.data.frame$cache <<- NULL)\n' +
-	'}, cache = "")\n' +
-	'cat(.active.data.frame$fun(), sep = "")';
-	res = sv.r.evalCallback(cmd, sv.r.obj_refresh_dataframe);
-}
-
-// Callback for sv.r.obj_select_dataframe to refresh the associated MRUs
-sv.r.obj_refresh_dataframe = function (data) {
-	ko.statusBar.AddMessage("", "SciViews-K");
-	// If we got nothing, then the object does not exists any more... clear MRUs
-	if (data == "<<<data>>>") {
-		//var oldobj = sv.prefs.getString("r.active.data.frame", "");
-		sv.prefs.setString("r.active.data.frame", "<df>", true); // Default value
-		sv.prefs.setString("r.active.data.frame.d", "<df>$", true);
-		sv.prefs.mru("var", true, "");
-		sv.prefs.mru("var2", true, "");
-		sv.prefs.mru("x", true, "");
-		sv.prefs.mru("x2", true, "");
-		sv.prefs.mru("y", true, "");
-		sv.prefs.mru("factor", true, "");
-		sv.prefs.mru("factor2", true, "");
-		sv.prefs.mru("blockFactor", true, "");
-		// Update message in the statusbar
-		sv.r.obj_message();
-		return(false);
-	}
-
-	var items = data.split("\n");
-	// First item contains the name of the active object and its class
-	var item = sv.tools.strings.removeLastCRLF(items[0]).split("\t");
-	var objname = item[0];
-	var objclass = item[1];
-	// Make sure r.active.data.frame pref is set to obj
-	sv.prefs.setString("r.active.data.frame", objname, true);
-	sv.prefs.setString("r.active.data.frame.d", objname + "$", true);
-	items.shift(); // Eliminate first item from the array
-	// Create three lists: vars collects all var names, nums and facts do so for
-	// only numeric and factor variables (separate items by "|")
-	var vars = "", nums = "", facts = "";
-	for (i in items) {
-		item = sv.tools.strings.removeLastCRLF(items[i]).split("\t");
-		// Fill the various lists according to the nature of item
-		vars = vars + "|" + item[0];
-		if (item[1] == "numeric" | item[1] == "integer")
-		nums = nums + "|" + item[0];
-		if (item[1] == "factor") facts = facts + "|" + item[0];
-	}
-	// Eliminate first "|"
-	vars = vars.substr(1);
-	nums = nums.substr(1);
-	facts = facts.substr(1);
-	// Add these lists in various MRUs
-	// vars => var and var2
-	sv.prefs.mru("var", true, vars, "|");
-	sv.prefs.mru("var2", true, vars, "|");
-	// nums => x, x2, y
-	sv.prefs.mru("x", true, nums, "|");
-	sv.prefs.mru("x2", true, nums, "|");
-	sv.prefs.mru("y", true, nums, "|");
-	// facts => factor, factor2, blockFactor
-	sv.prefs.mru("factor", true, facts, "|");
-	sv.prefs.mru("factor2", true, facts, "|");
-	sv.prefs.mru("blockFactor", true, facts, "|");
-	// Update message in the statusbar
-	sv.r.obj_message();
-	return(true);
-}
-
-// Select one lm object
-sv.r.obj_select_lm = function (objname) {
-	// Refresh the default lm object in R session
-	var res = false;
-	var cmd = '.active.lm <- list(object = "' + objname +
-	'", fun = function () {\n' +
-	'	if (exists(.active.lm$object, envir = .GlobalEnv)) {\n' +
-	'		obj <- get(.active.lm$object, envir = .GlobalEnv)\n' +
-	'		res <- paste(.active.lm$object, class(obj), sep = "\t")\n' +
-	'		return(.active.lm$cache <<- res)\n' +
-	'	} else return(.active.lm$cache <<- NULL)\n' +
-	'}, cache = "")\n' +
-	'cat(.active.lm$fun(), sep = "")';
-	res = sv.r.evalCallback(cmd, sv.r.obj_refresh_lm);
-}
-
-// Callback for sv.r.obj_select to refresh the MRUs associated with lm objects
-sv.r.obj_refresh_lm = function (data) {
-	ko.statusBar.AddMessage("", "SciViews-K");
-	// If we got nothing, then the object does not exists any more... clear MRUs
-	if (data == "<<<data>>>") {
-		//var oldobj = sv.prefs.getString("r.active.lm", "");
-		sv.prefs.setString("r.active.lm", "<lm>", true); // Default value
-		// Update message in the statusbar
-		sv.r.obj_message();
-		return(false);
-	}
-
-	var items = data.split("\n");
-	// First item contains the name of the active object and its class
-	var item = sv.tools.strings.removeLastCRLF(items[0]).split("\t");
-	var objname = item[0];
-	var objclass = item[1];
-	// Make sure r.active.data.frame pref is set to obj
-	sv.prefs.setString("r.active.lm", objname, true);
-	// Update message in the statusbar
-	sv.r.obj_message();
-	return(true);
-}
-
 // Refresh MRU lists associated with the current session
 sv.r.refreshSession = function () {
 	var i;
-	// Refresh lists of dataset
-	var items = sv.tools.file.list(sv.prefs.getString("sciviews.data.localdir"),
-	/\.[cC][sS][vV]$/, true);
-	sv.prefs.mru("datafile", true, items);
-	ko.mru.reset("datafile_mru");
-	for (i = items.length - 1; i >= 0; i--) {
-		if (items[i] != "")
-		ko.mru.add("datafile_mru", items[i], true);
-	}
-
-	// Refresh lists of scripts
-	items = sv.tools.file.list(sv.prefs.getString("sciviews.scripts.localdir"),
-	/\.[rR]$/, true);
-	sv.prefs.mru("scriptfile", true, items);
-	ko.mru.reset("scriptfile_mru");
-	for (i = items.length - 1; i >= 0; i--) {
-		if (items[i] != "")
-		ko.mru.add("scriptfile_mru", items[i], true);
-	}
-
-	// Refresh lists of reports
-	items = sv.tools.file.list(sv.prefs.getString("sciviews.reports.localdir"),
-	/\.[oO][dD][tT]$/, true);
-	sv.prefs.mru("reportfile", true, items);
-	ko.mru.reset("reportfile_mru");
-	for (i = items.length - 1; i >= 0; i--) {
-		if (items[i] != "")
-		ko.mru.add("reportfile_mru", items[i], true);
-	}
+	//// Refresh lists of dataset
+	//var items = sv.tools.file.list(sv.pref.getPref("sciviews.data.localdir"),
+	//	/\.[cC][sS][vV]$/, true);
+	////sv.prefs.mru("datafile", true, items);
+	////ko.mru.reset("datafile_mru");
+	////for (i = items.length - 1; i >= 0; i--) {
+	////	if (items[i] != "")
+	////	ko.mru.add("datafile_mru", items[i], true);
+	////}
+	//
+	//// Refresh lists of scripts
+	//items = sv.tools.file.list(sv.pref.getPref("sciviews.scripts.localdir"),
+	///\.[rR]$/, true);
+	//sv.prefs.mru("scriptfile", true, items);
+	//ko.mru.reset("scriptfile_mru");
+	//for (i = items.length - 1; i >= 0; i--) {
+	//	if (items[i] != "")
+	//	ko.mru.add("scriptfile_mru", items[i], true);
+	//}
+	//
+	//// Refresh lists of reports
+	//items = sv.tools.file.list(sv.pref.getPref("sciviews.reports.localdir"),
+	///\.[oO][dD][tT]$/, true);
+	//sv.prefs.mru("reportfile", true, items);
+	//ko.mru.reset("reportfile_mru");
+	//for (i = items.length - 1; i >= 0; i--) {
+	//	if (items[i] != "")
+	//	ko.mru.add("reportfile_mru", items[i], true);
+	//}
 }
 
 // Initialize R session preferences in Komodo
@@ -1120,47 +638,47 @@ sv.r.refreshSession = function () {
 sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	// Initialize the various arguments
 	if (typeof(dir) == "undefined")
-	dir = sv.prefs.getString("sciviews.session.dir", "~");
+	dir = sv.pref.getPref("sciviews.session.dir", "~");
 	if (typeof(datadir) == "undefined")
-	datadir = sv.prefs.getString("sciviews.session.data", "");
+	datadir = sv.pref.getPref("sciviews.session.data", "");
 	if (typeof(scriptdir) == "undefined")
-	scriptdir = sv.prefs.getString("sciviews.session.scripts", "");
+	scriptdir = sv.pref.getPref("sciviews.session.scripts", "");
 	if (typeof(reportdir) == "undefined")
-	reportdir = sv.prefs.getString("sciviews.session.reports", "");
+	reportdir = sv.pref.getPref("sciviews.session.reports", "");
 
 	var localdir = sv.tools.file.path(dir);
 	var sep = "/";
 
 	// Refresh preferences
-	sv.prefs.setString("sciviews.session.dir", dir, true);
-	sv.prefs.setString("sciviews.session.localdir", localdir, true);
+	sv.pref.setPref("sciviews.session.dir", dir, true);
+	sv.pref.setPref("sciviews.session.localdir", localdir, true);
 	// Subdirectories for data, reports and scripts
-	sv.prefs.setString("sciviews.session.data", datadir, true);
-	sv.prefs.setString("sciviews.session.scripts", scriptdir, true);
-	sv.prefs.setString("sciviews.session.reports", reportdir, true);
+	sv.pref.setPref("sciviews.session.data", datadir, true);
+	sv.pref.setPref("sciviews.session.scripts", scriptdir, true);
+	sv.pref.setPref("sciviews.session.reports", reportdir, true);
 	// Combination of these to give access to respective dirs
 	if (datadir == "") {
-		sv.prefs.setString("sciviews.data.dir", dir, true);
-		sv.prefs.setString("sciviews.data.localdir", localdir, true);
+		sv.pref.setPref("sciviews.data.dir", dir, true);
+		sv.pref.setPref("sciviews.data.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.data.dir", dir + sep + datadir, true);
-		sv.prefs.setString("sciviews.data.localdir",
+		sv.pref.setPref("sciviews.data.dir", dir + sep + datadir, true);
+		sv.pref.setPref("sciviews.data.localdir",
 		sv.tools.file.path(localdir, datadir), true);
 	}
 	if (scriptdir == "") {
-		sv.prefs.setString("sciviews.scripts.dir", dir, true);
-		sv.prefs.setString("sciviews.scripts.localdir", localdir, true);
+		sv.pref.setPref("sciviews.scripts.dir", dir, true);
+		sv.pref.setPref("sciviews.scripts.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.scripts.dir", dir + sep + scriptdir, true);
-		sv.prefs.setString("sciviews.scripts.localdir",
+		sv.pref.setPref("sciviews.scripts.dir", dir + sep + scriptdir, true);
+		sv.pref.setPref("sciviews.scripts.localdir",
 		sv.tools.file.path(localdir, scriptdir), true);
 	}
 	if (reportdir == "") {
-		sv.prefs.setString("sciviews.reports.dir", dir, true);
-		sv.prefs.setString("sciviews.reports.localdir", localdir, true);
+		sv.pref.setPref("sciviews.reports.dir", dir, true);
+		sv.pref.setPref("sciviews.reports.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.reports.dir", dir + sep + reportdir, true);
-		sv.prefs.setString("sciviews.reports.localdir",
+		sv.pref.setPref("sciviews.reports.dir", dir + sep + reportdir, true);
+		sv.pref.setPref("sciviews.reports.localdir",
 		sv.tools.file.path(localdir, reportdir), true);
 	}
 
@@ -1171,7 +689,13 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 
 	if (!file || !file.exists() || !file.isDirectory()) {
 		sv.log.debug( "Creating session directory... " );
-		file.create(DIRECTORY_TYPE, 511);
+		try {
+			file.create(DIRECTORY_TYPE, 511);
+		} catch(e) {
+			// XXX
+			sv.log.warn("sv.r.initSession: " + e + "\nfile.create " + file.path);
+		}
+
 	}
 	// ... also make sure that Data, Script and Report subdirs exist
 	var subdirs = [datadir, scriptdir, reportdir];
@@ -1201,7 +725,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 
 	// If dir is the same as current session dir, do nothing
 	if (typeof(dir) != "undefined" && sv.tools.file.path(dir) ==
-		sv.tools.file.path(sv.prefs.getString("sciviews.session.dir", "")))
+		sv.tools.file.path(sv.pref.getPref("sciviews.session.dir", "")))
 		return(false);
 
 	// Before switching to the new session directory, close current one
@@ -1238,7 +762,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 		// Look for .Rprofile, in current, then in user directory (where else R looks for it?)
 		// if exists, source the first one.
 		var Rprofile = [
-			svFile.path(sv.prefs.getString("sciviews.session.dir", "~"), ".Rprofile"),
+			svFile.path(sv.pref.getPref("sciviews.session.dir", "~"), ".Rprofile"),
 			svFile.path("~", ".Rprofile")
 		]
 
@@ -1355,30 +879,6 @@ sv.r.switchSession = function (inDoc) {
 	return(false);
 }
 
-// Show the session directory in the file explorer, finder, nautilus, ...
-// TODO: Show session directory in Places instead (this is already done in
-// session manager)
-sv.r.exploreSession = function () {
-	var dataDir = sv.prefs.getString("sciviews.session.localdir", "~");
-	var file = Components.classes["@mozilla.org/file/local;1"]
-	.createInstance(Components.interfaces.nsILocalFile);
-	file.initWithPath(dataDir);
-	if (file.exists() == true) {
-		try {
-			file.reveal();
-		} catch(e) { // On Linux, this does not work...
-			// First try nautilus, and then, try konqueror
-			try {
-				ko.run.runEncodedCommand(window,
-				'nautilus "' + file.path + '" & ');
-			} catch(e) {
-				ko.run.runEncodedCommand(window,
-				'konqueror --profile filemanagement "' + file.path + '" & ');
-			}
-		}
-	}
-}
-
 // Reload .RData and .Rhistory files from session directory
 sv.r.reloadSession = function () {
 	// Ask for confirmation first
@@ -1388,7 +888,7 @@ sv.r.reloadSession = function () {
 	"disk (.RData and .Rhistory files)...", "Reload session") == "OK") {
 		// Switch temporarily to the session directory and try loading
 		// .RData and Rhistory files
-		var dir = sv.prefs.getString("sciviews.session.dir", "");
+		var dir = sv.pref.getPref("sciviews.session.dir", "");
 		var cmd = 'rm(list = ls(pattern = "[.]active[.]", all.names = TRUE))\n' +
 		'rm(list = ls()); .savdir. <- setwd("' + dir + '")\n' +
 		'if (file.exists(".RData")) load(".RData")\n' +
@@ -1407,7 +907,7 @@ sv.r.clearSession = function () {
 	" saved in .RData and the command history saved in .Rhistory for the " +
 	"current session...", "Clear session") == "OK") {
 		// Delete .RData and Rhistory files
-		var dir = sv.prefs.getString("sciviews.session.dir", "");
+		var dir = sv.pref.getPref("sciviews.session.dir", "");
 		var cmd = '.savdir. <- setwd("' + dir + '")\n' +
 		'unlink(".RData"); unlink(".Rhistory")\n' +
 		'setwd(.savdir.); rm(.savdir.)';
@@ -1434,85 +934,6 @@ sv.r.quit = function (save) {
 	// Clear the objects browser
 	sv.r.objects.clearPackageList();
 }
-
-// KB: I think these functions should be included only in a "developer's version",
-//     most users will not need them
-// Create a translation (.pot) file for a project
-sv.r.kpf2pot = function (kpfFile) {
-	try {
-		// Ask for the filename if not provided
-		if (typeof(kpfFile) == "undefined") {
-			var title = 'Select a Komodo project file (.kpf) to make .pot file';
-			var Filters = [];
-			Filters.push("Komodo Project");
-			kpfFile = ko.filepicker.openFile("", "project.kpf", title,
-				null, Filters);
-		}
-		if (kpfFile == null) return;	// User clicked cancel
-		sv.r.eval('require(svIDE); (kpf2pot("' + kpfFile + '"))');
-	} catch(e) {
-		sv.log.exception(e, "Unknown error while creating .pot file with"
-			+ " sv.r.kpf2pot(). (" + e + ")", true);
-	}
-}
-
-// Create a translation (.pot) file for a package
-sv.r.kpz2pot = function (kpzFile) {
-	try {
-		// Ask for the filename if not provided
-		if (typeof(kpzFile) == "undefined") {
-			var title = 'Select a Komodo package file (.kpz) to make .pot file';
-			var Filters = [];
-			Filters.push("Komodo Package");
-			kpzFile = ko.filepicker.openFile("", "package.kpz", title,
-				null, Filters);
-		}
-		if (kpzFile == null) return;	// User clicked cancel
-		sv.r.eval('require(svIDE); (kpz2pot("' + kpzFile + '"))');
-	} catch(e) {
-		sv.log.exception(e, "Unknown error while creating .pot file with"
-			+ " sv.r.kpz2pot(). (" + e + ")", true);
-	}
-}
-
-// Translate a project
-sv.r.kpfTranslate = function (kpfFile) {
-	try {
-		// Ask for the filename if not provided
-		if (typeof(kpfFile) == "undefined") {
-			var title = 'Select a Komodo project file (.kpf) to translate';
-			var Filters = [];
-			Filters.push("Komodo Project");
-			kpfFile = ko.filepicker.openFile("", "project.kpf", title,
-				null, Filters);
-		}
-		if (kpfFile == null) return;	// User clicked cancel
-		sv.r.eval('require(svIDE); (kpfTranslate("' + kpfFile + '"))');
-	} catch(e) {
-		sv.log.exception(e, "Unknown error while translating a project file with"
-			+ " sv.r.kpfTranslate(). (" + e + ")", true);
-	}
-}
-
-// Translate a package
-sv.r.kpzTranslate = function (kpzFile) {
-	try {
-		// Ask for the filename if not provided
-		if (typeof(kpzFile) == "undefined") {
-			var title = 'Select a Komodo package file (.kpz) to translate';
-			var Filters = [];
-			Filters.push("Komodo Package");
-			kpzFile = ko.filepicker.openFile("", "package.kpz", title,
-				null, Filters);
-		}
-		if (kpzFile == null) return;	// User clicked cancel
-		sv.r.eval('require(svIDE); (kpzTranslate("' + kpzFile + '"))');
-	} catch(e) {
-		sv.log.exception(e, "Unknown error while translating package file with"
-			+ " sv.r.kpzTranslate(). (" + e + ")", true);
-	}
-}
-
 
 //// Define the 'sv.r.pkg' namespace ///////////////////////////////////////////
 if (typeof(sv.r.pkg) == 'undefined') sv.r.pkg = new Object();
@@ -1557,7 +978,7 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 
 			sv.r.eval('with(TempEnv(), {repos <- getOption("repos");' +
 			'repos["CRAN"] <- "' + repos + '"; ' + 'options(repos = repos)})');
-			cran = sv.prefs.setString("CRANMirror", repos);
+			cran = sv.pref.setPref("CRANMirror", repos);
 			if (callback) callback(repos);
 		}
 		return(res);
@@ -1679,7 +1100,7 @@ sv.r.pkg.unload = function () {
 sv.r.pkg.unload_select = function (pkgs) {
 	ko.statusBar.AddMessage("", "SciViews-K");
 	var res = false;
-	if (sv.tools.strings.removeLastCRLF(pkgs) == "") {
+	if (sv.tools.string.removeLastCRLF(pkgs) == "") {
 		sv.alert("None of the loaded packages are safe to unload!");
 	} else {	// Something is returned
 		var items = pkgs.split(sv.r.sep);
@@ -1711,7 +1132,7 @@ sv.r.pkg.remove = function () {
 sv.r.pkg.remove_select = function (pkgs) {
 	ko.statusBar.AddMessage("", "SciViews-K");
 	var res = false;
-	if (sv.tools.strings.removeLastCRLF(pkgs) == "") {
+	if (sv.tools.string.removeLastCRLF(pkgs) == "") {
 		sv.alert(sv.translate("None of the installed R packages are safe to remove!"));
 	} else {	// Something is returned
 		var items = pkgs.split(sv.r.sep);
@@ -1719,7 +1140,7 @@ sv.r.pkg.remove_select = function (pkgs) {
 		var topic = ko.dialogs.selectFromList("Remove R package",
 		"Select one R package to remove:", items, "one");
 		if (topic != null) {
-			var pkg = (sv.tools.strings.removeLastCRLF(topic.join('')));
+			var pkg = (sv.tools.string.removeLastCRLF(topic.join('')));
 			var response = ko.dialogs.customButtons(
 			"You are about to remove the '" + pkg +
 			"' R package from disk! Are you sure?",
@@ -1752,7 +1173,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 	var res = false;
 	var reset = (repos === true);
 
-	var defaultRepos = sv.prefs.getString("CRANMirror");
+	var defaultRepos = sv.pref.getPref("CRANMirror");
 	if (defaultRepos == "None") defaultRepos = "";
 	//defaultRepos = "http://cran.r-project.org/";
 
@@ -1773,7 +1194,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 			if (cran == "@CRAN@") {
 				res = sv.r.pkg.chooseCRANMirror(_installCallback);
 			} else {
-				sv.prefs.setString("CRANMirror", cran);
+				sv.pref.setPref("CRANMirror", cran);
 				res = sv.r.pkg.install(pkgs, cran, true);
 			}
 			return;
@@ -1861,8 +1282,8 @@ sv.r.initSession();
 
 /////////////////////////////
 sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) {
-	if (!dec) dec = sv.prefs.getString("r.csv.dec");
-	if (!sep) sep = sv.prefs.getString("r.csv.sep");
+	if (!dec) dec = sv.pref.getPref("r.csv.dec");
+	if (!sep) sep = sv.pref.getPref("r.csv.sep");
 
 	if (!fileName) {
 		var filterIndex;
@@ -1881,7 +1302,7 @@ sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) 
 			filterIndex = 3;
 		}
 
-		var dir = sv.prefs.getString("sciviews.session.dir");
+		var dir = sv.pref.getPref("sciviews.session.dir");
 
 		oFilterIdx = {value : filterIndex};
 		fileName = sv.fileOpen(dir, objName, "",
@@ -1894,7 +1315,7 @@ sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) 
 	}
 
 	var cmd = 'write.table(' + name + ', file="' +
-	sv.tools.strings.addslashes(fileName) +
+	sv.tools.string.addslashes(fileName) +
 	'", dec="' + dec + '", sep="' + sep + '", col.names=NA)';
 	sv.r.eval(cmd);
 	return(cmd);
@@ -1910,4 +1331,4 @@ sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) 
 //}
 
 // Detect where R is located now...
-sv.r.application(true); // Warn if not found!
+//sv.r.application(true); // Warn if not found!

@@ -20,7 +20,7 @@ var sv;
 // For menulists, take the value argument/(or text in the textbox), and append
 // it as new element to the list if it is new, otherwise set as selected
 function editMenulist(el, value) {
-	var curValue = (!value)?  sv.tools.strings.trim(el.value) : value;
+	var curValue = (!value)?  sv.tools.string.trim(el.value) : value;
 	if (!curValue) return;
 	var values = [], val;
 	for (var j = 0; j < el.itemCount; j++) {
@@ -127,11 +127,11 @@ function PrefR_OnLoad() {
 	//while (p.opener && (p = p.opener) && !ko) if (p.ko) ko = p.ko;
 
 	var os = Components.classes['@activestate.com/koOs;1']
-    .getService(Components.interfaces.koIOs);
+		.getService(Components.interfaces.koIOs);
 
-	var prefExecutable;
-	var prefset = parent.hPrefWindow.prefset;
-	var prefName = 'svRDefaultInterpreter';
+	//var prefExecutable;
+	//var prefset = parent.hPrefWindow.prefset;
+	//var prefName = 'svRDefaultInterpreter';
     var menu = document.getElementById("svRApplication");
     menu.removeAllItems();
 
@@ -157,8 +157,10 @@ function PrefR_OnLoad() {
     PrefR_UpdateCranMirrors(false);
 
 	menuListSetValues(); // Restores saved menu values
-	sv.prefs.checkAll(); // Check if all preference values are ok, if not, restore defaults
+	sv.checkAllPref(); // Check if all preference values are ok, if not, restore defaults
     PrefR_PopulateRInterps();
+	// TODO: this raises an exception if pref('svRDefaultInterpreter')
+	// 		 is not among the options, do some checking here
 	parent.hPrefWindow.onpageload();
     PrefR_updateCommandLine(true);
 }
@@ -166,14 +168,15 @@ function PrefR_OnLoad() {
 
 //TODO: check if there is new R version installed and ask whether to switch to it.
 function PrefR_PopulateRInterps() {
+	var prefset = parent.hPrefWindow.prefset;
 
-    var prefExecutable = sv.prefs.getString('svRDefaultInterpreter');
+    var prefExecutable = prefset.getStringPref('svRDefaultInterpreter');
+
     var rs = new Array();
     var os = Components.classes['@activestate.com/koOs;1']
-    .getService(Components.interfaces.koIOs);
+		.getService(Components.interfaces.koIOs);
     var menu = document.getElementById("svRDefaultInterpreter");
 
-    // windows:
     ////////////////////////////////////
     switch (os.name) { //'posix', 'nt', 'mac', 'os2', 'ce', 'java', 'riscos'.
         case "nt":
@@ -197,8 +200,13 @@ function PrefR_PopulateRInterps() {
             rs.splice(i, 1);
         }
     }
-
     rs = sv.tools.array.unique(rs); // Get rid of duplicates
+
+	if(rs.indexOf(prefExecutable) == -1) {
+		prefset.setStringPref('svRDefaultInterpreter', '');
+		rs.unshift('');
+	}
+
     menu.removeAllItems();
     for (var i in rs) {
         menu.appendItem(rs[i], rs[i], null);
@@ -207,24 +215,12 @@ function PrefR_PopulateRInterps() {
     if (rs.length > 0) {
         document.getElementById("no-avail-interps-message").hidden = true;
     }
-
 }
 
 function OnPreferencePageLoading(prefset) {
 }
 
 function OnPreferencePageOK(prefset) {
-	prefset = parent.hPrefWindow.prefset;
-
-	//prefset.setStringPref("svRDefaultInterpreter",
-	//document.getElementById("svRDefaultInterpreter").value);
-	//prefset.setStringPref("svRApplication",
-	//	document.getElementById('svRApplication')
-	//	.selectedItem.getAttribute("value"));
-
-	//prefset.setStringPref("svRApplicationId",
-	//	document.getElementById('svRApplication').selectedItem.id);
-
 
 	var outDec = document.getElementById('r.csv.dec').value;
 	var outSep = document.getElementById('r.csv.sep').value;
@@ -241,33 +237,36 @@ function OnPreferencePageOK(prefset) {
     }
 	prefset.setStringPref("svRCommand", PrefR_updateCommandLine(false));
 
-	//The 'r.csv.*.arg' prefs are replaced by simply 'r.csv.dec'/'r.csv.sep'
-	//as they escaped strings anyway (e.g. string "\\t" not tab character)
-
-	if (sv.r.running) {
+	if (outDec != prefset.getStringPref('r.csv.dec')
+		|| outSep != prefset.getStringPref('r.csv.sep')) {
 		sv.r.eval('options(OutDec="' + outDec + '", ' +
 		'OutSep="' + outSep + '")', true);
 	}
 
 	// Set the client type
-	var clientType = document.getElementById('sciviews.client.type').value;
-	prefset.setStringPref("sciviews.client.type", clientType);
+	//var clientType = document.getElementById('sciviews.client.type').value;
+	//prefset.setStringPref("sciviews.client.type", clientType);
 	// Check if selected item is different from current sv.clientType
-	if (clientType != sv.clientType)
-		sv.alert("R server type changed", "The server type you selected will be" +
-			" used after restarting of both R and Komodo!");
+	//if (clientType != sv.clientType)
+	//	sv.alert("R server type changed", "The server type you selected will be" +
+	//		" used after restarting of both R and Komodo!");
 
 	//sv.socket.setSocketType(clientType);
 
 	menuListGetValues();
 
 	// Restart socket server if running and port changed
-	var serverPort = document.getElementById('sciviews.server.socket').value;
-	if(sv.socket.serverIsStarted &&
-		serverPort != prefset.getStringPref("sciviews.server.socket")){
-		prefset.setStringPref("sciviews.server.socket", serverPort);
-		sv.socket.serverStart();
-	}
+	//;var serverPort = document.getElementById('sciviews.ko.port').value;
+	//XXX: Manual port setting is deprecated - it hardly ever works
+
+	//if(sv.rconn.serverIsUp &&
+		//serverPort != prefset.getLongPref("sciviews.ko.port")){ XXX
+		//serverPort != sv.pref.getPref("sciviews.ko.port")) {
+		//prefset.setStringPref("sciviews.ko.port", serverPort);
+		//sv.socket.serverStart();
+		//sv.socket.serverStart();
+		//sv.rconn.restartSocketServer();
+	//}
 	return(true);
 }
 
@@ -340,11 +339,11 @@ function PrefR_updateCommandLine(update) {
 
 	var argsPos = cmdArgs.indexOf("--args");
 	if (argsPos != -1) {
-		args1 += " " + sv.tools.strings.trim(cmdArgs.substring(argsPos + 6));
+		args1 += " " + sv.tools.string.trim(cmdArgs.substring(argsPos + 6));
 		cmdArgs = cmdArgs.substring(0, argsPos);
 	}
 
-	args1 = sv.tools.strings.trim(args1);
+	args1 = sv.tools.string.trim(args1);
 	if (args1)
 		args1 = " --args " + args1;
 
@@ -417,7 +416,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
 
 			var platform = navigator.platform.toLowerCase().substr(0,3);
 			if (platform == "win") // TODO: what if the pref is not set??
-				localPaths.push(svFile.path(sv.prefs.getString("svRDefaultInterpreter"),
+				localPaths.push(svFile.path(sv.pref.getPref("svRDefaultInterpreter"),
 					"../../doc"));
 			else { // if (platform == "lin")
 				localPaths.push('/usr/share/R/doc'); 	// try other paths: // mac: ????
@@ -466,7 +465,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
 
 	// Put arrData into MenuList
 	var menuList = document.getElementById("CRANMirror");
-	var value = menuList.value? menuList.value : sv.prefs.getString("CRANMirror");
+	var value = menuList.value? menuList.value : sv.pref.getPref("CRANMirror");
 	menuList.removeAllItems();
 	for (i in arrData) {
 		if (arrData[i][0])

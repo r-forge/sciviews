@@ -70,7 +70,7 @@ function go(uri, loadFlags) {
 		rHelpBrowser.goHome();
 		return;
 	 case "@CRAN@":
-		uri = sv.prefs.getString("CRANMirror");
+		uri = sv.pref.getPref("CRANMirror");
 		if (!uri || uri.indexOf("ftp:/") === 0)
 			uri = "http://cran.r-project.org/";
 	}
@@ -213,7 +213,7 @@ function onFindToolbarAttrModified(event) {
 }
 
 function rHelpBrowserContextOnShow(event) {
-	var selText = sv.tools.strings.trim(window._content.getSelection().toString());
+	var selText = sv.tools.string.trim(window._content.getSelection().toString());
 	var el = document.getElementById("cmd_rsearch_for");
 	var elLabel;
 	var nothingSelected = !selText;
@@ -231,7 +231,7 @@ function rHelpBrowserContextOnShow(event) {
 }
 
 function runSelAsRCode() {
-	var selText = sv.tools.strings.trim(window._content.getSelection()
+	var selText = sv.tools.string.trim(window._content.getSelection()
 	    .getRangeAt(0).toString());
 
 	// Looks like R help page, so require package first
@@ -276,8 +276,8 @@ function _getHomePage(browser, goTo) {
 	var cmd = "";
 	// Use only one type of connection for both client and server!
 	//if (sv.r.server == "http") {
-	if (sv.prefs.getString("sciviews.client.type", "socket") == "http") {
-        var port = sv.prefs.getString("sciviews.client.socket", "8888");
+	if (sv.pref.getPref("sciviews.client.type", "socket") == "http") {
+        var port = sv.pref.getPref("sciviews.r.port", 8888);
 		var path = "http://127.0.0.1:" + port + "/doc/html/index.html";
 		browser.homePage = sv.helpStartURI = path;
 		//alert(browser.homePage);
@@ -289,7 +289,7 @@ function _getHomePage(browser, goTo) {
 	    cmd += 'cat(paste("\n", "http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = ""))';
 
 	    res = sv.r.evalCallback(cmd, function (path) {
-			path = sv.tools.strings.removeLastCRLF(path);
+			path = sv.tools.string.removeLastCRLF(path);
 			// Old treatment for R < 2.10
 			//path = sv.tools.file.getfile(path,
 			//	[(isWin ? null : ".R"), "doc", "html", "index.html"]);
@@ -446,7 +446,7 @@ function getPPBrowser() rHelpBrowser;
 		   label="Save page" desc="Save page" accesskey="s" />
   <command id="cmd_run_r_code" oncommand="runSelAsRCode();"
 		   label="Run as R code" desc="Execute selected text in R" accesskey="r" />
-  <command id="cmd_rsearch_for" oncommand="rHelpSearch(sv.tools.strings.trim(window._content.getSelection().toString()));"
+  <command id="cmd_rsearch_for" oncommand="rHelpSearch(sv.tools.string.trim(window._content.getSelection().toString()));"
 		   label="Search R for selection" desc="Search R for selected text" accesskey="S" />
 </commandset>
 
@@ -489,6 +489,9 @@ function getPPBrowser() rHelpBrowser;
 				<menuitem id="rhelp-menu-cran" label="CRAN"
 					accesskey="c"
 					oncommand="go('@CRAN@');"/>
+				<menuitem id="rhelp-menu-vignettes" label="Browse vignettes"
+					accesskey="v"
+					oncommand="sv.rconn.eval('browseVignettes()');"/>
 				<menuitem id="rhelp-menu-wiki" label="R wiki"
 					accesskey="w"
 					oncommand="go('http://wiki.r-project.org/');"/>

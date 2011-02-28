@@ -1,4 +1,4 @@
-version 18
+version 19
 
 # SciViews-K default keybindings
 # will be applied if no other key has been assigned by user, and if a key
@@ -13,7 +13,7 @@ binding cmd_svRRunLineOrSelection F6
 binding cmd_svRSourceLineOrSelection Shift+F6
 binding cmd_svRRunBlock F7
 binding cmd_svRSourceBlock Shift+F7
-binding cmd_svRRunLine F11
+binding cmd_svRRunLineOrSelection F11
 binding cmd_svRRunPara F12
 binding cmd_svRSourcePara Shift+F12
 binding cmd_svRRunFunction Ctrl+F12
