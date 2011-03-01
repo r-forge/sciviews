@@ -168,11 +168,6 @@
 		</commandset>
 	</commandset>
 
-	<menupopup id="popup_tools">
-		<menuitem id="menu_sciviewsk" label="SciViews-K" observes="Tasks:svAbout"
-			class="menu-iconic-wide"/>
-	</menupopup>
-
 	<!--<menupopup id="editorContextMenu">-->
 	<!--	<menuseparator id="editor-context-sep-sv"-->
 	<!--	insertafter="context-sep-paste"-->
@@ -319,6 +314,18 @@
 			/>
 	</menupopup>
 
+<menupopup id="places-files-popup">
+	<menuseparator id="placesContextMenu_separatorR"
+		testEval_HideIf="ko.places.manager.getSelectedItems().filter(function(x) /\.[Rr]$/.test(x.name)).length == 0"
+	/>
+<menuitem oncommand="sv.command.sourcePlacesSelection()"
+		  disableIf="folder"
+		  class="menuitem-iconic"
+		  id="placesContextMenu_Rsource"
+		  label="Source into R"
+		  testEval_HideIf="ko.places.manager.getSelectedItems().filter(function(x) /\.[Rr]$/.test(x.name)).length == 0"
+/>
+</menupopup>
 
 	<tabbox id="rightTabBox">
 		<tabs id="right_toolbox_tabs">
