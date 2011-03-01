@@ -1,6 +1,6 @@
 // SciViews-K command functions
 // Define the 'sv.command' namespace
-// Copyright (c) 2009-2010, K. Barton & Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2009-2011, K. Barton & Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.command.startR();			// Start the preferred R app and connect to it
@@ -513,18 +513,17 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		sch.save();
 		//gKeybindingMgr.saveAndApply();
 		//gKeybindingMgr.saveCurrentConfiguration();
-
-		//sv.log.debug("You may need to restart Komodo.");
-
-		// A (temporary) hack to allow for R autocompletion/calltips to be
-		// triggered with the same key-shortcut as for other languages.
-		// cmd_svRTriggerCompletion will exit for files other than R
-		//var tpc_cmd = document.getElementById("cmd_triggerPrecedingCompletion");
-		//tpc_cmd.setAttribute("oncommand", [tpc_cmd.getAttribute("oncommand"),
-		//	"ko.commands.doCommandAsync('cmd_svRTriggerCompletion',
-		//  event);"].join(";"));
-        //sv.log.debug("Keybindings has been applied.");
 	}
+
+    this.sourcePlacesSelection = function sv_sourcePlacesSelection() {
+        var files = ko.places.manager.getSelectedItems()
+            .filter(function(x)(x.name.search(/\.[Rr]$/) != -1))
+            .map(function(x) x.file.path);
+        if (!files.length) return;
+        var cmd = files.map(function(x) "source('" + sv.tools.string.addslashes(x) +"')" )
+            .join("\n");
+        sv.r.eval(cmd);
+    }
 
 	addEventListener("load", function() setTimeout(_setControllers, 600), false);
 	addEventListener("load", _setKeybindings, false);
