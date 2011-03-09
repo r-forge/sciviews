@@ -58,7 +58,7 @@
 // sv.r.kpfTranslate(kpfFile); // Translate a project
 // sv.r.kpzTranslate(kpzFile); // Translate a package
 //
-// Note: sv.r.objects is implemented in robjects.js
+// Note: sv.rbrowser is implemented in robjects.js
 //       sv.r.console functions are implemented in rconsole.js
 //
 // sv.r.pkg namespace: /////////////////////////////////////////////////////////
@@ -78,17 +78,6 @@
 // sv.r.pkg.remove(); // Remove one R package
 // sv.r.pkg.remove_select(pkgs); // Callback function for sv.r.pkg.remove()
 // sv.r.pkg.install(pkgs, repos); // Install R package(s) from local files or repositories
-
-
-/// REMOVED! replaced by sv.r.pkg.install
-// sv.r.pkg.installLocal(); // Install one or more R packages from local files
-// sv.r.pkg.installSV(); // Install the SciViews-R packages from CRAN
-// sv.r.pkg.installSVrforge(); // Install development versions of SciViews-R
-// from R-Forge
-// sv.r.pkg.CRANmirror();   // Select preferred CRAN mirror
-
-/// REMOVED! use sv.command.openHelp instead
-// sv.r.helpStart(start); // Start R help in the browser, unless start is false
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -161,9 +150,9 @@ sv.r.evalCallback = function(cmd, procfun, context) {
 	args.splice(2,  0, true, null, false)
 	sv.rconn.eval.apply(sv.rconn, args)
 }
+
 sv.r.eval = function(cmd) sv.rconn.eval.call(sv.rconn, cmd)
 sv.r.evalHidden = function(cmd, earlyExit) sv.rconn.eval.call(sv.rconn, cmd)
-// Escape R calculation
 sv.r.escape = function (cmd) sv.rconn.escape(cmd);
 
 // Set the current working directory (to current buffer dir, or ask for it)
@@ -199,10 +188,11 @@ sv.r.setwd = function (dir, ask, type) {
 					view.setFocus();
 					if (!view.koDoc.isUntitled) dir = view.koDoc.file.dirName;
 					break;
-				}
+				} // Fallback: project directory
 			case "project":
 				try {
-					dir = ko.places.manager.getSelectedItem().file.dirName;
+					var file = ko.places.manager.getSelectedItem().file;
+					dir = file.isDirectory? file.path : file.dirName;
 				} catch(e) {
 					dir = sv.tools.file.pathFromURI(ko.places.manager.currentPlace);
 				}
@@ -302,9 +292,8 @@ sv.r.source = function (what) {
 			// Save all or part in the temporary file and source that file.
 			// After executing, tell R to delete it.
 			var code = sv.getTextRange(what);
-
 			if (what == "function") {
-				var rx = /(([`'"])(.+)\2|([\w\u00c0-\uFFFF\.]+))(?=\s*<-\s*function)/;
+				var rx = /(([`'"])(.+)\2|([\w\u0100-\uFFFF\.]+))(?=\s*<-\s*function)/;
 				var match = code.match(rx);
 				what += " \"" + (match? match[3] || match[4] : '') + "\"";
 				//.replace(/^(['"`])(.*)\1/, "$2")
@@ -376,6 +365,8 @@ sv.r.send = function (what) {
 //	}
 //}
 
+
+
 // Get help in R (HTML format)
 sv.r.help = function (topic, pkg) {
 	var res = false;
@@ -419,16 +410,18 @@ sv.r.example = function (topic) {
 }
 
 // Display some text from a file
-sv.r.pager = function(file, title) {
+sv.r.pager = function(file, title, cleanUp) {
 	var rSearchUrl = "chrome://sciviewsk/content/rsearch.html";
 	var content = sv.tools.file.read(file);
 	content = content.replace(/([\w\.\-]+)::([\w\.\-\[]+)/ig,
-	'<a href="' + rSearchUrl + '?$1::$2">$1::$2</a>');
+		'<a href="' + rSearchUrl + '?$1::$2">$1::$2</a>');
 	content = "<pre id=\"rPagerTextContent\" title=\"" + title + "\">" +
-	content + "</div>";
-	var charset = sv.socket.charset;
-	sv.tools.file.write(file, content, charset);
+		content + "</div>";
+	//var charset = sv.socket.charset;
+	sv.tools.file.write(file, content, 'utf-8');
 	sv.command.openHelp(rSearchUrl + "?file:" + file);
+	if(cleanUp || cleanUp === undefined)
+		window.setTimeout("try { sv.tools.file.getfile('"+file+"').remove(false); } catch(e) {}", 10000);
 }
 
 // Search R help for topic
@@ -721,7 +714,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	if (loadNew === undefined) loadNew = true;
 
 	// cmd is the command executed in R to switch session (done asynchronously)
-	var cmd = "";
+	var cmd = [];
 
 	// If dir is the same as current session dir, do nothing
 	if (typeof(dir) != "undefined" && sv.tools.file.path(dir) ==
@@ -733,15 +726,12 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	if (saveOld) {
 		// Save .RData & .Rhistory in the the session directory and clean WS
 		// We need also to restore .required variable (only if it exists)
-		cmd += 'if (exists(".required")) assignTemp(".required", .required)\n' +
-			'TempEnv()$.Last.sys()\n' +
-			'save.image()\nsavehistory()\nrm(list = ls())\n' +
-			'.required <- getTemp(".required")\n';
-	} else {
-		// Clear workspace (hint, we don't clear hidden objects!)
-		cmd += 'rm(list = ls())\n'
+		cmd.push('if (exists(".required")) assignTemp(".required", .required)',
+				 'TempEnv()$.Last.sys()',
+				 'save.image(); savehistory()',
+				 'rm(list = ls())');
 	}
-	// TODO: possibly close the associated Komodo project
+	cmd.push('rm(list = ls())', '.required <- getTemp(".required")');
 
 	// Initialize the session
 	dir = sv.r.initSession(dir, datadir, scriptdir, reportdir);
@@ -773,6 +763,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 			}
 		}
 	}
+TODO ///
 
 	// Execute the command in R (TODO: check for possible error here!)
 	// TODO: run first in R; make dirs in R; then change in Komodo!
@@ -788,12 +779,9 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 		// TODO: report if we load something or not
 		sv.r.evalCallback('cat("Session directory is now", dQuote("' + dir.addslashes() +
 		'"), "\\n", file = stderr())', null);
-		// Refresh active objects support and object explorer, ...
-		// KB: on Win, Komodo socket server gets stuck constantly, and below causes problems
-		//     so temporarily commented out
-		//sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
+		// Refresh object explorer, ...
+		sv.rconn.eval('koCmd("sv.rbrowser.smartRefresh()")', null, true);
 	});
-	// TODO: possibly open the Komodo project associated with this session
 	return(true);
 }
 
@@ -932,7 +920,7 @@ sv.r.quit = function (save) {
 	// Clear the R-relative statusbar message
 	ko.statusBar.AddMessage("", "SciViews-K");
 	// Clear the objects browser
-	sv.r.objects.clearPackageList();
+	sv.rbrowser.clearPackageList();
 }
 
 //// Define the 'sv.r.pkg' namespace ///////////////////////////////////////////

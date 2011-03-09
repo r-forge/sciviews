@@ -218,7 +218,6 @@
 		</menu>
 	</menubar>
 
-
 	<toolbar id="main-toolboxrow">
 		<toolbaritem class="chromeclass-toolbar"
 			id="RToolbar"
@@ -307,6 +306,31 @@
 			type="checkbox"
 			/>
 	</menupopup>
+
+<menupopup id="places-files-popup">
+	<menuseparator id="placesContextMenu_separatorR"
+		testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"
+	/>
+<menuitem desc="General: Edit Properties"
+		  oncommand="sv.command.sourcePlacesSelection()"
+		  disableIf="folder"
+		  class="menuitem-iconic"
+		  id="placesContextMenu_Rsource"
+		  label="Source into R"
+		  testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"
+/>
+</menupopup>
+
+
+
+
+
+
+
+
+
+
+
 
 
 	<tabbox id="rightTabBox">
