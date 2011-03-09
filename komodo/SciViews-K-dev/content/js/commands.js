@@ -133,8 +133,6 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 	// Start R
 
-
-
 	this.startR = function () {
 		var exitCode;
 		if (_this.RProcess && _this.RProcess.uuid) try {
@@ -577,9 +575,21 @@ this.getRProc = function(property) {
 	//_this.getRProc().
 //}, false);
 
+this.sourcePlacesSelection = function sv_sourcePlacesSelection() {
+	var files = ko.places.manager.getSelectedItems()
+		.filter(function(x)(x.name.search(/\.[Rr]$/) != -1))
+		.map(function(x) x.file.path);
+	if (!files.length) return;
+	var cmd = files.map(function(x) "source('" + sv.tools.string.addslashes(x) +"')" ).join("\n");
+	sv.rconn.eval(cmd, null, false);
+}
 
 
 addEventListener("load", function() setTimeout(_setControllers, 600), false);
 addEventListener("load", _setKeybindings, false);
 
 }).apply(sv.command);
+
+
+sv.getScimoz = function sv_getScimoz ()
+ko.views.manager.currentView? ko.views.manager.currentView.scimoz : null;

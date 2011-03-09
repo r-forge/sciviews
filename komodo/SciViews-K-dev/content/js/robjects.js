@@ -1,10 +1,9 @@
-//{
-// SciViews-K R objects explorer functions
-// Define the 'sv.r.objects' tree and implement RObjectsOverlay functions
-// Copyright (c) 2009, Kamil Barton & Ph. Grosjean (phgrosjean@sciviews.org)
-// License: MPL 1.1/GPL 2.0/LGPL 2.1
+//{ SciViews-K R objects explorer functions
+//  Define the 'sv.rbrowser' tree and implement RObjectsOverlay functions
+//  Copyright (c) 2009, Kamil Barton & Ph. Grosjean (phgrosjean@sciviews.org)
+//  License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.r.objects properties and methods
+// sv.rbrowser properties and methods
 //TODO: complete this documentation, clean up the code
 //
 ///// These variables store all the information ////////////////////////////////
@@ -95,21 +94,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //TODO: identify packages by pos rather than name (allow for non-unique names)
-//TODO: sort inserted child nodes (3-state sorting), restoring natural order of
-//      sub-elements (add orderIndex property to inserted elements)
-//TODO: resolve filtering modes: should sub-object be filtered too?
 //TODO: context menu for search-paths list
 //TODO: renaming objects on the list - editable names
 //TODO: add context menu item for environments: remove all objects
 //TODO: add a checkbutton to show also hidden objects (starting with a dot)
-//TODO: delegate context menu calculation to R
-//TODO: smart refresh: keep opened nodes, preserve scrolling
 //TODO: automatic refresh of the browser from R
 ////////////////////////////////////////////////////////////////////////////////
 // TODO: make this a sv.robjects.tree instead!
 //}}
 
-sv.r.objects = {};
+sv.rbrowser = {};
 
 ////DEBUG///
 var print = sv.cmdout.append;	/// XXX DEBUG
@@ -124,8 +118,6 @@ function _watcher(el, id, Fun){ el.watch(id, function(id, oldVal, newVal) {
 function _callerStr(fun) fun? fun.caller.toString().match(/^[^\)]*\)[.\s]{0,15}/) : '?'; // XXX
 //function _funStr(fun) (fun? fun : _funStr.caller).toString().match(/^[^\)]*\)/) ;
 //function _funStr2(fun) (fun? fun : _funStr.caller.caller).toString().match(/^[^\)]*\)/) ;
-
-
 //function _funStr(fun) {
 //	if (!fun) fun = _funStr.caller;
 //	return fun.toString().match(/^[^\)]*\)/) + " <- " +
@@ -144,7 +136,7 @@ function _funStr(fun) {
 
 //{ }
 
-// sv.r.objects constructor
+// sv.rbrowser constructor
 (function () {
 //{
 
@@ -205,9 +197,8 @@ function _funStr(fun) {
 
 		if (rowsChanged) _this.treeBox.rowCountChanged(0, rowsChanged);
 
-		if(_this.treeBox.view.rowCount > _this.visibleData.length) {
+		if(_this.treeBox.view.rowCount > _this.visibleData.length)
 			throw new Error("Whoops....");
-		}
 
 		if(firstVisibleRow < _this.visibleData.length)
 			_this.treeBox.scrollToRow(firstVisibleRow);
@@ -218,13 +209,12 @@ function _funStr(fun) {
 	};
 
 	function RObjectLeaf(env, obj, arr, index, parentElement) {
-		//print("RObjectLeaf: " + Array.apply(null, arguments));
 		var type = parentElement? ((parentElement.type == "environment")? 'object' :
 			(parentElement.group == "function" ? "args" : "sub-object")) :
 			'environment';
 
 		dimNumeric = 1;
-		pos = index;//policz tutaj????
+		pos = index; // XXX ????
 		//this.index = index;
 		this.type = type;
 		if (obj) { /// Objects
@@ -1142,11 +1132,11 @@ this.insertName = function (fullNames, extended) {
 	var length = scimoz.length;
 
 	if (scimoz.getWCharAt(scimoz.selectionStart - 1)
-	.search(/^[\w\.\u0100-\uFFFF"'`,\.;:=]$/) != -1)
-	text = " " + text;
+		.search(/^[\w\.\u0100-\uFFFF"'`,\.;:=]$/) != -1)
+		text = " " + text;
 	if (scimoz.getWCharAt(scimoz.selectionEnd)
-	.search(/^[\w\.\u0100-\uFFFF"'`]$/) != -1)
-	text += " ";
+		.search(/^[\w\.\u0100-\uFFFF"'`]$/) != -1)
+		text += " ";
 
 	scimoz.insertText(scimoz.currentPos, text);
 	scimoz.currentPos += scimoz.length - length;
@@ -1181,87 +1171,119 @@ this.setFilterBy = function (menuItem, column) {
 	return;
 }
 
-this.contextOnShow = function () {
+this.contextOnShow = function (event) {
 	var currentIndex = _this.selection.currentIndex;
-	if (currentIndex != -1) {
-		var isEnvironment, isPackage, isInPackage, noDelete, isFunction;
-		var item, type, name;
-		item = _this.visibleData[currentIndex].origItem;
-		type = item.class;
-		name = item.fullName;
+	if (currentIndex == -1) return;
 
-		isEnvironment = item.type == "environment";
-		isPackage = isEnvironment && (item.name.indexOf("package:") == 0);
-		isInPackage = !isPackage && item.env &&
-				(item.env.indexOf("package:") == 0);
+	var isEnvironment, isPackage, isInPackage, noDelete, isFunction;
+	var item, type, name;
+	item = _this.visibleData[currentIndex].origItem;
+	type = item.class;
+	name = item.fullName;
 
-		noDelete = (isEnvironment && (nonDetachable.indexOf(name) != -1))
+	isEnvironment = item.type == "environment";
+	isPackage = isEnvironment && (item.name.indexOf("package:") == 0);
+	isInPackage = !isPackage && item.env &&
+			(item.env.indexOf("package:") == 0);
+
+	noDelete = (isEnvironment && (nonDetachable.indexOf(name) != -1))
 		|| isInPackage;
-		isFunction = type == "function";
+	isFunction = type == "function";
 
-		var canSaveToFile = ["data.frame", "matrix", "table"]
-		.indexOf(item.class) > -1;
+	var cannotSaveToFile = ["data.frame", "matrix", "table"].indexOf(item.class) == -1;
+	var cannotSave = _this.selectedItemsOrd.filter(function(x)
+		x.type == 'object' && x.group != 'function').length == 0;
 
-		var selItemCount = _this.selection.count;
+	var multipleSelection = _this.selection.count > 1;
 
-		// Help can be shown only for one object:
-		var hasHelp = (selItemCount == 1)
-		&& (isPackage || isInPackage);
+	// Help can be shown only for one object:
+	var noHelp = !isPackage || !isInPackage;
 
-		//print (name
-		//	+ "; isPackage:" + isPackage
-		//	+ "; isEnvironment:" + isEnvironment
-		//	+ "; noDelete:" + noDelete
-		//	+ "; isInPackage:" + isEnvironment
-		//	+ "; isFunction:" + isFunction
-		//	+ "; hasHelp:" + hasHelp
-		//)
+	//var menuNode = document.getElementById("rObjectsContext");
+	var menuItems = event.target.childNodes;
+	var testDisableIf, disable = false;
 
-		document.getElementById("robjects_cmd_removeobj")
-		.setAttribute("disabled", noDelete);
-		document.getElementById("robjects_cmd_deletenow")
-		.setAttribute("disabled", noDelete);
-		//document.getElementById("robjects_cmd_attach")
-		//	.setAttribute("disabled", noDelete || !isPackage);
-		document.getElementById("robjects_cmd_summary")
-		.setAttribute("disabled", isFunction || isEnvironment);
-		document.getElementById("robjects_cmd_print")
-		.setAttribute("disabled", isPackage);
-		document.getElementById("robjects_cmd_plot")
-		.setAttribute("disabled", isFunction || isEnvironment);
-		document.getElementById("robjects_cmd_names")
-		.setAttribute("disabled", isFunction);
-		document.getElementById("robjects_cmd_str")
-		.setAttribute("disabled", isPackage);
-		document.getElementById("robjects_cmd_write_table")
-		.setAttribute("disabled", !canSaveToFile);
 
-		// Disable help option for non-package objects,
-		// because usually there is none
-		document.getElementById("robjects_cmd_help")
-		.setAttribute("disabled", !hasHelp);
+	for(var i = 0; i < menuItems.length; i++) {
+		if (!menuItems[i].hasAttribute('testDisableIf')) continue;
+		testDisableIf = menuItems[i].getAttribute('testDisableIf').split(/\s+/);
+		disable = false;
+
+		for(var j = 0; j < testDisableIf.length && !disable; j++) {
+			switch(testDisableIf[j]){
+				case 't:multipleSelection':
+					disable = multipleSelection;
+					break;
+				case 't:noHelp':
+					disable = noHelp;
+					break;
+				case 't:isFunction':
+					disable = isFunction;
+					break;
+				case 't:isEnvironment':
+					disable = isEnvironment;
+					break;
+				case 't:isPackage':
+					disable = isPackage;
+					break;
+				case 't:cannotSaveToFile':
+					disable = cannotSaveToFile;
+					break;
+				case 't:cannotSave':
+					disable = cannotSave;
+					break;
+				case 't:noDelete':
+					disable = noDelete;
+					break;
+				default: ;
+			}
+		}
+		//print( menuItems[i].id + ": " + testDisableIf + " = " + disable);
+		menuItems[i].setAttribute('disabled', disable);
 	}
+
 }
 
 this.do = function (action) {
-	var obj = [];
-	var rows = _this.getSelectedRows();
-
-	for (i in rows)
-	obj.push(_this.visibleData[rows[i]].origItem);
-
+	var obj = _this.selectedItemsOrd;
 	var command;
-
 	switch(action) {
+		case 'save':
+			// Select only objects:
+			obj = obj.filter(function(x) { if(x.type != "object") {
+				_this.selection.toggleSelect(x.index); return false }
+				else return true});
+
+			var dup = sv.tools.array.duplicates(obj.map(function(x) x.name));
+			if(dup.length &&
+			   ko.dialogs.okCancel("Objects with the same names from different" +
+				"environments selected. Following object will be taken from the " +
+				"foremost location in the search path: " + dup.join(', '),
+				"Cancel") == "Cancel") return;
+
+			var fileName = (obj.length == 1)? obj[0].name
+				.replace(/[\/\\:\*\?"<>\|]/g, '_') : '';
+
+			var dir = sv.tools.file.path(sv.rconn.evalAtOnce("cat(getwd())"));
+
+			fileName = sv.fileOpen(dir, fileName + '.RData', '',
+				["R data (*.RData)|*.RData"], false, true, oFilterIdx = {});
+
+			if (!fileName) return;
+			command = 'save(list=c(' + obj.map(function(x) '"' + x.name + '"')
+				.join(',')	+ '), file="' + fileName.addslashes() + '")';
+
+			sv.r.eval(command);
+		break;
 		// Special handling for help
 		case 'help':
 		for (i in obj) {
 			// Help only for packages and objects inside a package
-			if (obj[i].env.indexOf("package:") == 0) {
-				sv.r.help(obj[i].fullName, obj[i].env.replace(/^package:/, ''));
-			} else if (obj[i].fullName.indexOf("package:") == 0) {
+			if (obj[i].fullName.indexOf("package:") == 0) {
 				sv.r.help("", obj[i].fullName.replace(/^package:/, ''));
-			} else {
+			} else if (obj[i].env.indexOf("package:") == 0) {
+				sv.r.help(obj[i].fullName, obj[i].env.replace(/^package:/, ''));
+			} else  {
 				sv.r.help(obj[i].fullName);
 			}
 		}
@@ -1273,9 +1295,8 @@ this.do = function (action) {
 		var cmd = [], expr;
 
 		for (i in obj) {
-			expr = "evalq(" + obj[i].fullName +
-			", envir = as.environment(\"" +
-			obj[i].env.addslashes() + "\"))";
+			expr = "evalq(" + obj[i].fullName + ", envir = as.environment(\"" +
+				obj[i].env.addslashes() + "\"))";
 			sv.r.saveDataFrame(expr, '', obj[i].name);
 		}
 		break;
@@ -1312,10 +1333,10 @@ this.onEvent = function on_Event(event) {
 			var selectedItems = [];
 
 			if (selectedRows.some(function(x) x >= _this.visibleData.length))
-			return false;
+				return false;
 
 			for (var i = 0; i < selectedRows.length; i++)
-			selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
+				selectedItems.push(_this.visibleData[selectedRows[i]].origItem);
 			var curRowIdx = selectedRows.indexOf(_this.selection.currentIndex);
 
 			// This maintains array of selected items in order they were
@@ -1335,62 +1356,53 @@ this.onEvent = function on_Event(event) {
 			}
 			_this.selectedItemsOrd = newItems;
 
-		return false;
+			return false;
 		case "keyup":
 		case "keypress":
-		var key = event.keyCode ? event.keyCode : event.charCode;
-		switch (key) {
-			//case 38: // up
-			//case 40: // down
-			//	if (event.shiftKey) {
-			//		sv.log.debug("Select: " +
-			//          _this.visibleData[_this.selection.currentIndex]
-			//          .origItem.name);
-			//	}
-			//	return;
-			case 46: // Delete key
-			_this.removeSelected(event.shiftKey);
-			event.originalTarget.focus();
-			return false;
-			case 45: // Insert
-			case 32: // Space
-			//sv.log.debug("Insert");
-			break;
-			case 65: // Ctrl + A
-			case 97: // Ctrl + a
-			if (event.ctrlKey) {
-				if (event.shiftKey) {
-					_this.selectAllSiblings(_this.selection.currentIndex, false);
-				} else {
-					_this.selection.selectAll();
-				}
-			}
-			case 0:
-			return false;
-			case 93:
-			// Windows context menu key
-			var contextMenu = document.getElementById("rObjectsContext");
-			_this.treeBox.ensureRowIsVisible(_this.selection.currentIndex);
-			var y = ((2 + _this.selection.currentIndex -
-				_this.treeBox.getFirstVisibleRow())
-				* _this.treeBox.rowHeight)	+ _this.treeBox.y;
-			var x = _this.treeBox.x;
-			contextMenu.openPopup(null, "after_pointer", x, y, true);
+			var key = event.keyCode ? event.keyCode : event.charCode;
+			switch (key) {
+				case 46: // Delete key
+					_this.removeSelected(event.shiftKey);
+					event.originalTarget.focus();
+					return false;
+				case 45: // Insert
+				case 32: // Space
+					//sv.log.debug("Insert");
+					break;
+				case 65: // Ctrl + A
+				case 97: // Ctrl + a
+					if (event.ctrlKey) {
+						if (event.shiftKey)
+							_this.selectAllSiblings(_this.selection.currentIndex, false);
+						else
+							_this.selection.selectAll();
+					}
+				case 0:
+					return false;
+				case 93:
+					// Windows context menu key
+					var contextMenu = document.getElementById("rObjectsContext");
+					_this.treeBox.ensureRowIsVisible(_this.selection.currentIndex);
+					var y = ((2 + _this.selection.currentIndex -
+						_this.treeBox.getFirstVisibleRow())
+						* _this.treeBox.rowHeight)	+ _this.treeBox.y;
+					var x = _this.treeBox.x;
+					contextMenu.openPopup(null, "after_pointer", x, y, true);
 
-			// TODO: Escape key stops retrieval of R objects
-			default:
-			return;
-		}
-		break;
+				// TODO: Escape key stops retrieval of R objects
+				default:
+					return false;
+			}
+			break;
 		case "dblclick":
-		if (event.button != 0) return;
-		if (_this.selection && (_this.selection.currentIndex == -1
-		|| _this.isContainer(_this.selection.currentIndex)))
-		return false;
-		break;
+			if (event.button != 0) return false;
+			if (_this.selection && (_this.selection.currentIndex == -1
+				|| _this.isContainer(_this.selection.currentIndex)))
+				return false;
+				break;
 		case "click":
 		case "draggesture":
-		return false;
+			return false;
 		default:
 	}
 
@@ -1442,8 +1454,7 @@ this.packageListObserver = {
 		return(true);
 	},
 	//	onDragEnter: function (event, flavour, session) {
-	//		sv.log.debug(event.type + ":" + session);
-	////package:gpclibpackage:adehabitat
+	//		sv.log.debug(event.type + ":" + session;
 	//		//sv.xxx = session;
 	//	},
 	//
@@ -1520,22 +1531,22 @@ this.selectAllSiblings = function(idx, augment) {
 
 
 //_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragdrop",
-//		"nsDragAndDrop.drop(event, sv.r.objects.packageListObserver);"
+//		"nsDragAndDrop.drop(event, sv.rbrowser.packageListObserver);"
 //		);
 //_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragover",
-//		"nsDragAndDrop.dragOver(event, sv.r.objects.packageListObserver);"
+//		"nsDragAndDrop.dragOver(event, sv.rbrowser.packageListObserver);"
 //		);
 //_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragexit",
-//		"nsDragAndDrop.dragExit(event, sv.r.objects.packageListObserver);"
+//		"nsDragAndDrop.dragExit(event, sv.rbrowser.packageListObserver);"
 //		);
 //_setOnEvent("sciviews_robjects_searchpath_listbox", "ondraggesture",
-//		"nsDragAndDrop.startDrag(event, sv.r.objects.packageListObserver);"
+//		"nsDragAndDrop.startDrag(event, sv.rbrowser.packageListObserver);"
 //		);
 //_setOnEvent("sciviews_robjects_objects_tree_main", "ondragover",
-//		"nsDragAndDrop.dragOver(event, sv.r.objects.listObserver);"
+//		"nsDragAndDrop.dragOver(event, sv.rbrowser.listObserver);"
 //		);
 //_setOnEvent("sciviews_robjects_objects_tree_main", "ondragdrop",
-//		"nsDragAndDrop.drop(event, sv.r.objects.listObserver);"
+//		"nsDragAndDrop.drop(event, sv.rbrowser.listObserver);"
 	//		);
 
-}).apply(sv.r.objects);
+}).apply(sv.rbrowser);

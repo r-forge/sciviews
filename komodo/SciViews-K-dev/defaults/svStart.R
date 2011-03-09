@@ -21,7 +21,9 @@ skip = NULL)
 	# the necessary routines in a SINGLE package.
 
 	## Needed later for tryCatch'ing:
-	err.null <- function (e) return(NULL)
+	err.null <- function (e) NULL
+	silentEval <- function (expr, error=function(e)NULL, warning=function(e)NULL)
+		tryCatch(expr, error=error, warning=warning)
 
 	port <- as.numeric(getOption("ko.serve"))
 
@@ -271,9 +273,8 @@ skip = NULL)
 				repos <- NULL
 
 				## Remove directory lock if exists (happens sometimes on linux)
-				lock <- file.path(lib, "00LOCK")
 				if (.Platform$OS.type == "unix") {
-					unlink()
+					unlink(file.path(lib, "00LOCK"))
 					#system(paste("rm -r -f", file.path(lib, "00LOCK")))
 				}
 			} else {
@@ -282,6 +283,8 @@ skip = NULL)
 				pkgFile <- pkgName
 				repos <- remote.repos
 			}
+
+			# desc <- suppressWarnings(system.file("DESCRIPTION", package = pkgName))
 			pkgIsInstalled <- pkgName %in% installed.packages()[, 1]
 
 			if (!pkgIsInstalled || compareVersion(packageDescription(pkgName,
@@ -325,6 +328,7 @@ skip = NULL)
 		} else {
 			if (ko.type == "socket") {
 				# Try starting the R socket server now
+				port <- as.numeric(getOption("ko.serve"))
 				ntry <- 0
 				while(!(res <- tryCatch(startSocketServer(port=port), error=function(...) FALSE))
 					&& (ntry < 25)) {
@@ -333,6 +337,7 @@ skip = NULL)
 				}
 				debugMsg("Starting *socket* server at port", port)
 			} else res <- TRUE
+
 
 			if (!res) {
 				cat("Impossible to start the SciViews R socket server",
@@ -458,9 +463,9 @@ skip = NULL)
 			## A custom pager consists in displaying the file in Komodo
 			svPager <- function (files, header, title, delete.file) {
 				files <- gsub("\\", "\\\\", files[1], fixed = TRUE)
-				koCmd(sprintf('sv.r.pager("%s", "%s")', files, title))
-				if (delete.file)
-					koCmd(sprintf('window.setTimeout("try { sv.tools.file.getfile(\\"%s\\").remove(false); } catch(e) {}", 10000);', files));
+				tryCatch(koCmd(sprintf('sv.r.pager("%1$s", "%2$s", %3$s)',
+					 files, title, if (delete.file) 'true' else 'false')),
+					error=function(e) browseURL(files, NULL))
 			}
 
 			svBrowser <- function(url) {
@@ -468,7 +473,8 @@ skip = NULL)
 				## If the URL starts with '/', I could safely assume a file path
 				## on Unix or Mac and prepend 'file://'
 				url <- sub("^/", "file:///", url)
-				koCmd(sprintf("sv.command.openHelp(\"%s\")", url))
+				tryCatch(koCmd(sprintf("sv.command.openHelp(\"%s\")", url)),
+					error=function(e) browseURL(url, NULL))
 			}
 
 			options(editor = Komodo, browser = svBrowser, pager = svPager)
@@ -489,6 +495,9 @@ skip = NULL)
 
 		## Make sure we use HTML help (required for Alt-F1 and Alt-Shift-F1)
 		## to display R help in Komodo Edit
+		## (in Windows, chmhelp is the default up to R 2.9.2)
+		##Old code: if (.Platform$OS.type == "windows") options(chmhelp = FALSE)
+		##Old code: options(htmlhelp = TRUE)
 		## In R 2.10, help system is completely changed
 		options(help_type = "html")
 		## Make sure the help server is started
@@ -534,23 +543,15 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 
 		## Change the working directory to the provided directory
 		setwd(getOption("R.initdir"))
-
 		## Create a .Last.sys function that clears some variables in .GlobalEnv
 		## and then, switch to R.initdir before closing R. The function is
 		## stored in TempEnv()
 		assignTemp(".Last.sys", function () {
 			## Eliminate some known hidden variables from .GlobalEnv to prevent
 			## saving them in the .RData file
-			if (exists(".required", envir = .GlobalEnv, inherits = FALSE))
-				rm(.required, envir = .GlobalEnv, inherits = FALSE)
-			## Note: .SciViewsReady is now recorded in TempEnv() instead of
-			## .GlobalEnv, but we leave this code for old workspaces...
-			if (exists(".SciViewsReady", envir = .GlobalEnv, inherits = FALSE))
-				rm(.SciViewsReady, envir = .GlobalEnv, inherits = FALSE)
-			## If a R.initdir is defined, make sure to switch to it, so that
-			## the session's workspace and command history are written at the
-			## right place (in case of error, no change is made!)
-			try(setwd(getOption("R.initdir")), silent = TRUE)
+			silentEval(rm(list=c(".required", ".SciViewsReady",
+				envir =	.GlobalEnv, inherits = FALSE)))
+			silentEval(setwd(getOption("R.initdir")))
 		})
 
 		msg <- paste("Session directory is", dQuote(getOption("R.initdir")))
@@ -599,29 +600,28 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			}
 			## Indicate to Komodo that R is ready
 			## and test also communication from R to Komodo!
-			koCmd('sv.cmdout.message("<<<data>>>", 10000, true);',
-				data = paste("'", getOption("R.id"), "' (R ",
-				R.Version()$major, ".", R.Version()$minor,
-				") connected. Session dir: ",
-				path.expand(getOption("R.initdir")), sep = ""))
+			koCmd(sprintf("sv.cmdout.print('%s connected. Session dir is %s', 10000, true);",
+					R.version.string, path.expand(getOption("R.initdir"))));
+
 		}
 		## Update info in Komodo
 		debugMsg("Contacting Komodo with koCmd")
 		tryCatch({
-				invisible(koCmd(paste(
-				"sv.cmdout.append('R is started')",
-				sprintf("sv.pref.setPref('sciviews.r.port', %d)", port),
-				sep = ";")))
+		invisible(koCmd(paste(
+			"sv.cmdout.append('R is started')",
+			sprintf("sv.pref.setPref('sciviews.r.port', %d)", port),
+			sep = ";")))
 		}, error=function(e) warning(e))
 
 
-		# Temporarily define lint helper here
+		# Temporarily
 		assignTemp("quick.lint", function(file, encoding="UTF-8") {
 			on.exit(close(fconn))
 			fconn <- file(file, open="r", encoding=encoding)
 			x <- tryCatch({parse(file = fconn); NA}, error=function(e) e)
 			return(invisible(if(is.na(x[1])) "" else x$message))
 		})
+
 	}
 
 	## Do we have a .Rprofile file to source?
