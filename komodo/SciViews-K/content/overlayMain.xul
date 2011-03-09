@@ -316,14 +316,15 @@
 
 <menupopup id="places-files-popup">
 	<menuseparator id="placesContextMenu_separatorR"
-		testEval_HideIf="ko.places.manager.getSelectedItems().filter(function(x) /\.[Rr]$/.test(x.name)).length == 0"
+		testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"
 	/>
-<menuitem oncommand="sv.command.sourcePlacesSelection()"
+<menuitem desc="General: Edit Properties"
+		  oncommand="sv.command.sourcePlacesSelection()"
 		  disableIf="folder"
 		  class="menuitem-iconic"
 		  id="placesContextMenu_Rsource"
 		  label="Source into R"
-		  testEval_HideIf="ko.places.manager.getSelectedItems().filter(function(x) /\.[Rr]$/.test(x.name)).length == 0"
+		  testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"
 />
 </menupopup>
 
