@@ -47,6 +47,8 @@
 <!ENTITY sciviews.robjects.print "Contenu">
 <!ENTITY sciviews.robjects.summary "Résumé">
 <!ENTITY sciviews.robjects.write_table "Write to textfile">
+<!ENTITY sciviews.robjects.save "Save objects">
+
 
 <!ENTITY sciviews.robjects.deleteNow "Effacer tout de suite">
 <!ENTITY sciviews.robjects.deleteNow.acc "E">
