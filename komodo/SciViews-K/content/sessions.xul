@@ -82,21 +82,27 @@ function OnLoad(event) {
 	mainWin = p;
 	var sf = sv.tools.file;
 
+
+	var lastPlaces = [ko.places.manager.lastHomePlace, ko.places.manager.currentPlace]
+		.map(sv.tools.file.pathFromURI);
+
+	function hasPrefSetting(name, el) {
+		if (!el.hasAttribute("prefsettings")) return false;
+		var prefSettings = el.getAttribute("prefsettings").split(" ");
+		return prefSettings.indexOf(name) != -1;
+	}
+
+
 	var prefEls = document.getElementsByAttribute("pref", "true");
-	var prefName, prefVal, prefSettings, prefHomeSubst, prefExistingOnly,
+	var prefName, prefVal, prefHomeSubst, prefExistingOnly,
 	el, value, values, listContentPref;
 	for (var i = 0; i < prefEls.length; i++) {
 		el = prefEls[i];
 		prefName = el.id;
 		prefVal = sv.prefs.getString(prefName);
-		//prefSettings = el.getAttribute("prefsettings");
-		if (el.hasAttribute("prefsettings")) {
-			prefSettings = el.getAttribute("prefsettings").split(" ");
-		} else {
-			prefSettings = '';
-		}
-		prefHomeSubst = prefSettings.indexOf("home-subst") != -1;
-		prefExistingOnly = prefSettings.indexOf("existing-only") != -1;
+
+		prefHomeSubst = hasPrefSetting("home-subst", el);
+		prefExistingOnly = hasPrefSetting("existing-only", el);
 
 		if (prefHomeSubst)
 			prefVal = sf.path(prefVal);
@@ -106,24 +112,28 @@ function OnLoad(event) {
 			listContentPref = el.hasAttribute("contentpref")?
 			el.getAttribute("contentpref") : prefName + ".mru";
 
-			values = sv.prefs.getString(listContentPref);
-			if (values) {
-				//TODO: allow for other separators
-				values = values.split(os.pathsep);
+			values = sv.prefs.getString(listContentPref, '').split(os.pathsep);
 
-				var k = values.indexOf(
-				prefHomeSubst? homeSubst(prefVal) : prefVal);
+			if(hasPrefSetting('add-recent', el)) {
+				values = Array.concat(lastPlaces, values);
+			}
+
+
+			if (values) {
+				var k = values.indexOf(prefHomeSubst? homeSubst(prefVal) : prefVal);
 				// Move current value onto top of list:
 				if (k != -1) values.splice(k, 1);
-				values = Array.concat(prefVal, values);
+				values = Array.concat(prefVal, values).filter(function(x) x != '');
+				values = values.map(function(x) sf.path(x));
+				if (prefExistingOnly) {
+					values = values.filter(function(x) sf.exists(x) == sf.TYPE_DIRECTORY);
+				}
+				values = sv.tools.array.unique(values);
 
 				if (values.length > 10)		values.splice(10);
 
-				for (var j = 0; j < values.length; j++) {
-					value = sf.path(values[j]);
-					if (!prefExistingOnly || sf.exists(value))
-					el.insertItemAt(j, value, value, null);
-				}
+				values.forEach(function(value) el.insertItemAt(value, value, value, null));
+
 			}
 		} else if (el.tagName == "checkbox") {
 			el.checked = (prefVal == "true");
