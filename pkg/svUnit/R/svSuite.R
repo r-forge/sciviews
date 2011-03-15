@@ -274,9 +274,10 @@ unitname = NULL, ...)
 
 	## Source each runit*.R file in turn
 	for (unit in names(.lastSuite)) {
-		## Create a new environment for this suite (created in .GlobalEnv so
-		## that we can inspect it in case of stop on error)
+		## Create a new environment for this suite.
 		.ThisTestSuiteEnv <- new.env(parent = .GlobalEnv)
+        ## store it globally so that we can inspect it in case of stop
+		## on error.  but please do not remove the local alias.  #1327
         .TestSuiteEnv <<- .ThisTestSuiteEnv
 		## Source the corresponding file
 		Unit <- .lastSuite[[unit]]$file
