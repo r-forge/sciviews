@@ -63,11 +63,11 @@ class svUtils:
 
         self.lastCommand = u''
         self.lastResult = u''
-        self.id = 'svpy'
+        self.id = 'sv'
         self.runServer = False
-        self.serverIsUp = False
         self.socketOut = ('localhost', 8888)
         self.socketIn = ('localhost', 7777)
+        self.serverConn = None
         pass
 
     class _CommandInfo:
@@ -177,8 +177,21 @@ class svUtils:
 #    data = s.recv(1024)
 #timeout: timed out
 
+    def __del__(self):
+        try:
+            self.serverConn.close()
+        except:
+            pass
+
+    def serverIsUp(self):
+        try:
+            self.serverConn.fileno()
+            return True
+        except:
+            return False
+
     def startSocketServer(self, requestHandler):
-        if(self.serverIsUp): return -1L
+        if(self.serverIsUp()): return -1L
         self.runServer = True
         host = self.socketIn[0]
         port = self.socketIn[1]
@@ -186,52 +199,54 @@ class svUtils:
         port_max = port + 32L
         while port < port_max:
             try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
-                s.settimeout(5)
+                self.serverConn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.serverConn.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+                self.serverConn.settimeout(5)
                 log.debug('trying socket (%s, %d) ' % (host, port))
-                s.bind((host, port))
+                self.serverConn.bind((host, port))
                 break
             except Exception, e:
                 log.error(e.args)   # ERROR 10048, ERROR 98: Address already in use
-                s.close()
+                self.serverConn.close()
                 port += 1L
         if (port >= port_max): return 0L # TODO: fix this
         self.socketIn = (host, port)
         log.debug('startSocketServer: starting thread')
-        t = threading.Thread(target=self._Serve, kwargs={ \
-            's': s, 'requestHandler': requestHandler })
+        t = threading.Thread(target=self._Serve,
+                             kwargs={ 'requestHandler': requestHandler })
         t.start()
         log.debug('Serving on port %d' % port)
         self._proxiedObsSvc.notifyObservers(self._asSInt(port), 'r-server-started', None)
         return port
 
     def stopSocketServer(self):
-        if (self.runServer  != False):
-            self.runServer = False
-            log.debug('Told socket server to stop')
+        try:
+            self.serverConn.close()
+        except:
+            pass
+        self.runServer = False
+        log.debug('Told socket server to stop')
 
-    def _Serve(self, s, requestHandler):
+    def _Serve(self, requestHandler):
         # requestHandler is a Javascript object with component 'onStuff'
         # which is a function accepting one argument (string), and returning
         # a string
         requestHandlerProxy = getProxyForObject(1,
             components.interfaces.svIStuffListener,
             requestHandler, PROXY_ALWAYS | PROXY_SYNC)
-        self.serverIsUp = True
         try:
-            s.listen(1)
+            self.serverConn.listen(1)
             log.debug('Socket server listening at %d' % self.socketIn[1])
             count = 0
             connected = False
             while self.runServer:
-                while self.runServer:
+                while self.runServer and self.serverIsUp():
                     connected = False
                     try:
-                        conn, addr = s.accept()
+                        conn, addr = self.serverConn.accept()
                         connected = True
                         conn.setblocking(1)
-                        s.settimeout(10)
+                        self.serverConn.settimeout(10)
                         count += 1
                         break
                     except Exception: continue
@@ -261,8 +276,8 @@ class svUtils:
                 log.debug('conn closed')
         except Exception, e:
             log.debug(e.args)
-        s.close()
-        self.serverIsUp = False
+        self.stopSocketServer()
+        #self.serverConn.close()
         log.debug("Exiting after %d connections" % count)
         self._proxiedObsSvc.notifyObservers(None, 'r-server-stopped', None)
         pass
@@ -341,4 +356,3 @@ class svUtils:
     def escape(self):
         self.execInR('invisible()', 'esc')
         pass
-

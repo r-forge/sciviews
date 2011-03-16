@@ -60,7 +60,7 @@ interface svIUtils : nsISupports {
 	readonly attribute wstring lastCommand;
 	readonly attribute wstring lastResult;
 	attribute wstring id;
-	readonly attribute boolean serverIsUp;
+	boolean serverIsUp();
 	wstring pushLeft(in wstring text, in string eol, in long indent, in long tabwidth);
 
     void escape();
