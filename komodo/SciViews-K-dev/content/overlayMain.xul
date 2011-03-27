@@ -213,7 +213,7 @@
 					class="menuitem-iconic r-source-function-icon"/>
 				<menuseparator/>
 				<menuitem id="r_install_toolboxes" class="menuitem-iconic-wide"
-                    oncommand="sv.checkToolbox();" label="(Re)install R toolboxes" />
+                    oncommand="sv.checkToolbox()" label="(Re)install R toolboxes" />
 			</menupopup>
 		</menu>
 	</menubar>
@@ -309,15 +309,14 @@
 
 <menupopup id="places-files-popup">
 	<menuseparator id="placesContextMenu_separatorR"
-		testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"
+		testEval_HideIf="!sv.command.places.anyRFilesSelected"
 	/>
-<menuitem desc="General: Edit Properties"
-		  oncommand="sv.command.sourcePlacesSelection()"
+<menuitem oncommand="sv.command.places.sourceSelection()"
 		  disableIf="folder"
 		  class="menuitem-iconic"
 		  id="placesContextMenu_Rsource"
 		  label="Source into R"
-		  testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"
+		  testEval_HideIf="!sv.command.places.anyRFilesSelected"
 />
 </menupopup>
 

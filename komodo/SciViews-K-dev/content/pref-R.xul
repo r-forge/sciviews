@@ -113,38 +113,6 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 	</groupbox>
 
 	<groupbox orient="vertical">
-		<caption label="Connection with R"/>
-		<hbox align="center">
-		  <label value="Connection type:" control="sciviews.client.type"/>
-		  <menulist pref="true" id="sciviews.client.type"
-		   values="http socket" persist="values" editable="false" disabled="true">
-		   <menupopup />
-		  </menulist>
-		</hbox>
-		<grid>
-		  <columns>
-				<column flex="1"/> <column flex="2"/> <column flex="1"/> <column
-					flex="2"/>
-			</columns>
-		  <rows>
-				<row align="center">
-					<label value="Server port #:" control="sciviews.r.port" />
-					<textbox id="sciviews.r.port" pref="true" width="50" />
-					<label value="Host to connect to:" control="sciviews.r.host" />
-						<textbox id="sciviews.r.host" pref="true" width="150"
-						disabled="true"/>
-				</row>
-				<row align="center">
-					<label value="Client port #:" control="sciviews.ko.port" />
-					<textbox id="sciviews.ko.port" pref="true" width="50" />
-					<label value="Client Id:" control="sciviews.client.id" />
-					<textbox id="sciviews.client.id" pref="true" width="150" />
-				</row>
-		  </rows>
-		</grid>
-	</groupbox>
-
-	<groupbox orient="vertical">
 		<caption label="Data input and output"/>
 		<grid>
 			<columns>
@@ -186,8 +154,6 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 	<groupbox orient="vertical"  align="left">
 		<caption label="Miscellanous"/>
 
-
-
 <label value="Startup packages"/>
 <!-- KB: Some users (including me) might not want having lots of unnecessary packages loaded at startup -->
 <vbox align="left">
@@ -204,7 +170,6 @@ startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
 </hbox>
 </vbox>
 	<separator class="thin"/>
-
 		<hbox align="center" hidden="true">
 			<label value="Show R help in:" />
 				<radiogroup id="sciviews.rhelp.open_in" disabled="true"
@@ -219,6 +184,42 @@ startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
 			<checkbox id="sciviews.r.auto-start" disabled="true" label="Start R automatically"
 				pref="false" />
 		</hbox>
+	</groupbox>
+
+	<hbox>
+		<button label="Show advanced settings (rarely need to be changed)"
+				oncommand="document.getElementById('pref-R-advanced').hidden=false; this.hidden=true;" hidden="false" />
+	</hbox>
+	<groupbox id="pref-R-advanced" orient="vertical" hidden="true" >
+		<caption label="Connection with R"/>
+		<hbox align="center">
+		  <label value="Connection type:" control="sciviews.conn.type" />
+		  <menulist pref="true" id="sciviews.conn.type"
+		   values="socket http" persist="" editable="false" disabled="false">
+		   <menupopup />
+		  </menulist>
+		</hbox>
+		<grid>
+		  <columns>
+				<column flex="1"/> <column flex="2"/> <column flex="1"/> <column
+					flex="2"/>
+			</columns>
+		  <rows>
+				<row align="center">
+					<label value="Server port #:" control="sciviews.r.port" />
+					<textbox id="sciviews.r.port" pref="true" width="50" />
+					<label value="Host to connect to:" control="sciviews.r.host" />
+						<textbox id="sciviews.r.host" pref="true" width="150"
+						disabled="true"/>
+				</row>
+				<row align="center">
+					<label value="Client port #:" control="sciviews.ko.port" />
+					<textbox id="sciviews.ko.port" pref="true" width="50" />
+					<label value="Client Id:" control="sciviews.client.id" />
+					<textbox id="sciviews.client.id" pref="true" width="150" />
+				</row>
+		  </rows>
+		</grid>
 	</groupbox>
 
 	<groupbox orient="vertical" align="center">

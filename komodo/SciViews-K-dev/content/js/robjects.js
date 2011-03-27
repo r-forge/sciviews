@@ -178,7 +178,8 @@ function _funStr(fun) {
 //}
 
 	function _createVisibleData () {
-		if (!isInitialized) throw new Error("treeData not initialized");
+		//if (!isInitialized) throw new Error("treeData not initialized");
+		if (!isInitialized) return;
 
 		var rowsBefore;
 		//var visDataLen = _this.visibleData.length;
@@ -591,7 +592,7 @@ function _getVItem (obj, index, level, first, last, parentIndex, parentUid) {
 //	origItem:  null
 //}
 
-this.sort =  function sort (column, root) {
+this.sort = function sort (column, root) {
 	var columnName, currentElement, tree, sortDirection, realOrder, order,
 		sortDirs;
 	tree = document.getElementById("sciviews_robjects_objects_tree");

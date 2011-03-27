@@ -610,6 +610,7 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 		invisible(koCmd(paste(
 			"sv.cmdout.append('R is started')",
 			sprintf("sv.pref.setPref('sciviews.r.port', %d)", port),
+			"sv.rbrowser.smartRefresh()",
 			sep = ";")))
 		}, error=function(e) warning(e))
 

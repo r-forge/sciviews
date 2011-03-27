@@ -46,7 +46,6 @@
 xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 onload="OnLoad(event)"
 orient="vertical"
-flex="1"
 buttons="accept,extra1,cancel"
 buttonlabelextra1="Apply"
 ondialoghelp="return false;"
@@ -56,6 +55,7 @@ ondialogextra1="OK();"
 title="R Session manager"
 persist="screenX screenY"
 >
+
 <script type="text/javascript">
 <![CDATA[
 
@@ -160,10 +160,12 @@ function OK() {
 		prefAll[el.id] = prefVal;
 	}
 
+	var saveOld = document.getElementById("sciviews.session.saveold").checked;
+
 	sv.r.setSession(prefAll["sciviews.session.dir"],
 		prefAll["sciviews.session.data"],
 		prefAll["sciviews.session.scripts"],
-		prefAll["sciviews.session.reports"]);
+		prefAll["sciviews.session.reports"], saveOld);
 
 
 	for (i in prefAll) sv.pref.setPref(i, prefAll[i]);
@@ -376,6 +378,10 @@ function saveWorkspace() {
 				<hbox align="center">
 					<checkbox id="sciviews.session.placesroot" pref="true"
 						label="Set this directory as root in &quot;Places&quot;"
+						/>
+
+					<checkbox label="Save old workspace"
+						id="sciviews.session.saveold" pref="true"
 						/>
 				</hbox>
 				<separator class="thin"/>

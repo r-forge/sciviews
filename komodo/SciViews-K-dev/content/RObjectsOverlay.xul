@@ -41,7 +41,7 @@
 ]>
 
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/global/global.p.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
 <?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
 
@@ -182,6 +182,17 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		<tabpanels id="project_toolbox_tabpanels">
 			<tabpanel flex="1" id="sciviews_robjects_tabpanel"
 			insertafter="projectviewbox,codebrowserviewbox">
+
+
+<!--				<hbox flex="1" align="center"><vbox align="center" flex="1">
+					<button label="Start "
+						class="r-run-command-icon"
+						observes="cmd_svStartR"
+						dir="reverse"
+						orient="horizontal" />
+				</vbox></hbox>-->
+
+
 				<vbox flex="1" id="sciviews_robjects_vbox">
 					<hbox align="center" id="sciviews_robjects_hbox">
 						<toolbarbutton id="sciviews_robjects_refresh_button"

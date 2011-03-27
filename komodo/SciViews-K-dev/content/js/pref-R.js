@@ -43,6 +43,7 @@ function menuListSetValues(attribute) {
 		el = ml[i];
 		if (el.hasAttribute(attribute)) {
 			values = el.getAttribute(attribute).split(/\s+/);
+			el.removeAllItems(); /// XXX
 			for (var k in values) {
                 v = unescape(values[k]);
                 el.appendItem(v, v, null);
@@ -58,7 +59,7 @@ function menuListGetValues(attribute) {
 	var el, values;
 	for (var i = 0; i < ml.length; i++) {
 		el = ml[i];
-		if (el.hasAttribute(attribute)) {
+		if (el.editable && el.hasAttribute(attribute)) {
 			values = [];
 			for (var k = 0; k < el.itemCount; k++) {
 				values.push(escape(el.getItemAtIndex(k).value));
@@ -85,37 +86,29 @@ function PrefR_menulistSetValue(menuList, value, attrName, vdefault) {
 }
 
 // List of R applications
+// Constructor
+function _App(id, name, path, app, required, platform) {
+	this.id = id;
+	this.name = name;
+	this.path = path;
+	this.app = app;
+	this.required = required? required.split(/\s*,\s*/) : [];
+	this.platform = platform? platform.split(/\s*,\s*/): [];
+}
+
 var apps = [
-{ id:"r-terminal", label:"in default terminal", path:"\"%Path%\" %args%",
-        app:"R", required:"R", platform:"Lin,Mac"},
-{id:"r-terminal", label:"in console window", path:"\"%Path%\" %args%",
-        app:"R.exe", required:"R", platform:"Win"},
-{id:"r-gnome-term", label:"in Gnome terminal",
-        path:"gnome-terminal --hide-menubar --working-directory='%cwd%' -t '%title%' -x '%Path%' %args%",
-        app:"R", required:"gnome-terminal,R", platform:"Lin"},
-{id:"r-kde-term", label:"in Konsole", app:"R",
-        path:"konsole --workdir '%cwd%' --title %title% -e \"%Path%\" %args%",
-        required:"konsole,R", platform:"Lin"},
-{id:"r-xfce4-term", label:"in XFCE terminal", app:"R",
-        path:"xfce4-terminal --title \"%title%\" -x \"%Path%\" %args%",
-        required:"xfce4-terminal,R", platform:"Lin"},
-{id:"r-app", label:"R app", path:"open -a \"%Path%\" \"%cwd%\"",
-        app:"R.app",
-        required:"/Applications/R.app", platform:"Mac"},
-{id:"r64-app", label:"R64 app", path:"open -a \"%Path%\" \"%cwd%\"",
-        app:"R64.app",
-        required:"/Applications/R64.app", platform:"Mac"},
-{id:"svr-app", label:"SciViews R app", path:"open -a \"%Path%\" \"%cwd%\"",
-        app:"SciViews R.app",
-        required:"/Applications/SciViews R.app", platform: "Mac"},
-{id:"svr64-app", label:"SciViews R64 app", path:"open -a \"%Path%\" \"%cwd%\"",
-        app:"SciViews R64.app",
-        required:"/Applications/SciViews R64.app", platform:"Mac"},
-{id:"r-gui", label:"R GUI", app:"Rgui.exe", path:"\"%Path%\" --sdi %args%",
-        required:"Rgui",
-        platform:"Win"},
-{id:"r-tk", label:"R Tk GUI", path:"\"%Path%\" --interactive --gui:Tk %args%",
-        app:"R", required:"R", platform:"Lin,Mac"}
+new _App("", "Choose...", "", "", "", "Lin,Mac,Win"),
+new _App("r-terminal", "in default terminal", "\"%Path%\" %args%", "R", "R", "Lin,Mac"),
+new _App("r-terminal", "in console window", "\"%Path%\" %args%", "R.exe", "R", "Win"),
+new _App("r-gnome-term", "in Gnome terminal", "gnome-terminal --hide-menubar --working-directory='%cwd%' -t '%title%' -x '%Path%' %args%", "R", "gnome-terminal,R", "Lin"),
+new _App("r-kde-term", "in Konsole", "konsole --workdir '%cwd%' --title %title% -e \"%Path%\" %args%", "R", "konsole,R", "Lin"),
+new _App("r-xfce4-term", "in XFCE terminal", "xfce4-terminal --title \"%title%\" -x \"%Path%\" %args%", "R",  "xfce4-terminal,R", "Lin"),
+new _App("r-app", "R app", "open -a \"%Path%\" \"%cwd%\"", "R.app", "/Applications/R.app", "Mac"),
+new _App("r64-app", "R64 app", "open -a \"%Path%\" \"%cwd%\"", "R64.app", "/Applications/R64.app", "Mac"),
+new _App("svr-app", "SciViews R app", "open -a \"%Path%\" \"%cwd%\"", "SciViews R.app", "/Applications/SciViews R.app", "Mac"),
+new _App("svr64-app", "SciViews R64 app", "open -a \"%Path%\" \"%cwd%\"", "SciViews R64.app", "/Applications/SciViews R64.app", "Mac"),
+new _App("r-gui", "R GUI", "Rgui.exe", "\"%Path%\" --sdi %args%", "Rgui", "Win"),
+new _App("r-tk", "R Tk GUI", "\"%Path%\" --interactive --gui:Tk %args%", "R", "R", "Lin,Mac")
 ];
 
 
@@ -129,32 +122,20 @@ function PrefR_OnLoad() {
 	var os = Components.classes['@activestate.com/koOs;1']
 		.getService(Components.interfaces.koIOs);
 
-	//var prefExecutable;
-	//var prefset = parent.hPrefWindow.prefset;
-	//var prefName = 'svRDefaultInterpreter';
+    var platform = navigator.platform.substr(0,3);
+	apps = apps.filter(function(x) (x.platform.indexOf(platform) != -1)
+					   && (!x.required.length
+						   || x.required.every(
+								function(y) sv.tools.file.whereIs(y).length != 0)
+						   )
+					   );
+
     var menu = document.getElementById("svRApplication");
     menu.removeAllItems();
-
-    var platform = navigator.platform.substr(0,3);
-
-    var tmp = {}, required, res;
-    for (var i in apps)
-    if (apps[i].platform.split(',').indexOf(platform) != -1) {
-        required = apps[i].required.split(',');
-        res = true;
-        for (var k in required)
-        res = res && !!sv.tools.file.whereIs(required[k]);
-        if (res)
-        tmp[apps[i].id] = apps[i];
-    }
-    apps = tmp;
-
-    for (var i in apps)
-    menu.appendItem(apps[i].label, i, null);
+    for (var i in apps) menu.appendItem(apps[i].label, i, null);
 
     // update cran mirror list (first local, then tries remote at CRAN)
-	if (!PrefR_UpdateCranMirrors(true))
-    PrefR_UpdateCranMirrors(false);
+	if (!PrefR_UpdateCranMirrors(true)) PrefR_UpdateCranMirrors(false);
 
 	menuListSetValues(); // Restores saved menu values
 	sv.checkAllPref(); // Check if all preference values are ok, if not, restore defaults
@@ -182,6 +163,7 @@ function PrefR_PopulateRInterps() {
         case "nt":
         rs = rs.concat(sv.tools.file.whereIs("Rgui"));
         rs = rs.concat(sv.tools.file.whereIs("R"));
+		rs.sort(); rs.reverse();
         break;
         case "mac":
         //FIXME: as I understand there are only 2 options on Mac, is it right?:
@@ -272,7 +254,7 @@ function OnPreferencePageOK(prefset) {
 
 function svRDefaultInterpreterOnSelect(event) {
 	var os = Components.classes['@activestate.com/koOs;1']
-    .getService(Components.interfaces.koIOs);
+		.getService(Components.interfaces.koIOs);
 
 	var menuApplication = document.getElementById("svRApplication");
     var menuInterpreters = document.getElementById("svRDefaultInterpreter");
@@ -284,14 +266,12 @@ function svRDefaultInterpreterOnSelect(event) {
 
     var app = os.path.basename(menuInterpreters.value);
 
-    if (apps[menuApplication.value].app != app) {
+    if (!(menuApplication.value in apps) || apps[menuApplication.value].app != app) {
         var i;
         for (i in apps)
-        if (apps[i].app == app) break;
+			if (apps[i].app == app) break;
         menuApplication.value = i;
     }
-
-
 
     PrefR_updateCommandLine(true);
 }
@@ -300,11 +280,13 @@ function svRDefaultInterpreterOnSelect(event) {
 function PrefR_svRApplicationOnSelect(event) {
 	var menuApplication = document.getElementById("svRApplication");
     var menuInterpreters = document.getElementById("svRDefaultInterpreter");
+	if (!(menuApplication.value in apps)) return;
+
     var app = apps[menuApplication.value].app;
 	var sel = menuApplication.selectedItem;
 
 	var os = Components.classes['@activestate.com/koOs;1']
-    .getService(Components.interfaces.koIOs);
+		.getService(Components.interfaces.koIOs);
 
     if (os.path.basename(menuInterpreters.value) != app) {
         //TODO: modify to use with:
@@ -325,17 +307,20 @@ function PrefR_svRApplicationOnSelect(event) {
 
 function PrefR_updateCommandLine(update) {
     var appId = document.getElementById("svRApplication").value;
-    var appPath = document.getElementById("svRDefaultInterpreter").value;
+	var appPath = document.getElementById("svRDefaultInterpreter").value;
+
+     if(!appId || !appPath) return '';
+
     var cmdArgs = document.getElementById("svRArgs").value;
 	var args1 = "";
 
 	if(document.getElementById("sciviews.pkgs.sciviews").checked)
-			args1 += " --svStartPkgs=SciViews,MASS,ellipse";
+		args1 += " --svStartPkgs=SciViews,MASS,ellipse";
 
    	var cwd = sv.tools.file.path("ProfD", "extensions",
     "sciviewsk@sciviews.org", "defaults");
 
-	cmdArgs = cmdArgs.replace(/\s*--mdi/, "");
+	cmdArgs = cmdArgs.replace(/\s*--[sm]di\b/, "");
 
 	var argsPos = cmdArgs.indexOf("--args");
 	if (argsPos != -1) {
@@ -349,15 +334,15 @@ function PrefR_updateCommandLine(update) {
 
     var cmd = apps[appId].path;
 	cmd = cmd.replace("%Path%", appPath)
-    .replace("%title%", "SciViews-R").replace("%cwd%", cwd)
-    .replace("%args%", cmdArgs) + args1;
+		.replace("%title%", "SciViews-R").replace("%cwd%", cwd)
+		.replace("%args%", cmdArgs) + args1;
 
     if (update) {
         var cmdLabel = document.getElementById('R_command');
         cmdLabel.value = cmd;
     }
 
-    return(cmd);
+    return cmd;
 }
 
 function PrefR_setExecutable(path) {
@@ -381,8 +366,6 @@ function PrefR_setExecutable(path) {
 
 
 }
-
-
 
 // Get CRAN mirrors list - independently of R
 function PrefR_UpdateCranMirrors(localOnly) {
