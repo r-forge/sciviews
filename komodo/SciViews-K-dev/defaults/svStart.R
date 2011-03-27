@@ -561,7 +561,7 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 		if (!"--vanilla" %in% args && !"--no-restore" %in% args &&
 			!"--no.restore-data" %in% args) {
 				if (file.exists(".RData")) {
-					load(".RData")
+					load(".RData", envir = .GlobalEnv)
 					msg2 <- append(msg2, "data loaded")
 				} else {
 					msg2 <- append(msg2, "no data")

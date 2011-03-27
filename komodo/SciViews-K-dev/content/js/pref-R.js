@@ -64,7 +64,11 @@ function menuListGetValues(attribute) {
 			for (var k = 0; k < el.itemCount; k++) {
 				values.push(escape(el.getItemAtIndex(k).value));
 			}
-			el.setAttribute(attribute, values.join(" "));
+
+			values = sv.tools.array.unique(values);
+			var nMax = parseInt(el.getAttribute('maxValues'));
+			if(nMax > 0) values = values.slice(0, nMax);
+			el.setAttribute(attribute, values.join(' '));
 		}
 	}
 }
@@ -107,10 +111,9 @@ new _App("r-app", "R app", "open -a \"%Path%\" \"%cwd%\"", "R.app", "/Applicatio
 new _App("r64-app", "R64 app", "open -a \"%Path%\" \"%cwd%\"", "R64.app", "/Applications/R64.app", "Mac"),
 new _App("svr-app", "SciViews R app", "open -a \"%Path%\" \"%cwd%\"", "SciViews R.app", "/Applications/SciViews R.app", "Mac"),
 new _App("svr64-app", "SciViews R64 app", "open -a \"%Path%\" \"%cwd%\"", "SciViews R64.app", "/Applications/SciViews R64.app", "Mac"),
-new _App("r-gui", "R GUI", "Rgui.exe", "\"%Path%\" --sdi %args%", "Rgui", "Win"),
+new _App("r-gui", "R GUI","\"%Path%\" --sdi %args%", "Rgui.exe", "Rgui", "Win"),
 new _App("r-tk", "R Tk GUI", "\"%Path%\" --interactive --gui:Tk %args%", "R", "R", "Lin,Mac")
 ];
-
 
 function PrefR_OnLoad() {
 	// Get the sv object:
@@ -124,15 +127,15 @@ function PrefR_OnLoad() {
 
     var platform = navigator.platform.substr(0,3);
 	apps = apps.filter(function(x) (x.platform.indexOf(platform) != -1)
-					   && (!x.required.length
-						   || x.required.every(
-								function(y) sv.tools.file.whereIs(y).length != 0)
-						   )
-					   );
+					   && (!x.required.length || x.required.every(
+						function(y) sv.tools.file.whereIs(y).length != 0)));
+	var tmp = {};
+	for (var i in apps) tmp[apps[i].id] = apps[i];
+	apps = tmp;
 
     var menu = document.getElementById("svRApplication");
     menu.removeAllItems();
-    for (var i in apps) menu.appendItem(apps[i].label, i, null);
+    for (var i in apps) menu.appendItem(apps[i].name, i, null);
 
     // update cran mirror list (first local, then tries remote at CRAN)
 	if (!PrefR_UpdateCranMirrors(true)) PrefR_UpdateCranMirrors(false);
@@ -161,18 +164,18 @@ function PrefR_PopulateRInterps() {
     ////////////////////////////////////
     switch (os.name) { //'posix', 'nt', 'mac', 'os2', 'ce', 'java', 'riscos'.
         case "nt":
-        rs = rs.concat(sv.tools.file.whereIs("Rgui"));
-        rs = rs.concat(sv.tools.file.whereIs("R"));
-		rs.sort(); rs.reverse();
-        break;
+			rs = rs.concat(sv.tools.file.whereIs("Rgui"));
+			rs = rs.concat(sv.tools.file.whereIs("R"));
+			rs.sort(); rs.reverse();
+			break;
         case "mac":
-        //FIXME: as I understand there are only 2 options on Mac, is it right?:
-        rs = ["/Applications/R.app", "/Applications/R64.app"];
-        // What about "SciViews R*.app" ???
-        break;
+			//FIXME: as I understand there are only 2 options on Mac, is it right?:
+			rs = ["/Applications/R.app", "/Applications/R64.app"];
+			// What about "SciViews R*.app" ???
+			break;
         case "posix":
         default:
-        rs = rs.concat(sv.tools.file.whereIs("R"));
+			rs = rs.concat(sv.tools.file.whereIs("R"));
     }
     rs.unshift(prefExecutable);
 
@@ -199,8 +202,7 @@ function PrefR_PopulateRInterps() {
     }
 }
 
-function OnPreferencePageLoading(prefset) {
-}
+function OnPreferencePageLoading(prefset) {}
 
 function OnPreferencePageOK(prefset) {
 
@@ -249,7 +251,7 @@ function OnPreferencePageOK(prefset) {
 		//sv.socket.serverStart();
 		//sv.rconn.restartSocketServer();
 	//}
-	return(true);
+	return true;
 }
 
 function svRDefaultInterpreterOnSelect(event) {
@@ -276,14 +278,13 @@ function svRDefaultInterpreterOnSelect(event) {
     PrefR_updateCommandLine(true);
 }
 
-//TODO: rename to PrefR_svRApplicationUpdate
 function PrefR_svRApplicationOnSelect(event) {
 	var menuApplication = document.getElementById("svRApplication");
     var menuInterpreters = document.getElementById("svRDefaultInterpreter");
 	if (!(menuApplication.value in apps)) return;
 
     var app = apps[menuApplication.value].app;
-	var sel = menuApplication.selectedItem;
+	//var sel = menuApplication.selectedItem;
 
 	var os = Components.classes['@activestate.com/koOs;1']
 		.getService(Components.interfaces.koIOs);
@@ -318,7 +319,7 @@ function PrefR_updateCommandLine(update) {
 		args1 += " --svStartPkgs=SciViews,MASS,ellipse";
 
    	var cwd = sv.tools.file.path("ProfD", "extensions",
-    "sciviewsk@sciviews.org", "defaults");
+		"sciviewsk@sciviews.org", "defaults");
 
 	cmdArgs = cmdArgs.replace(/\s*--[sm]di\b/, "");
 
@@ -363,8 +364,6 @@ function PrefR_setExecutable(path) {
 
     editMenulist(menu, path);
     menu.value = path;
-
-
 }
 
 // Get CRAN mirrors list - independently of R
@@ -455,7 +454,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
         menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
 	}
 	menuList.value = value;
-	return(true);
+	return true;
 }
 
 // From: http://www.bennadel.com/index.cfm?dax=blog:1504.view

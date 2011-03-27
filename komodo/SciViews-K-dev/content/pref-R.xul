@@ -75,7 +75,7 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 			<label class="label" control="svRApplication" value="Preferred way to run R:"/>
 				<menulist
 				id="svRApplication" oncommand="PrefR_svRApplicationOnSelect(event);"
-				pref="true" />
+				pref="true" editable="false" />
 
 		</hbox>
 		<label value="Use this application:" control="svRDefaultInterpreter" />
@@ -122,14 +122,14 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 				<row align="center">
 					<label value="Decimal separator" control="r.csv.dec"/>
 						<menulist pref="true" id="r.csv.dec"
-						values=", ." persist="values">
+						values=", ." persist="values" maxValues="3">
 						<menupopup />
 					</menulist>
 					<label value="CSV field separator" control="r.csv.sep" />
 						<menulist pref="true" id="r.csv.sep" editable="true"
 						onkeyup="if (event.keyCode == 13) editMenulist(this);"
 						onblur="editMenulist(this);"
-						values=", ; \t" persist="values">
+						values=", ; \t" persist="values" maxValues="5">
 						<menupopup />
 					</menulist>
 				</row>
@@ -195,7 +195,7 @@ startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
 		<hbox align="center">
 		  <label value="Connection type:" control="sciviews.conn.type" />
 		  <menulist pref="true" id="sciviews.conn.type"
-		   values="socket http" persist="" editable="false" disabled="false">
+		   values="socket http" persist="" editable="false" disabled="true">
 		   <menupopup />
 		  </menulist>
 		</hbox>
