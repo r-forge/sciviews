@@ -132,7 +132,6 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	}
 
 	// Start R
-
 	this.startR = function () {
 		var exitCode;
 		if (_this.RProcess && _this.RProcess.uuid) try {
@@ -569,27 +568,42 @@ this.getRProc = function(property) {
 	return proc;
 }
 
-//addEventListener("load", function() {
-	//TODO: check connection with R, then find running R processes
-	//      report if R is running but not responding
-	//_this.getRProc().
-//}, false);
+this.places = {
+	sourceSelection: function sv_sourcePlacesSelection() {
+		var files = ko.places.manager.getSelectedItems()
+			.filter(function(x)(x.name.search(/\.[Rr]$/) != -1))
+			.map(function(x) x.file.path);
+		if (!files.length) return;
+		var cmd = files.map(function(x) "source('" + sv.tools.string.addslashes(x) +"')" ).join("\n");
+		sv.rconn.eval(cmd, null, false);
+	},
 
-this.sourcePlacesSelection = function sv_sourcePlacesSelection() {
-	var files = ko.places.manager.getSelectedItems()
-		.filter(function(x)(x.name.search(/\.[Rr]$/) != -1))
-		.map(function(x) x.file.path);
-	if (!files.length) return;
-	var cmd = files.map(function(x) "source('" + sv.tools.string.addslashes(x) +"')" ).join("\n");
-	sv.rconn.eval(cmd, null, false);
+	get anyRFilesSelected()
+		ko.places.manager.getSelectedItems()
+		.some(function(x) /\.[Rr]$/.test(x.name))
 }
 
+//}
 
-addEventListener("load", function() setTimeout(_setControllers, 600), false);
-addEventListener("load", _setKeybindings, false);
+
+// TODO: move this to sv.onLoad:
+this.onLoad = function(event) {
+	setTimeout(function() {
+		_setControllers();
+		_this.updateRStatus(false); // XXX: workaround for some items in
+									//'cmdset_rApp' commandset being grayed out
+									//at startup...
+		_this.updateRStatus(sv.rconn.testRAvailability(false));
+	}, 600);
+	 _setKeybindings();
+
+	sv.rconn.startSocketServer();
+}
+
+addEventListener("load", _this.onLoad, false);
 
 }).apply(sv.command);
 
-
+// XXX: for DEBUG only
 sv.getScimoz = function sv_getScimoz ()
 ko.views.manager.currentView? ko.views.manager.currentView.scimoz : null;

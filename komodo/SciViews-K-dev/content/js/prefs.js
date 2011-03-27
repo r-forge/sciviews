@@ -19,10 +19,11 @@ if (sv.pref == undefined) sv.pref = {};
 // sv.prefs.defaults[preferenceName] = preferenceValue
 sv.defaultPrefs = {
 	'sciviews.ko.port': 7052,
-	'sciviews.client.type': 'socket',
 	'sciviews.r.port': 8888,
-	'sciviews.client.id': 'SciViewsK',
 	'sciviews.r.host': '127.0.0.1',
+	'sciviews.client.id': 'SciViewsK',
+	'sciviews.client.type': 'socket',
+	'sciviews.conn.type': 'socket',
 	svRDefaultInterpreter: '',
 	svRApplication: '',
 	svRArgs: '--quiet',
@@ -39,7 +40,13 @@ sv.defaultPrefs = {
 
 //// Set default preferences
 sv.checkAllPref = function sv_checkAllPref(revert) {
-	for (var i in sv.defaultPrefs) sv.pref.setPref(i, sv.defaultPrefs[i], revert);
+	var val, rev;
+	for (var i in sv.defaultPrefs) {
+		val = sv.pref.getPref(i);
+		rev = revert || (typeof(val) == "number" && isNaN(val)) || val == "None"
+			|| (sv.defaultPrefs[i] != '' && val == '');
+		sv.pref.setPref(i, sv.defaultPrefs[i], rev);
+	}
 };
 
 

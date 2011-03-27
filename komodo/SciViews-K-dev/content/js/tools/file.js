@@ -33,6 +33,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 (function () {
 	// Default file encoding to use
+	var _this = this;
 	this.defaultEncoding = "latin1";
 	this.TYPE_DIRECTORY = 2;
 	this.TYPE_FILE = 1;
@@ -40,7 +41,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 	// Read a file with encoding
 	this.read = function (filename, encoding) {
-		if (!encoding) encoding = this.defaultEncoding;
+		if (!encoding) encoding = _this.defaultEncoding;
 
 		var file = Components.classes["@mozilla.org/file/local;1"]
 		.createInstance(Components.interfaces.nsILocalFile);
@@ -75,7 +76,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 	// Write in a file with encoding
 	this.write = function (filename, content, encoding, append) {
-		if (!encoding) encoding = this.defaultEncoding;
+		if (!encoding) encoding = _this.defaultEncoding;
 
 		append = append? 0x10 : 0x20;
 
@@ -110,26 +111,26 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		try {
 			file.initWithPath(path);
 		} catch(e) {
-			return(this.TYPE_NONE);
+			return(_this.TYPE_NONE);
 		}
 
 		if (file.exists()) {
 			if (file.isDirectory()) {
-				return(this.TYPE_DIRECTORY);
+				return(_this.TYPE_DIRECTORY);
 			} else if (file.isFile()) {
-				return(this.TYPE_FILE);
+				return(_this.TYPE_FILE);
 			}
 		}
-		return(this.TYPE_NONE);
+		return(_this.TYPE_NONE);
 	}
 
 	this.exists2 = function (path) {
 		var sysutils = Components.classes['@activestate.com/koSysUtils;1']
 			.getService(Components.interfaces.koISysUtils);
 
-		if(sysutils.IsDir(path)) return(this.TYPE_DIRECTORY);
-		if(sysutils.IsFile(path)) return(this.TYPE_FILE);
-		return(this.TYPE_NONE);
+		if(sysutils.IsDir(path)) return(_this.TYPE_DIRECTORY);
+		if(sysutils.IsFile(path)) return(_this.TYPE_FILE);
+		return(_this.TYPE_NONE);
 	}
 
 
@@ -178,7 +179,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	// Create nsILocalFile object from path
 	// concatenates arguments if needed
 	this.getfile = function (path) {
-		path = this.path.apply(this, Array.apply(null, arguments));
+		path = _this.path.apply(_this, Array.apply(null, arguments));
 		//return(path);
 		var file = Components.classes["@mozilla.org/file/local;1"]
 		.createInstance(Components.interfaces.nsILocalFile);
@@ -222,7 +223,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	}
 
 	this.getURI = function(file) {
-		if (typeof file == "string") file = this.getfile(file);
+		if (typeof file == "string") file = _this.getfile(file);
 		if (!file) return (null);
 
 		var ios = Components.classes["@mozilla.org/network/io-service;1"]
@@ -342,7 +343,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 				for (var i in ret) {
 					for (var j in binDir) {
 						app = ret[i] + binDir[j] + appName;
-						if (this.exists(app)) ret2.push(app);
+						if (_this.exists(app)) ret2.push(app);
 					}
 				}
 				return (ret2);
@@ -397,14 +398,14 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	this.zipUnpack = function(zipPath, targetDir) {
 		var zipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
 					.createInstance(Components.interfaces.nsIZipReader);
-		zipReader.open(this.getfile(zipPath));
+		zipReader.open(_this.getfile(zipPath));
 		var entries = zipReader.findEntries(null);
 		var entryName, outFile, isFile;
 		while (entries.hasMore()) {
 			entryName = entries.getNext();
-			outFile = this.getfile(targetDir, entryName);
+			outFile = _this.getfile(targetDir, entryName);
 			isFile = !(zipReader.getEntry(entryName).isDirectory);
-			this.getDir(outFile, isFile, false);
+			_this.getDir(outFile, isFile, false);
 			//sv.cmdout.append(outFile.path + " = " + outFile.exists());
 			if(isFile) {
 				try{ zipReader.extract(entryName, outFile);

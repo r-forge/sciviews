@@ -737,8 +737,8 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	dir = sv.r.initSession(dir, datadir, scriptdir, reportdir);
 
 	// Switch to the new session directory in R
-	cmd += 'setwd("' + dir.addslashes() + '")\noptions(R.initdir = "' +
-	dir.addslashes() + '")\n';
+	cmd.push('setwd("' + dir.addslashes() + '")\noptions(R.initdir = "' +
+		dir.addslashes() + '")');
 
 	var svFile = sv.tools.file;
 
@@ -746,8 +746,8 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	// TODO: loadhistory APPENDS a history. Make R clear the current history first.
 	// Note: there seems to be no way to clear history without restarting R!
 	if (loadNew) {
-		cmd += 'if (file.exists(".RData")) load(".RData");\n' +
-			'if (file.exists(".Rhistory")) loadhistory();\n';
+		cmd.push('if (file.exists(".RData")) load(".RData")',
+				 'if (file.exists(".Rhistory")) loadhistory()');
 
 		// Look for .Rprofile, in current, then in user directory (where else R looks for it?)
 		// if exists, source the first one.
@@ -758,16 +758,15 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 
 		for(i in Rprofile) {
 			if(svFile.exists(Rprofile[i])) {
-				cmd += 'source("' + (Rprofile[i]).addslashes() + '");\n';
+				cmd.push('source("' + (Rprofile[i]).addslashes() + '")');
 				break;
 			}
 		}
 	}
-TODO ///
 
 	// Execute the command in R (TODO: check for possible error here!)
 	// TODO: run first in R; make dirs in R; then change in Komodo!
-	sv.r.evalCallback(cmd, function(data) {
+	sv.r.evalCallback(cmd.join(";\n"), function(data) {
 		sv.cmdout.append(data);
 
 	// Indicate everything is fine
@@ -778,7 +777,7 @@ TODO ///
 		// TODO: Breaking should be done *before* the last command
 		// TODO: report if we load something or not
 		sv.r.evalCallback('cat("Session directory is now", dQuote("' + dir.addslashes() +
-		'"), "\\n", file = stderr())', null);
+			'"), "\\n", file = stderr())', null);
 		// Refresh object explorer, ...
 		sv.rconn.eval('koCmd("sv.rbrowser.smartRefresh()")', null, true);
 	});
