@@ -302,13 +302,6 @@ for(var i in _socketPrefs) {
 }
 
 _updateSocketInfo();
-addEventListener("load", function() {
-	sv.command.updateRStatus(_this.testRAvailability(false));
-	_this.startSocketServer();
-}, false);
-
-
-
 this.cleanUp = function sv_conn_debugCleanup() {
 	["r-command-sent", "r-command-executed", "r-command-chunk",
 	 'r-server-stopped'].forEach(function(notification) {
