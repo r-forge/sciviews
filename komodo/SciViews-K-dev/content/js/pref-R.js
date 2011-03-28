@@ -133,9 +133,21 @@ function PrefR_OnLoad() {
 	for (var i in apps) tmp[apps[i].id] = apps[i];
 	apps = tmp;
 
+	var prefset = parent.hPrefWindow.prefset;
     var menu = document.getElementById("svRApplication");
     menu.removeAllItems();
     for (var i in apps) menu.appendItem(apps[i].name, i, null);
+	// Remove the 'Choose...' option on first showing
+	if(!prefset.getStringPref("svRApplication")) {
+		menu.addEventListener("popupshowing", function(event) {
+			if (menu.getItemAtIndex(0).value == '') menu.removeItemAt(0);
+		}, false);
+	} else {
+		menu.removeItemAt(0);
+	}
+
+
+
 
     // update cran mirror list (first local, then tries remote at CRAN)
 	if (!PrefR_UpdateCranMirrors(true)) PrefR_UpdateCranMirrors(false);
