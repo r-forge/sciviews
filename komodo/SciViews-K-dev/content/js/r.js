@@ -936,43 +936,40 @@ sv.r.pkg.repositories = function () {
 }
 
 // Select CRAN mirror, with optional callback
-sv.r.pkg.chooseCRANMirror = function (callback) {
+sv.r.pkg.chooseCRANMirror = function (setPref) {
 	var res = false;
-
 	var cmd = 'assignTemp("cranMirrors", getCRANmirrors(all = FALSE, local.only = FALSE));' +
 	'write.table(getTemp("cranMirrors")[, c("Name", "URL")], col.names = FALSE, quote = FALSE, sep ="' +
 	sv.r.sep + '", row.names = FALSE)';
 
-	res = sv.r.evalCallback(cmd, function (repos) {
-		var res = false;
+	var reposList = sv.rconn.evalAtOnce(cmd, 1);
 
-		if (repos.trim() == "") {
-			sv.alert("Error getting CRAN Mirrors list.");
-		} else {
-			repos = repos.split(/[\n\r]+/);
-			var names = [], urls = [];
-			for (i in repos) {
-				var m = repos[i].split(sv.r.sep);
-				names.push(m[0]);
-				urls.push(m[1]);
-			}
-			items = ko.dialogs.selectFromList(sv.translate("CRAN mirrors"),
-			sv.translate("Select CRAN mirror to use:"), names, "one");
+	if (!reposList.trim()) {
+		sv.alert("Error getting CRAN Mirrors list.");
+		return '';
+	}
 
-			repos = urls[names.indexOf(items[0])].replace(/\/$/, "");
-			ko.statusBar.AddMessage(sv.translate("Current CRAN mirror is set to %S",
-			repos), "SciViews-K", 5000, false);
+	var reposList = reposList.split(/[\n\r]+/);
+	var names = [], urls = [];
+	for (i in reposList) {
+		var m = reposList[i].split(sv.r.sep);
+		names.push(m[0]);
+		urls.push(m[1]);
+	}
 
-			sv.r.eval('with(TempEnv(), {repos <- getOption("repos");' +
-			'repos["CRAN"] <- "' + repos + '"; ' + 'options(repos = repos)})');
-			cran = sv.pref.setPref("CRANMirror", repos);
-			if (callback) callback(repos);
-		}
-		return(res);
-	});
-	ko.statusBar.AddMessage(sv.translate(
-	"Retrieving CRAN mirrors list... please wait."), "SciViews-K", 20000, true);
-	return(res);
+	var items = ko.dialogs.selectFromList(sv.translate("CRAN mirrors"),
+		sv.translate("Select CRAN mirror to use:"), names, "one");
+
+	if(!items) return null;
+
+	repos = urls[names.indexOf(items[0])].replace(/\/$/, "");
+
+	cmd = 'with(TempEnv(), {repos <- getOption("repos");' +
+		'repos["CRAN"] <- "' + repos + '"; ' + 'options(repos = repos)})';
+	sv.rconn.eval(cmd, null, true);
+	if (setPref) sv.pref.setPref("CRANMirror", repos);
+
+	return(repos);
 }
 
 // List available packages on the selected repositories
@@ -980,8 +977,8 @@ sv.r.pkg.available = function () {
 	var res = sv.r.eval('.pkgAvailable <- available.packages()\n' +
 	'as.character(.pkgAvailable[, "Package"])');
 	ko.statusBar.AddMessage(sv.translate(
-	"Looking for available R packages... please wait"),
-	"SciViews-K", 5000, true);
+		"Looking for available R packages... please wait"),
+		"SciViews-K", 5000, true);
 	return(res);
 }
 
@@ -1154,50 +1151,32 @@ sv.r.pkg.remove_select = function (pkgs) {
 // sv.r.pkg.install("sciviews", "http://r.meteo.uni.wroc.pl") // use different CRAN mirror
 
 sv.r.pkg.install = function (pkgs, repos) {
-	// Just in case, to prevent infinite callbacks but such should never happen
-	var allowCCM = arguments.length < 3;
+	var reset = false;
+	if (repos === true) {
+		reset = true;
+		repos = undefined;
+	}
 
-	var res = false;
-	var reset = (repos === true);
-
-	var defaultRepos = sv.pref.getPref("CRANMirror");
-	if (defaultRepos == "None") defaultRepos = "";
-	//defaultRepos = "http://cran.r-project.org/";
-
-	function _installCallback() {
-		sv.r.pkg.install(pkgs, defaultRepos, true);
-	};
-
-	if (!repos && defaultRepos) {
-		repos = defaultRepos;
-	} else if (reset && allowCCM) {
-		res = sv.r.pkg.chooseCRANMirror(_installCallback);
-		return;
-	} else if (!repos && allowCCM) {
-		res = sv.r.evalCallback("cat(getOption(\"repos\")[\"CRAN\"])",
-		function(cran) {
-			var res = false;
-			cran = cran.trim();
-			if (cran == "@CRAN@") {
-				res = sv.r.pkg.chooseCRANMirror(_installCallback);
-			} else {
-				sv.pref.setPref("CRANMirror", cran);
-				res = sv.r.pkg.install(pkgs, cran, true);
-			}
-			return;
-		}
-		);
-		return;
+	if (repos === undefined) {
+		var defaultRepos = sv.pref.getPref("CRANMirror");
+		if (reset || !defaultRepos || defaultRepos == "None") {
+			repos = sv.r.pkg.chooseCRANMirror();
+			if (!repos) return;
+		} else
+			repos = defaultRepos;
+	} else if (repos === false) {
+		repos = sv.rconn.evalAtOnce("cat(getOption(\"repos\")[\"CRAN\"])").trim();
+		if (repos == "@CRAN@") return;
 	}
 
 	// At this point repos should be always set
 	sv.cmdout.append(sv.translate("Using repository at %S", repos));
-
 	repos = repos.toLowerCase();
 
 	var startDir = null;
-	if (typeof pkgs == "string" &&
-	sv.tools.file.exists(pkgs) == sv.tools.file.TYPE_DIRECTORY) {
+
+	// TODO: allow for array of package files
+	if (typeof(pkgs) == "string" && sv.tools.file.exists(pkgs) == sv.tools.file.TYPE_DIRECTORY) {
 		repos = "local";
 		startDir = pkgs;
 	}
@@ -1206,27 +1185,22 @@ sv.r.pkg.install = function (pkgs, repos) {
 	if (!pkgs && repos != "local") {
 		ko.statusBar.AddMessage(sv.translate("Listing available packages..."),
 		"SciViews-K", 5000, true);
-		res = sv.r.evalCallback('cat(available.packages(contriburl=contrib.url("'
-		+ repos + '", getOption("pkgType")))[,1], sep="' +
-		sv.r.sep + '")', function (pkgs) {
-			ko.statusBar.AddMessage("", "SciViews-K");
+		pkgs = sv.rconn.evalAtOnce('cat(tryCatch(available.packages(contriburl=contrib.url("'
+		+ repos + '", getOption("pkgType")))[,1],warning=function(e)e$message), sep="' +
+		sv.r.sep + '")', 5).trim();
 
-			var res = false;
-			if (pkgs.trim() != "") {
-				pkgs = pkgs.split(sv.r.sep);
-				// Case insensitive sorting:
-				pkgs.sort(function(a,b) a.toUpperCase() > b.toUpperCase());
+		pkgs = pkgs.split(sv.r.sep);
+		if (pkgs.length < 3) {
+			ko.dialogs.alert('Listing available packages, R said:', pkgs.join(''), 'SciViews-K');
+			return;
+		}
+		// Case insensitive sorting:
+		pkgs.sort(function(a,b) a.toUpperCase() > b.toUpperCase());
 
-				pkgs = ko.dialogs.selectFromList(
-				sv.translate("Install R package"),
-				sv.translate("Select package(s) to install") + ":", pkgs);
-
-				if (pkgs != null) {
-					res = sv.r.pkg.install(pkgs, repos, true);
-				}
-			}
-		});
-		return;
+		pkgs = ko.dialogs.selectFromList(
+			sv.translate("Install R package"),
+			sv.translate("Select package(s) to install") + ":", pkgs);
+		if (pkgs == null) return;
 	}
 
 	// Expand short names

@@ -594,6 +594,9 @@ this.onLoad = function(event) {
 									//'cmdset_rApp' commandset being grayed out
 									//at startup...
 		_this.updateRStatus(sv.rconn.testRAvailability(false));
+
+		if(sv.r.running) sv.rbrowser.smartRefresh(true);
+
 	}, 600);
 	 _setKeybindings();
 

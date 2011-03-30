@@ -217,7 +217,6 @@ function PrefR_PopulateRInterps() {
 function OnPreferencePageLoading(prefset) {}
 
 function OnPreferencePageOK(prefset) {
-
 	var outDec = document.getElementById('r.csv.dec').value;
 	var outSep = document.getElementById('r.csv.sep').value;
 
@@ -250,19 +249,6 @@ function OnPreferencePageOK(prefset) {
 	//sv.socket.setSocketType(clientType);
 
 	menuListGetValues();
-
-	// Restart socket server if running and port changed
-	//;var serverPort = document.getElementById('sciviews.ko.port').value;
-	//XXX: Manual port setting is deprecated - it hardly ever works
-
-	//if(sv.rconn.serverIsUp &&
-		//serverPort != prefset.getLongPref("sciviews.ko.port")){ XXX
-		//serverPort != sv.pref.getPref("sciviews.ko.port")) {
-		//prefset.setStringPref("sciviews.ko.port", serverPort);
-		//sv.socket.serverStart();
-		//sv.socket.serverStart();
-		//sv.rconn.restartSocketServer();
-	//}
 	return true;
 }
 

@@ -99,7 +99,10 @@ this.eval = function(command, callback, hidden, id, prepareOnly) { //, ...
 }
 
 // Evaluate in R quickly - and return result
-this.evalAtOnce = function(command) _svuSvc.execInR(command, "h");
+this.evalAtOnce = function(command, timeout) {
+	if(timeout == undefined) timeout = .5;
+	return _svuSvc.execInR(command, "h", timeout);
+}
 
 this.escape = function(command) _svuSvc.escape(command);
 

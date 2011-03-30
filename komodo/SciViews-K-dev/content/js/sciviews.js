@@ -209,6 +209,8 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 
 		// function declaration pattern:
 		var funcRegExStr = "\\S+\\s*(<-|=)\\s*function\\s*\\(";
+		//var funcRegExStr = "\\b(([`'\\\"])(.+)\\2|([\w\u0100-\uFFFF\\.]+))\\s*(<-|=)\\s*function\\s*\\(";
+
 
 		var findSvc = Components.classes['@activestate.com/koFindService;1']
 			.getService(Components.interfaces.koIFindService);
