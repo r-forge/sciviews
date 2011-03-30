@@ -52,7 +52,7 @@
 // _getFilter()
 // _addVItems(item, parentIndex, level, parentUid)
 // _addVIChildren(vItem, parentIndex, isOpen)
-// _getVItem(obj, index, level, first, last, parentIndex, parentUid)
+// _getVItem(obj, index, level, first, last, parentIndex)
 //
 ///// Private properties
 // iconTypes - icons to display
@@ -182,13 +182,8 @@ function _funStr(fun) {
 		if (!isInitialized) return;
 
 		var rowsBefore;
-		//var visDataLen = _this.visibleData.length;
-
-		//if(!_this.treeBox) {
 		rowsBefore = _this.visibleData.length;
-		//} else {
-		//	rowsBefore = _this.treeBox.view.rowCount;
-		//}
+
 		var firstVisibleRow =  _this.treeBox? _this.treeBox.getFirstVisibleRow() : 0;
 
 		_this.visibleData = [];
@@ -305,7 +300,7 @@ function _objTreeCrawler(name, root) {
 	return null;
 }
 
-// New method (will replace _parseObjectList & _parseSubObjectList)
+// Below replaces _parseObjectList & _parseSubObjectList
 this.parseObjListResult = function _parseObjListResult (data, rebuild) {
 	var closedPackages = {};
 	var currentPackages = _this.treeData.map(function(x) {
@@ -325,10 +320,8 @@ this.parseObjListResult = function _parseObjListResult (data, rebuild) {
 			if (lines[i].indexOf("Env=") == 0) {
 				envName = lines[i].substr(4).trim();
 				if(lines[i + 1].indexOf("Obj=") != 0)
-				throw new Error("Expected 'Obj=' after 'Env='");
+					throw new Error("Expected 'Obj=' after 'Env='");
 				objName = lines[i + 1].substr(4).trim();
-				//if (branch && branch.fullName == objName) treeBranch = branch;
-				//else
 				treeBranch = _this.getRObjTreeLeafByName(objName, envName);
 				if(!treeBranch && !objName) { // This is environment
 					treeBranch = new RObjectLeaf(envName, false);
@@ -337,11 +330,15 @@ this.parseObjListResult = function _parseObjListResult (data, rebuild) {
 						lastAddedRootElement = treeBranch;
 				}
 				if(treeBranch) {
+					var isEmpty = (lines[i+2].indexOf('Env') == 0)
+						|| (lines.length == i + 3);
 					if(!objName) {
 						if(closedPackages[envName])
 							treeBranch.isOpen = false;
-					} else
+					} else {
 						treeBranch.isOpen = true;
+					}
+					//treeBranch.children = isEmpty? undefined : [];
 					treeBranch.children = [];
 					treeBranch.childrenLoaded = true;
 				}
@@ -350,6 +347,9 @@ this.parseObjListResult = function _parseObjListResult (data, rebuild) {
 		}
 		if(!treeBranch) continue; // this object is missing, skip all children
 		if(i >= lines.length) break;
+		if(lines[i].indexOf('Env') == 0) {
+			i--; continue;
+		}
 		try {
 			var leaf = new RObjectLeaf(envName, true, lines[i].split(sep), i, treeBranch);
 			treeBranch.children.push(leaf);
@@ -372,7 +372,7 @@ this.getOpenItems = function(asRCommand) {
 	var vd = this.visibleData;
 	var ret = [];
 	for (var i in vd) {
-		if(this.isContainerOpen(i)) {
+		if(_this.isContainerOpen(i)) {
 			var oi = vd[i].origItem;
 			var env = oi.env || oi.fullName;
 			var objName = oi.type == "environment"? "" : oi.fullName;
@@ -393,7 +393,8 @@ function _getObjListCommand(env, objName) {
 this._getObjListCommand = _getObjListCommand; // XXX
 
 this.smartRefresh = function(force) {
-	function __toUnique(a, j) { if(a.indexOf(j)==-1) a.push(j); return(a)};
+
+	_this.getPackageList();
 
 	var cmd, data, init;
 	init = force || !_this.treeData.length || !_this.treeBox;
@@ -404,12 +405,13 @@ this.smartRefresh = function(force) {
 	} else {
 		var cmd1 = this.getOpenItems(true);
 		var cmd2 = this.treeData.map(function(x) _getObjListCommand(x.fullName,""));
-		cmd = cmd1.concat(cmd2).reduce(__toUnique, []).join("\n");
+		cmd = sv.tools.array.unique(cmd1.concat(cmd2)).join("\n");
 	}
 
 	isInitialized = true;
 	if (init) document.getElementById("sciviews_robjects_objects_tree").view = this;
 
+	//print(cmd);
 	sv.rconn.eval(cmd, this.parseObjListResult, true);
 	//this.parseObjListResult(data);
 	/////if (init) this.treeBox.scrollToRow(0);
@@ -457,48 +459,35 @@ this.applyFilter = function () {
 
 this.filter = function (x) true;
 
-function _addVItems (item, parentIndex, level, parentUid) {
-	if (typeof(item) == "undefined") return(parentIndex);
-	if (typeof(level) == "undefined") level = -1;
-	if (!parentUid) parentUid = "";
+function _addVItems (item, parentIndex, level) {
+	if (item === undefined) return(parentIndex);
+	if (level === undefined) level = -1;
 	if (!parentIndex) parentIndex = 0;
 
 	var idx = parentIndex;
 	var len = item.length;
-	var conditionalView;
+
+	//print("_addVItems = " + item);
 
 	for (var i = 0; i < len; i++) {
 		//item[i].class != "package" &&
 		if (level == 1 && !_this.filter(item[i].sortData[filterBy])) {
 			item[i].index = -1;
 			continue;
-			// Set conditionalView = true if any child nodes pass fitering
-			//conditionalView = true;
-		} else {
-			//conditionalView = false;
 		}
 		idx++;
-		var vItem = _getVItem(item[i], idx, level,
-		i == 0, i == len - 1,
-		parentIndex, parentUid);
+		var vItem = _getVItem(item[i], idx, level, i == 0, i == len - 1,
+			parentIndex);
 		_this.visibleData[idx] = vItem;
 
 		if (vItem.isContainer && vItem.isOpen && vItem.childrenLength > 0) {
 			var idxBefore = idx;
-			idx = _addVItems(item[i].children, idx, level + 1,
-			vItem.uid + "»");
+			idx = _addVItems(item[i].children, idx, level + 1);
 
 			// No children is visible
 			if (idxBefore == idx) {
 				vItem.isContainerEmpty = true;
-				// if this item was to be viewed on condition any children
-				// is visible, remove this item:
-				/*if (conditionalView) {
-					this.visibleData.pop();
-					idx--;
-				}*/
 			}
-			//sv.log.debug(idx + "<-" + idxBefore);
 		}
 	}
 	return(idx);
@@ -520,13 +509,12 @@ function _addVIChildren (vItem, parentIndex, isOpen) {
 		vItem.children.push(_getVItem(children[i], idx, vItem.level + 1,
 			i == 0, i == len - 1,
 			// Closed subtree elements have 0-based parentIndex
-			isOpen ? parentIndex : 0,
-			vItem.uid + "»"));
+			isOpen ? parentIndex : 0));
 	}
 	vItem.isContainerEmpty = vItem.children.length == 0;
 };
 
-function _getVItem (obj, index, level, first, last, parentIndex, parentUid) {
+function _getVItem (obj, index, level, first, last, parentIndex) {
 	var vItem = {};
 
 	if (obj.group == "list" || obj.group == "function" || obj.list) {
@@ -543,7 +531,6 @@ function _getVItem (obj, index, level, first, last, parentIndex, parentUid) {
 		vItem.isList = false;
 	}
 	vItem.isOpen = (typeof(obj.isOpen) != "undefined") && obj.isOpen;
-	vItem.uid = parentUid + obj.name;
 	vItem.parentIndex = parentIndex;
 	vItem.level = level;
 	vItem.first = first;
@@ -553,7 +540,6 @@ function _getVItem (obj, index, level, first, last, parentIndex, parentUid) {
 	vItem.origItem.index = index;
 	return(vItem);
 };
-
 
 //function _VisibleTreeItem (oi, index, parentIndex) {
 //	this.isList = (oi.group == "list") || (oi.group == "function")
@@ -718,17 +704,18 @@ this.toggleOpenState = function (idx) {
 	if (!item) return;
 
 	_this.selection.select(idx);
-	if (item.isList && !item.origItem.isOpen &&
-	!item.origItem.childrenLoaded) {
-		//_addObject(item.origItem.env, item.origItem.fullName,
-		//	_parseSubObjectList, item);
+	if (item.isList && !item.origItem.isOpen && !item.origItem.childrenLoaded) {
 		_addObject(item.origItem.env, item.origItem.fullName,
 			this.parseObjListResult);
 		return;
 	}
 	var rowsChanged;
 	var iLevel = item.level;
-	if (!item.childrenLength) return;
+	//print("childrenLength = " + item.childrenLength);
+	if (!item.childrenLength) {
+		item.isContainer = item.origItem.isOpen = false;
+		return;
+	}
 
 
 	if (item.origItem.isOpen) { // Closing subtree
@@ -749,7 +736,7 @@ this.toggleOpenState = function (idx) {
 		}
 	} else { // Opening subtree
 		if (typeof(item.children) == "undefined")
-		_addVIChildren(item, idx, false);
+			_addVIChildren(item, idx, false);
 
 		// Filter child items
 		var insertItems = [];
@@ -908,6 +895,39 @@ this.getPackageList = function () {
 	_this.displayPackageList(false);
 };
 
+// Display the list of packages in the search path
+this.displayPackageList = function() {
+	var pack;
+	var node = document.getElementById("sciviews_robjects_searchpath_listbox");
+	var selectedLabel = node.selectedItem? node.selectedItem.label : null;
+
+	while(node.firstChild) node.removeChild(node.firstChild);
+	var packs = _this.searchPath;
+	var selectedPackages = _this.treeData.map(function(x) x.name);
+
+
+	for(var i = 0; i < packs.length; i++) {
+		pack = packs[i];
+		var item = document.createElement("listitem");
+		item.setAttribute("type", "checkbox");
+		item.setAttribute("label", pack);
+		item.setAttribute("checked", selectedPackages.indexOf(pack) != -1);
+		node.appendChild(item);
+	}
+
+	if (selectedLabel != null) {
+		for(var i = 0; i < node.itemCount; i++) {
+			if (node.getItemAtIndex(i).label == selectedLabel) {
+				node.selectedIndex = i;
+				break;
+			}
+		}
+	} else {
+		node.selectedIndex = 0;
+	}
+
+};
+
 // Clear the list of packages on the search path (when quitting R)
 this.clearPackageList =  function () {
 	_this.searchPath = [];
@@ -935,28 +955,6 @@ this.toggleViewSearchPath = function (event) {
 		if (!_this.searchPath.length) _this.getPackageList();
 	}
 }
-
-// Display the list of packages in the search path
-this.displayPackageList = function (refreshObjects) {
-	// refreshObjects is made optional and is true in this case
-	if (refreshObjects === undefined) refreshObjects = true;
-	var pack;
-	var node = document.getElementById("sciviews_robjects_searchpath_listbox");
-	while(node.firstChild) node.removeChild(node.firstChild);
-	var packs = _this.searchPath;
-	var selectedPackages = _this.treeData.map(function(x) x.name);
-
-	for(var i = 0; i < packs.length; i++) {
-		pack = packs[i];
-		var item = document.createElement("listitem");
-		item.setAttribute("type", "checkbox");
-		item.setAttribute("label", pack);
-		item.setAttribute("checked", selectedPackages.indexOf(pack) != -1);
-		node.appendChild(item);
-	}
-
-	if (refreshObjects) _this.refreshAll();
-};
 
 // Change the display status of a package by clicking an item in the list
 this.packageSelectedEvent = function (event) {
@@ -1420,14 +1418,14 @@ this.onEvent = function on_Event(event) {
 this.packageListObserver = {
 	onDrop : function (event, transferData, session) {
 		var data = transferData;
-		sv.log.debug("dropped object was " +
-		transferData.flavour.contentType);
+		sv.log.debug("dropped object was " + transferData.flavour.contentType);
 		var path;
 		if (transferData.flavour.contentType == "application/x-moz-file") {
 			path = transferData.data.path;
 		} else if (transferData.flavour.contentType == "text/unicode") {
 			path = new String(transferData.data).trim();
 		}
+
 		// Attach the file if it is an R workspace
 		if (path.search(/\.RData$/i) > 0) {
 			//sv.alert("will attach: " + path);
@@ -1439,7 +1437,7 @@ this.packageListObserver = {
 			path = path.replace(/^package:/, "");
 
 			sv.r.evalCallback("tryCatch(library(\"" + path +
-			"\"), error = function(e) {cat(\"<error>\"); message(e)})",
+				"\"), error = function(e) {cat(\"<error>\"); message(e)})",
 			function (message) {
 				if (message.indexOf('<error>') > -1) {
 					message = message.replace('<error>', '');

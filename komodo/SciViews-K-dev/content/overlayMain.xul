@@ -106,6 +106,7 @@
 			<command id="cmd_svSessionMgr" key="key_cmd_svSessionMgr"
 				oncommand="ko.commands.doCommand('cmd_svSessionMgr');"
 				desc="R: &svOpenSessMgr;" label="&svOpenSessMgr;" accesskey="&svOpenSessMgr.key;"/>
+
 		</commandset>
 
 <!-- event names changed in Komodo 6: keeping the old one for compatibility
@@ -183,14 +184,38 @@
 					class="menuitem-iconic r-run-command-icon"/>
 				<menuitem id="r_quit_console_menu" observes="cmd_svQuitR"
 					class="menuitem-iconic r-quit-command-icon"/>
-				<menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager"
-					class="menuitem-iconic r-pkg-manager"/>
 				<menuitem id="r_start_help" observes="cmd_svOpenHelp"
 						  class="menuitem-iconic help-icon"/>
 				<menuitem id="r_browse_wd" observes="cmd_svBrowseWD"
 					class="menuitem-iconic r-working-dir-icon"/>
 				<menuitem id="r_session_mgr" observes="cmd_svSessionMgr"
 					class="menuitem-iconic r-session-dir-icon"/>
+				<menuseparator/>
+				<menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager"
+					class="menuitem-iconic r-pkg-manager"/>
+				<menu class="menuitem-iconic robjects-pkg-icon"
+					label="R packages">
+					<menupopup>
+						<menuitem id="r_pkg_load" label="Load packages..."
+							accesskey="l" class="menuitem-iconic r-pkg-load-icon"
+							oncommand="sv.r.pkg.load();"/>
+						<menuitem id="r_pkg_load" label="Attach workspace..."
+							accesskey="a" class="menuitem-iconic r-data-attach"
+							oncommand="sv.r.loadWorkspace(null, true);"/>
+						<menuitem id="r_pkg_install" label="Install..."
+							accesskey="i" class="menuitem-iconic r-pkg-install-icon"
+							oncommand="sv.r.pkg.install();"/>
+						<menuitem id="r_pkg_installLocal" label="Install from local files..."
+							accesskey="c" class="menuitem-iconic r-pkg-install-local-icon"
+							oncommand="sv.r.pkg.install(null, 'local');"/>
+						<menuitem id="r_pkg_update" label="Update"
+							accesskey="u" class="menuitem-iconic r-pkg-update-icon"
+							oncommand="sv.r.pkg.update();"/>
+						<menuitem id="r_pkg_remove" label="Remove..."
+							accesskey="r" class="menuitem-iconic r-pkg-remove-icon"
+							oncommand="sv.r.pkg.remove();"/>
+					</menupopup>
+				</menu>
 
 				<menuseparator/>
 				<menuitem id="r_send_line_sel_menu" observes="cmd_svRRunLineOrSelection"

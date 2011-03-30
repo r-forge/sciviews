@@ -16,6 +16,7 @@
 
 	Contributor(s):
 	Philippe Grosjean
+	Kamil Barton
 	ActiveState Software Inc (code inspired from)
 
 	Alternatively, the contents of this file may be used under the terms of
@@ -63,7 +64,7 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 		<vbox id="no-avail-interps-message" flex="1" align="center">
 			<description style="font-weight: bold;">
 				No R installation was found on your system. If you would like to debug
-				and run Ruby programs in Komodo you will need to install Ruby. You can
+				and run R code in Komodo you will need to install R. You can
 				get R from the CRAN website at
 			</description>
 			<button label="http://cran.r-project.org/"
@@ -108,7 +109,7 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 				<label class="label" control="R_command" crop="end"
 				value="This command will be used to start R (R -> Start R):"/>
 				<textbox id="R_command" value="" class="plain"
-				style="background: none; padding-top: 1px !important; margin-left: 10px !important; color: rgb(184, 38, 25);" />
+				style="background: none; padding-top: 1px !important; margin-left: 10px !important;" />
 		</vbox>
 	</groupbox>
 

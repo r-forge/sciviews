@@ -122,8 +122,8 @@ class svUtils:
         ret = map(self._asSString, ret);
         return SimpleEnumerator(ret)
 
-    def execInR(self, command, mode):
-        return self.rconnect(command, mode, False, .5, "")
+    def execInR(self, command, mode, timeout = .5):
+        return self.rconnect(command, mode, False, timeout, "")
 
     def execInRBgr(self, command, mode, uid):
         log.debug("execInRBgr: %s..." % command[0:10])
