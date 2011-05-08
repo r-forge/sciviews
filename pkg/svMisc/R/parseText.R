@@ -1,45 +1,32 @@
-Parse <- function (text)
+`Parse` <- function (text)
 {
 	## Deprecated, in favor of parseText()
 	.Deprecated("parseText")
 	return(parseText(text))
 }
 
-parseText <- function (text)
-{
+`parseText` <- function (text) {
 	## Parse R instructions provided as a string and return the expression if it
 	## is correct, or a 'try-error' object if it is an incorrect code, or NA if
 	## the (last) instruction is incomplete
-    text <- paste(text, collapse = "\n")
-    code <- textConnection(text)
-    expr <- try(parse(code), silent = TRUE)
-    close(code)
+  	res <- tryCatch(parse(text=text), error=identity)
 
-    ## Determine if this code is correctly parsed
-	if (inherits(expr, "try-error")) {
-		## Determine if it is incorrect code, or incomplete line!
-		## Code is different before and after R 2.9.0
-		if (compareRVersion("2.9.0") < 0) {
-			toSearch <- paste("\n", length(strsplit(text, "\n")[[1]]) +
-			    1, ":", sep = "")
-		} else {
-			toSearch <- paste(": ", length(strsplit(text, "\n")[[1]]) +
-			    1, ":0:", sep = "")
-		}
-        if (length(grep(toSearch, expr)) == 1) return(NA) else return(expr)
-    }
-    ## There is still a case of incomplete code not catch: incomplete strings
-    dp <- deparse(expr)
-    ## Is it an incomplete string (like "my string or 'my string)?
-	if (regexpr("\\\\n\")$", dp) > 0 &&
-        regexpr("\n[\"'][ \t\r\n\v\f]*($|#.*$)", text) < 0)
-		return(NA)
+	if(inherits(res, "error")) {
 
-    ## Is it an incomplete variable name (like `name)?
-    if (regexpr("\n`)$", dp) > 0  &&
-        regexpr("\n`[ \t\r\n\v\f]*($|#.*$)", text) < 0)
-		return(NA)
+		# Check if this is incomplete code
+		rxUEOI <- paste("<text>:\\d:\\d:", gettextf("unexpected %s",
+			gettext("end of input", domain="R"), domain="R"))
+		if(regexpr(rxUEOI, res$message) == 1) return(NA)
 
-    ## Everything is fine, just return parsed expression
-    return(expr)
+		res$message <- substring(res$message, 7)
+		res$call <- NULL
+		e <- res
+
+		# for legacy uses
+		res <- .makeMessage(res)
+		class(res) <- "try-error"
+		attr(res, 'error') <- e
+	}
+
+    return(res)
 }
