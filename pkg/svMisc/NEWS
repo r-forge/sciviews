@@ -1,5 +1,9 @@
 = svMisc News
 
+== Changes in svMisc **Working version**
+
+* captureAll() now handles user interrupts and allows for traceback() afterwards.
+
 == Changes in svMisc 0.9-61
 
 * Better handling of non syntactically correct names in objList().
