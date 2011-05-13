@@ -51,7 +51,7 @@ from codeintel2.common import *
 from codeintel2.citadel import CitadelBuffer, CitadelLangIntel
 from codeintel2.langintel import LangIntel
 from codeintel2.langintel import ParenStyleCalltipIntelMixin, ProgLangTriggerIntelMixin
-from codeintel2.udl import UDLLexer
+from codeintel2.udl import UDLLexer, UDLBuffer
 from codeintel2.util import CompareNPunctLast
 
 from SilverCity.ScintillaConstants import SCE_UDL_SSL_DEFAULT, \
@@ -2634,7 +2634,6 @@ builtins = [
     "zip.file.extract",
 ]
 
-
 #---- Lexer class
 # Dev Notes:
 # Komodo's editing component is based on scintilla (scintilla.org). This
@@ -2958,7 +2957,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
 #   http://listserv.activestate.com/mailman/listinfo/komodo-discuss
 #   http://listserv.activestate.com/mailman/listinfo/komodo-beta
 #
-class RBuffer(CitadelBuffer):
+class RBuffer(UDLBuffer): # rather than CitadelBuffer
     # Dev Note: What to sub-class from?
     # - If this is a UDL-based language: codeintel2.udl.UDLBuffer
     # - Else if this is a programming language (it has functions,
