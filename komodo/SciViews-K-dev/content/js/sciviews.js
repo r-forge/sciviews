@@ -575,7 +575,7 @@ sv.helpContext = function () {
 
 				// Look for URL-help
 				var help = content.replace(/^.*\[\[%pref:URL-help:([^\]]*)]].*$/,
-				"$1");
+					"$1");
 				if (help != content) {	// Found!
 					// Show in default browser
 					// TODO: a quick 'R help' tab to show this
@@ -626,8 +626,8 @@ sv.helpContext = function () {
 // translate messages using data from chrome://sciviewsk/locale/main.properties
 sv.translate = function (textId) {
 	var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
-	.getService(Components.interfaces.nsIStringBundleService)
-	.createBundle("chrome://sciviewsk/locale/main.properties");
+		.getService(Components.interfaces.nsIStringBundleService)
+		.createBundle("chrome://sciviewsk/locale/main.properties");
 	var param;
 
 	try {
@@ -667,52 +667,218 @@ sv.cmdout = {};
 (function() {
 
 var _this = this;
-var scimoz, eolChar;
 
-this.__defineGetter__('eolChar', function() {
-	if (!eolChar) _init();
-	return eolChar;
-});
+this.__defineGetter__('eolChar', function()
+	["\r\n", "\n", "\r"][_this.scimoz.eOLMode]);
+
+this.__defineGetter__('scimoz', function()
+	document.getElementById("runoutput-scintilla").scimoz);
+
+
+function _rgb(r, g, b) {
+	if (arguments.length == 3) color = arguments;
+	else color = r;
+	return color[0] | (color[1] << 8) | (color[2] << 16);
+}
+
+function _hexstr2rgb(hex) {
+	var colorref = parseInt(hex.substr(1), 16);
+	return _rgb(colorref >> 16 & 255, colorref >> 8 & 255, colorref & 255);
+}
+
+var styleNumCode = 22, styleNumResult = 0, styleNumErr = 23;
+
 
 function _init() {
-	scimoz = document.getElementById("runoutput-scintilla").scimoz;
-	eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
+	var scimoz = _this.scimoz;
+
+	//var colorForeCode =_rgb(80, 100, 255);
+	//var colorForeErr = _rgb(255, 50, 50);
+	var colorForeErr, colorForeCode, colorForeResult;
+
+	//Get color from the color scheme: stdin, stdout, stderr
+	var schemeName = sv.pref.getPref('editor-scheme');
+	var currentScheme = Components.classes['@activestate.com/koScintillaSchemeService;1']
+		.getService().getScheme(schemeName);
+
+	//TODO: comment styling
+
+	colorForeCode = _hexstr2rgb(currentScheme.getFore('', 'stdin'));
+	colorForeResult = _hexstr2rgb(currentScheme.getFore('', 'stdout'));
+	colorForeErr = _hexstr2rgb(currentScheme.getFore('', 'stderr'));
+
+    scimoz.styleSetFore(styleNumCode, colorForeCode);
+    scimoz.styleSetFore(styleNumErr, colorForeErr);
+	scimoz.styleSetFore(styleNumResult, colorForeResult);
+
+    //scimoz.styleSetBold(styleNumCode, true);
+    //scimoz.styleSetBold(styleNumResult, false);
 }
+
+var observerSvc = Components.classes["@mozilla.org/observer-service;1"]
+    .getService(Components.interfaces.nsIObserverService);
+
+observerSvc.addObserver({ observe: _init }, 'scheme-changed', false);
+
+_init();
 
 this.print = function (str) {
 	_this.clear();
 	_this.append(str, true, false);
 }
 
+function fixEOL(str) str.replace(/(\r?\n|\r)/g, _this.eolChar);
+
+this.print2 = function (command, result, done) {
+	//sv.x = [command, result, done];
+	var scimoz = _this.scimoz;
+	var eolChar = _this.eolChar;
+
+	command = fixEOL(command);
+	result = fixEOL(result);
+
+	scimoz.readOnly = false;
+	if (!done) {
+		_this.clear();
+		command = command.replace(/^ {3}(?= *\S)/gm, ":+ ") + eolChar;
+		result = result + eolChar;
+		scimoz.appendText(ko.stringutils.bytelength(command), command);
+		//scimoz.text += command;
+		this.styleLines(0, scimoz.lineCount, styleNumCode);
+		scimoz.appendText(ko.stringutils.bytelength(result), result);
+		//scimoz.text += result;
+		//alert(scimoz.lineCount);
+
+	} else {
+		var lineNum = scimoz.lineCount - 2;
+		if(this.getLine(lineNum) == '...' + eolChar) {
+			scimoz.targetStart = scimoz.positionFromLine(lineNum);
+			scimoz.targetEnd = scimoz.getLineEndPosition(lineNum);
+			scimoz.replaceTarget(result.length, result);
+			var lineCount = scimoz.lineCount;
+			this.styleLines(lineNum, lineCount - 2);
+			this.styleLines(lineCount - 2, lineCount - 1, styleNumCode);
+		}
+	}
+}
+
+this.replaceLine = function(lineNum, text, eol) {
+	var scimoz = _this.scimoz;
+	var eolChar = _this.eolChar;
+
+	scimoz.targetStart = scimoz.positionFromLine(lineNum);
+	scimoz.targetEnd = scimoz.getLineEndPosition(lineNum) +
+		(eol? eolChar.length : 0);
+	scimoz.replaceTarget(text.length, text);
+}
+
 this.append = function (str, newline, scrollToStart) {
-	if (!scimoz) _init();
+	var scimoz = _this.scimoz;
+	var eolChar = _this.eolChar;
+
 	if (scrollToStart === undefined) scrollToStart = false;
 
 	ko.uilayout.ensureOutputPaneShown();
 	ko.uilayout.ensureTabShown("runoutput_tab", false);
 
-	// Find out the newline sequence uses, and write the text to it.
-	var goToLine = scimoz.lineCount;
+	str = fixEOL(str);
+
+	var lineCountBefore = scimoz.lineCount;
 
 	if (newline || newline === undefined) str += eolChar;
-	var str_bytelength = ko.stringutils.bytelength(str);
 	var readOnly = scimoz.readOnly;
 	try {
 		scimoz.readOnly = false;
-		scimoz.appendText(str_bytelength, str);
+		scimoz.appendText(ko.stringutils.bytelength(str), str);
+	} catch(e) {
+		alert(e);
 	} finally {
 		scimoz.readOnly = readOnly;
 	}
 
-	if (!scrollToStart) goToLine = scimoz.lineCount;
-	//scimoz.firstVisibleLine = goToLine;
-	scimoz.ensureVisible(goToLine);
-	scimoz.scrollCaret();
+	var firstVisibleLine;
+	if (!scrollToStart) {
+		firstVisibleLine = Math.max(scimoz.lineCount - scimoz.linesOnScreen, 0);
+	} else {
+		firstVisibleLine = Math.min(lineCountBefore - 1, scimoz.lineCount - scimoz.linesOnScreen);
+	}
+	scimoz.firstVisibleLine = firstVisibleLine;
+
+}
+
+
+this.getLine = function(lineNumber) {
+	var scimoz = _this.scimoz;
+	var lineCount = scimoz.lineCount;
+	if (lineNumber === undefined) lineNumber = lineCount - 1;
+	while (lineNumber < 0) lineNumber = lineCount + lineNumber;
+	var oLine = {};
+	//return lineNumber;
+	scimoz.getLine(lineNumber, oLine);
+	return oLine.value;
+}
+
+//var re = /[\x02\x03]/;
+//var str0 = res, newStr = "";
+//var pos = [], pos0;
+//while(1){
+//	pos0 = str0.search(re);
+//	if (pos0 == -1) break;
+//	pos.push(pos0 + newStr.length);
+//	newStr += RegExp.leftContext;
+//	str0 = RegExp.rightContext;
+//}
+//newStr += str0;
+
+this.styleLines = function(startLine, endLine, styleNum) {
+	var scimoz = _this.scimoz;
+	var eolChar = _this.eolChar;
+
+	if (startLine == undefined) startLine = 0;
+	if (endLine == undefined) endLine = scimoz.lineCount;
+	var styleMask = (1 << scimoz.styleBits) - 1;
+	var readOnly = scimoz.readOnly;
+	scimoz.readOnly = false;
+
+	if(styleNum == undefined) {
+	// a simple lexer...
+		var codeRx = /^:[>\+]\s/;
+		var curStyle, txt, inStdErr = false;
+
+		for (var line = startLine; line < endLine; line++) {
+			//TODO: optimize this !!!
+			txt = this.getLine(line);
+			curStyle = (codeRx.test(txt))? styleNumCode : styleNumResult;
+			if(curStyle == styleNumResult) {
+				if(inStdErr) curStyle = styleNumErr;
+				if(!inStdErr && /\x03/.test(txt)) { // {ETX}
+					curStyle = styleNumErr;
+					inStdErr = true;
+				} else if (inStdErr && /\x02/.test(txt))  {// {STX}
+					curStyle = styleNumResult;
+					inStdErr = false;
+				}
+				this.replaceLine(line, txt.replace(/[\x02\x03]/g, ''), true);
+			}
+			startPos = scimoz.positionFromLine(line);
+			endPos = scimoz.getLineEndPosition(line) + eolChar.length +  10;
+			scimoz.startStyling(startPos, styleMask);
+			scimoz.setStyling(endPos - startPos, curStyle);
+		}
+	} else {
+		// all lines in the provided style
+		startPos = scimoz.positionFromLine(startLine);
+		endPos = scimoz.getLineEndPosition(endLine-1) + eolChar.length;
+		scimoz.startStyling(startPos, styleMask);
+		scimoz.setStyling(endPos - startPos, styleNum);
+	}
+	scimoz.readOnly = readOnly;
 }
 
 // Clear text in the Output Command pane
 this.clear = function (all) {
-	if (!scimoz) _init();
+	var scimoz = _this.scimoz;
+
 	if (all) _this.message();
 	var readOnly = scimoz.readOnly;
 	try {
@@ -890,7 +1056,6 @@ sv.checkToolbox = function () {
 			path2 = svFile.path(path, file2);
 			os.rename(path1, path2);
 			try { 	_installPkg(path2);	} catch(e) { /***/ }
-
 		}
 
 		if(tbxMgr) tbxMgr.view.reloadToolsDirectoryView(-1);
