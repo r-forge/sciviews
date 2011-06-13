@@ -108,7 +108,7 @@
 // Define the 'sv.r' namespace
 if (typeof(sv.r) == 'undefined')
 sv.r = {
-	RMinVersion: "2.11.0",	// Minimum version of R required
+	RMinVersion: "2.13.0",	// Minimum version of R required
 
 //	server: "http", 		// Currently, either 'http' or 'socket'
 	server: "socket", 		// KB: http is still problematic, changed the default
@@ -189,8 +189,10 @@ sv.r.print = function (text, newline, command, partial) {
 		}
 	} else { // This is some data returned by R
 		if (!partial) sv.cmdout.message("R is ready!", 0, false);
+		sv.cmdout.append(text, newline);
 	}
-	sv.cmdout.append(text, newline);
+	// PhG: echo of commands is now done by the server, but still needed hereabove
+	//sv.cmdout.append(text, newline);
 }
 
 // Evaluate code in R

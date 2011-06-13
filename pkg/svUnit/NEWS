@@ -1,15 +1,15 @@
 = svUnit News
 
-
 == svUnit 0.7-6
 
-* refer to last test environment through a local identifier.  closes #1327
-* strip attributes from context fields when saving them temporarily.
+* Refer to last test environment through a local identifier. Closes #1327.
+
+* Strip attributes from context fields when saving them temporarily.
 
 
 == svUnit 0.7-5
 
-* XML-encoding entities in protocol_junit.svTestData.  closes #1147
+* XML-encoding entities in protocol_junit.svTestData. Closes #1147.
 
 
 == svUnit 0.7-4

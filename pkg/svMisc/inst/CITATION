@@ -8,7 +8,7 @@ citEntry(entry="Manual",
          year         = version$year,
          url          = "http://www.sciviews.org/SciViews-R",
 
-         textVersion =
+        textVersion =
          paste("Grosjean, Ph. (", version$year, "). ",
                "SciViews: A GUI API for R. ",
                "UMONS, Mons, Belgium. ",
@@ -18,5 +18,5 @@ citEntry(entry="Manual",
 
 citFooter("We have invested a lot of time and effort in creating SciViews-R,",
           "please cite it when using it together with R.",
-	  "See also", sQuote("citation()"),
-	  "for citing R.")
+          "See also", sQuote("citation()"),
+          "for citing R.")

@@ -11,11 +11,16 @@
 }
 
 \usage{
-parseText(text)
+parseText(text, firstline = 1, srcfilename = NULL, encoding = "unknown")
 }
 
 \arguments{
   \item{text}{ the character string vector to parse into an R expression. }
+  \item{firstline}{ the index of first line being parsed in the file. If this
+    is larger than \code{1}, empty lines are added in front of \code{text} in
+	order to match the correct position in the file. }
+  \item{srcfilename}{ a character string with the name of the source file. }
+  \item{encoding}{ encoding of \code{text}, as in \code{\link[base]{parse}}. }
 }
 
 \value{
@@ -33,11 +38,13 @@ parseText(text)
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
 
-\seealso{ \code{\link{captureAll}}, \code{\link{sourceClipboard}} }
+\seealso{ \code{\link{captureAll}}, \code{\link{sourceClipboard}},
+  \code{\link[base]{parse}} }
 
 \examples{
 parseText('1+1')
 parseText('1+1; log(10)')
+parseText(c('1+1', 'log(10)'))
 
 ## Incomplete instruction
 parseText('log(')

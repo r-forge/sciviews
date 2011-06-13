@@ -13,7 +13,7 @@
 }
 
 \usage{
-captureAll(expr, split = FALSE, file = NULL)
+captureAll(expr, split = TRUE, echo = TRUE, file = NULL, markStdErr = FALSE)
 }
 
 \arguments{
@@ -21,10 +21,15 @@ captureAll(expr, split = FALSE, file = NULL)
     accepted). }
   \item{split}{ do we split output, that is, do we also issue it at the R console
     too, or do we only capture it silently? }
+  \item{echo}{ do we echo each expression in front of the results (like in the
+    console)? In case the expression spans on more than 7 lines, only first and
+	last three lines are echoed, separated by [...]. }
   \item{file}{ a file, or a valid opened connection where output is sinked. It
     is closed at the end, and the function returns \code{NULL} in this case. If
 	\code{file = NULL} (by default), a textConnection() captures the output and
 	it is returned is a character string by the function. }
+  \item{markStdErr}{ if \code{TRUE}, stderr is separated from sddout by STX/ETX
+    character }
 }
 
 \value{
@@ -50,18 +55,18 @@ captureAll(expr, split = FALSE, file = NULL)
   \code{\link{sourceClipboard}} }
 
 \examples{
-writeLines(captureAll(expression(1+1)))
+writeLines(captureAll(expression(1+1), split = FALSE))
 writeLines(captureAll(expression(1+1), split = TRUE))
-writeLines(captureAll(parseText("search()")))
+writeLines(captureAll(parseText("search()"), split = FALSE))
 
 \dontrun{
-writeLines(captureAll(parseText('1:2 + 1:3')))
-writeLines(captureAll(parseText("badname")))
+writeLines(captureAll(parseText('1:2 + 1:3'), split = FALSE))
+writeLines(captureAll(parseText("badname"), split = FALSE))
 }
 
 ## Management of incomplete lines
 captRes <- captureAll(parseText("1 +")) # Clearly an incomplete command
-if (is.na(captRes)) cat("Incomplete line!\n") else writeLines(res)
+if (is.na(captRes)) cat("Incomplete line!\n") else writeLines(captRes)
 rm(captRes)
 }
 

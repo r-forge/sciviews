@@ -5,37 +5,37 @@
 	return(parseText(text))
 }
 
-`parseText` <- function (text) {
+`parseText` <- function (text, firstline = 1, srcfilename = NULL,
+encoding = "unknown") {
 	## Parse R instructions provided as a string and return the expression if it
 	## is correct, or a 'try-error' object if it is an incorrect code, or NA if
 	## the (last) instruction is incomplete
-  	res <- tryCatch(parse(text=text), error=identity)
+  	text <- paste(text, collapse = "\n")
+	## if firstline is higher than 1, "align" code by prepending empty codes
+	firstline <- as.integer(firstline)[1]
+	if (firstline > 1)
+		text <- paste(c(rep("", firstline - 1), text), collapse = "\n")
+	if (is.null(srcfilename)) srcfilename <- "<text>"
+	res <- tryCatch(parse(text = text, srcfile = srcfilecopy(srcfilename, text),
+		encoding = encoding), error = identity)
 
-	if(inherits(res, "error")) {
-		# Check if this is incomplete code
+	if (inherits(res, "error")) {
+		## Check if this is incomplete code
 		msg <- conditionMessage(res)
-		rxUEOI <- sprintf(gsub("%d", "\\\\d", gettext("%s%d:%d: %s", domain="R")),
-			if(getOption("keep.source")) "<text>:" else "",
-			gettextf("unexpected %s", gettext("end of input", domain="R"),
-			domain="R"))
-
-
-		if(regexpr(rxUEOI, res$message) == 1) return(NA)
-
+		if (regexpr(gettext("end of input", domain = "R"), msg) > 0)
+			return(NA)	
 		
-		# This reformats the message as it would appear in the CLI:
-		#mess <- conditionMessage(res)
-		#errinfo <- strsplit(sub("(\\d+):(\\d+): +([^\n]+)[\\s\\S]*$", "\\1\n\\2\n\\3", mess, perl=T), "\n", fixed=TRUE)[[1]]
-		#errpos <- as.numeric(errinfo[1:2])
-		#errcode <- substr(strsplit(x, "(\r?\n|\r)")[[1]][errpos[1]], start = 0, stop = errpos[2])
-		#res <- simpleError(sprintf("%s in \"%s\"", errinfo[3], errcode))
-
-		e <- res <- simpleError(mess, NULL)
-
-		# for legacy uses, make it a try-error
-		res <- .makeMessage(res)
+		## This should be incorrect R code
+		## Rework the message a little bit... keep line:col position in front
+		err <- res
+		err$message <- res <- sub("^<.*>:", "", msg)
+		## Call is from instructions in "text"... but from the corresponding line
+		err$call <- strsplit(text, "\n")[[1]][as.integer(
+			sub("^[^0-9]*([0-9]+):.*$", "\\1", res))]
+		
+		## Return a try-error object to remain compatible with previous versions
 		class(res) <- "try-error"
-		attr(res, 'error') <- e
+		attr(res, 'error') <- err
 	}
 
     return(res)

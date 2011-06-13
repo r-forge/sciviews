@@ -1,8 +1,18 @@
 = svMisc News
 
-== Changes in svMisc **Working version**
+== Changes in svMisc 0.9-62
 
-* captureAll() now handles user interrupts and allows for traceback() afterwards.
+* captureAll() now handles user interrupts and allows for traceback() afterwards
+  and default value for split now changed to TRUE. The 'echo' argument allows
+  for echoing expressions being evaluated, like in the usual console, but a
+  mechanism allows to abbreviate very long expressions.
+
+* parseText() is reworked internally and it uses the srcfile/srcref mechanism
+  introduced in R recently. firstline, srcfilename and encoding arguments are
+  added.
+
+* Unit tests added (should run with both svUnit (advised) and RUnit).
+
 
 == Changes in svMisc 0.9-61
 
