@@ -292,12 +292,15 @@ name = HttpServerName())
 				Continue <- pars$continue
 				Echo <- pars$echo
 			}
+			## TODO: do we still need this?
 			## Eliminate last carriage return
 			msg <- sub("(.*)[\n][^\n]*$", "\\1", msg)
 			if (!hiddenMode) {
 				if (Echo) {
+					## Note: command lines are now echoed directly in captureAll()
+					## => no need of this any more!
 					if (pars$code == "") Pre <- Prompt else Pre <- Continue
-					cat(Pre, msg, "\n", sep = "")
+					#cat(Pre, msg, "\n", sep = "")
 				}
 				## Add previous content if we were in multiline mode
 				if (pars$code != "") msg <- paste(pars$code, msg, sep = "\n")
@@ -361,8 +364,7 @@ name = HttpServerName())
 				}
 			}
 			## Correct code,... we evaluate it
-			## TODO: here, evaluate line by line and return result immediately!
-			results <- captureAll(expr)
+			results <- captureAll(expr, echo = Echo, split = Echo)
 			## Should we run taskCallbacks?
 			if (!hiddenMode) {
 				h <- getTemp(".svTaskCallbackManager", default = NULL,
@@ -371,7 +373,7 @@ name = HttpServerName())
 			}
 			## Collapse and add last and the prompt at the end
 			results <- paste(results, collapse = "\n")
-			if (Echo) cat(results)
+			#if (Echo) cat(results)
 			if (!returnResults) {
 				if (is.null(callback)) {
 					return(NULL)

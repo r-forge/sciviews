@@ -35,6 +35,7 @@
 
 [scriptable, uuid(5e04a8de-ac01-4df1-af7a-184130e645b8)]
 interface svIRinterpreter : nsISupports {
+
     /**
     * Escape from multiline mode in the R interpreter.
     */

@@ -2,6 +2,13 @@
 
 == Changes in svSocket 0.9-51
 
+* processSocket() now uses the new version of captureAll() from svMisc >= 0.9-62
+  with the split = and echo = arguments. Commands and results are now interwoven
+  like in a normal console output.
+
+
+== Changes in svSocket 0.9-51
+
 * processSocket() no longer adds en empty line at the top of R commands (bug
   corrected).
 
