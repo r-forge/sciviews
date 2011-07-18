@@ -51,4 +51,3 @@ Import(
     'havePy2to3',
 );
 $cons->InstallXpcomComponent('koRLinter.py');
-$cons->InstallXpcomComponent('svUtils.py');

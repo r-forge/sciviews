@@ -238,7 +238,14 @@ this.rClientHttp = function (host, port, cmd, listener, echo, procname) {
 	return(null);
 }
 
-this.rClient = this.rClientSocket; // default client type
+this.rClient = function (host, port, cmd, listener, echo, procname) {
+	if (sv.clientType == "socket") {
+		res = this.rClientSocket(host, port, cmd, listener, echo, procname);
+	} else {
+		res = this.rClientHttp(host, port, cmd, listener, echo, procname)
+	}
+	return(res);
+}
 
 // TODO: use this on preference change "sciviews.client.type"
 this.setSocketType = function (type) {
@@ -341,7 +348,7 @@ this.rProcess = function (rjson) {
 // TODO: add the current working directory and report WD changes from R automagically
 this.rUpdate = function () {
 	// Make sure that dec and sep are correctly set in R
-	this.rCommand('<<<h>>>options(' +
+	this.rCommand('<<<H>>>options(' +
 		'OutDec = "' + sv.prefs.getString("r.csv.dec", ".") +
 		'", OutSep = "' + sv.prefs.getString("r.csv.sep", ",") +
 		'"); invisible(guiRefresh(force = TRUE)); ' +

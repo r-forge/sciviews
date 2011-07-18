@@ -179,6 +179,7 @@ sv.r.print = function (text, newline, command, partial) {
 	// For now, use the command output pane
 	if (command) { // This is a R command
 		if (partial) {
+			sv.cmdout.append(text, newline);
 			sv.cmdout.message("R waits for more input...", 0, true);
 		} else { // This is a new command
 			sv.cmdout.clear();
@@ -191,8 +192,6 @@ sv.r.print = function (text, newline, command, partial) {
 		if (!partial) sv.cmdout.message("R is ready!", 0, false);
 		sv.cmdout.append(text, newline);
 	}
-	// PhG: echo of commands is now done by the server, but still needed hereabove
-	//sv.cmdout.append(text, newline);
 }
 
 // Evaluate code in R
