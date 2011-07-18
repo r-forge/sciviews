@@ -19,7 +19,7 @@ if (typeof(sv.prefs) == "undefined") sv.prefs = {};
 // sv.prefs.defaults[preferenceName] = preferenceValue
 sv.prefs.defaults = {
 	"sciviews.server.socket": "7052",
-	"sciviews.client.type": "socket", // temporarily changed from "http"
+	"sciviews.client.type": "socket",
 	"sciviews.client.socket": "8888",
 	"sciviews.client.id": "SciViewsK",
 	"sciviews.server.host": "127.0.0.1",
@@ -135,19 +135,18 @@ var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
 //TODO: Rework this with respect to Mac and R.app
 // Default R interpreter Id: use a reasonable default, given the platform
 if (navigator.platform.indexOf("Win") === 0) {
-	sv.prefs.setString("svRApplication", "r-gui", !sv.prefs.getString("svRApplication", "r-gui"));
+	sv.prefs.setString("svRApplication", "r-gui", false);
 	if (!svRDefaultInterpreter)
 		svRDefaultInterpreter = sv.tools.file.whereIs("Rgui");
 } else {
-	sv.prefs.setString("svRApplication", "r-terminal", !sv.prefs.getString("svRApplication", "r-gui"));
+	sv.prefs.setString("svRApplication", "r-terminal", false);
 	if (!svRDefaultInterpreter)
 		svRDefaultInterpreter = sv.tools.file.whereIs("R");
 }
-sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, 
-	!sv.prefs.getString("svRDefaultInterpreter", "r-gui"));
-
-
-sv.prefs.setString("sciviews.client.type", "socket", true); // DEBUG: Force "socket"
+// PhG: this must disappear: it causes trouble on Mac and with HTTP server!!!
+//sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, 
+//	!sv.prefs.getString("svRDefaultInterpreter", "r-gui"));
+//sv.prefs.setString("sciviews.client.type", "socket", true); // DEBUG: Force "socket"
 
 
 // This is required by sv.helpContext() for attaching help to snippets (hack!)

@@ -704,6 +704,18 @@ this.append = function (str, newline, scrollToStart) {
 
 // Clear text in the Output Command pane
 this.clear = function (all) {
+	// PhG: this was in old code... but since new code does not work on Win Vista
+	// I reinject this to see if it solves the problem!
+	try {
+		var runout = ko.run.output;
+		// Make sure the command output window is visible
+		runout.show(window, false);
+		// Make sure we're showing the output pane
+		var deckWidget = document.getElementById("runoutput-deck");
+		if (deckWidget.getAttribute("selectedIndex") != 0)
+			runout.toggleView();
+	} finally { }
+		
 	if (!scimoz) _init();
 	if (all) _this.message();
 	var readOnly = scimoz.readOnly;
@@ -713,8 +725,8 @@ this.clear = function (all) {
 	} finally {
 		scimoz.readOnly = readOnly;
 	}
-
 }
+
 // Display message on the status bar (default) or command output bar
 this.message = function (msg, timeout, highlight) {
 	document.getElementById('output_tabpanels').selectedIndex = 0;
@@ -729,10 +741,7 @@ this.message = function (msg, timeout, highlight) {
 		.setTimeout("sv.cmdout.message('', 0);", timeout);
 }
 
-
 }).apply(sv.cmdout);
-
-
 
 
 //// Logging management ////////////////////////////////////////////////////////
