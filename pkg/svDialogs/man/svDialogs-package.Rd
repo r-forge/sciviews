@@ -5,15 +5,15 @@
 
 \title{ SciViews GUI API - Dialog boxes }
 \description{
-  Rapidly construct dialog boxes for your GUI, including an automatic
+  Use native or pseudo-native dialog boxes for your GUI, including an automatic
   function assistant.
 }
 \details{
   \tabular{ll}{
     Package: \tab svDialogs\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-43\cr
-    Date: \tab 2010-09-25\cr
+    Version: \tab 0.9-44\cr
+    Date: \tab 2011-07-29\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples
@@ -23,6 +23,18 @@
   Philippe Grosjean
 
   Maintainer: Ph. Grosjean <phgrosjean@sciviews.org>
+}
+
+\examples{
+## TODO...
+
+### Example of a custom function for an imput box that deleguates
+#dlgInput.wxGUI <- function (message = "Enter a value",
+#default = "", ..., gui = svGUI) {
+#	warning("No input box implemented yet with wxWidgets in R!")
+#	NextMethod("dlgInput", gui)	
+#}
+
 }
 
 \keyword{ package }

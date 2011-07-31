@@ -1,0 +1,8 @@
+import(svDialogs, tcltk)
+
+#export()
+
+S3method(dlgDir, tcltkWidgets)
+S3method(dlgInput, tcltkWidgets)
+S3method(dlgList, tcltkWidgets)
+S3method(dlgMessage, tcltkWidgets)

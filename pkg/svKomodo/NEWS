@@ -1,0 +1,87 @@
+= svKomodo News
+
+== Changes in svKomodo 0.9-52
+
+* The package is created from svGUI 0.9-51 (functions that concern interaction
+  with Komodo Edit/IDE). guiInstall(), guiUninstall(), guiRefresh() &
+  guiAutoRefresh() are also renamed koXXX(), in order to better match their
+  purpose (to communicate with Komodo Edit/IDE only), while the previous
+  implementation was intended for more general purpose. Since, it was never
+  used elsewhere, narrowing its scope allows to simplify the code greatly!
+
+
+Here is a transcript of svGUI before functions are moved to svKomodo:
+
+== Changes in svGUI 0.9-51
+
+* (nothing concerns Komodo's functions)
+
+
+== Changes in svGUI 0.9-50
+
+* (nothing concerns Komodo's functions)
+
+
+== Changes in svGUI 0.9-49
+
+* (nothing concerns Komodo's functions)
+
+
+== Changes in svGUI 0.9-48
+
+* koCmd() now should prepend <<<js>>> to the JavaScript code to get it evaluated
+  in Komodo (starting with SciViews-K 0.9-18). Komodo now also accepts RJsonP
+  strings, prepended with <<<rjson>>>. If there is no code prepended to the
+  string send to Komodo, it is just printed in the local R console.
+  A new 'type' argument specifies what kind of string we send to Komodo.
+
+
+== Changes in svGUI 0.9-47
+
+* (nothing concerns Komodo's functions)
+  
+
+== Changes in svGUI 0.9-46
+
+* Use of svTaskCallbackManager() of svSocket >= 0.9-48 to register task
+  callback that are also executed after each R code send by socket clients.
+
+* guiRefresh() now clears active items and MRU lists in Komodo for non-defined
+  active data frames and lm objects.
+  
+
+== Changes in svGUI 0.9-45
+
+* Added guiRefresh() and guiAutoRefresh() to refresh automatically the content
+of the GUI (Komodo) object explorer and the lists of active objects
+
+
+== Changes in svGUI 0.9-44
+
+* Preparation for CRAN submission: polishing the package
+
+
+== Changes in svGUI 0.9-43
+
+* Made compatible with R 2.6.x (previous version was compatible with R 2.7.0).
+
+
+== Changes in svGUI 0.9-42
+
+* koCmd() is now more robust and do not issue a warning or an error if the
+Komodo server is not available (but the error message is returned by the
+function with a 'try-error' class, so that it can be processed by the caller)
+
+
+== Changes in svGUI 0.9-41
+
+* Correction of a bug in the first example of koCmd()
+
+* guiInstall() now creates a hook to koCmd(): .koCmd() in TempEnv environment
+
+
+== Changes in svGUI 0.9-40
+
+This is the first version distributed on R-forge. It is completely refactored
+from older versions (on CRAN since 2003) to make it run with SciViews-K and
+Komodo Edit (Tinn-R is also supported, but not SciViews-R Console any more).

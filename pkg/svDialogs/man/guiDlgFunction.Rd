@@ -28,7 +28,7 @@ guiDlgFunction(fun, template = NULL, maxargs = 7, var = "res", width = 40,
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
 
-\seealso{ \code{\link{guiDlgInput}}, \code{\link{guiDlgVarSel}} }
+\seealso{ \code{\link{dlgInput}} } %, \code{\link{dlgVarSel}} }
 
 \examples{
 ### TODO...

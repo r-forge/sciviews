@@ -1,0 +1,6 @@
+= svDialogs..tcltk News
+
+== Changes in svDialogs 0.9-0
+
+This is the first version on R-forge. It is a refactoring from the old svDialogs
+function that are replaced there by native dialog boxes, as much as possible.

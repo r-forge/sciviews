@@ -1,3 +1,11 @@
 = svDialogs To Do list
 
 * Most fixed dialog boxes still need to be done!
+
+* Eliminate the dependency to tcltk, once all old code will be moved to
+  svDialogs..tcltk.
+  
+* Translation into different languages.
+
+* Control the terminal (where R runs) using osascript:
+  osascript -e 'tell app "Terminal" to do script %s'

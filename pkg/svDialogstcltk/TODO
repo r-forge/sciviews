@@ -1,0 +1,11 @@
+= svDialogs..tcltk To Do list
+
+* Most dialog boxes still need to be done!
+
+* Reimplement dlgMessage.tcltkWidgets() using something else than tkmessageBox()
+  which is ugly under Linux and buggy with Mac OS X.
+
+* For the moment, dlgList.tcltkWidgets() just delegates to tk_select.list()...
+  but we could build a nicer list selector (also look at old code from previous
+  version).
+  

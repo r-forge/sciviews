@@ -1,5 +1,25 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-44
+
+* The guiDlgXXX() functions are reworked into S3 methods and their interface
+  changes. To avoid any confusion, they are renamed dlgXXX().
+
+* dlgMessage() is reworked into native dialog box, but it looses a couple
+  of options during the process (title, icon, parent). The previous code is now
+  moved to svDialogs.tcltk.
+  
+* dlgInput() is reworked the same way, and it looses the 'parent' argument that
+  was not implemented yet, anyway, and the 'title' argument that is now always
+  "question" in order to match winDialogString() function for Windows.
+  
+* dlgList() is also refactored that way. Its interface is completely changed
+  to better match the arguments of select.list() and to make it a direct
+  replacement for that function.
+  
+* dlgDir() is completely rewritten, as well as, dlgOpen() and dlgSave().
+
+
 == Changes in svDialogs 0.9-43
 
 * tcltk R package is moved from depends to imports.
