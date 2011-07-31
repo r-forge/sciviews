@@ -1,12 +1,12 @@
 Package: svDialogs
 Type: Package
 Title: SciViews GUI API - Dialog boxes
-Depends: R (>= 2.6.0), tcltk
-Imports: svMisc
+Depends: R (>= 2.6.0), svGUI (>= 0.9-52), tcltk, svMisc
+SystemRequirements: TODO!!!
 Description: Rapidly construct dialog boxes for your GUI, including an automatic
   function assistant
-Version: 0.9-43
-Date: 2010-09-25
+Version: 0.9-44
+Date: 2011-07-29
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL-2

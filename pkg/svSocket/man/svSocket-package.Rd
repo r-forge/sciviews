@@ -53,4 +53,4 @@
 \keyword{ package }
 \keyword{ utilities }
 
-\concept{ GUI API socvket server }
+\concept{ GUI API socket server }

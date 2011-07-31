@@ -2,6 +2,9 @@
 
 * Make all these S3 objects and use methods add, addItem, del, delItem, ...
 
+* Instead of Img object, use the key-value equivalent of gWidgets => define
+  image resources in a graphical toolkit independent way.
+
 * In the list of windows (.guiWin), include also RGui windows (console, graphs,
   etc...)
 
@@ -17,7 +20,5 @@
 == Bugs
 
 * in winMenuXXX (old stuff, recheck this with current R version):
-  1) Error while changing action of a menu
-  2) Defining the underline works, but the corresponding shortcut does not
-  3) GPF when trying to allocate items to '$Graph1Main'
-  4) 'Testit' & $ConsoleMain/Testit' are treated as different things!
+  1) GPF when trying to allocate items to '$Graph1Main'
+  2) 'Testit' & $ConsoleMain/Testit' are treated as different things!
