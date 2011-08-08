@@ -50,6 +50,26 @@ import logging
 log = logging.getLogger('RLinter')
 log.setLevel(logging.DEBUG)
 
+
+
+#ss = s * 5000
+#t0 = time.clock()
+#for n in range(100):
+#    ss.replace("\x03", "").replace("\x02", "")
+#t1 = time.clock() - t0
+#print(t1)
+##0.19073865575
+#ss = s * 5000
+#pat = re.compile('[\x02\x03]')
+#t0 = time.clock()
+#for n in range(100):
+#    pat.sub("", ss)
+#t1 = time.clock() - t0
+#print(t1)
+##0.836379887645
+
+
+
 class KoRLinter:
     _com_interfaces_ = [components.interfaces.koILinter]
     _reg_desc_ = "Komodo R Linter"
@@ -84,14 +104,15 @@ class KoRLinter:
         except Exception, e:
             log.exception(e)
         try:
-            lines = self.sv_utils.execInR(command, "h").rstrip()
+            lines = self.sv_utils.execInR(command, "h", 1.5).rstrip() \
+                .replace('\x03', '').replace('\x02', '')
             if lines == 'timed out':
                 raise ServerException(nsError.NS_ERROR_NOT_AVAILABLE)
 
-            log.debug("lint: " + lines)
+            log.debug('lint: ' + lines)
             ma = self.pattern.match(lines)
             if (ma):
-                lineNo = int(ma.group("line"))
+                lineNo = int(ma.group('line'))
                 datalines = re.split('\r\n|\r|\n', request.content, lineNo) # must not to be encoded
                 columnNo = int(ma.group("col"))
                 description = ma.group("descr")

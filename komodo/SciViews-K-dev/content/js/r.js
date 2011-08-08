@@ -87,61 +87,12 @@
 // Define the 'sv.r' namespace
 if (typeof(sv.r) == 'undefined')
 sv.r = {
-	RMinVersion: "2.11.0",	// Minimum version of R required
-//	server: "http", 		// Currently, either 'http' or 'socket'
-	server: "socket", 		// KB: http is still problematic, changed the default
+	RMinVersion: "2.13.0",	// Minimum version of R required
 	sep: ";;",				// Separator used for items
 	running: false			// Indicate if R is currently running
 	// FIXME: before we solve the issue of updating R status
 };
 
-// XXX: Not needed anymore
-// Check where the R executable can be found
-sv.r.application = function (warn) {
-	if (warn === undefined) warn = false;
-
-	// Look for R executable for batch processes
-	var R = sv.tools.file.whereIs("R")
-	if (R == null & warn)
-	sv.alert("R is not found", "You should install or reinstall R" +
-		" on this machine (see http://cran.r-project.org). Under Windows" +
-		" you could also run RSetReg.exe from the /bin subdirectory of R" +
-		" install in case R is installed, but not recognized by SciViews).");
-	// Save the path in r.application prefs
-	if (R == null) R = "";
-	sv.pref.setPref("r.application", R, true);
-	return(R);
-}
-
-//// Print some text (command or results) in the local R console
-sv.r.print = function (text, newline, command, partial) {
-	// Default values for optional arguments
-	if (newline === undefined) newline = true;
-	if (command === undefined) command = false;
-	if (partial === undefined) partial = false;
-
-	// For now, use the command output pane
-	if (command) { // This is a R command
-		if (partial) {
-			sv.cmdout.message("R waits for more input...", 0, true);
-		} else { // This is a new command
-			sv.cmdout.clear();
-			sv.cmdout.message("R is calculating... " +
-			"(if it takes too long, switch to the R console:" +
-			" it could be waiting for some input)!", 0, true);
-			text = ":> " + text;
-		}
-	} else { // This is some data returned by R
-		if (!partial) sv.cmdout.message("R is ready!", 0, false);
-	}
-	sv.cmdout.append(text, newline);
-}
-
-// Tests:
-//sv.r.evalHidden("Sys.sleep(5); cat('done\n')");
-//sv.r.evalHidden("Sys.sleep(5); cat('done\n')", earlyExit = true);
-//sv.r.evalHidden("Sys.sleep(3); cat('done\n');" +
-//   " koCmd('alert(\"koCmd is back\");')", earlyExit = true);
 
 // Evaluate R expression and call procfun in Komodo with the result as argument
 // all additional arguments will be passed to procfun
@@ -152,7 +103,7 @@ sv.r.evalCallback = function(cmd, procfun, context) {
 }
 
 sv.r.eval = function(cmd) sv.rconn.eval.call(sv.rconn, cmd)
-sv.r.evalHidden = function(cmd, earlyExit) sv.rconn.eval.call(sv.rconn, cmd)
+sv.r.evalHidden = function(cmd, earlyExit) sv.rconn.eval.call(sv.rconn, cmd, null, true)
 sv.r.escape = function (cmd) sv.rconn.escape(cmd);
 
 // Set the current working directory (to current buffer dir, or ask for it)
@@ -364,7 +315,6 @@ sv.r.send = function (what) {
 //		ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
 //	}
 //}
-
 
 
 // Get help in R (HTML format)
@@ -727,11 +677,11 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 		// Save .RData & .Rhistory in the the session directory and clean WS
 		// We need also to restore .required variable (only if it exists)
 		cmd.push('if (exists(".required")) assignTemp(".required", .required)',
-				 'TempEnv()$.Last.sys()',
+				 'if(existsTemp(".Last.sys", "function")) do.call(".Last.sys", list(), envir = TempEnv())',
 				 'save.image(); savehistory()',
 				 'rm(list = ls())');
 	}
-	cmd.push('rm(list = ls())', '.required <- getTemp(".required")');
+	cmd.push('.required <- getTemp(".required")');
 
 	// Initialize the session
 	dir = sv.r.initSession(dir, datadir, scriptdir, reportdir);
@@ -746,7 +696,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	// TODO: loadhistory APPENDS a history. Make R clear the current history first.
 	// Note: there seems to be no way to clear history without restarting R!
 	if (loadNew) {
-		cmd.push('if (file.exists(".RData")) load(".RData")',
+		cmd.push('sys.load.image(".RData", FALSE)',
 				 'if (file.exists(".Rhistory")) loadhistory()');
 
 		// Look for .Rprofile, in current, then in user directory (where else R looks for it?)
@@ -763,6 +713,8 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 			}
 		}
 	}
+
+	//sv.cmdout.append(cmd.join(";\n"));
 
 	// Execute the command in R (TODO: check for possible error here!)
 	// TODO: run first in R; make dirs in R; then change in Komodo!
@@ -935,7 +887,7 @@ sv.r.pkg.repositories = function () {
 	//on Windows, "<HOME>/.R/repositories", "<R_installPath>/etc/repositories"
 }
 
-// Select CRAN mirror, with optional callback
+// Select CRAN mirror
 sv.r.pkg.chooseCRANMirror = function (setPref) {
 	var res = false;
 	var cmd = 'assignTemp("cranMirrors", getCRANmirrors(all = FALSE, local.only = FALSE));' +
@@ -975,7 +927,7 @@ sv.r.pkg.chooseCRANMirror = function (setPref) {
 // List available packages on the selected repositories
 sv.r.pkg.available = function () {
 	var res = sv.r.eval('.pkgAvailable <- available.packages()\n' +
-	'as.character(.pkgAvailable[, "Package"])');
+		'as.character(.pkgAvailable[, "Package"])');
 	ko.statusBar.AddMessage(sv.translate(
 		"Looking for available R packages... please wait"),
 		"SciViews-K", 5000, true);
