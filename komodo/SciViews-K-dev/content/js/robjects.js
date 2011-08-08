@@ -103,6 +103,23 @@
 // TODO: make this a sv.robjects.tree instead!
 //}}
 
+/*
+
+JSON transport:
+
+var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
+	.createInstance(Components.interfaces.nsIJSON);
+var result = sv.rconn.evalAtOnce('cat(toJSON(apply(objList(compare=F), 1, as.list)))')
+var objects = nativeJSON.decode(result)
+
+for(i in objects) {
+ objects[i]
+// Fields: Class, Dims, Full.name, Group, Name, Recursive
+}
+
+*/
+
+
 sv.rbrowser = {};
 
 ////DEBUG///
@@ -138,7 +155,6 @@ function _funStr(fun) {
 
 // sv.rbrowser constructor
 (function () {
-//{
 
 	// Item separator for objList
 	var sep = ";;";
@@ -175,15 +191,11 @@ function _funStr(fun) {
 
 	this.__defineGetter__ ('rowCount', function() this.visibleData.length);
 
-//}
-
 	function _createVisibleData () {
 		//if (!isInitialized) throw new Error("treeData not initialized");
 		if (!isInitialized) return;
 
-		var rowsBefore;
-		rowsBefore = _this.visibleData.length;
-
+		var rowsBefore = _this.visibleData.length;
 		var firstVisibleRow =  _this.treeBox? _this.treeBox.getFirstVisibleRow() : 0;
 
 		_this.visibleData = [];
@@ -204,54 +216,51 @@ function _funStr(fun) {
 			_this.treeBox.getLastVisibleRow());
 	};
 
-	function RObjectLeaf(env, obj, arr, index, parentElement) {
-		var type = parentElement? ((parentElement.type == "environment")? 'object' :
-			(parentElement.group == "function" ? "args" : "sub-object")) :
-			'environment';
+// RObjectLeaf constructor:
+function RObjectLeaf(env, obj, arr, index, parentElement) {
+	var type = parentElement? ((parentElement.type == "environment")? 'object' :
+		(parentElement.group == "function" ? "args" : "sub-object")) :
+		'environment';
 
+	dimNumeric = 1;
+	pos = index; // XXX ????
+	//this.index = index;
+	this.type = type;
+	if (obj) { /// Objects
 		dimNumeric = 1;
-		pos = index; // XXX ????
-		//this.index = index;
-		this.type = type;
-		if (obj) { /// Objects
-			dimNumeric = 1;
-			var dimRegExp = /^(\d+x)*\d+$/;
-			if (dimRegExp.test(arr[2])) {
-				dim = arr[2].split(/x/);
-				for (var j in dim) dimNumeric *= parseInt(dim[j]);
-			}
-			this.name = arr[0];
-			this.fullName = arr[1];
-			this.dims = arr[2];
-			this.group = arr[3];
-			try {
-				this.class = arr[4];
-
-			this.env = env;
-			this.list = (arr[5] == "TRUE");
-			if (this.list) this.children = [];
-			this.sortData = [this.name.toLowerCase(), dimNumeric, this.class.toLowerCase(),
-				this.group.toLowerCase(), index];
-
-			} catch(e) {
-				print(e);
-				print(arr);
-			}
-
-			this.parentObject = parentElement;
-		} else { /// Environment
-			pos = _this.searchPath.indexOf(env);
-			this.name = this.fullName = env;
-			this.children = [];
-			this.class = "package";
-			this.dims = dimNumeric = pos;
-			this.sortData = [this.name.toLowerCase(), pos, this.class.toLowerCase(),
-				this.type.toLowerCase()];
-
-
-			this.isOpen = true;
+		var dimRegExp = /^(\d+x)*\d+$/;
+		if (dimRegExp.test(arr[2])) {
+			dim = arr[2].split(/x/);
+			for (var j in dim) dimNumeric *= parseInt(dim[j]);
 		}
+		this.name = arr[0];
+		this.fullName = arr[1];
+		this.dims = arr[2];
+		this.group = arr[3];
+		try {
+			this.class = arr[4];
+
+		this.env = env;
+		this.list = (arr[5] == "TRUE");
+		if (this.list) this.children = [];
+		this.sortData = [this.name.toLowerCase(), dimNumeric, this.class.toLowerCase(),
+			this.group.toLowerCase(), index];
+		} catch(e) {
+			print(e); //DEBUG
+			print(arr);
+		}
+		this.parentObject = parentElement;
+	} else { /// Environment
+		pos = _this.searchPath.indexOf(env);
+		this.name = this.fullName = env;
+		this.children = [];
+		this.class = "package";
+		this.dims = dimNumeric = pos;
+		this.sortData = [this.name.toLowerCase(), pos, this.class.toLowerCase(),
+			this.type.toLowerCase()];
+		this.isOpen = true;
 	}
+}
 
 RObjectLeaf.prototype = {
 	name: null,				fullName: null,
@@ -266,7 +275,6 @@ RObjectLeaf.prototype = {
 		return this.env + "::" + this.fullName + " (" + (this.isOpen? "+" : ".") + ")" +
 		(this.isOpen? "->" + this.children : '');
 	},
-	//RObjectLeaf: "RObjectLeaf",
 	childrenLoaded: false
 	//get childrenLength() this.children ? this.children.length : 0,
 	//set childrenLength(x) null
@@ -300,8 +308,9 @@ function _objTreeCrawler(name, root) {
 	return null;
 }
 
-// Below replaces _parseObjectList & _parseSubObjectList
-this.parseObjListResult = function _parseObjListResult (data, rebuild) {
+// This replaces old _parseObjectList & _parseSubObjectList:
+this.parseObjListResult = function _parseObjListResult (data, rebuild, scrollToRoot) {
+
 	var closedPackages = {};
 	var currentPackages = _this.treeData.map(function(x) {
 		closedPackages[x.name] = !x.isOpen;
@@ -330,15 +339,10 @@ this.parseObjListResult = function _parseObjListResult (data, rebuild) {
 						lastAddedRootElement = treeBranch;
 				}
 				if(treeBranch) {
-					var isEmpty = (lines[i+2].indexOf('Env') == 0)
-						|| (lines.length == i + 3);
+					var isEmpty = (lines.length == i + 2) || (lines[i + 2].indexOf('Env') == 0);
 					if(!objName) {
-						if(closedPackages[envName])
-							treeBranch.isOpen = false;
-					} else {
-						treeBranch.isOpen = true;
-					}
-					//treeBranch.children = isEmpty? undefined : [];
+						if(closedPackages[envName]) treeBranch.isOpen = false;
+					} else treeBranch.isOpen = true;
 					treeBranch.children = [];
 					treeBranch.childrenLoaded = true;
 				}
@@ -359,10 +363,13 @@ this.parseObjListResult = function _parseObjListResult (data, rebuild) {
 
 	_this.sort(); // .index'es are generated here
 
-	if (rebuild && lastAddedRootElement) { 	//only if rebuild, move the selection
+
+	if (scrollToRoot && lastAddedRootElement) { 	//only if rebuild, move the selection
 		var idx = lastAddedRootElement.index;
 		if (idx != -1) {
-			_this.treeBox.ensureRowIsVisible(idx);
+			//_this.treeBox.ensureRowIsVisible(idx);
+			_this.treeBox.scrollToRow(Math.min(idx, _this.rowCount - _this.treeBox.getPageLength()));
+
 			_this.selection.select(idx);
 		}
 	}
@@ -430,7 +437,14 @@ function _removeObjectList (pack) {
 };
 
 function _addObject(env, objName, callback, obj) {
-	sv.r.evalCallback(_getObjListCommand(env, objName), callback, obj);
+	//sv.r.evalCallback(_getObjListCommand(env, objName), callback, obj);
+	// callback is always 'parseObjListResult' so far.
+	var scrollToRoot = !objName; // if no object name - we are adding a package
+								 // so, scroll to its item
+
+	sv.rconn.eval(_getObjListCommand(env, objName), callback, true, null, false,
+		// args for callback:
+		false, scrollToRoot);
 };
 
 // New: allow for filtering by exclusion: prepend with "~"
@@ -705,8 +719,7 @@ this.toggleOpenState = function (idx) {
 
 	_this.selection.select(idx);
 	if (item.isList && !item.origItem.isOpen && !item.origItem.childrenLoaded) {
-		_addObject(item.origItem.env, item.origItem.fullName,
-			this.parseObjListResult);
+		_addObject(item.origItem.env, item.origItem.fullName, this.parseObjListResult);
 		return;
 	}
 	var rowsChanged;
@@ -905,6 +918,7 @@ this.displayPackageList = function() {
 	var packs = _this.searchPath;
 	var selectedPackages = _this.treeData.map(function(x) x.name);
 
+	if(!selectedPackages.length) selectedPackages.push(".GlobalEnv");
 
 	for(var i = 0; i < packs.length; i++) {
 		pack = packs[i];
@@ -914,6 +928,8 @@ this.displayPackageList = function() {
 		item.setAttribute("checked", selectedPackages.indexOf(pack) != -1);
 		node.appendChild(item);
 	}
+
+
 
 	if (selectedLabel != null) {
 		for(var i = 0; i < node.itemCount; i++) {
@@ -1483,7 +1499,7 @@ getSupportedFlavours: function () {
 	flavours.appendFlavour("text/unicode");
 	return(flavours);
 }
-}
+} // End .packageListObserver
 
 this.packageListKeyEvent = function (event) {
 	var keyCode = event.keyCode;
@@ -1497,17 +1513,15 @@ this.packageListKeyEvent = function (event) {
 
 		sv.r.evalCallback(
 		'tryCatch(detach("' + pkg.addslashes() +
-		'"), error = function(e) cat("<error>"));',
+		'"), error=function(e) cat("<error>"));',
 		function _packageListKeyEvent_callback (data) {
 			sv.log.debug(data);
 			if (data.trim() != "<error>") {
 				_removeObjectList(pkg);
 				listbox.removeChild(listItem);
-				print (sv.translate(
-				"Namespace \"%S\" detached.", pkg));
+				print(sv.translate("Namespace \"%S\" detached.", pkg));
 			} else {
-				print (sv.translate(
-				"Namespace \"%S\" could not be detached.", pkg));
+				print(sv.translate("Namespace \"%S\" could not be detached.", pkg));
 			}
 		});
 		return;

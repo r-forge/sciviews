@@ -131,76 +131,24 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		alert("R is closed with code " + exitCode);
 	}
 
-	// Start R
 	this.startR = function () {
-		var exitCode;
-		if (_this.RProcess && _this.RProcess.uuid) try {
-			exitCode = _this.RProcess.wait(0);
-		} catch(e) {
-			var result = ko.dialogs.customButtons("Another instance is running" +
-			"already. Before continuing, you should either quit currently running" +
-			"R or kill its process (if it did not exit cleanly).",
-			['&Kill', '&Quit', "&Cancel"], "Cancel", null, "SciViews-K");
-			switch (result) {
-				case "Kill":
-					try {
-						sv.command.RProcess.kill(true);
-						sv.command.RProcess.wait(3);
-					} catch(e) {}
-					break;
-				case "Quit":
-					sv.r.quit();
-					break;
-				case "Cancel":
-				default:
-					return;
-			}
-			return;
-		}
+		var svfile = sv.tools.file;
+		var svstr = sv.tools.string;
 
-		var cwd = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "defaults");
+		var rDir = svfile.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R");
+
+		svfile.write(svfile.path(rDir, "init.R"),
+			"setwd('"+ svstr.addslashes(sv.pref.getPref("sciviews.session.dir")) + "')\n" +
+			"options(ko.port=" + sv.pref.getPref("sciviews.ko.port", 7052) +
+			", ko.host=\"localhost\")\n"
+			);
+
 		var cmd = sv.pref.getPref("svRCommand");
-
-		// Remove /defaults/00LOCK if remained after a fail-start
-		try {
-			var lockFile = sv.tools.file.getfile(cwd, "00LOCK");
-			if (lockFile.exists())	lockFile.remove(true);
-		} catch(e) { }
-
-		// PhG: on Mac OS X, R.app is not a file, but a dir!!!
-		if (!cmd || (sv.tools.file.exists(sv.tools.string.trim(
-			sv.pref.getPref("svRDefaultInterpreter"))) == sv.tools.file.TYPE_NONE)) {
-			if(ko.dialogs.okCancel(
-			sv.translate("Default R interpreter is not (correctly) set in " +
-				"Preferences. Do you want to do it now?"),
-				"OK", null, "SciViews-K") == "OK") {
-				prefs_doGlobalPrefs("svPrefRItem", true);
-			}
-			return;
-		}
+		var runInConsole = false;
 
 		var isWin = navigator.platform.indexOf("Win") === 0;
 		var id = sv.pref.getPref("svRApplication",
 			isWin? "r-gui" : "r-terminal");
-
-		// runIn = "command-output-window", "new-console",
-		// env strings: "ENV1=fooJ\nENV2=bar"
-		// gPrefSvc.prefs.getStringPref("runEnv");
-		var env = ["koId=" + sv.pref.getPref("sciviews.client.id",
-			"SciViewsK"),
-			"koHost=localhost",
-			"koActivate=FALSE",
-			"Rinitdir=" + sv.pref.getPref("sciviews.session.dir", "~"),
-			//"koType=" + sv.clientType, // Changed value considered only after Komodo restarts!
-			"koType=" + sv.pref.getPref("sciviews.client.type", "socket"), // XXX
-			"koServe=" + sv.pref.getPref("sciviews.r.port", 8888),
-			"koPort=" + sv.pref.getPref("sciviews.ko.port", 7052),
-			"koDebug=" + (sv.log.isAll()? "TRUE" : "FALSE"),
-			"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : ""))
-		];
-		var runInConsole = false;
-		env.push("Rid=" + id);
-
 		switch (id) {
 			case "r-tk":
 				env.push("Rid=R-tk");
@@ -217,29 +165,27 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			default:
 		}
 
+
 		var runSvc = Components.classes['@activestate.com/koRunService;1']
 			.getService(Components.interfaces.koIRunService);
 
 		var process;
 		if(runInConsole) {
 			// XXX: This does not return a process!
-			runSvc.Run(cmd, cwd, env.join("\n"), runInConsole, null);
+			runSvc.Run(cmd, rDir, "", runInConsole, null);
 			process = null;
 			// Observe = 'status_message'
 			// subject.category = "run_command"
 			// subject.msg = "'%s' returned %s." % (command, retval)
 		} else {
-			process = runSvc.RunAndNotify(cmd, cwd, env.join("\n"), null);
+			process = runSvc.RunAndNotify(cmd, rDir, "", null);
 			// Observe = 'run_terminated'
 			// subject = child
 			// data = command
 			RProcessObserver = new _ProcessObserver(cmd, process, _RterminationCallback);
 		}
-
-		//RProcessObserver = new _ProcessObserver(cmd, process, _RterminationCallback);
 		this.RProcess = process;
 		_this.updateRStatus(true);
-
 	}
 
 	this.updateRStatus = function (running) {
@@ -594,7 +540,6 @@ this.onLoad = function(event) {
 									//'cmdset_rApp' commandset being grayed out
 									//at startup...
 		_this.updateRStatus(sv.rconn.testRAvailability(false));
-
 		if(sv.r.running) sv.rbrowser.smartRefresh(true);
 
 	}, 600);
@@ -602,6 +547,13 @@ this.onLoad = function(event) {
 
 	sv.rconn.startSocketServer();
 }
+
+// Just in case, run a clean-up before quitting Komodo:
+function svCleanup() {
+    sv.rconn.stopSocketServer();
+	// ...
+}
+ko.main.addWillCloseHandler(svCleanup);
 
 addEventListener("load", _this.onLoad, false);
 

@@ -41,10 +41,27 @@ import string
 from xpcom.server.enumerator import SimpleEnumerator
 import socket
 import threading
+import json
+from uuid import uuid1
 import logging
 log = logging.getLogger('svUtils')
 #log.setLevel(logging.INFO)
 log.setLevel(logging.DEBUG)
+
+
+def _makeStyledText(text, styles = {chr(2): chr(0), chr(3): chr(23)},
+    curStyle = chr(0)):
+    ctrlChars = styles.keys()
+    text8 = text.encode('utf-8')
+    #curStyle = styles.values()[0]
+    ret = u''
+    for ch in text8:
+        if ch in ctrlChars:
+            curStyle = styles[ch]
+            log.debug(ord(ch))
+        else:
+            ret += ch + curStyle
+    return ret
 
 
 class svUtils:
@@ -63,19 +80,30 @@ class svUtils:
 
         self.lastCommand = u''
         self.lastResult = u''
-        self.id = 'sv'
+        self.lastMessage = u''
         self.runServer = False
-        self.socketOut = ('localhost', 8888)
-        self.socketIn = ('localhost', 7777)
+        self.socketOut = ('localhost', 8888L)
+        self.socketIn = ('localhost', 7777L)
         self.serverConn = None
+        #self.myUID = uuid1().hex
+        #self.id = 'sv'
         pass
 
     class _CommandInfo:
         _com_interfaces_ = components.interfaces.svICommandInfo
-        def __init__(self, cmd_id, cmd, mode):
+        def __init__(self, cmd_id, cmd, mode, message = '', result = ''):
             self.commandId = cmd_id
             self.command = cmd
             self.mode = mode
+            self.message = message
+            self.result = result
+        def styledResult(self):
+            return _makeStyledText(self.result)
+
+
+    def makeStyledText(self, text):
+        return _makeStyledText(text)
+
 
     def setSocketInfo(self, host, port, outgoing):
         log.debug("setSocketInfo (%s): %s:%d" % ('outgoing' if outgoing else 'incoming', host, port))
@@ -123,7 +151,7 @@ class svUtils:
         return SimpleEnumerator(ret)
 
     def execInR(self, command, mode, timeout = .5):
-        return self.rconnect(command, mode, False, timeout, "")
+        return self.rconnect(command, mode, False, timeout, self.uid())
 
     def execInRBgr(self, command, mode, uid):
         log.debug("execInRBgr: %s..." % command[0:10])
@@ -132,44 +160,99 @@ class svUtils:
         t.start()
 
     def rconnect(self, command, mode, notify, timeout, uid):
-        pretty_command = self.pushLeft(command, indent=3, eol='\n', tabwidth=4)[3:]
+        pretty_command = self.pushLeft(command, indent=3L, eol='\n', tabwidth=4)[3:]
         self.lastCommand = unicode(command)
         ssLastCmd = self._asSString(command)
         log.debug("rconnect: %s... (%d)" % (command[0:10], notify))
+
+        modeArr = mode.split(' ')
+        useJSON = modeArr.count('json')
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(timeout)
         try: s.connect(self.socketOut)
         except Exception, e: return unicode(e.args[0])
+
+        cmdInfo = self._CommandInfo(uid, pretty_command, mode, 'Not ready')
+
+        #wrappedCmdInfo = WrapObject(cmdInfo, components.interfaces.svICommandInfo)
         if notify:
-            cmdInfo = WrapObject(self._CommandInfo(uid, pretty_command, mode),
-                                 components.interfaces.svICommandInfo)
-            self._proxiedObsSvc.notifyObservers(cmdInfo, 'r-command-sent', None)
-        command = '<<<id=' + self.id + '>>><<<' + mode + '>>>' + \
-            re.sub("(\r?\n|\r)", '<<<n>>>', command)
-        s.send(command)
-        s.shutdown(socket.SHUT_WR) # does not work without shutdown, why?
+            self._proxiedObsSvc.notifyObservers(
+                WrapObject(cmdInfo, components.interfaces.svICommandInfo),
+                'r-command-sent', None)
+
+
+        rMode = 'h' if modeArr.count('h') else 'e'
+
+        if useJSON:
+            command = '\x01' \
+                + rMode \
+                + '<' + uid + '>' \
+                + command.replace("\\", "\\\\"). \
+                replace("\n", "\\n").replace("\r", "\\r").replace("\f", "\\f")
+        else:
+            command = '<<<id=' + uid + '>>><<<' + mode + '>>>' + \
+                re.sub("(\r?\n|\r)", '<<<n>>>', command)
+            #command.replace(os.linesep,  '<<<n>>>')
+        s.send(command + os.linesep)
+        ## SOLVED: command must end with newline
+        ## TODO: replace all newlines by R
+        s.shutdown(socket.SHUT_WR)
         result = u''
         try:
             while True:
-                data = s.recv(1024)
+                data = s.recv(1024L)
                 if not data: break
                 if notify:
-                    self._proxiedObsSvc.notifyObservers(cmdInfo, 'r-command-chunk', data)
+                    #self._proxiedObsSvc.notifyObservers(cmdInfo, 'r-command-chunk', data)
+                    self._proxiedObsSvc.notifyObservers(
+                        WrapObject(cmdInfo, components.interfaces.svICommandInfo),
+                        'r-command-chunk', data)
                 result += unicode(data)
         except Exception, e:
             log.debug(e)
             pass
         s.close()
         result = result.rstrip()
-        self.lastResult = result
+        message = ''
+        if useJSON:
+            # Fix bad JSON: R escapes nonprintable characters as octal numbers
+            # (\OOO), but json apparently needs unicode notation (\uHHHH).
+            result = re.sub('(?<=\\\\)[0-9]{3}', lambda x: ("u%04x" % int(x.group(0), 8)), result)
+            try:
+                resultObj = json.loads(result)
+                if(isinstance(resultObj, dict)):
+                    if (resultObj.has_key('message')): message = resultObj['message']
+                    if (resultObj.has_key('result')):
+                        if isinstance(resultObj['result'], list):
+                            result = os.linesep.join(resultObj['result'])
+                        else: # isinstance(x, unicode)
+                            result = resultObj['result']
+                            #log.debug(type(result)) # <-- should be: <type 'unicode'>
+                            #log.debug(result)
+                    cmdInfo.message = unicode(message)
+                    cmdInfo.result = unicode(result)
+
+            except Exception, e:
+                log.debug(e)
+
         if notify:
-            self._proxiedObsSvc.notifyObservers(cmdInfo, 'r-command-executed',
-                                                result)
+
+            #self._proxiedObsSvc.notifyObservers(cmdInfo, 'r-command-executed',
+            #                                    result)
+
+            self._proxiedObsSvc.notifyObservers(
+                WrapObject(cmdInfo, components.interfaces.svICommandInfo),
+                'r-command-executed',
+                result)
+
             log.debug("rconnect notify: %s..." % result[0:10])
             return
         log.debug("rconnect return: %s..." % result[0:10])
-        return result
+        self.lastMessage = message
+        self.lastResult = result
+        return unicode(result)
+
 
 #  File "components\svUtils.py", line 126, in execInR
 #    return self.rconnect(command, mode, False, .5, "")
@@ -179,6 +262,7 @@ class svUtils:
 
     def __del__(self):
         try:
+            log.debug("destructor called: closing server")
             self.serverConn.close()
         except:
             pass
@@ -193,9 +277,9 @@ class svUtils:
     def startSocketServer(self, requestHandler):
         if(self.serverIsUp()): return -1L
         self.runServer = True
-        host = self.socketIn[0]
-        port = self.socketIn[1]
-        if(port > 70000): port = 10000
+        host = self.socketIn[0L]
+        port = self.socketIn[1L]
+        if(port > 70000L): port = 10000L
         port_max = port + 32L
         while port < port_max:
             try:
@@ -231,7 +315,7 @@ class svUtils:
         # requestHandler is a Javascript object with component 'onStuff'
         # which is a function accepting one argument (string), and returning
         # a string
-        requestHandlerProxy = getProxyForObject(1,
+        requestHandlerProxy = getProxyForObject(1L,
             components.interfaces.svIStuffListener,
             requestHandler, PROXY_ALWAYS | PROXY_SYNC)
         try:
@@ -247,7 +331,7 @@ class svUtils:
                         connected = True
                         conn.setblocking(1)
                         self.serverConn.settimeout(10)
-                        count += 1
+                        count += 1L
                         break
                     except Exception: continue
                 if not connected: continue
@@ -255,7 +339,7 @@ class svUtils:
                 try:
                     while connected:
                         log.debug('Connected by %s : %d' % addr)
-                        data = conn.recv(1024)  # TODO: error: [Errno 10054]
+                        data = conn.recv(1024L)  # TODO: error: [Errno 10054]
                         data_all += data
                         if (not data) or (data[-1] == '\n'): break
                 except Exception, e:
@@ -279,7 +363,11 @@ class svUtils:
         self.stopSocketServer()
         #self.serverConn.close()
         log.debug("Exiting after %d connections" % count)
-        self._proxiedObsSvc.notifyObservers(None, 'r-server-stopped', None)
+        try:
+            self._proxiedObsSvc.notifyObservers(None, 'r-server-stopped', None)
+        except Exception, e:
+            log.debug(e)
+            pass
         pass
 
     #import string, re, os, sys
@@ -287,7 +375,7 @@ class svUtils:
         text = text.lstrip("\r\n\f")
         if not text: return ''
         re_line = re.compile('(^[\t ]*)(?=\S)(.*$)', re.MULTILINE)
-        if type(indent) != int:
+        if type(indent) in (str, unicode):
            indentstr = indent
            indent = len(indentstr)
         else:
@@ -309,6 +397,9 @@ class svUtils:
         text = scimoz.getTextRange(pos_start, pos_end)
         return text
 
+    def uid(self):
+        return(uuid1().hex)
+
     def complete(self, text):
         kvSvc = components.classes["@activestate.com/koViewService;1"] \
             .getService(components.interfaces.koIViewService)
@@ -320,7 +411,8 @@ class svUtils:
         if not text.strip(): return
         cmd = 'completion("%s", print=TRUE, types="scintilla", field.sep="?")' \
             % text.replace('"', '\\"')
-        autoCstring = self.execInR(cmd, "h")
+        autoCstring = self.execInR(cmd, "h") \
+            .replace('\x03', '').replace('\x02', '')
 
         if (re.search("^\d+[\r\n]", autoCstring) == None): return
         #scimoz.autoCSeparator = 9
@@ -348,9 +440,10 @@ class svUtils:
 
         cmd = 'cat(callTip("%s", location=TRUE, description=TRUE, methods=TRUE, width=80))' \
             % text.replace('"', '\\"')
-        result = self.execInR(cmd, "h")
-        scimoz.callTipCancel();
-        scimoz.callTipShow(scimoz.anchor, result.replace('[\r\n]+', '\n'));
+        result = self.execInR(cmd, "h") \
+            .replace('\x03', '').replace('\x02', '')
+        scimoz.callTipCancel()
+        scimoz.callTipShow(scimoz.anchor, result.replace('[\r\n]+', '\n'))
         return
 
     def escape(self):

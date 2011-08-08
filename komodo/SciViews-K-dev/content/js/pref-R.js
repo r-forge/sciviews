@@ -381,7 +381,7 @@ function PrefR_UpdateCranMirrors(localOnly) {
 	}
 
 	var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
-    .createInstance(Components.interfaces.nsIJSON);
+		.createInstance(Components.interfaces.nsIJSON);
 
 	var jsonFile = svFile.path(localDir, "CRAN_mirrors.json");
 	var alreadyCached = false;

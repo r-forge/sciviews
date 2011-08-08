@@ -688,8 +688,11 @@ function _hexstr2rgb(hex) {
 
 var styleNumCode = 22, styleNumResult = 0, styleNumErr = 23;
 
-
+var initialized = false; ///
 function _init() {
+	if (initialized) return;
+	initialized = true;
+
 	var scimoz = _this.scimoz;
 
 	//var colorForeCode =_rgb(80, 100, 255);
@@ -697,7 +700,11 @@ function _init() {
 	var colorForeErr, colorForeCode, colorForeResult;
 
 	//Get color from the color scheme: stdin, stdout, stderr
-	var schemeName = sv.pref.getPref('editor-scheme');
+	//var schemeName = sv.pref.getPref('editor-scheme');
+	// sv.pref may be not loaded yet
+	var prefset = Components.classes["@activestate.com/koPrefService;1"]
+		.getService(Components.interfaces.koIPrefService).prefs;
+	var schemeName = prefset.getStringPref('editor-scheme');
 	var currentScheme = Components.classes['@activestate.com/koScintillaSchemeService;1']
 		.getService().getScheme(schemeName);
 
@@ -720,8 +727,6 @@ var observerSvc = Components.classes["@mozilla.org/observer-service;1"]
 
 observerSvc.addObserver({ observe: _init }, 'scheme-changed', false);
 
-_init();
-
 this.print = function (str) {
 	_this.clear();
 	_this.append(str, true, false);
@@ -730,7 +735,6 @@ this.print = function (str) {
 function fixEOL(str) str.replace(/(\r?\n|\r)/g, _this.eolChar);
 
 this.print2 = function (command, result, done) {
-	//sv.x = [command, result, done];
 	var scimoz = _this.scimoz;
 	var eolChar = _this.eolChar;
 
@@ -740,8 +744,8 @@ this.print2 = function (command, result, done) {
 	scimoz.readOnly = false;
 	if (!done) {
 		_this.clear();
-		command = command.replace(/^ {3}(?= *\S)/gm, ":+ ") + eolChar;
-		result = result + eolChar;
+		command = command.replace(/^ {3}(?= *\S)/gm, ":+ "); // + eolChar;
+		result += eolChar;
 		scimoz.appendText(ko.stringutils.bytelength(command), command);
 		//scimoz.text += command;
 		this.styleLines(0, scimoz.lineCount, styleNumCode);
@@ -760,6 +764,8 @@ this.print2 = function (command, result, done) {
 			this.styleLines(lineCount - 2, lineCount - 1, styleNumCode);
 		}
 	}
+	var firstVisibleLine = Math.max(scimoz.lineCount - scimoz.linesOnScreen - 1, 0);
+	scimoz.firstVisibleLine = firstVisibleLine;
 }
 
 this.replaceLine = function(lineNum, text, eol) {
@@ -831,6 +837,7 @@ this.getLine = function(lineNumber) {
 //newStr += str0;
 
 this.styleLines = function(startLine, endLine, styleNum) {
+	_init();
 	var scimoz = _this.scimoz;
 	var eolChar = _this.eolChar;
 

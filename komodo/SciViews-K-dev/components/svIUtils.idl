@@ -46,6 +46,9 @@ interface svICommandInfo: nsISupports {
     readonly attribute ACString commandId;
     readonly attribute AUTF8String command;
     readonly attribute ACString mode;
+	attribute AUTF8String message;
+	attribute AUTF8String result;
+	ACString styledResult();
 };
 
 
@@ -59,9 +62,12 @@ interface svIUtils : nsISupports {
 	void setSocketInfo(in ACString host, in long port, in boolean outgoing);
 	readonly attribute AUTF8String lastCommand;
 	readonly attribute AUTF8String lastResult;
-	attribute ACString id;
+	readonly attribute AUTF8String lastMessage;
+	#attribute ACString id;
 	boolean serverIsUp();
 	wstring pushLeft(in AUTF8String text, in ACString eol, in long indent, in long tabwidth);
+	ACString uid();
+	ACString makeStyledText(in AUTF8String text);
 
     void escape();
     void calltip(in AUTF8String text);

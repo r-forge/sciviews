@@ -31,7 +31,6 @@
 
 sv.rconn = {};
 
-
 try { // DEBUG
 	sv.rconn.cleanUp();
 } catch(e) {}
@@ -58,6 +57,11 @@ var _obsSvc = Components.classes["@mozilla.org/observer-service;1"]
 this.__defineGetter__ ('command', function () _svuSvc.lastCommand);
 this.__defineGetter__ ('result', function () _svuSvc.lastResult);
 
+
+// this ID is used to identify commands from the user
+this.userCommandId = _svuSvc.uid();
+
+
 // get list of running R processes
 this.listRProcesses = function(property) {
 	if (!property) property = "CommandLine";
@@ -66,6 +70,10 @@ this.listRProcesses = function(property) {
 	while(procList.hasMoreElements()) proc.push(_str(procList.getNext()));
 	return proc;
 }
+
+// TODO: IMPORTANT! background calls (e.g. object browser) need to have unique id.
+// but ID for user commands should be fixed (to allow for multiline)
+// sv.rconn.eval("1:100 ", null, false, "sv12345")
 
 // Evaluate in R //
 // arguments are handled in a non standard way:
@@ -81,51 +89,70 @@ this.eval = function(command, callback, hidden, id, prepareOnly) { //, ...
 		args.splice(0, 2);
 		handlers[id].args = args;
 	} else {
-		if(!id) {
-			id = ((new Date()).getTime() + Math.random()).toString(16);
-			var sfx = 0; while ((id + sfx) in handlers) sfx++;
-			id += sfx;
-		} else {
+		if(!id)
+			// If no callback, it is an user command
+			id = callback? _svuSvc.uid() : this.userCommandId;
+		else
 			keep = true;
-		}
+
 		args.splice(0, 5);
 		handlers[id] = new _REvalListener(callback, keep, args, id);
 
 		if (prepareOnly) return id;
 	}
 	//if (mode == "e")	_this.printResults(result, command);
-	_svuSvc.execInRBgr(command, hidden? "h" : "e", id);
+	// TODO: 'id' should be one and the same for user commands,
+	// and unique for background calls
+
+	var mode = ['json']; if (hidden) mode.push('h');
+
+	_svuSvc.execInRBgr(command, mode.join(' '), id);
+	//_svuSvc.execInRBgr(command, hidden? "h" : "e", id);
 	return id;
 }
 
 // Evaluate in R quickly - and return result
 this.evalAtOnce = function(command, timeout) {
 	if(timeout == undefined) timeout = .5;
-	return _svuSvc.execInR(command, "h", timeout);
+	//return _svuSvc.execInR(command, "h", timeout).replace(/[\x02\x03]/g, '');
+	return _svuSvc.execInR(command, 'json h', timeout).replace(/[\x02\x03]/g, '');
 }
 
 this.escape = function(command) _svuSvc.escape(command);
 
+//this.testRAvailability = function(checkProc) {
+//	var result = _this.evalAtOnce("cat(1)").trim();
+//	var connectionUp = result == "1";
+//	var rProcess = checkProc? _this.getRProc() : undefined;
+//	var rProcessCount = (rProcess == undefined)? -1 : rProcess.length;
+//	ret = '';
+//	if(!connectionUp) {
+//		ret += "Cannot connect to R";
+//		if (rProcessCount > 0) {
+//			ret += ", but there " + ((rProcessCount > 1)? "are " + rProcessCount
+//				+ " R processes": "is one R process") + " running.";
+//			result += "\n\nR processes currently running:\n" + rProcess.join("\n");
+//		} else if (rProcessCount == 0) {
+//			ret += ",  R is not running.";
+//		}
+//	} else {
+//		result = null;
+//		ret += "Connection with R successful.";
+//	}
+//	//ko.dialogs.alert(ret, result, "R connection test");
+//	sv.cmdout.append("R connection test:\n" + ret);
+//	return connectionUp;
+//}
+
 this.testRAvailability = function(checkProc) {
-	var result = _this.evalAtOnce("cat(1)").trim();
-	var connectionUp = result == "1";
-	var rProcess = checkProc? _this.getRProc() : undefined;
-	var rProcessCount = (rProcess == undefined)? -1 : rProcess.length;
-	ret = '';
+	var result = _this.evalAtOnce("cat(123)");
+	var connectionUp = result.indexOf("123") != -1;
+	var ret;
 	if(!connectionUp) {
-		ret += "Cannot connect to R";
-		if (rProcessCount > 0) {
-			ret += ", but there " + ((rProcessCount > 1)? "are " + rProcessCount
-				+ " R processes": "is one R process") + " running.";
-			result += "\n\nR processes currently running:\n" + rProcess.join("\n");
-		} else if (rProcessCount == 0) {
-			ret += ",  R is not running.";
-		}
+		ret = "Cannot connect to R";
 	} else {
-		result = null;
-		ret += "Connection with R successful.";
+		ret = "Connection with R successful.";
 	}
-	//ko.dialogs.alert(ret, result, "R connection test");
 	sv.cmdout.append("R connection test:\n" + ret);
 	return connectionUp;
 }
@@ -133,6 +160,7 @@ this.testRAvailability = function(checkProc) {
 //_this.setObserver(rCallbackChunk, "r-command-chunk");
 //_this.setObserver(rCallback, "r-command-executed");
 
+// handles koCmd requests:
 var defaultRequestHandler = function(str) {
 	str = str.trim();
 	//sv.cmdout.append(str);
@@ -148,7 +176,7 @@ var defaultRequestHandler = function(str) {
 	return "Received: [" + str + "]"; // echo
 }
 
-this.__defineGetter__ ('serverIsUp', function () _svuSvc.serverIsUp);
+this.__defineGetter__ ('serverIsUp', function () _svuSvc.serverIsUp() );
 
 this.startSocketServer = function(requestHandler) {
 	if(!requestHandler) requestHandler = defaultRequestHandler;
@@ -230,7 +258,7 @@ _REvalListener.prototype = {
 			//[Exception... "Illegal operation on WrappedNative prototype
 			//object" nsresult: "0x8057000c (NS_ERROR_XPC_BAD_OP_ON_WN_PROTO)"]
 		}
-		if (mode == "e")	_this.printResults(result, command);
+		//if (mode == "e" || mode == "json")	_this.printResults(result, command, true);
 		return this.keep;
 	}
 }
@@ -240,26 +268,60 @@ var _curCommand = "";
 
 var _waitMessageTimeout;
 
-this.printResults = function(result, command, done) {
-	//var eol = ["\r\n", "\n", "\r"][document.getElementById
-		//("runoutput-scintilla").scimoz.eOLMode];
-	//doc.new_line_endings['\n', '\r', '\r\n']
+
+this.printCommandinfo = function(cinfo) {
+	cinfo.QueryInterface(Components.interfaces.svICommandInfo);
+	var result, prompt, styledResult;
+	switch (cinfo.message) {
+		case 'Not ready':
+			result = '...';
+			prompt = ':+';
+		break;
+		case 'Want more':
+		break;
+		case 'Parse error':
+		case 'Done':
+		default:
+			styledResult = cinfo.result? cinfo.styledResult() : '';
+	}
+
+	var scimoz = sv.cmdout.scimoz;
+	var readOnly = scimoz.readOnly;
+	scimoz.readOnly = false;
+	 // scimoz.gotoPos(sm.textLength); where?
+
+	// add command (style as code)
+
+	if (styledResult) scimoz.addStyledText(styledResult.length, styledResult);
+
+	// add final prompt (style as code)
+
+	scimoz.readOnly = readOnly;
+}
+
+
+
+this.printResults = function(result, command, executed, wantMore) {
+	//alert(result + "\n" + command +  "\n" + executed);
 	var msg;
 	command = _curCommand + _curPrompt + ' ' + command + sv.cmdout.eolChar;
 	window.clearTimeout(_waitMessageTimeout);
 
-	//if (result !== null) {
-	if (done) {
-		var newPrompt = _curPrompt;
-		var ff = result.lastIndexOf("\x0c"); // ("\f") = 3
-		if(ff != -1) {
-			newPrompt = result.substr(ff + 1, 2);
-			result = result.substr(0, ff) + newPrompt;
-		}
-		if (newPrompt == ':+')	_curCommand = command;
-			else	_curCommand = '';
+	if (executed) {
+		//var newPrompt = _curPrompt;
+		var newPrompt = wantMore? ':+' : ':>';
+		result = result + '\n' + newPrompt;
+		_curCommand = wantMore? command : '';
 		_curPrompt = newPrompt;
-		sv.cmdout.message(msg);
+
+		//var ff = result.lastIndexOf("\x0c"); // ("\f") = 3
+		//if(ff != -1) {
+		//	newPrompt = result.substr(ff + 1, 2);
+		//	result = result.substr(0, ff) + newPrompt;
+		//}
+		//_curCommand = (newPrompt == ':+')? command : '';
+		//_curPrompt = newPrompt;
+		sv.cmdout.message(null);
 	} else {
 		//alert(result == null)
 		result = '...';
@@ -267,22 +329,46 @@ this.printResults = function(result, command, done) {
 		// display 'wait message' only for longer operations
 		_waitMessageTimeout = window.setTimeout(sv.cmdout.message, 700, msg, 0, false);
 	}
-	sv.cmdout.print(command.replace(/^ {3}(?= *\S)/gm, ":+ ") + result);
+
+	sv.cmdout.print2(command, result, executed);
 }
 
 var _REvalObserver = {
 	observe: function(subject, topic, data) {
+
+		// TODO: use 'subject.result' instead of 'data'
+		data = subject.result;
+
+		var wantMore = false;
 		switch(topic) {
 			case 'r-command-executed':
 				var cid = subject.commandId;
-				if (cid in _this.handlers) {
-					var keep = _this.handlers[cid].onDone(data, subject.command,
-														  subject.mode);
-					if(!keep) delete _this.handlers[cid];
+				switch(subject.message) {
+				case 'Want more':
+					wantMore = true;
+					break;
+				case 'Parse error':
+					break; // Exec handler on parse error? I guess not.
+					if (cid in _this.handlers && !keep)
+						delete _this.handlers[cid];
+				case 'Done':
+					if (cid in _this.handlers) {
+						var keep = _this.handlers[cid]
+							.onDone(data.replace(/[\x02\x03]/g, ''), // strip control characters
+								subject.command, subject.mode);
+						if(!keep) delete _this.handlers[cid];
+					}
+					break;
+				default:
 				}
 			case 'r-command-sent':
-				if (subject.mode == "e")
-				_this.printResults(data, subject.command, topic == 'r-command-executed');
+				sv.lastCmdInfo = subject;
+				if (subject.mode.split(' ').indexOf('h') == -1) {
+				//alert(subject.mode + ": " + subject.mode.split(' ').indexOf('h'));
+					_this.printResults(data, subject.command,
+						topic == 'r-command-executed', wantMore);
+					// TODO: use subject.styledResult()
+				}
 				break;
 			case 'r-command-chunk':
 				//if (subject.mode == "e")
@@ -333,7 +419,6 @@ this.cleanUp = function sv_conn_debugCleanup() {
 
 
 }).apply(sv.rconn);
-
 
 
 //sv.r.evalCallback = function(cmd, procfun, context) {

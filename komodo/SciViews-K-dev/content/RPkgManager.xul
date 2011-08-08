@@ -16,7 +16,6 @@
 
  Contributor(s):
    Kamil Barton
-   ActiveState Software Inc (code inspired from)
 
  Alternatively, the contents of this file may be used under the terms of
  either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -346,8 +345,6 @@ self.onload = function () {
 			<radio label="Updates"
 				oncommand="document.getElementById('pkgPanels').selectedIndex = 2;"/>
 		</radiogroup>
-		<spacer flex = "2"/>
-		<button label="Close" onclick="self.close();"/>
 	</hbox>
 
 	<vbox style="font-weight:bold; background-color: #feac01; border: 1px black solid; margin: 2px; padding: 3px;">
