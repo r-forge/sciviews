@@ -6,8 +6,9 @@
 }
 
 
-`parseText` <- function (text) {
 
+
+`parseText` <- function (text) {
 	## Parse R instructions provided as a string and return the expression if it
 	## is correct, or a 'try-error' object if it is an incorrect code, or NA if
 	## the (last) instruction is incomplete
@@ -19,7 +20,6 @@
 
 	if(inherits(res, "error")) {
 		# Check if this is incomplete code
-
 		msg <- conditionMessage(res)
 		rxUEOI <- sprintf(gsub("%d", "\\\\d+", gettext("%s%d:%d: %s", domain="R")),
 			if(getOption("keep.source")) "<text>:" else "",
@@ -46,12 +46,13 @@
 
 		# for legacy uses, make it a try-error
 		res <- .makeMessage(res)
-
 		class(res) <- "try-error"
-		attr(res, 'error') <- err
+		attr(res, 'error') <- e
 	}
 
     return(res)
 }
 
 assign("parseText", parseText, "komodoConnection")
+
+
