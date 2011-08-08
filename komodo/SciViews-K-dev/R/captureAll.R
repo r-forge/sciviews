@@ -1,13 +1,9 @@
-## Inspired by 'capture.output' and utils:::.try_silent
-## Requires: R >= 2.13.0 [??]
-`captureAll` <- function (expr, split = TRUE, echo = TRUE, file = NULL,
-markStdErr = FALSE) {
-	if (!is.expression(expr))
-		if (is.na(expr)) return(NA) else
-		stop("expr must be an expression or NA")
+# inspired by 'capture.output' and utils:::.try_silent
+# Requires: R >= 2.13.0 [??]
+`captureAll` <- function(expr, split = FALSE, file = NULL, markStdErr=FALSE) {
+	# TODO: support for 'file' and 'split'
 
-	## TODO: support for 'file'
-	## markStdErr: if TRUE, stderr is separated from sddout by STX/ETX character
+	# markStdErr: if TRUE, stderr is separated from sddout by STX/ETX character
 
 	last.warning <- list()
 	Traceback <- list()
@@ -17,44 +13,31 @@ markStdErr = FALSE) {
 	# Note: if 'expr' is a call not expression, 'NframeOffset' is lower by 2
 	# (i.e. 21): -1 for lapply, -1 for unwrapping 'expression()'
 
+	getWarnLev <- function() options('warn')[[1L]] # this may change in course of
+		# evaluation, so must be retrieved dynamically
 
-	getWarnLev <- function() options('warn')[[1L]]	# This may change in course
-													# of evaluation, so must be
-													# retrieved dynamically
 	rval <- NULL
 	tconn <- textConnection("rval", "w", local = TRUE)
-	split <- isTRUE(split)
-	if (split) {
-		## This is required to print error messages when we are, say, in a
-		## browser() environment
-		sink(stdout(), type = "message")
-	} else {
-		## This is the conventional way to do it
-		sink(tconn, type = "message")
-	}
-	sink(tconn, type = "output", split = split)
-	#sink(tconn, type = "message")
+	sink(tconn, type = "output"); sink(tconn, type = "message")
 	on.exit({
-		sink(type = "message")
-		sink(type = "output")
+		sink(type = "message"); sink(type = "output")
 		close(tconn)
 	})
 
 	inStdOut <- TRUE
 	marks <- list()
 
-	if (isTRUE(markStdErr)) {
-		putMark <- function (toStdout, id) {
+	if (markStdErr) {
+		putMark <- function(to.stdout, id) {
 
 			do.mark <- FALSE
 			if (inStdOut) {
-				if (!toStdout) {
+				if (!to.stdout) {
 					cat("\x03")
 					inStdOut <<- FALSE
 					do.mark <- TRUE
 			}} else { # in StdErr stream
 				if (to.stdout) {
-
 					cat("\x02")
 					inStdOut <<- TRUE
 					do.mark <- TRUE
@@ -65,29 +48,13 @@ markStdErr = FALSE) {
 			#cat("<", id, inStdOut, ">")
 		}
 	} else {
-		putMark <- function (toStdout, id) {}
+		putMark <- function(to.stdout, id) {}
 	}
 
-	evalVis <- function (x) {
-		## Do we print the command? (note that it is reformatted here)
-		if (isTRUE(echo)) {
-			## Reformat long commands... and possibly abbreviate them
-			cmd <- deparse(x)
-			l <- length(cmd)
-			if (l > 7) cmd <- c(cmd[1:3], "[...]", cmd[(l-2):l])
-			cat(":> ", paste(cmd, collapse = "\n:+ "), "\n", sep = "")
-		}
-		res <- withVisible(eval(x, .GlobalEnv))
-		## Do we have result to print?
-		if (inherits(res, "list") && res$visible)
-			print(res$value)
-
-		return(res)
-	}
+	`evalVis` <- function(x) withVisible(eval(x, .GlobalEnv))
 
 	`restartError` <- function(e, calls, off) {
 		# remove call (eval(expr, envir, enclos)) from the message
-
 		ncls <- length(calls)
 
 		#DEBUG
@@ -99,26 +66,26 @@ markStdErr = FALSE) {
 		#browser()
 
 		if(isTRUE(all.equal(calls[[NframeOffset + off]], e$call, check.attributes=FALSE)))
-
 			e$call <- NULL
 
 		Traceback <<- rev(calls[-c(seq.int(NframeOffset + off), (ncls - 1L):ncls)])
 
 #> cat(captureAll(expression(1:10, log(-1),log(""),1:10)), sep="\n")
 
+
 		putMark(FALSE, 1L)
-		cat(formatMsg(e))
-		if (getWarnLev() == 0L && length(last.warning) > 0L)
-			cat(ngettext(1, "In addition: ", "In addition: ", domain = "R"))
+		cat(.makeMessage(e))
+		if(getWarnLev() == 0L && length(last.warning) > 0L)
+			cat(gettext("In addition: ", domain="R"))
 	}
 
 	if(!exists("show", mode="function")) show <- base::print
 
 	res <- tryCatch(withRestarts(withCallingHandlers({
-			## TODO: allow for multiple expressions and calls (like in
-			## 'capture.output'). The problem here is how to tell 'expression'
-			## from 'call' without evaluating it?
-			##list(evalVis(expr))
+			# TODO: allow for multiple expressions and calls (like in
+			# 'capture.output'). The problem here is how to tell 'expression'
+			# from 'call' without evaluating it?
+			#list(evalVis(expr))
 
 			for(i in expr) {
 				off <- 0L # TODO: better way to find the right sys.call...
@@ -134,22 +101,20 @@ markStdErr = FALSE) {
 		warning = function(e) {
 			# remove call (eval(expr, envir, enclos)) from the message
 			if(isTRUE(all.equal(sys.call(NframeOffset), e$call, check.attributes=FALSE)))
-
 				e$call <- NULL
 
-			last.warning <<- c(last.warning, structure(list(e$call),
-				names = e$message))
+			last.warning <<- c(last.warning, structure(list(e$call), names=e$message))
 
-			if (getWarnLev() != 0L) {
+			if(getWarnLev() != 0L) {
 				putMark(FALSE, 2L)
-				.Internal(.signalCondition(e, conditionMessage(e),
-					conditionCall(e)))
+				.Internal(.signalCondition(e, conditionMessage(e), conditionCall(e)))
 				.Internal(.dfltWarn(conditionMessage(e), conditionCall(e)))
 				putMark(TRUE, 3L)
 			}
 			invokeRestart("muffleWarning")
+
 		}),
-		## Restarts:
+	# Restarts:
 
 	# Handling user interrupts. Currently it works only from within R.
 	# TODO: how to trigger interrupt remotely?
@@ -158,7 +123,6 @@ markStdErr = FALSE) {
 		cat("Execution aborted.\n") #DEBUG
 	},
 
-
 	muffleWarning = function() NULL,
 	grmbl = restartError),
 	error = function(e) { #XXX: this is called if warnLevel=2
@@ -166,7 +130,6 @@ markStdErr = FALSE) {
 		cat(.makeMessage(e))
 		e #identity
 	}, finally = {	}
-
 	)
 
 	#lapply(res, function(x) {
@@ -176,40 +139,28 @@ markStdErr = FALSE) {
 	#})
 
 	if(getWarnLev() == 0L) {
-
 		nwarn <- length(last.warning)
-		assign("last.warning", last.warning, envir = baseenv())
+		assign("last.warning", last.warning, envir=baseenv())
 
 		if(nwarn > 0L) putMark(FALSE, 6L)
 		if(nwarn <= 10L) {
-
 			print.warnings(last.warning)
 		} else if (nwarn < 50L) {
-			## This is buggy and does not retrieve a translation of the message!
-			#cat(gettextf("There were %d warnings (use warnings() to see them)\n",
-			#	nwarn, domain = "R"))
-			msg <- ngettext(1,
-				"There were %d warnings (use warnings() to see them)\n",
-				"There were %d warnings (use warnings() to see them)\n",
-				domain = "R")
-			cat(sprintf(msg, nwarn))
+		   cat(gettextf("There were %d warnings (use warnings() to see them)\n", nwarn, domain="R"))
 		} else {
-			cat(ngettext(1,
-				"There were 50 or more warnings (use warnings() to see the first 50)\n",
-				"There were 50 or more warnings (use warnings() to see the first 50)\n",
-				domain = "R"))
+			cat(gettext("There were 50 or more warnings (use warnings() to see the first 50)\n", domain="R"))
 		}
 	}
 	putMark(TRUE, 7L)
 
-	sink(type = "message")
-	sink(type = "output")
+	sink(type = "message"); sink(type = "output")
 	close(tconn)
 	on.exit()
 
-	## Allow for tracebacks of this call stack:
+	# allow for tracebacks of this call stack:
 	assign(".Traceback", lapply(Traceback, deparse), envir = baseenv())
 
 	attr(rval, "marks") <- marks
+
 	return(rval)
 }
