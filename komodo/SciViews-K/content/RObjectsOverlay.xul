@@ -155,33 +155,35 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 		box="robjects_searchpath_panel"
 		oncommand="sv.r.objects.toggleViewSearchPath(event);"
 		checked="true" state="open"/>
-		</broadcasterset>
-
+	</broadcasterset>
 
 	<menupopup id="tabPicker_popup">
 		<menuitem id="show_robjects_tab"
-		insertafter="show_runoutput_tab,show_codebrowser_tab"
-		oncommand="uilayout_ensureTabShown('sciviews_robjects_tab', true)"
+		insertbefore="show_project_tab,show_places_tab"
+		observes="show_sciviews_robjects_tab"
+		oncommand="ko.uilayout.ensureTabShown('sciviews_robjects_tab', true)"
 		label="&sciviews.robjects.tab;"/>
 	</menupopup>
 
 	<menupopup id="menu_view_tabs_popup">
 		<menuitem id="show_robjects_tab2"
-		insertafter="show_codebrowser_tab2" class="menuitem-iconic-wide"
-		oncommand="uilayout_ensureTabShown('sciviews_robjects_tab', true)"
-		label="&sciviews.robjects.tab;"/>
+		insertbefore="show_project_tab2,show_places_tab2"
+		class="menuitem-iconic-wide"
+		observes="show_sciviews_robjects_tab"
+		oncommand="ko.uilayout.ensureTabShown('sciviews_robjects_tab', true)"
+		label="&sciviews.robjects.tab;" type="checkbox"/>
 	</menupopup>
 
 	<tabbox id="leftTabBox">
 		<tabs id="project_toolbox_tabs">
 			<tab id="sciviews_robjects_tab" label="&sciviews.robjects.tab;"
-			insertafter="project_tab,codebrowser_tab"
-			tooltiptext="&sciviews.robjects.tip;"
+			insertbefore="project_tab, places_tab"
 			onclick="sv.r.objects.getPackageList(false);"/>
+			<!--tooltiptext="&sciviews.robjects.tip;"-->
 		</tabs>
 		<tabpanels id="project_toolbox_tabpanels">
 			<tabpanel flex="1" id="sciviews_robjects_tabpanel"
-			insertafter="projectviewbox,codebrowserviewbox">
+			insertbefore="projectviewbox,placesViewbox">
 				<vbox flex="1" id="sciviews_robjects_vbox">
 					<hbox align="center" id="sciviews_robjects_hbox">
 						<toolbarbutton id="sciviews_robjects_refresh_button"

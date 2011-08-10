@@ -88,6 +88,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 	// Start R
 	this.startR = function () {
+		// Check if R is not already running and servicing on server port
+		if (sv.r.test(false, false, true)) {
+			ko.statusBar.AddMessage("R is already running!", "SciViews-K",
+				3000, true);
+			return;
+		}
+		
 		var cwd = sv.tools.file.path("ProfD", "extensions",
 			"sciviewsk@sciviews.org", "defaults");
 		var cmd = sv.prefs.getString("svRCommand");
@@ -113,22 +120,34 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 	var isWin = navigator.platform.indexOf("Win") === 0;
 	var id = sv.prefs.getString("svRApplication",
-                                isWin? "r-gui" : "r-terminal");
+        isWin? "r-gui" : "r-terminal");
 
 	// runIn = "command-output-window", "new-console",
 	// env strings: "ENV1=fooJ\nENV2=bar"
 	// gPrefSvc.prefs.getStringPref("runEnv");
-		var env = ["koId=" + sv.prefs.getString("sciviews.client.id",
-			"SciViewsK"),
-			"koHost=localhost",
-			"koActivate=FALSE",
-			"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
-			"koType=" + sv.clientType, // Changed value considered only after Komodo restarts!
-			"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
-			"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
-			"koDebug=" + String(sv.socket.debug).toUpperCase(),
-		"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : ""))
+	// Calculate output width
+	var scimoz = document.getElementById("rconsole-scintilla2").scimoz;
+	var width = (Math.floor(window.innerWidth /
+		scimoz.textWidth(0, "0")) - 7)
+	// min = 66, max = 200 (otherwise, it is harder to read) 
+	if (width < 66) width = 66;
+	if (width > 266) width = 266;
+	
+	var clientType = sv.prefs.getString("sciviews.client.type", "socket");
+	var env = ["koId=" + sv.prefs.getString("sciviews.client.id", "SciViewsK"),
+		"koHost=localhost",
+		"koActivate=FALSE",
+		"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
+		"koType=" + clientType,
+		"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
+		"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
+		"koDebug=" + String(sv.socket.debug).toUpperCase(),
+		"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : "")),
+		"OutDec=" + sv.prefs.getString("r.csv.dec", "."),
+		"OutSep=" + sv.prefs.getString("r.csv.sep", ","),
+		"width=" + width
 	];
+		// Not done here!! "width=" + width
 	var runIn = "no-console";
 	env.push("Rid=" + id);
 
@@ -138,7 +157,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			// Set DISPLAY only when not set:
 			var XEnv = Components.classes["@activestate.com/koEnviron;1"]
 				.createInstance(Components.interfaces.koIEnviron);
-			if (!XEnv.has("DISPLAY"))	env.push("DISPLAY=:0");
+			if (!XEnv.has("DISPLAY")) env.push("DISPLAY=:0");
 			delete(XEnv);
 			break;
 		case "r-terminal":
@@ -150,8 +169,14 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	ko.run.runCommand(window, cmd, cwd, env.join("\n"), false,
 		false, false, runIn, false, false, false);
 
-	// Register observer of application termination.
+	// Register observer of application termination
 	this.rObserver = new AppTerminateObserver(cmd);
+	
+	// Ensure the client type is correct for everyone
+	sv.socket.setSocketType(clientType);
+	
+	// ... make sure to start with a clear R Output window
+	sv.cmdout.clear(false);
 }
 
 	// This will observe status message notification to be informed about
@@ -189,10 +214,10 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			//sv.socket.rUpdate();
 			// Possibly refresh the GUI by running SciViews-specific
 			// R task callbacks and make sure R Objects pane is updated
-			//sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
+			//sv.r.evalHidden("try(koRefresh(force = TRUE), silent = TRUE)");
 
 			// this hopefully will be called from R, when it starts:
-			//_this.updateRStatus(true);
+			_this.updateRStatus(true);
 		},
 		unregister: function () {
 			var observerSvc = Components.
@@ -285,8 +310,10 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 			//RHelpFrame.setAttribute("src", rHelpXulUri);
 			RHelpWin = RHelpFrame.contentWindow;
-			RHelpWin.go(uri);
-
+			//RHelpWin.go(uri);
+			// PhG: it seems we could enter in a deadlock situation here
+			// => defer display of the page
+			window.setTimeout(sv.command.RHelpWin.go, 10, uri);
 		} else {
 			_this.RHelpWin = _getWindowByURI(rHelpXulUri);
 			if (!RHelpWin || RHelpWin.closed) {
@@ -298,7 +325,10 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 					"chrome=yes,dependent,resizable=yes," +
 					"scrollbars=yes,status=no,close,dialog=no", sv, uri);
 			} else {
-				RHelpWin.go(uri);
+				//RHelpWin.go(uri);
+				// PhG: it seems we could enter in a deadlock situation here
+				// => defer display of the page
+				window.setTimeout(sv.command.RHelpWin.go, 10, uri);
 			}
 		}
 

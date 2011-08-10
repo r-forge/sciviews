@@ -5,4 +5,5 @@ export(koInstall,
        koUninstall,
        koRefresh,
        koAutoRefresh,
-       koCmd)
+       koCmd,
+       svTaskCallbackManager)

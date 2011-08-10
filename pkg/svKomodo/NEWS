@@ -8,7 +8,14 @@
   purpose (to communicate with Komodo Edit/IDE only), while the previous
   implementation was intended for more general purpose. Since, it was never
   used elsewhere, narrowing its scope allows to simplify the code greatly!
-
+  
+* The callback mechanism to run commands from a client is now moved from
+  svSocket package to here, so that it can also be used in the svHttp package.
+  
+* koRefresh() now look at the "changed" attribute of the object returned by
+  objList(), and so, can make the difference between "no changes", and
+  "changes, but the environment go no more objects".
+  
 
 Here is a transcript of svGUI before functions are moved to svKomodo:
 

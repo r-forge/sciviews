@@ -130,8 +130,8 @@ sv.r.objects = {};
 		'formula'];
 
 	// Used in .contextOnShow
-	var nonDetachable = [".GlobalEnv", "TempEnv", "package:svGUI", "package:svMisc",
-		"package:svSocket", "package:svGUI", "package:base"];
+	var nonDetachable = [".GlobalEnv", "TempEnv", "package:svKomodo", "package:svMisc",
+		"package:svSocket", "package:svHttp", "package:base"];
 
 	// Reference to parent object for private functions
 	var _this = this;
@@ -869,16 +869,24 @@ sv.r.objects = {};
 	};
 
 	// Callback to process the list of packages in the search path from R
-	function _processPackageList (data, refreshObjects) {
-		if (data == "") return; // No changes
+	this.processPackageList = function _processPackageList (data, refreshObjects) {
+		if (data == "") return;
 		_this.searchPaths = data.replace(/[\n\r]/g, "").split(sep);
 		_this.displayPackageList(refreshObjects);
 	};
 
 	// Get the list of packages on the search path from R
 	this.getPackageList =  function (refreshObjects) {
+		//, testR /* = true*/,
+		//testVersion /* = false*/) {	
+		//if (testR === undefined || testR == null) testR = true;
+		//if (testVersion === undefined || testVersion == null)
+		//	testVersion = true;
+	
+//		if (testR && !sv.r.test(testVersion, testVersion)) return;	
+		
 		var cmd = 'cat(objSearch(sep = "' + sep + '", compare = FALSE))';
-		sv.r.evalCallback(cmd, _processPackageList, refreshObjects);
+		sv.r.evalCallback(cmd, _this.processPackageList, refreshObjects);
 	};
 
 	// Clear the list of packages on the search path (when quitting R)

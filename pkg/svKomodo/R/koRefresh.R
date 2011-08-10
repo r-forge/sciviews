@@ -11,7 +11,12 @@
 
 koRefresh <- function (force = FALSE)
 {
-    ## Refresh active items and the R Objects explorer
+    safekoCmd <- function (cmd, data = NULL, ...) {
+		res <- try(koCmd(cmd, data, ...), silent = TRUE)
+		return(!inherits(res, "try-error"))
+	}
+	
+	## Refresh active items and the R Objects explorer
     ## If force == TRUE, do not compare with the cache
     ## Active items are represented by .active.xxx objects in .GlobalEnv
     aObjs <- ls(pattern = "^\\.active\\.", envir = .GlobalEnv, all.names = TRUE)
@@ -27,25 +32,28 @@ koRefresh <- function (force = FALSE)
             if (is.null(res))  # Active object not found, remove obj
                 rm(list = item, envir = .GlobalEnv)
             if (isTRUE(force) || !identical(res, cache))  # Refresh in Komodo
-                koCmd(paste('sv.r.obj_refresh_', objclass, '("<<<data>>>");',
-                    sep = ""), data = res)
+                if (!safekoCmd(paste('sv.r.obj_refresh_', objclass,
+					'("<<<data>>>");', sep = ""), data = res)) return(FALSE)
         }
     }
 
 	## Make sure to clear active data frame and active lm object in case none
     ## are defined in the current session
     if (!".active.data.frame" %in% aObjs)
-        koCmd('sv.r.obj_refresh_dataframe("<<<data>>>");')
+        if (!safekoCmd('sv.r.obj_refresh_dataframe("<<<data>>>");'))
+			return(FALSE)
     if (!".active.lm" %in% aObjs)
-        koCmd('sv.r.obj_refresh_lm("<<<data>>>");')
+        if (!safekoCmd('sv.r.obj_refresh_lm("<<<data>>>");'))
+			return(FALSE)
 
 	## Refresh object browser (only data from .GlobalEnv)
     lst <- objList(envir = .GlobalEnv, all.info = FALSE, compare = TRUE)
 
-    if (length(lst$Name) > 0) {
+    if (isTRUE(attr(lst, "changed"))) {
         msg <- paste(capture.output(print(lst, sep = ";;", header = TRUE)),
 			collapse = "\n")
-        koCmd('sv.r.objects.refreshGlobalEnv("<<<data>>>");', data = msg)
+        if (!safekoCmd('sv.r.objects.refreshGlobalEnv("<<<data>>>");',
+			data = msg)) return(FALSE)
     }
     return(TRUE)
 }
@@ -59,3 +67,4 @@ koAutoRefresh <- function (...)
 # FIXME: When Komodo server is not available:
 #> koAutoRefresh()
 #Error in call[[1L]] : object of type 'symbol' is not subsettable
+# PhG: I hope changes with safekoCmd() will do the job in this case!

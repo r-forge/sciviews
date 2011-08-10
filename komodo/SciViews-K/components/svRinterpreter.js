@@ -11,7 +11,6 @@
 // R = components.classes["@sciviews.org/svRinterpreter;1"].\
 //    		getService(components.interfaces.svIRinterpreter)
 ////////////////////////////////////////////////////////////////////////////////
-// sv.clientType;					// Global variable with 'socket' or 'http'
 // R.escape();	 					// Escape R code
 // R.calltip(code); 				// Get a calltip for this code
 // R.complete(code); 				// Get completion list for this code
@@ -213,7 +212,6 @@ function clearCodeintelMessage () {
 }
 
 
-
 //// Komodo preferences access /////////////////////////////////////////////////
 var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
 	.getService(Components.interfaces.koIPrefService);
@@ -233,19 +231,25 @@ function setPrefString (pref, value, overwrite) {
 }
 
 
-//// R socket server configuration /////////////////////////////////////////////
-// Get server type preference and set sv.clientType accordingly
+//// R socket server ///////////////////////////////////////////////////////////
 if (typeof(sv) == "undefined") var sv = {};
-sv.clientType = getPrefString("sciviews.client.type", "socket"); // We use http by default
+sv.clientType = getPrefString("sciviews.client.type", "socket");
+setPrefString("sciviews.client.currentType", sv.clientType, true);
 
 // String converter used between Komodo and R (localeToCharset()[1] in R)
 var converter = Components
 	.classes["@mozilla.org/intl/scriptableunicodeconverter"]
 	.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
 
-// Use ASCII encoding by default
-try { converter.charset = "ASCII"; } catch (e) { }
+// Use UTF-8 encoding by default, except on Windows where ISO8859-1 is a better bet
 
+try {
+	if (navigator.platform.search(/Win\d+$/) === 0) {
+		converter.charset = "ISO8859-1";
+	} else {
+		converter.charset = "UTF-8";	
+	}
+} catch (e) { }
 
 // The conversion functions
 function _fromUnicode (str, charset) {
@@ -255,7 +259,8 @@ function _fromUnicode (str, charset) {
 		if (converter.charset)
 			str = converter.ConvertFromUnicode(str) + converter.Finish();
 	} catch(e) {
-		koLoggerException(e, "sv.socket is unable to convert from Unicode to " +
+		koLoggerException(e,
+			"svRinterpreter is unable to convert from Unicode to " +
 		 	converter.charset + ". The string was " + str);
 	}
 	return(str);
@@ -268,7 +273,8 @@ function _toUnicode (str, charset) {
 		if (converter.charset)
 			str = converter.ConvertToUnicode(str);
 	} catch(e) {
-		koLoggerException(e, "sv.socket is unable to convert to Unicode from " +
+		koLoggerException(e,
+			"svRinterpreter is unable to convert to Unicode from " +
 			converter.charset + ". The string was " + str);
 	}
 	return(str);
@@ -404,6 +410,7 @@ function rClientHttp(host, port, cmd, listener) {
 function rCommand(cmd, procfun) {
 	var host = getPrefString("sciviews.server.host", "127.0.0.1");
 	var port = getPrefString("sciviews.client.socket", "8888");
+	var clientType = getPrefString("sciviews.client.currentType", "socket");
 	var id = "<<<id=" +
 		getPrefString("sciviews.client.id", "SciViewsK") + ">>>";
 	cmd = cmd.replace(/(\r?\n|\r)/g, "<<<n>>>"); // Replace CRLF
@@ -426,7 +433,7 @@ function rCommand(cmd, procfun) {
 		}
 	}
 	var res = "";
-	if (sv.clientType == "socket") {	// Socket server in svSocket
+	if (clientType == "socket") {	// Socket server in svSocket
 		res = rClientSocket(host, port, id + cmd + "\n", listener);
 	} else {						// Http server in svGUI
 		res = rClientHttp(host, port, id + cmd + "\n", listener);

@@ -288,7 +288,7 @@ function pkgFindUpdates () {
 				theUpdatesList.removeChild(theUpdatesList.firstChild);
 		}
 		sv.r.evalCallback(cmd, function (data) {
-				sv.cmdout.clear();
+				//sv.cmdout.clear();
 				sv.cmdout.append(data);
 
 				var lines = data.split(/\r?\n/);
