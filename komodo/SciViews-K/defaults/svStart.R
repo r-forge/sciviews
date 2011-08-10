@@ -4,8 +4,16 @@
 ## Version 0.9.15, 2010-05-01 mod by K. Barton
 ## Version 0.9.19, 2010-10-03 mod by Ph. Grosjean
 ## Version 0.9.20, 2010-11-10 mod by K. Barton
+## Version 0.9.23, 2011-08-05 mod by Ph. Grosjean
 
 ## TODO: also use value in koDebug to debug server from within R!
+## TODO: use the mechanism of startHttpServer() to retrieve default config
+## for port and server name in startSocketServer(). Change the code here to
+## benefit from this mechanism
+## TODO: record these parameters on a hidden file in user's home folder
+## that way, one should be able to reconfigure R for SciViews communication
+## just by loading the svKomodo package... but without rechecking if
+## required packages are installed, versions, etc...
 
 "svStart" <-
 function (minRVersion = "2.11.1", minVersion = NA,
@@ -13,8 +21,8 @@ function (minRVersion = "2.11.1", minVersion = NA,
 remote.repos = "http://R-Forge.R-project.org",
 pkg.dir = ".",
 debug = Sys.getenv("koDebug") == "TRUE",
-pkgsLast = c("svGUI", "ellipse", "MASS", "SciViews"), # to be loaded at the end
-pkgsDontLoad = c("codetools", "svTools"),
+pkgsLast = c("svKomodo", "SciViews"), # to be loaded at the end
+pkgsDontLoad = c("codetools", "svTools", "svUnit", "ellipse", "MASS"),
 skip = NULL)
 {
 	# Note (KB): it would make life a way easier to put all (and only)
@@ -49,7 +57,7 @@ skip = NULL)
 
 
 	# Needed because of dependency errors during a fresh installation...
-	pkgs <- pkgs[order(match(pkgs, c("svMisc", "svSocket","svGUI")))]
+	pkgs <- pkgs[order(match(pkgs, c("svMisc", "svSocket","svHttp", "svKomodo")))]
 
 	## TODO: if R crashes before this code is done, 00LOCK remains and it is not
 	## possible to initiate SciViews extensions any more! => use a different
@@ -86,7 +94,8 @@ skip = NULL)
 	}
 
 	## Return if any of the sv* packages already loaded and Rserver running
-	if (any(c("package:svGUI", "package:svSocket", "package:svMisc") %in% search())
+	if (any(c("package:svHttp", "package:svSocket", "package:svKomodo",
+			  "package:svMisc") %in% search())
 	&& existsFunction("getSocketServers")
 	&& !is.na(getSocketServers()["Rserver"])) {
 		invisible(return(NA))
@@ -113,7 +122,7 @@ skip = NULL)
 	if (res < 0) {
 		res <- FALSE
 		cat("R is too old for this version of SciViews (R >=",
-			minVersion["R"], "is needed), please, upgrade it\n")
+			minVersion["R"], "is needed), please, upgrade it\n", file = stderr())
 	} else res <- TRUE
 
 	## Load main R packages
@@ -141,7 +150,8 @@ skip = NULL)
 		## If started --quiet, display a simplified message but not if started
 		## -q, so that the user can still make it fully quiet!
 		par <- args[grep("^--quiet$", args)]
-		if (length(par) > 0) cat(R.version.string, "\n", sep = "")
+		if (length(par) > 0) cat(R.version.string, "\n",
+			sep = "", file = stderr())
 
 		## Collect SciViews socket client/server config from command line or vars
 		## Type of server to use (either http or socket)
@@ -171,11 +181,19 @@ skip = NULL)
 				}
 			}
 		)
+		svOption("width", default = getOption("width", 80), args = args,
+			as.type = as.integer)
+		svOption("OutDec", default = getOption("OutDec", "."), args = args)
+		svOption("OutSep", default = getOption("OutSep", ","), args = args)
 	}
 	## If ko.type is not socket, we don't load svSocket
 	ko.type <- getOption("ko.type")
 	if (ko.type != "socket")
 		pkgsDontLoad <- c(pkgsDontLoad, "svSocket")
+	
+	## If ko.type is not http, we don't load svHttp
+	if (ko.type != "http")
+		pkgsDontLoad <- c(pkgsDontLoad, "svHttp")
 
 	## Load tcltk package (if we use the socket server only)
 	if (res && ko.type == "socket") {
@@ -202,8 +220,10 @@ skip = NULL)
 					## We locate 'open-x11' and run it,... not X11 directly!
 					if (length(system('find /usr/bin/ -name "open-x11"',
 						intern = TRUE)) == 0){
-						cat("'open-x11' not found. Make sure you installed X11\n")
-						cat("(see http://developer.apple.com/opensource/tools/runningx11.html\n")
+						cat("'open-x11' not found. Make sure you installed X11\n",
+							file = stderr())
+						cat("(see http://developer.apple.com/opensource/tools/runningx11.html\n",
+							file = stderr())
 						res <- FALSE
 					} else {  # Make sure X11 is started
 						## Trick: we try opening a non X11 prog,
@@ -219,17 +239,21 @@ skip = NULL)
 				if (!res) {
 					cat("Error starting tcltk. Make sure Tcl/Tk is installed and can\n",
 					"be run on your machine. Then, with packages svMisc, svSocket\n",
-					"and svGUI installed, restart R or type require(svGUI)\n")
+					"and svGUI installed, restart R or type require(svGUI)\n",
+					file = stderr())
 				}
 			}
 		} else cat("Tcl/Tk is required by SciViews,\n",
-				"but it is not supported by this R installation\n")
-	} else if (!res) cat("Problem loading standard R packages, check R installation\n")
+				"but it is not supported by this R installation\n",
+				file = stderr())
+	} else if (!res)
+		cat("Problem loading standard R packages, check R installation\n",
+			file = stderr())
 
 	if (res) {
-		## Load packages svMisc, svSocket & svGUI (possibly after installing
-		## or upgrading them). User is supposed to agree with this install
-		## from the moment he tries to start and configure R from Komodo Edit
+		## Load packages svMisc, svSocket, svHttp & svKomodo (possibly after
+		## installing or upgrading them). User is supposed to agree with this
+		## install when he tries to start and configure R from Komodo Edit
 		#pkgs <- names(minVersion)
 		#pkgs <- pkgs[!(pkgs %in% "R")]
 
@@ -245,7 +269,7 @@ skip = NULL)
 		lib <- .libPaths()
 		k <- file.access(lib, 2) == 0
 		if (!any(k)) {
-			## If nothing is available to current user, create user library location
+			## If nothing is available to user, create user library location
 			lib <- Sys.getenv("R_LIBS_USER")[1L]
 			dir.create(lib, recursive = TRUE)
 			## Update library paths
@@ -320,13 +344,13 @@ skip = NULL)
 		pkgsPrimary <- pkgs[!(pkgs %in% pkgsLast)]
 		pkgsSecondary <- pkgs[pkgs %in% pkgsLast]
 
-		## Do not load svGUI yet
+		## Do not load svKomodo yet
 		res <- sapply(pkgsPrimary, function(pkgName)
 			require(pkgName, quietly = TRUE, character.only = TRUE))
 
 		if (!all(res)) {
 			cat("Problem loading package(s):", paste(pkgsPrimary[!res],
-				collapse = ", "), "\n")
+				collapse = ", "), "\n", file = stderr())
 		} else {
 			if (ko.type == "socket") {
 				# Try starting the R socket server now
@@ -337,11 +361,13 @@ skip = NULL)
 
 			if (!res) {
 				cat("Impossible to start the SciViews R socket server\n(socket",
-					getOption("ko.serve"), "already in use?)\n")
-				cat("Solve the problem, then type: require(svGUI)\n")
-				cat("or choose a different port for the server in Komodo\n")
+					getOption("ko.serve"), "already in use?)\n", file = stderr())
+				cat("Solve the problem, then type: require(svSocket)\n",
+					file = stderr())
+				cat("or choose a different port for the server in Komodo\n",
+					file = stderr())
 			} else {
-				## Finally, load svGUI, ellipse, MASS and SciViews
+				## Finally, load svKomodo and SciViews
 				res <- sapply(pkgsSecondary, function(pkgName)
 					require(pkgName, quietly = TRUE, character.only = TRUE))
 
@@ -355,11 +381,14 @@ skip = NULL)
 
 					if (!all(res)) {
 						cat("Impossible to start the SciViews R HTTP server\n(port",
-							getOption("ko.serve"), "already in use?)\n")
-						cat("Solve the problem, then type: require(svGUI)\n")
-						cat("or choose a different port for the server in Komodo\n")
+							getOption("ko.serve"), "already in use?)\n",
+							file = stderr())
+						cat("Solve the problem, then type: require(svHttp)\n",
+							file = stderr())
+						cat("or choose a different port for the server in Komodo\n",
+							file = stderr())
 					} else {
-						cat("R is SciViews ready!\n")
+						cat("R is SciViews ready!\n", file = stderr())
 						assignTemp(".SciViewsReady", TRUE)
 					}
 
@@ -373,7 +402,7 @@ skip = NULL)
 					}
 				} else {
 						cat("R is not SciViews ready, install latest",
-						paste(pkgs, collapse = ", "), "packages\n")
+						paste(pkgs, collapse = ", "), "packages\n", file = stderr())
 				}
 			}
 		}
@@ -455,6 +484,7 @@ skip = NULL)
 			## Change the editor and the pager to Komodo
 			## A custom pager consists in displaying the file in Komodo
 			svPager <- function (files, header, title, delete.file) {
+				require(svKomodo)
 				files <- gsub("\\", "\\\\", files[1], fixed = TRUE)
 				koCmd(sprintf('sv.r.pager("%s", "%s")', files, title))
 				if (delete.file)
@@ -462,6 +492,7 @@ skip = NULL)
 			}
 
 			svBrowser <- function (url) {
+				require(svKomodo)
 				url <- gsub("\\", "\\\\", url, fixed = TRUE)
 				## If the URL starts with '/', I could safely assume a file path
 				## on Unix or Mac and prepend 'file://'
@@ -472,16 +503,17 @@ skip = NULL)
 			options(editor = Komodo, browser = svBrowser, pager = svPager)
 		} else {
 			Komodo <- NULL
-			cat("R cannot find Komodo.")
+			cat("R cannot find Komodo.", file = stderr())
 			if (.Platform$OS.type == "unix") {
 				cat("Please, follow instructions at",
 					"http://www.sciviews.org/SciViews-K to install it correctly.",
 					"In particular, you must create a symbolic link in /user/local/bin:",
 					"sudo ln -s <KomodoBinLocation>/komodo /usr/local/bin/komodo",
-					"otherwise, R cannot find it!", sep = "\n")
+					"otherwise, R cannot find it!", sep = "\n", file = stderr())
 			} else {
 				cat("Please, make sure you install it correctly\n",
-					"You can find it at http://www.activestate.com/Products/komodo_edit.\n")
+					"You can find it at http://www.activestate.com/Products/komodo_edit.\n",
+					file = stderr())
 			}
 		}
 
@@ -552,6 +584,9 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			## the session's workspace and command history are written at the
 			## right place (in case of error, no change is made!)
 			try(setwd(getOption("R.initdir")), silent = TRUE)
+			## Clean up everything in Komodo
+			try(svKomodo::koCmd('window.setTimeout("sv.r.closed();", 1000);'),
+				silent = TRUE)
 		})
 
 		msg <- paste("Session directory is", dQuote(getOption("R.initdir")))
@@ -584,7 +619,8 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			msg2 <- append(msg2, "data and history not loaded")
 		}
 
-		cat(msg, " (", paste(msg2, collapse=", "),  ")", "\n", sep = "", file = stderr())
+		cat(msg, " (", paste(msg2, collapse=", "),  ")", "\n",
+			sep = "", file = stderr())
 
 		## Do we reactivate Komodo now?
 		koact <- getOption("ko.activate")
@@ -600,20 +636,33 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			}
 			## Indicate to Komodo that R is ready
 			## and test also communication from R to Komodo!
-			koCmd('sv.cmdout.message("<<<data>>>", 10000, true);',
-				data = paste("'", getOption("R.id"), "' (R ",
-				R.Version()$major, ".", R.Version()$minor,
-				") connected. Session dir: ",
-				path.expand(getOption("R.initdir")), sep = ""))
+		#	koCmd('sv.cmdout.message("<<<data>>>", 10000, true);',
+		#		data = paste("'", getOption("R.id"), "' (R ",
+		#		R.Version()$major, ".", R.Version()$minor,
+		#		") connected. Session dir: ",
+		#		path.expand(getOption("R.initdir")), sep = ""))
+			## ... and refresh the object explorer
+			## TODO!
+			
+			## Differ synching R <-> Komodo to avoid deadlock situation
+			# That does not work!
+			#koCmd('window.setTimeout("sv.r.objects.getPackageList(true, true, true);", 500)')
+			#koCmd('window.setTimeout("sv.r.test(true, true);", 500)')
 		}
 		## Update info in Komodo
-		debugMsg("Contacting Komodo with koCmd")
-		invisible(koCmd(paste(
-			"sv.socket.rUpdate()",
-			"sv.cmdout.append('R is started')",
-			"sv.command.updateRStatus(true)",
-			sep = ";"))
-		)
+		#debugMsg("Contacting Komodo with koCmd")
+		#invisible(koCmd(paste(
+		#	"sv.socket.rUpdate()",
+		#	"sv.cmdout.append('R is started')",
+		#	"sv.command.updateRStatus(true)",
+		#	sep = ";"))
+		#)
+		## Refreshing Komodo's GUI elements
+		try(koCmd(paste('sv.r.running = true; sv.socket.charset = "',  localeToCharset()[1],
+			'"; sv.cmdout.message("' , R.version.string, ' is ready!");',
+			' window.setTimeout("sv.r.objects.getPackageList(true, true, true);", 1000);',
+			sep = "")), silent = TRUE)
+		#try(koRefresh(force = TRUE), silent = TRUE)
 	}
 	
 	## Do we have a .Rprofile file to source?
@@ -623,7 +672,6 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 		source(rprofile)
 		debugMsg("Loaded file:", rprofile)
 	}
-
 	
 	return(invisible(res))
 }

@@ -127,7 +127,7 @@ function PrefR_OnLoad() {
 	//while (p.opener && (p = p.opener) && !ko) if (p.ko) ko = p.ko;
 
 	var os = Components.classes['@activestate.com/koOs;1']
-    .getService(Components.interfaces.koIOs);
+		.getService(Components.interfaces.koIOs);
 
 	var prefExecutable;
 	var prefset = parent.hPrefWindow.prefset;
@@ -138,15 +138,22 @@ function PrefR_OnLoad() {
     var platform = navigator.platform.substr(0,3);
 
     var tmp = {}, required, res;
-    for (var i in apps)
-    if (apps[i].platform.split(',').indexOf(platform) != -1) {
-        required = apps[i].required.split(',');
-        res = true;
-        for (var k in required)
-        res = res && !!sv.tools.file.whereIs(required[k]);
-        if (res)
-        tmp[apps[i].id] = apps[i];
-    }
+    for (var i in apps) {
+		if (apps[i].platform.split(',').indexOf(platform) != -1) {
+			required = apps[i].required.split(',');
+			res = true;
+			for (var k in required) {
+				//res = res && !!sv.tools.file.whereIs(required[k]);
+				// Once again, the xxx.app on the Mac are DIRECTORIES.
+				// They cannot be found by the previous instruction
+				if (!sv.tools.file.whereIs(required[k]) &&
+					(sv.tools.file.exists(required[k]) ==
+					sv.tools.file.TYPE_NONE)) res = false;
+			}			
+			if (res)
+				tmp[apps[i].id] = apps[i];
+		}
+	}
     apps = tmp;
 
     for (var i in apps)
@@ -170,7 +177,7 @@ function PrefR_PopulateRInterps() {
     var prefExecutable = sv.prefs.getString('svRDefaultInterpreter');
     var rs = new Array();
     var os = Components.classes['@activestate.com/koOs;1']
-    .getService(Components.interfaces.koIOs);
+		.getService(Components.interfaces.koIOs);
     var menu = document.getElementById("svRDefaultInterpreter");
 
     // windows:
@@ -181,11 +188,11 @@ function PrefR_PopulateRInterps() {
         rs = rs.concat(sv.tools.file.whereIs("R"));
         break;
         case "mac":
-        //FIXME: as I understand there are only 2 options on Mac, is it right?:
-        rs = ["/Applications/R.app", "/Applications/R64.app"];
-        // What about "SciViews R*.app" ???
+		case "posix": // On Mac OS X, os.name is posix!!!
+        rs = ["/Applications/R.app", "/Applications/R64.app",
+			  "/Applications/SciViews R.app", "/Applications/SciViews R64.app",
+			  sv.tools.file.whereIs("R")];
         break;
-        case "posix":
         default:
         rs = rs.concat(sv.tools.file.whereIs("R"));
     }
@@ -207,7 +214,6 @@ function PrefR_PopulateRInterps() {
     if (rs.length > 0) {
         document.getElementById("no-avail-interps-message").hidden = true;
     }
-
 }
 
 function OnPreferencePageLoading(prefset) {
@@ -225,7 +231,7 @@ function OnPreferencePageOK(prefset) {
 
 	prefset.setStringPref("svRApplicationId",
 		document.getElementById('svRApplication').selectedItem.id);
-	// PhG: was commented out unitl here...
+	// PhG: was commented out until here...
 
 
 	var outDec = document.getElementById('r.csv.dec').value;
@@ -233,6 +239,7 @@ function OnPreferencePageOK(prefset) {
 
     // "Preference widget" does not save newly added values for some reason:
 	prefset.setStringPref("r.csv.sep", outSep);
+	prefset.setStringPref("r.csv.dec", outDec);
 
     if (outDec == outSep) {
         parent.switchToPanel("svPrefRItem");
@@ -243,11 +250,8 @@ function OnPreferencePageOK(prefset) {
     }
 	prefset.setStringPref("svRCommand", PrefR_updateCommandLine(false));
 
-	//The 'r.csv.*.arg' prefs are replaced by simply 'r.csv.dec'/'r.csv.sep'
-	//as they escaped strings anyway (e.g. string "\\t" not tab character)
-
 	if (sv.r.running) {
-		sv.r.eval('options(OutDec="' + outDec + '", ' +
+		sv.r.evalHidden('options(OutDec="' + outDec + '", ' +
 		'OutSep="' + outSep + '")', true);
 	}
 
@@ -255,17 +259,22 @@ function OnPreferencePageOK(prefset) {
 	var clientType = document.getElementById('sciviews.client.type').value;
 	prefset.setStringPref("sciviews.client.type", clientType);
 	// Check if selected item is different from current sv.clientType
-	if (clientType != sv.clientType)
-		sv.alert("R server type changed", "The server type you selected will be" +
-			" used after restarting of both R and Komodo!");
-
-	//sv.socket.setSocketType(clientType);
+	// and if R is running
+	if (clientType != sv.clientType && sv.r.test()) {
+		// R is running, do not change right now
+		sv.alert("R server type changed",
+			"The R server type you selected will be" +
+			" used after restarting R!");
+	} else {
+		// Change current server type too
+		sv.socket.setSocketType(clientType);
+	}
 
 	menuListGetValues();
 
 	// Restart socket server if running and port changed
 	var serverPort = document.getElementById('sciviews.server.socket').value;
-	if(sv.socket.serverIsStarted &&
+	if (sv.socket.serverIsStarted &&
 		serverPort != prefset.getStringPref("sciviews.server.socket")){
 		prefset.setStringPref("sciviews.server.socket", serverPort);
 		sv.socket.serverStart();
@@ -333,7 +342,7 @@ function PrefR_updateCommandLine(update) {
 	var args1 = "";
 
 	if(document.getElementById("sciviews.pkgs.sciviews").checked)
-			args1 += " --svStartPkgs=SciViews,MASS,ellipse";
+			args1 += " --svStartPkgs=SciViews";
 
    	var cwd = sv.tools.file.path("ProfD", "extensions",
     "sciviewsk@sciviews.org", "defaults");
@@ -384,8 +393,6 @@ function PrefR_setExecutable(path) {
 
 
 }
-
-
 
 // Get CRAN mirrors list - independently of R
 function PrefR_UpdateCranMirrors(localOnly) {

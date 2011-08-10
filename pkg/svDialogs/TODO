@@ -9,3 +9,6 @@
 
 * Control the terminal (where R runs) using osascript:
   osascript -e 'tell app "Terminal" to do script %s'
+  
+* Rename .GUI .UI, make UI() and use it instead? object name is UI. setUI(),
+  getUI(), startUI(), endUI(), and should they really be generic functions?

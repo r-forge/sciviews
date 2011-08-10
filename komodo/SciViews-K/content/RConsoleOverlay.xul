@@ -15,7 +15,8 @@
  The Original Code is SciViews-K by Philippe Grosjean et al.
 
  Contributor(s):
-   Romain Francois
+   Activestate staff (original code is Komodo's runOutput window)
+	 Philippe Grosjean, SciViews
 
  Alternatively, the contents of this file may be used under the terms of
  either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -31,132 +32,97 @@
 
  ***** END LICENSE BLOCK ***** -->
 
-<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
-	"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
-	<!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
-	%sciviewskDTD;
+<!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN" "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+  <!ENTITY % debuggerDTD SYSTEM "chrome://komodo/locale/komodo.dtd">
+  %debuggerDTD;
 ]>
+<?xml-stylesheet href="chrome://komodo/skin/komodo.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/toolbar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/scrolltabs.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/sidebar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/views.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/widgets.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/platform.css" type="text/css"?>
 
-<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/global/global.p.css" type="text/css"?>
-<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
-<?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk.css" type="text/css"?>
-<?xml-stylesheet href="chrome://sciviewsk/skin/sciviewsk_console.css" type="text/css"?>
+<?xul-overlay href="chrome://komodo/content/bindings/scintilla-overlay.xul"?>
 
 <overlay id="sciviewskRconsoleOverlay"
-	xmlns:html="http://www.w3.org/1999/xhtml"
-	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/file.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/e4x2dom.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/socket.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/rconsole.js"/>
+  <script type="application/x-javascript" src="chrome://sciviewsk/content/js/rconsole.js"/>
 
 	<menupopup id="tabPicker_popup">
-		<menuitem id="show_rconsole_tab" label="&sciviews.console.tab;"
-			oncommand="uilayout_ensureTabShown('sciviews_rconsole_tab', true)"/>
+		<menuitem id="show_rconsole_tab" label="R Output"
+			insertbefore="show_runoutput_tab"
+			observes="show_sciviews_rconsole_tab"
+			oncommand="ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);"/>
 	</menupopup>
 
 	<menupopup id="menu_view_tabs_popup">
 		<menuitem id="show_rconsole_tab2" class="menuitem-iconic-wide"
-			label="&sciviews.console.tab;"
-			oncommand="uilayout_ensureTabShown('sciviews_rconsole_tab', true)"/>
+			insertbefore="show_runoutput_tab2"
+			label="R Output" type="checkbox"
+      observes="show_sciviews_rconsole_tab"
+			oncommand="ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);"/> 
 	</menupopup>
 
-	<tabbox id="output_area">
-		<tabs id="output_tabs">
-			<tab id="sciviews_rconsole_tab" label="&sciviews.console.tab;"
-				tooltiptext="&sciviews.console.tip;" onclick="sv.r.console.init();"/>
-		</tabs>
-		<tabpanels id="output_tabpanels">
-
-			<tabpanel flex="1" id="sciviews_rconsole_tabpanel">				
-				<vbox id="sciviews_rconsole_console_vbox" flex="1" style="margin-left:10px;"> 
-					<richlistbox id="sciviews_rconsole_console_results" flex="1"/>
-					<splitter id="sciviews_rconsole_console_splitter">
-						<grippy/>
-					</splitter>
-					<hbox>
-						<!-- TODO: replace this with a scintilla editor, would we get syntax highlighting for free? -->
-						<!-- TODO: needs a bit of styling -->
-						<!-- here is the input area where R code is typed and sent to the console -->
-						<textbox id="sciviews_rconsole_console_input" cols="20"
-							onkeypress="sv.r.console.handleConsoleKeyPress(event)"
-							onkeyup="sv.r.console.handleConsoleKeyUp(event)"
-							flex="1" multiline="true" rows="2"/>
+	<tabs id="output_tabs">
+		<tab id="sciviews_rconsole_tab" label="R Output"
+		  insertbefore="runoutput_tab"/>
+			<!--tooltiptext="A R process running locally"/>
+			onclick="sv.rconsole.run();"/>-->
+	</tabs>
+	
+	<tabpanels id="output_tabpanels">
+		<tabpanel flex="1" id="rconsole_tabpanel"
+		  insertbefore="runoutput-desc-tabpanel">	
+			<vbox flex="1" id="rconsole-desc-tabpane">
+				<hbox id="rconsole-desc-tabpanel-toolbar-hbox"
+					class="toolbar-background toolbar-hbox">
+					<vbox flex="1">
+						<spring flex="1"/>
+						<label id="rconsole-desc" style="height: 15px;"
+							flex="1" crop="center"/>
+						<spring flex="1"/>
+					</vbox>
+					<spacer flex="1"/>
+					<hbox id="rconsole-button-box" class="no-border solo-toolbaritem">
+						<toolbarbutton id="rconsole-list-button"
+							class="bulletlist-icon"
+							tooltiptext="Show R command history"
+							oncommand="sv.rconsole.toggleView();"
+							disabled="true"/>
+						<toolbarbutton id="rconsole-close-button"
+							class="find-stop-icon"
+							tooltiptext="Clear R Output"
+							oncommand="sv.cmdout.clear(true);"
+							disabled="false"/>
+						  <!-- original action: oncommand="sv.rconsole.kill(-1);"-->
+					 </hbox>
 					</hbox>
-				</vbox>
-				<splitter>
-					<grippy/>
-				</splitter>
-
-				<tabbox flex="1">
-					<tabs>
-						<tab label="completion" id="sciviews_rconsole_console_tab_completion"/>
-						<tab label="history" id="sciviews_rconsole_console_tab_history"/>
-					</tabs>
-					<tabpanels flex="1">
-
-						<!-- completion tab -->
-						<!-- TODO: use this as a tooltip -->
-						<tabpanel>
-							<vbox flex="1">
-								<hbox>
-									<label value="&sciviews.rconsole.completion.settings.label;" 
-										tooltiptext="&sciviews.rconsole.completion.settings.tip;"/>
-									<checkbox label="&sciviews.rconsole.completion.cb.arguments;"
-										id="sciviews_rconsole_completion_cb_arguments"
-										tooltiptext="&sciviews.rconsole.completion.cb.arguments.tip;"
-										onclick="sv.r.console.updateCompletionChoiceSetting(event, 'arguments' )"/>
-									<checkbox label="&sciviews.rconsole.completion.cb.functions;"
-										id="sciviews_rconsole_completion_cb_functions"
-										tooltiptext="&sciviews.rconsole.completion.cb.functions.tip;"
-										onclick="sv.r.console.updateCompletionChoiceSetting(event, 'functions' )"/>
-									<checkbox label="&sciviews.rconsole.completion.cb.packages;"
-										id="sciviews_rconsole_completion_cb_packages"
-										tooltiptext="&sciviews.rconsole.completion.cb.packages.tip;"
-										onclick="sv.r.console.updateCompletionChoiceSetting(event, 'packages' )"/>
-									<checkbox label="&sciviews.rconsole.completion.cb.history;"
-										id="sciviews_rconsole_completion_cb_history"
-										tooltiptext="&sciviews.rconsole.completion.cb.history.tip;"
-										onclick="sv.r.console.updateCompletionChoiceSetting(event, 'history' )"/>
-								</hbox>
-								<tree flex="1">
+					<vbox flex="1" id="rconsole-desc-tabpanel-vbox">
+						<hbox flex="1" id="rconsole-desc-tabpanel-hbox">
+							<deck id="rconsole-deck" selectedIndex="1" flex="1">
+								<view type="terminal"
+									id="rconsole-scintilla"
+									flex="1" style="cursor: text;"
+									onclick="sv.rconsole.scintillaOnClick(event);"/>
+								<view type="terminal"
+									id="rconsole-scintilla2"
+									flex="1" style="cursor: text;"/>
+								<tree id="rconsole-tree" flex="1" class="no-border">
 									<treecols>
-										<treecol primary="true" label="completion" flex="1"/>
-										<treecol label="position" flex="1"/>
-										<treecol label="description" flex="6"/>
 									</treecols>
-									<treechildren id="sciviews_rconsole_completion_tree_main"/> 
+									<treechildren id="rconsole-tree-body" flex="1"/>
 								</tree>
-							</vbox>
-						</tabpanel>
-
-						<!-- history tab -->
-						<tabpanel>
-							<vbox flex="1">
-								<hbox>
-									<label>history</label>
-									<textbox id="sciviews_rconsole_history_filter"
-										style="min-width:40px; margin-right:0px; max-width:100px;"
-										type="timed" timeout="500" flex="1"
-										oninput="sv.r.console.refreshHistory();"
-										multiline="false" rows="1"
-										tooltiptext="&sciviews.console.history.filter.tip;"/>
-								</hbox>
-								<richlistbox id="sciviews_rconsole_console_history_richlistbox"
-									flex="1"/>
-							</vbox>
-						</tabpanel>
-					</tabpanels>
-				</tabbox>
+							</deck>
+						 </hbox>
+						 
+						 <!--<commandset id="rconsole-commandset"/>-->
+						 <hbox id="scintillaOverlayXul"/> <!--<commandset id="rconsole-commandset"/>-->
+					 </vbox>
+				 </vbox>		
 			</tabpanel>
-		</tabpanels>
-	</tabbox>
+	</tabpanels>
 </overlay>

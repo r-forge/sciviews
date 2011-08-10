@@ -130,10 +130,10 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	this.temp = function (prefix) {
 		var nsIFile = Components.interfaces.nsIFile;
 		var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"]
-		.getService(Components.interfaces.nsIProperties);
+			.getService(Components.interfaces.nsIProperties);
 		var tempDir = dirSvc.get("TmpD", nsIFile).path;
 		var tmpfile = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
+			.createInstance(Components.interfaces.nsILocalFile);
 
 		if (!prefix) prefix = "svtmp";
 
@@ -144,6 +144,10 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		return(tmpfile.path);
 	}
 
+	// ProfD = profile dir, DefProfRt = user like/root/.mozilla,
+	// UChrm = %profile%/chrome, DefRt = %installation%/defaults,
+	// PrfDef = %installation%/defaults/pref, Home = OS root,
+	// TmpD = OS tmp, Desk = desktop dir, etc.
 	this.specDir = function(dirName) {
 		var file;
 		if (dirName == "~")
@@ -151,14 +155,15 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 		try {
 			try {
-				file = Components.classes["@mozilla.org/file/directory_service;1"]
-				.getService(Components.interfaces.nsIProperties)
-				.get(dirName, Components.interfaces.nsILocalFile)
-				.path;
+				file = Components
+					.classes["@mozilla.org/file/directory_service;1"]
+					.getService(Components.interfaces.nsIProperties)
+					.get(dirName, Components.interfaces.nsILocalFile)
+					.path;
 			} catch(e) {
 				// if above fails, try Komodo directories too:
 				var dirs = Components.classes['@activestate.com/koDirs;1']
-				.getService(Components.interfaces.koIDirs);
+					.getService(Components.interfaces.koIDirs);
 				if (dirs.propertyIsEnumerable(dirName))
 				file = dirs[dirName];
 			}
@@ -295,7 +300,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 			if (appName.search(/\.[^\.]{3}$/) == -1) 	appName += ".exe";
 
 			var reg = Components.classes["@mozilla.org/windows-registry-key;1"]
-			.createInstance(Components.interfaces.nsIWindowsRegKey);
+				.createInstance(Components.interfaces.nsIWindowsRegKey);
 			var key, path;
 
 			//alert(appName);
@@ -329,9 +334,9 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 				}
 
 				if (appName.search(/\.exe$/) == -1) appName += ".exe";
-				var binDir = ["\\bin\\", "\\bin\\i386\\"];
-				// from 2.12 R executables may reside also in bin/i386 directory
-
+				var binDir = ["\\bin\\", "\\bin\\i386\\", "\\bin\\x64\\"];
+				// From 2.12 R executables may reside also in bin/i386 directory
+				// ... and 64-bit versions in bin/x64 directory
 
 				for (var i in ret) {
 					for (var j in binDir) {
@@ -355,7 +360,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 					path = path.replace(/(^"+|"*\s*"%\d.*$)/g, "");
 					return (path);
 				} catch(e) {
-					// fallback: look for app in PATH:
+					// Fallback: look for app in PATH
 					return (_findFileInPath(appName));
 				}
 			}
@@ -378,8 +383,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		}
 	}
 
-
-	//// inspired by "getDir" function from nsExtensionManager...
+	// inspired by "getDir" function from nsExtensionManager...
 	this.getDir = function(path, isFile, createFile) {
 		var leaves = [], key = (isFile? path.parent : path);
 		while(!key.exists() || !key.isDirectory()) {

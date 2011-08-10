@@ -1,3 +1,3 @@
 source("svStart.R")
 svStart()
-rm(svStart)
+try(if (exists("svStart")) rm(svStart), silent = TRUE)

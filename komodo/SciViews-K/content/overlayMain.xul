@@ -96,10 +96,6 @@
 			<command id="cmd_svQuitR" key="key_cmd_svQuitR"
 				oncommand="ko.commands.doCommand('cmd_svQuitR');"
 				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
-			<command id="cmd_svREscape" key="key_cmd_svREscape"
-				oncommand="ko.commands.doCommand('cmd_svREscape');"
-				desc="R: &rEscape;" label="&rEscape;" accesskey="&rEscape.key;"/>
-
 			<command id="cmd_svOpenPkgManager" key="key_cmd_svOpenPkgManager"
 				oncommand="ko.commands.doCommand('cmd_svOpenPkgManager');" disabled="false"
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
@@ -155,6 +151,9 @@
 				oncommand="ko.commands.doCommand('cmd_svRSourceLineOrSelection')"
 				desc="R: &rSrcLineOrSelection;" label="&rSrcLineOrSelection;"
 				accesskey="&rSrcLineOrSelection.key;"/>
+			<command id="cmd_svREscape" key="key_cmd_svREscape"
+				oncommand="ko.commands.doCommand('cmd_svREscape');"
+				desc="R: &rEscape;" label="&rEscape;" accesskey="&rEscape.key;"/>
 
 			<commandset id="cmdset_r_control" commandupdater="false" events="select"
 				oncommandupdate="ko.commands.updateCommandset(this);">
@@ -197,7 +196,6 @@
 					class="menuitem-iconic r-working-dir-icon"/>
 				<menuitem id="r_session_mgr" observes="cmd_svSessionMgr"
 					class="menuitem-iconic r-session-dir-icon"/>
-
 				<menuseparator/>
 				<menuitem id="r_send_line_sel_menu" observes="cmd_svRRunLineOrSelection"
 					class="menuitem-iconic r-run-selection-icon"/>
@@ -217,7 +215,11 @@
 					class="menuitem-iconic r-run-function-icon"/>
 				<menuitem id="r_src_function_menu" observes="cmd_svRSourceFunction"
 					class="menuitem-iconic r-source-function-icon"/>
+				<menuitem id="r_src_escape" observes="cmd_svREscape"
+					class="menuitem-iconic stop-icon"/>
 				<menuseparator/>
+				<menuitem id="r_uilevel" class="menuitem-iconic-wide"
+                    oncommand="sv.askUI(true);" label="User Interface level" />
 				<menuitem id="r_install_toolboxes" class="menuitem-iconic-wide"
                     oncommand="sv.checkToolbox();" label="(Re)install R toolboxes" />
 			</menupopup>
@@ -234,65 +236,75 @@
 			persist="hidden collapsed buttonstyle"
 			buttonstyle="pictures">
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rEscape;"
-						   persist="buttonstyle"
-						   class="stop-icon"
-						   observes="cmd_svREscape"
-						   label="&rEscape;" />
-			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSendLineOrSelection;"
+						   id="r_send_line_sel_tool"
+							 tooltiptext="&rSendLineOrSelection;"
 						   persist="buttonstyle"
 						   class="r-run-selection-icon"
 						   observes="cmd_svRRunLineOrSelection"
 						   label="&rSendLineOrSelection;" />
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSendFile;"
+						   id="r_send_all_tool"
+							 tooltiptext="&rSendFile;"
 						   persist="buttonstyle"
 						   class="r-run-all-icon"
 						   observes="cmd_svRRunAll"
 						   label="&rSendFile;" />
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSrcFile;"
+						   id="r_src_all_tool"
+							 tooltiptext="&rSrcFile;"
 						   persist="buttonstyle"
 						   class="r-source-all-icon"
 						   observes="cmd_svRSourceAll"
 						   label="&rSrcFile;" />
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSendBlock;"
+						   id="r_send_block_tool"
+							 tooltiptext="&rSendBlock;"
 						   persist="buttonstyle"
 						   class="r-run-block-icon"
 						   observes="cmd_svRRunBlock"
 						   label="&rSendBlock;" />
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSrcBlock;"
+						   id="r_src_block_tool"
+							 tooltiptext="&rSrcBlock;"
 						   persist="buttonstyle"
 						   class="r-source-block-icon"
 						   observes="cmd_svRSourceBlock"
 						   label="&rSrcBlock;" />
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSendPara;"
+						   id="r_send_para_tool"
+							 tooltiptext="&rSendPara;"
 						   persist="buttonstyle"
 						   class="r-run-para-icon"
 						   observes="cmd_svRRunPara"
 						   label="&rSendPara;" />
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSrcPara;"
+						   id="r_src_para_tool"
+							 tooltiptext="&rSrcPara;"
 						   persist="buttonstyle"
 						   class="r-source-para-icon"
 						   observes="cmd_svRSourcePara"
 						   label="&rSrcPara;" />
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSendFun;"
+						   id="r_send_function_tool"
+							 tooltiptext="&rSendFun;"
 						   persist="buttonstyle"
 						   class="r-run-function-icon"
 						   observes="cmd_svRRunFunction"
 						   label="&rSendFun;" />
 			<toolbarbutton buttonstyle="pictures"
-						   tooltiptext="&rSrcFun;"
+						   id="r_src_function_tool"
+							 tooltiptext="&rSrcFun;"
 						   persist="buttonstyle"
 						   class="r-source-function-icon"
 						   observes="cmd_svRSourceFunction"
 						   label="rSrcFun;" />
+			 <toolbarbutton buttonstyle="pictures"
+						   id="r_src_escape_tool"
+							 tooltiptext="&rEscape;"
+						   persist="buttonstyle"
+						   class="stop-icon"
+						   observes="cmd_svREscape"
+						   label="&rEscape;" />
 		</toolbaritem>
 	</toolbar>
 

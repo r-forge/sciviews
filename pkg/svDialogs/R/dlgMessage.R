@@ -43,7 +43,7 @@ dlgMessage.textCLI <- function (message, type = c("ok", "okcancel", "yesno",
             yesno = c("yes", "no"),
             yesnocancel = c("yes", "no", "cancel")
         )
-        res <- select.list(choices, title = gui$ask$message, graphics = FALSE)
+        res <- select.list(choices, title = gui$args$message, graphics = FALSE)
         if (res == "" && type != "yesno") res <- "cancel"
         if (res == "") res <- "no" # Selection of 0 with yes/no => no
 	}
@@ -61,9 +61,9 @@ dlgMessage.nativeGUI <- function (message, type = c("ok", "okcancel", "yesno",
     ## This dialog box is always modal
     ## Returns invisibly a character with the button that was pressed
 	res <- switch(Sys.info()["sysname"],
-		Windows = .winDlgMessage(gui$ask$message, gui$ask$type),
-		Darwin = .macDlgMessage(gui$ask$message, gui$ask$type),
-		.unixDlgMessage(gui$ask$message, gui$ask$type)
+		Windows = .winDlgMessage(gui$args$message, gui$args$type),
+		Darwin = .macDlgMessage(gui$args$message, gui$args$type),
+		.unixDlgMessage(gui$args$message, gui$args$type)
 	)
 	
 	## Do we need to further dispatch?

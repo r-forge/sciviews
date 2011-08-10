@@ -62,8 +62,8 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 		<caption label="Default R Interpreter"/>
 		<vbox id="no-avail-interps-message" flex="1" align="center">
 			<description style="font-weight: bold;">
-				No R installation was found on your system. If you would like to debug
-				and run Ruby programs in Komodo you will need to install Ruby. You can
+				No R installation was found on your system. If you would like
+				to run R programs in Komodo you will need to install it. You can
 				get R from the CRAN website at
 			</description>
 			<button label="http://cran.r-project.org/"
@@ -192,14 +192,13 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 <!-- KB: Some users (including me) might not want having lots of unnecessary packages loaded at startup -->
 <vbox align="left">
 <description>
-&quot;SciViews-K&quot; needs packages &quot;svGUI&quot;, &quot;svSocket&quot;
-and &quot;svMisc&quot; to be loaded in order for communication with Komodo to be
-possible. The required packages are installed/updated automatically when R is
-started from within Komodo.</description>
+&quot;SciViews-K&quot; needs packages &quot;svKomodo&quot;, &quot;svHttp&quot;,
+&quot;svSocket&quot; and &quot;svMisc&quot; to be loaded in order for
+communication with Komodo to be possible. The required packages are
+installed/updated automatically when R is started from within Komodo.</description>
 <hbox>
 <checkbox id="sciviews.pkgs.sciviews"
-			label="Load also package &quot;SciViews&quot; at R
-startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
+			label="Load also package &quot;SciViews&quot; at R startup" pref="true"
 		   oncommand="PrefR_updateCommandLine(true);"/>
 </hbox>
 </vbox>

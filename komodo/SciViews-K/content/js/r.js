@@ -108,17 +108,13 @@
 // Define the 'sv.r' namespace
 if (typeof(sv.r) == 'undefined')
 sv.r = {
-	RMinVersion: "2.13.0",	// Minimum version of R required
-
-//	server: "http", 		// Currently, either 'http' or 'socket'
-	server: "socket", 		// KB: http is still problematic, changed the default
+	RMinVersion: "2.11.1",	// Minimum version of R required
+	server: "socket", 		// Default server, defined as socket
 	sep: ";;",				// Separator used for items
-	running: true			// Indicate if R is currently running
+	running: true,			// Indicate if R is currently running
 	// FIXME: before we solve the issue of updating R status
+	width: -1 				// The R output width (set to -1 for no change)
 };
-
-
-
 
 // Check where the R executable can be found
 sv.r.application = function (warn) {
@@ -138,80 +134,136 @@ sv.r.application = function (warn) {
 }
 
 // Test if R is running
-sv.r.test = function sv_RTest () {
-	var res = "";
-	res = sv.socket.rCommand("<<<h>>>cat('ok!');", false,
-	sv_RTest_callback);
-	return res;
-}
-
-sv.r.test_callback = function sv_RTest_callback (response) {
-	var wasRRunning = sv.r.running;
-	// In the case of http server, we got a more complex object!
-	if (response.result !== undefined) response = response.result;
-	var isRRunning = (response == "ok!");
-
-	sv.r.running = isRRunning;
-	if (wasRRunning != isRRunning) {
-		if (isRRunning) {
-			// Remove message in the statusbar
-			ko.statusBar.AddMessage("", "SciViews-K");
-			sv.socket.rUpdate();
-			// Possibly refresh the GUI by running SciViews-specific
-			// R task callbacks and make sure R Objects pane is updated
-			sv.r.evalCallback("try(guiRefresh(force = TRUE), silent = TRUE)",
-			function () { sv.r.objects.getPackageList(true); });
+sv.r.test = function sv_RTest (showVersion /*= false*/, testVersion /*= false*/,
+	isStarting /*= false */) {
+	if (showVersion === undefined || showVersion == null)
+		showVersion = false;
+	if (testVersion === undefined || testVersion == null)
+		testVersion = false;
+	if (isStarting === undefined || isStarting == null)
+		isStarting = false;
+		
+	try {
+		// Check that R is still there on the other side of the server port
+		// and adjust server type (http or socket) if needed
+		res = sv.socket.rCommandSync(
+			'cat(localeToCharset()[1], R.version.string, sep = "%%%")');
+		if (res == null) { // If R is not running...
+			sv.r.running = false;
+			// Indicate R should be started, or... is starting!
+			if (isStarting) {
+				sv.cmdout.message("R is starting... please wait", 0, false);
+			} else {
+				sv.cmdout.message("R is not running or not connected"
+					+ " (use the menu R -> Start R)", 0, false);
+			}
+			return(false);
+		} else {
+			// Split results
+			var result = res.split("%%%");
+			// TODO: check we have two results and they match expected strings
+			
+			// Set charset
+			sv.socket.charset = result[0];
+			
+			// Check version
+			var RversionString = result[1];
+			var Rversion = sv.tools.strings.trim(RversionString.substr(10, 7));
+			sv.log.debug("R version: '" + Rversion + "'");
+			if (testVersion && sv._compareVersion(Rversion, sv.r.RMinVersion) < 0) {
+				// R version is too low, issue a message
+				sv.alert("R version is too low!", "SciViews-K needs R version " +
+					sv.r.RMinVersion + ". You got version " + Rversion +
+					".\nContinue at your own risks or (better) upgrade R now!");
+			}
+			// Change message in R Output
+			if (showVersion)
+				sv.cmdout.message(RversionString + " is ready!");
+			sv.r.running = true;
+			return(true);
 		}
-		//xtk.domutils.fireEvent(window, 'r_app_started_closed');
-		// PhG: currently disabled: all menus enabled all the time!
-		//window.updateCommands('r_app_started_closed');
-		sv.log.debug("R state changed: " + wasRRunning + "->" + isRRunning);
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while testing R"
+			+ " sv.r.test():\n\n (" + e + ")", true);
+		return(false);
 	}
 }
 
-//// Print some text (command or results) in the local R console
-sv.r.print = function (text, newline, command, partial) {
-	// Default values for optional arguments
-	if (newline === undefined) newline = true;
-	if (command === undefined) command = false;
-	if (partial === undefined) partial = false;
+// Function called when R is closed
+sv.r.closed = function () {
+	// Blank R output
+	sv.r.running = false;
+	
+	sv.cmdout.message("R has quit!", 0, false);
+	// Reset statusbar
+	sv.prefs.setString("sciviews.session.dir", "~", true);
+	sv.prefs.setString("r.active.data.frame", "<none>", true);
+	sv.prefs.setString("r.active.lm", "<none>", true);
+	ko.statusBar.AddMessage("", "SciViews-K");
+	sv.cmdout.clear(false);
+	// Reset the objects explorer
+	// PhG: this seems to cause problems => don't use this yet!
+	//sv.r.objects.clearPackageList();
+}
 
-	// For now, use the command output pane
+//// Print some text (command or results) in the local R console
+sv.r.print = function (text, newline /* =true*/, command /* =false*/,
+partial /* =false*/) {
+	// Default values for optional arguments
+	if (newline === undefined || newline == null) newline = true;
+	if (command === undefined || command == null) command = false;
+	if (partial === undefined || partial == null) partial = false;
+
+	// Print something in the R output panel
 	if (command) { // This is a R command
 		if (partial) {
+			// Make sure that all lines start with a continuation prompt
+			text = text.replace(/(\r?\n)(:\+ )?/g, "\n:+ ");
 			sv.cmdout.append(text, newline);
-			sv.cmdout.message("R waits for more input...", 0, true);
+			sv.cmdout.message("R waits for more input..." +
+				" (to exit multiline mode, select menu R -> Escape current calculation)",
+				0, true);
 		} else { // This is a new command
-			sv.cmdout.clear();
-			sv.cmdout.message("R is calculating... " +
+			//sv.cmdout.clear(false);
+			sv.cmdout.message("Calculating... " +
 			"(if it takes too long, switch to the R console:" +
-			" it could be waiting for some input)!", 0, true);
+			" it could be waiting for some input, be blocked or closed)!", 0, true);
 			text = ":> " + text;
 		}
 	} else { // This is some data returned by R
-		if (!partial) sv.cmdout.message("R is ready!", 0, false);
+		if (!partial) {
+			// First make sure we zap all temporary partial code
+			sv.cmdout.exitPartial();
+			sv.cmdout.message("...", 0, false); // Was 'R is ready!' but also shown after cancel when R is not started!
+		}
 		sv.cmdout.append(text, newline);
 	}
 }
 
 // Evaluate code in R
 sv.r.eval = function (cmd) {
-	// If R is not running, start it now
+	// If we thing R is not running, we are better to retest here
 	if (!sv.r.running) {
-		// Indicate R should be started
-		ko.statusBar.AddMessage(
-		sv.translate("R must be started for this command (R -> Start R)"),
-		"SciViews-K", 5000, true);
-		return(null);
+		if (!sv.r.test())
+			return;
 	}
+	
 	cmd = cmd.rtrim();
 	// Special case for q() and quit() => use sv.r.quit() instead
 	if (cmd.search(/^(?:base::)?q(?:uit)?\s*\(\s*\)$/) > -1)
 	return(sv.r.quit());
-	// TODO: special cases for ? and ??
+	
 	var res = "";
 	sv.r.print(cmd, true, true, sv.socket.partial);
-	res = sv.socket.rCommand('<<<e>>>' + cmd);
+	
+	// Do we ask to resize output width?
+	if (sv.r.width > -1) {
+		// Note, we also escape multiline mode, cf. clear invoked!
+		cmd = '<<<esc>>><<<e>>>options(width = ' + sv.r.width + '); ' + cmd;
+		// Reset width
+		sv.r.width = -1;
+	} else cmd = '<<<e>>>' + cmd;
+	res = sv.socket.rCommand(cmd);
 	return(res);
 }
 // Test: sv.r.eval("ls()");
@@ -261,11 +313,16 @@ sv.r.evalCallback = function (cmd, procfun) {
 sv.r.escape = function (cmd) {
 	if (cmd === undefined) cmd = "";
 
+	// Since this command is not used very often, one can check R everytime
+	if (!sv.r.test()) return(null);
+
 	// If R is not running, do nothing
-	if (!sv.r.running) return(null);
+//	if (!sv.r.running) return(null);
 
 	// Send an <<<esc>>> sequence that breaks multiline mode
-	sv.r.print("<command cancelled!>", false, false, false);
+	// Exit partial mode and go back to normal prompt
+	sv.cmdout.exitPartial();
+	sv.r.print(":> ", false, false, false);
 	var res = "";
 	sv.socket.partial = false; // Reset this
 	res = sv.socket.rCommand('<<<esc>>>' + cmd, false);
@@ -376,7 +433,6 @@ sv.r.run = function () {
 		if(!text) { // No selection
 			var scimoz = view.scimoz;
 			var currentLine = scimoz.lineFromPosition(scimoz.currentPos);
-			var scimoz = view.scimoz;
 			var oText = { value: ''};
 			var lineCount =	scimoz.lineCount;
 			while(currentLine < lineCount && !(text = oText.value.trim()))
@@ -384,17 +440,15 @@ sv.r.run = function () {
 			scimoz.gotoLine(currentLine);
 			text = oText.value.trim();
 		}
-
-		if(text) 	return(sv.r.eval(text));
+		
+		if(text) return(sv.r.eval(text));
 		return(false);
-
 	} catch(e) { return(e); }
-
 }
 
 // Run current line (or selection) up to position and optionally add line feed
 sv.r.runEnter = function (breakLine) {
-	try {
+	try {		
 		var view = ko.views.manager.currentView;
 		if (!view) return(false); // No current view, do nothing!
 		view.setFocus();
@@ -445,7 +499,7 @@ sv.r.source = function (what) {
 				what += " \"" +
 				code.match("^.*\\S(?=\\s*(?:=|<-)\\s*function)") + "\"";
 			}
-			sv.cmdout.clear();
+			//sv.cmdout.clear(false);
 			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' + what);
 
 			var tempFile = sv.tools.file.temp();
@@ -1268,7 +1322,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 		// Refresh active objects support and object explorer, ...
 		// KB: on Win, Komodo socket server gets stuck constantly, and below causes problems
 		//     so temporarily commented out
-		//sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
+		sv.r.evalHidden("try(guiRefresh(force = TRUE), silent = TRUE)");
 	});
 	// TODO: possibly open the Komodo project associated with this session
 	return(true);
@@ -1700,8 +1754,8 @@ sv.r.pkg.remove = function () {
 	var cmd = '.tmp <- installed.packages(); ' +
 	'.tmp <- rownames(.tmp)[is.na(.tmp[, "Priority"])]; ' +
 	'cat(.tmp[!.tmp %in% c(if (exists(".required")) .required else NULL,' +
-	' "svMisc", "svIDE", "svGUI", "svSocket", "svIO", "svViews",' +
-	' "svWidgets", "svDialogs")], sep = "' + sv.r.sep + '"); rm(.tmp)';
+	' "svMisc", "svIDE", "svGUI", "svHttp", "svSocket", "svIO", "svViews",' +
+	' "svKomodo", "svWidgets", "svDialogs")], sep = "' + sv.r.sep + '"); rm(.tmp)';
 	res = sv.r.evalCallback(cmd, sv.r.pkg.remove_select);
 	ko.statusBar.AddMessage(sv.translate(
 	"Listing removable R packages... please wait"), "SciViews-K", 20000, true);

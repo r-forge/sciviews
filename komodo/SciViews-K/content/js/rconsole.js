@@ -1,402 +1,454 @@
-// SciViews-K R console functions, 'sv.r.console' namespace
-// Define functions to manage the Komodo Edit R console
-// Copyright (c) 2008, Romain Francois
-// License: MPL 1.1/GPL 2.0/LGPL 2.1
-////////////////////////////////////////////////////////////////////////////////
-// sv.r.console.init();                     // Initialize the R console
-// sv.r.console.getCurrentCommand();        // Get the current command
-// sv.r.console.setCurrentCommand(cmd);     // Set the current command
-// sv.r.console.handleConsoleKeyPress(e);   // Observe key press
-// sv.r.console.handleConsoleKeyUp(e);      // Observe key up
-// sv.r.console.getConsoleContent();        // Get console content
-// sv.r.console.setConsoleContent(cmd);     // Set consle content
-// sv.r.console.clearConsoleContent();      // Clear console
-// sv.r.console.run(cmd);                   // Run a command in the console
-// sv.r.console.run_cb(data);               // Callback for run command
-// sv.r.console.parse();                    // Parse R code and try to run it
-// sv.r.console.parse_cb(data);             // Callback for parse command
-//
-//// Command history
-// sv.r.console.history;                    // The command history
-// sv.r.console.historyIndex;               // Selected item in the history 
-// sv.r.console.addCommandToHistory(cmd);   // Add cmd to history
-// sv.r.console.getHistoryRegex();          // Filter command history
-// sv.r.console.refreshHistory();           // Refresh command history
-//
-// Completion list
-// sv.r.console.getCompletionTypes();       // Get the type of completion
-// sv.r.console.complete();                 // Calculate completion list
-// sv.r.console.complete_cb(data, counter); // Callback for complete()
-// sv.r.console.completeExplicit();         // Calculate explicit completion
-// sv.r.console.completeExplicit_cb(data);  // Callback for completeExplicit()
-// sv.r.console.clearCompletionTab();       // Clear the completion list
-// sv.r.console.updateCompletionTab(completions); // Update completion list
-// sv.r.console.updateCompletionChoiceSetting(event, type); // Compl. settings
-////////////////////////////////////////////////////////////////////////////////
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ * 
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ * 
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * 
+ * The Original Code is Komodo code.
+ * 
+ * The Initial Developer of the Original Code is ActiveState Software Inc.
+ * Portions created by ActiveState Software Inc are Copyright (C) 2000-2007
+ * ActiveState Software Inc. All Rights Reserved.
+ * 
+ * Contributor(s):
+ *   ActiveState Software Inc
+ *   Philippe Grosjean, SciViews
+ * 
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ * 
+ * ***** END LICENSE BLOCK ***** */
 
-if (typeof(sv.r.console) == 'undefined') sv.r.console = { };
-
-// Initialize the R console
-sv.r.console.init = function () {
-    var types = ["arguments", "functions", "packages", "history"];
-    var defaults = ["true", "true", "true", "false"];
-    var type;
-    var checked;
-    for (var i = 0; i < types.length; i++) {
-        type = types[i];
-        //if (sv.prefs.getString("sciviews.console.completion.setting." +
-        //    type) == undefined) {
-        sv.prefs.setString("sciviews.console.completion.setting." + type,
-            defaults[i]); 
-        //}
-        document.getElementById("sciviews_rconsole_completion_cb_" + type).
-            checked = sv.prefs.getString("sciviews.console.completion.setting." +
-            type ) == "true" ;
-    }
+if (typeof(sv)=='undefined') {
+    var sv = {};
 }
 
-// Accessors for the _cmd object
-sv.r.console._cmd = "";
-
-// Get the current edited command
-sv.r.console.getCurrentCommand = function () {
-  return(sv.r.console._cmd);
-}
-
-// Set the current command
-sv.r.console.setCurrentCommand = function (cmd) {
-    sv.r.console._cmd = cmd;
-}
-
-// Observe key press
-sv.r.console.handleConsoleKeyPress = function (e) {
-    // cycle history
-    if (e.ctrlKey && (e.keyCode == 38 || e.keyCode == 40)) {
-        // nothing is in the history
-        if (sv.r.console.history.length == 0) {
-            return(0);
-        }
+/**
+ * The interface for using the R console window.
+ *
+ * Expected usage:
+ *  - Someone calls sv.rconsole.initialize() at startup and
+ *    sv.rconsole.finalize() at shutdown.
+ *  - When a R console is about to be started, do this:
+ *       * announce intention to start the R process
+ *         sv.rconsole.startSession(...);
+ *       * ... setup and start running the actual command calling
+ *       * sv.rconsole.getTerminal() and sv.rconsole.show() as needed
+ *         sv.rconsole.setProcessHandle(p);   * to allow user to kill process
+ *       * ... setup sv.rconsole.endSession() to be run when R terminates
+ */
+sv.rconsole = {};
+(function() {   
+    var _log = ko.logging.getLogger("sv.rconsole");    
+    var _gRTerminalHandler = null;
+    var _gRTerminalView = null;
+    var _gRProcess = null;
     
-        var rx = sv.r.console.getHistoryRegex();
-        var loop = function(i, rx) {
-            var cmd = sv.r.console.history[i];
-            if (!rx || rx.test(cmd)) {
-                sv.r.console.setConsoleContent(cmd);
-                sv.r.console.historyIndex = i;
-                return(true);
+    function _ClearUI() {
+        var descWidget = document.getElementById("rconsole-desc");
+        descWidget.style.setProperty("color", "black", "");
+        descWidget.removeAttribute("value");
+        descWidget.removeAttribute("_command");
+    }
+    
+    this.initialize = function RConsole_Init() {
+        try {
+            // Create a terminal for the R console window. The terminal has std
+            // handlers that proxy read/write events between the scintilla and a
+            // spawned child process.
+            _gRTerminalHandler = Components
+                .classes['@activestate.com/koRunTerminal;1']
+                .createInstance(Components.interfaces.koITreeOutputHandler);
+            if (!_gRTerminalHandler) {
+                _log.error("initialize: couldn't create a koRunTerminal");
+                return;
             }
+            _ClearUI();
+    
+            var treeWidget = document.getElementById("rconsole-tree");
+            var boxObject = treeWidget.treeBoxObject
+                .QueryInterface(Components.interfaces.nsITreeBoxObject);
+        
+            if (boxObject.view == null) {
+                // We are in a collapsed state. We need to force the tree to be
+                // visible before we can assign the view to it
+                RConsole_Show(window);
+            }
+            _gRTerminalView = document.getElementById("rconsole-scintilla");
+            _gRTerminalView.init();
+            _gRTerminalView.initWithTerminal(_gRTerminalHandler);
+            boxObject.view = _gRTerminalHandler;
+    
+            // This does not work!? cf. window.frameElement reproted as null
+            //["mousedown", "focus"].forEach(function(eventname) {
+            //        window.frameElement.addEventListener(eventname, function(event) {
+            //        if (event.originalTarget == event.target) {
+            //            document.getElementById("rconsole-deck").focus();
+            //        }
+            //    }, false);
+            //});
+            //window.frameElement.hookupObservers("rconsole-commandset"); 
+            // Not needed or it fires events twice?! scintillaOverlayOnLoad();
+            
+            // Also make sure to trigger initialisation of R Output scimoz
+            // by appending the prompt to it
+            sv.cmdout.append(":> ", false);
+            // And observe keypress events on the R Output panel
+            document.getElementById("rconsole-scintilla2")
+                .addEventListener('keypress', sv.rconsole.routputOnKeyPress,
+                true);
+        } finally {
+            ko.main.addWillCloseHandler(sv.rconsole.finalize);
+        }
+    }
+     
+    this.finalize = function RConsole_Fini() {
+        if (_gRTerminalView) {
+            _gRTerminalView.finalizeTerminal();
+            _gRTerminalView = null;
+        }
+        _gRTerminalHandler = null;
+        if (!ko.main.windowIsClosing) {
+            ko.main.removeWillCloseHandler(sv.rconsole.finalize);
+        }
+        // Not needed? scintillaOverlayOnUnload();
+    }
+        
+    this.getRTerminal = function RConsole_GetTerminal() {
+        return _gRTerminalHandler;
+    }
+    
+    this.getRTerminalView = function RConsole_GetTerminalView() {
+        return _gRTerminalView;
+    }
+    
+    this.getRProcess = function RConsole_GetProcess() {
+        return _gRProcess;
+    }
+    
+    // Start a terminal session with R in the console with the given command.
+    // This raises an exception if the R console window is currently busy.
+    // No! No exception, replaced by simple dispaly of the R Console tab
+    //    "command" is the command being used to start R (note that this is the
+    //    command string *for display* which might be slight different
+    //    -- passwords obscured -- than the actual command)
+    //    "cwd" is the directory in which the command is being run
+    //    "clearContent" is a boolean indicating whether to clear the
+    //      R console window content (by default "true").
+    this.startSession = function RConsole_StartSession(command, cwd,
+        clearContent /* =true */)
+    {
+        if (typeof clearContent == 'undefined' || clearContent == null)
+            clearContent = true;
+    
+        if (_gRTerminalHandler.active) {
+            //throw new Error("R is already running!");
+            // Just make sure the R Console is visible
+            this.show(window);
+        }
+        _ClearUI();
+        
+        // Clear the console and make sure work wrap is none
+        //var scimoz = document.getElementById("rconsole-scintilla").scimoz;
+        // Note the width of the R console in characters is approximately
+        //Math.floor(window.innerWidth / scimoz.textWidth(0, "0")) - 7
+        // => set this option in R everytime the Komodo window size changes!
+        // Make sure that word wrap is off
+        //scimoz.wrapMode = scimoz.SC_WRAP_NONE;
+        _gRTerminalView.scimoz.wrapMode = _gRTerminalView.scimoz.SC_WRAP_NONE;
+    
+        // Setup the terminal
+        var lastErrorSvc = Components
+            .classes["@activestate.com/koLastErrorService;1"]
+            .getService(Components.interfaces.koILastErrorService);
+        _gRTerminalView.startSession(clearContent);
+        _gRTerminalHandler.setCwd(cwd);
+        var terminalView = document.getElementById("rconsole-scintilla");
+        terminalView.cwd = cwd;
+    
+        var descWidget = document.getElementById("rconsole-desc");
+        descWidget.setAttribute("value", "R is running (" + command + ")");
+        // Store the command name for later use
+        descWidget.setAttribute("_command", command);
+    
+        if (clearContent) {
+            var listButton = document.getElementById("rconsole-list-button");
+            listButton.setAttribute("disabled", "true");
+            _gRTerminalView.clear();
+        }
+    }
+    
+    // Complete a terminal session. R exited with the given value
+    this.endSession = function RConsole_EndSession(retval)
+    {
+        //dump("XXX RConsole_EndSession(retval="+retval+")\n");
+        _gRTerminalView.endSession();
+    
+        var descWidget = document.getElementById("rconsole-desc");
+        var command = descWidget.getAttribute("_command");
+        var msg = null;
+        var osSvc = Components.classes["@activestate.com/koOs;1"]
+            .getService(Components.interfaces.koIOs);
+        if (retval < 0 && osSvc.name == "posix") {
+            msg = "R terminated with signal message " + (-retval);
+        } else {
+            msg = "R returned " + retval;
+        }
+        if (retval != 0) { // Dark red to not appear "neon" against grey
+            descWidget.style.setProperty("color", "#bb0000", ""); 
+        }
+        descWidget.setAttribute("value", msg);
+    
+        _gRProcess = null;
+        var closeButton = document.getElementById("rconsole-close-button");
+        closeButton.setAttribute("disabled", "true");
+    }
+    
+    // koIRunTerminationListener implementation whose only job is to call
+    // notify on child termination
+    function _RterminationListener() { }
+    _RterminationListener.prototype = {
+        init: function (editor, command, callback) {
+            this._editor = editor;
+            this._command = command;
+            this._callback = callback;
+        },
+        onTerminate: function (retval) {
+            //dump("_terminationListener::onTerminate(retval="+retval+")\n");
+            this._editor.sv.rconsole.endSession(retval);
+            var msg = "R quitted with return value " + retval;
+            this._editor.ko.statusBar.AddMessage(msg, "run_command", 3000,
+                retval ? 1 : 0);
+            if (this._callback) {
+                // Want the callback to come _after_ this thread of control
+                // so call it in a timeout.
+                window.setTimeout(function(cback, rval) { cback(rval); },
+                    10, this._callback, retval);
+            }
+        },
+        QueryInterface: function (iid) {
+            if (!iid.equals(Components.interfaces.koIRunTerminationListener) &&
+                !iid.equals(Components.interfaces.nsISupports)) {
+                throw Components.results.NS_ERROR_NO_INTERFACE;
+            }
+            return(this);
+        }
+    }
+    
+    // Start a R process in our internal console
+    this.start = function RConsole_Start(editor, command, cwd, env, input,
+        name /* =internal R terminal*/, doNotOpenOutputWindow /* =false */, 
+        clearOutputWindow /* =true */, terminationCallback /* =null */)
+    {
+        if (typeof name == 'undefined' || name == null)
+            name = "internal R terminal";
+        if (typeof doNotOpenOutputWindow == 'undefined' ||
+            doNotOpenOutputWindow == null)
+            doNotOpenOutputWindow = false;
+        if (typeof clearOutputWindow == 'undefined' || clearOutputWindow == null)
+            clearOutputWindow = true;
+        if (typeof terminationCallback == 'undefined')
+            terminationCallback = null;
+        
+        // Start a R Console session
+        try {
+            editor.sv.rconsole.startSession(name, false, "", name, "", false);
+        } catch (ex) {
+            alert(ex);
+            return(false);
+        }
+        
+        // Get the terminal
+        var terminal = editor.sv.rconsole.getRTerminal();
+    
+        // Setup the termination listener
+        var termListener = new _RterminationListener();
+        termListener.init(editor, name, terminationCallback);
+    
+        // Start R in the terminal
+        try {
+            var _runSvc = Components.classes["@activestate.com/koRunService;1"]
+                .getService(Components.interfaces.koIRunService);
+            var process = _runSvc.RunInTerminal(command, cwd, env, terminal,
+                termListener, input);
+        } catch (ex) {
+            var lastErrorSvc = Components
+                .classes["@activestate.com/koLastErrorService;1"]
+                .getService(Components.interfaces.koILastErrorService);
+            var errmsg = lastErrorSvc.getLastErrorMessage();
+            if (!errmsg) {
+                errmsg = "Unknown error launching " + cmdDisplay;
+            }
+            alert(errmsg);
+            editor.sv.rconsole.endSession(-1);
             return(false);
         }
     
-        if (e.keyCode == 38) { 
-            // [ctrl] + [up]: cycle up history
-            for (var i = sv.r.console.historyIndex - 1; i >= 0; i--) {
-                if (loop(i, rx)) return(0);
+        // Register the R process and show the output window
+        editor.ko.run.registerProcess(name, process);
+        editor.sv.rconsole.setProcessHandle(process);
+        if (!doNotOpenOutputWindow) {
+            this.show(editor);
+        }
+        return(true);
+    }
+    
+    // Clear the R console and the command history
+    this.clear = function RConsole_Clear() {
+        //var scimoz = document.getElementById("runoutput-scintilla").scimoz;
+        //var eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
+        //var readOnly = scimoz.readOnly;
+        //try {
+        //    scimoz.readOnly = false;
+        //    scimoz.clearAll();
+        //} finally {
+        //    scimoz.readOnly = readOnly;
+        //}
+        _gRTerminalView.clear();
+    }
+    
+    // Clear the R console only, keep command history
+    this.clearConsole = function RConsole_ClearConsole() {
+        _gRTerminalView.clearBuffer();
+    }
+    
+    // Execute a line of code in the R Console
+    this.run = function RConsole_Run(command, newline /* =true*/, show /* =true*/) {
+        if (typeof show == 'undefined' || show == null) show = true;
+        if (show) ko.uilayout.ensureTabShown("sciviews_rconsole_tab", false);
+        
+        //var scimoz = document.getElementById("runoutput-scintilla").scimoz;
+        var scimoz = _gRTerminalView;
+        var eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
+        if (newline || newline === undefined) str += eolChar;
+        //var str_bytelength = ko.stringutils.bytelength(str);
+        //var readOnly = scimoz.readOnly;
+        try {
+        //    scimoz.readOnly = false;
+        //    scimoz.documentEnd()
+            // TODO: elliminate current line being edited
+            //TODO: code here!!!
+        //    scimoz.appendText(str_bytelength, str);
+        } finally {
+        //    scimoz.readOnly = readOnly;
+        }
+    }
+    
+    // Show the R console window (editor is the XUL window holding the console)
+    this.show = function RConsole_Show(editor) {
+        if (!editor) {
+            _log.error("show: 'editor' is not true");
+        }
+        // Make sure the tab is visible
+        ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
+    
+        // Open the proper console view
+        _SetView(editor, 0);
+    }
+    
+    // Pass a koIRunProcess reference to the R console window so it can manipulate
+    // the process that is being run in its terminal, if necessary
+    this.setProcessHandle = function RConsole_SetProcessHandle(process)
+    {
+        if (_gRTerminalHandler.active) {
+            _gRProcess = process;
+            var closeButton = document.getElementById("rconsole-close-button");
+            closeButton.removeAttribute("disabled");
+        }
+    }
+    
+    // Kill the process currently running in the console's terminal, if any
+    this.kill = function RConsole_Kill(retval) {
+        if (_gRProcess) {
+            _gRProcess.kill(retval);
+        }
+    }
+    
+    function _SetView(editor, deck) {
+        // Ignore editor, always use the window we're in
+        var deckWidget = window.document.getElementById("rconsole-deck");
+        deckWidget.setAttribute("selectedIndex", deck);
+    }
+    
+    this.toggleView = function RConsole_ToggleView(newview) {
+        if (typeof newview == 'undefined' || newview == null) {
+            var deckWidget = document.getElementById("rconsole-deck");
+            if (deckWidget.getAttribute("selectedIndex") == 1) {
+                newview = 0;
+            } else {
+                newview = 1;
             }
-            for (var i = sv.r.console.history.length-1;
-                i >= sv.r.console.historyIndex; i--) {
-                if (loop(i, rx)) return(0);
-            }
+        }
+        _SetView(window, newview);
+    }
+    
+    this.scintillaOnClick = function RConsole_scintillaOnClick(event) {
+        // Do nothing for the moment... but should display a context menu on
+        // right-click
+    }
+        
+    this.onFocus = function RConsole_OnFocus(event) {
+        if (event.originalTarget != window) {
+            return;
+        }
+        var selected = window.document.getElementById("rconsole-deck")
+            .selectedPanel;
+        if ("scintilla" in selected) {
+            selected.scintilla.focus();
         } else {
-            // [ctrl] + [down]: cycle down history
-            for (var i = sv.r.console.historyIndex + 1;
-                i < sv.r.console.history.length; i++) {
-                if (loop(i, rx)) return(0);
-            }
-            for (var i = 0; i <= sv.r.console.historyIndex; i++) {
-                if (loop(i, rx)) return(0);
-            }
+            selected.focus();
         }
-        return(0);  
-    }
-  
-    if (e.keyCode == 13) { // [enter] pressed : submit to R
-        sv.r.console.setCurrentCommand(sv.r.console.getConsoleContent());
-        sv.r.console.parse();
-        return(0); 
-    }
-    return(0);
-}
-
-// Observe key up
-sv.r.console.handleConsoleKeyUp = function (e) {
-    if (e.keyCode == 9) { // [tab]: explicit completion, 
-        // FIXME: tabs are not caught here, and the <textbox> loses the focus
-        sv.r.console.completeExplicit();
-    } else {
-        sv.r.console.complete(); 
-    }
-}
-
-// Get console content
-sv.r.console.getConsoleContent = function () {
-    return document.getElementById("sciviews_rconsole_console_input").value;
-}
-
-// Set the content of the console
-sv.r.console.setConsoleContent = function (cmd) {
-    if (!cmd) cmd = "";
-    document.getElementById("sciviews_rconsole_console_input").value = cmd;
-}
-
-// Clear console
-sv.r.console.clearConsoleContent = function () {
-    document.getElementById("sciviews_rconsole_console_input").value = "";
-}
-
-// Function to run R code in the console
-// TODO: modify this using the context in the call to evalCallback
-sv.r.console.run = function (cmd) {
-    sv.r.console.setCurrentCommand(cmd);
-    sv.r.console.parse();
-}
-
-// Callback called after an R command is run
-sv.r.console.run_cb  = function (data) {
-    var output = document.getElementById("sciviews_rconsole_console_results");
-    var cmd = sv.r.console.getCurrentCommand();
-  
-    var div =
-        <html:pre class="consoleInput" xmlns:html="http://www.w3.org/1999/xhtml">{ "R> " + cmd }</html:pre>;
-    sv.tools.e4x2dom.appendTo(div, output);
-  
-    // FIXME: replace the dot with something invisible (space gets swallowed by the <pre>)
-    //        or use something else than a <pre>
-    data = data.replace(/^ /, ".");
-    var div =
-        <html:pre class="consoleOutput" xmlns:html="http://www.w3.org/1999/xhtml">{data}</html:pre>;
-    sv.tools.e4x2dom.appendTo(div, output);
-  
-    // add the current command to the history and refresh the history
-    sv.r.console.addCommandToHistory(cmd);
-    sv.r.console.refreshHistory();
-  
-    // reset the command
-    sv.r.console.setConsoleContent("");
-    //sv.robjects.refreshPackage(".GlobalEnv");
-}
-
-// Parse code using Parse and run it if possible
-sv.r.console.parse = function () {
-    var cmd = "Parse('" + sv.r.console.getCurrentCommand().
-        replace(/'/g, "\\'") + "')";
-    sv.r.evalCallback(cmd, sv.r.console.parse_cb);
-}
-
-// Callback called after an R command is parsed
-sv.r.console.parse_cb = function (data) {
-    if (data.result !== undefined) data = data.result;
+    };
     
-    if (data.substring(0, 10) == "expression") {
-        // command is ok, run it
-        sv.r.evalCallback(sv.r.console.getCurrentCommand(),
-            sv.r.console.run_cb);
-    } 
-}
-
-// TODO: use something else for the history, the R history, a file, mozStorage?
-// TODO: make the history persistant
-sv.r.console.history = [];
-sv.r.console.historyIndex = 0;
-
-// Add command to the history
-sv.r.console.addCommandToHistory = function (cmd) {
-    sv.r.console.history[sv.r.console.history.length] = cmd;
-}
-
-// Filter history
-sv.r.console.getHistoryRegex = function () {
-    var txt = document.getElementById("sciviews_rconsole_history_filter");
-    if (txt == "") return(false);
-    try {
-        var out = new RegExp(txt);
-    } catch(e) {
-        return(false);
-    }
-    return(out);
-}
-
-// Refresh history
-sv.r.console.refreshHistory = function () {
-    var his = document
-        .getElementById("sciviews_rconsole_console_history_richlistbox");
-    var cmd;
-    var item ;
-    var filter = new RegExp(document
-        .getElementById("sciviews_rconsole_history_filter").value);
-    sv.tools.e4x2dom.clear(his);
-    for (i = sv.r.console.history.length - 1; i >= 0; i--) {
-        cmd = sv.r.console.history[i];
-        if (filter.test(cmd)) {
-            item = <richlistitem class="historyListitem">
-                <html:pre xmlns:html="http://www.w3.org/1999/xhtml" class="historyPre">
-                    {cmd}
-                </html:pre>
-            </richlistitem>;
-            sv.tools.e4x2dom.appendTo(item, his);
-        }
-    } 
-}
-
-// Get completion types
-sv.r.console.getCompletionTypes = function () {
-    var out = [];
-    var types = ["arguments", "packages", "functions"];
-    for (var i = 0; i < types.length; i++) {
-        if (sv.prefs.getString("sciviews.console.completion.setting." +
-            types[i]) == "true") {
-            out[out.length] = types[i];
-        }
-    }
-    return(out);
-}
-
-// Completion
-sv.r.console.complete = function () {
-    sv.r.console.clearCompletionTab();
-    sv.r.console._completionCounter++;
-    var types = sv.r.console.getCompletionTypes();
-    if (types != "") {
-        var types_vector = 'c("' + types[0];
-        for (var i = 1; i < types.length; i++) {
-            types_vector += '", "' + types[i];
-        }
-        types_vector += '") ';
-        cmd = "CompletePlus('" + sv.r.console.getConsoleContent().replace(/'/g,
-            "\\'")  + "' , simplify = TRUE, types= " + types_vector + " )";
-        sv.r.evalCallback(cmd, sv.r.console.complete_cb,
-            sv.r.console._completionCounter);
-    }
-}
-
-// Callback for completion
-sv.r.console.complete_cb = function (data, counter) {
-    if (counter == sv.r.console._completionCounter && data != "") {
-        var completions = data.split("\n");
-        sv.r.console.updateCompletionTab(completions);
-    }
-}
-
-// Completion asked by the user
-sv.r.console.completeExplicit = function () {
-    // cmd = "cat(completion('" + sv.r.console.getConsoleContent().
-    //      replace(/'/g, "\\'")  + "'))";
-    // PhG: if this gets reactivated, do not forget to make a form for HTTP and another one for socket!
-    // sv.r.evalCallback(cmd, sv.r.console.completeExplicit_cb); 
-}
-
-// Callback for explicit completion
-sv.r.console.completeExplicit_cb = function (data) {
-    if (data.result !== undefined) data = data.result;
+    window.addEventListener("focus", this.onFocus, false);
     
-    var completions = data.split("\t");
-    if (completions.length == 1) {
-        // sv.r.console.setConsoleContent(sv.r.console.getConsoleContent( ) +
-        //    completions[0]);
-    } else {
-        // sv.r.console.updateCompletion(completions);
-    }
-}
-
-// Clear completion list
-sv.r.console.clearCompletionTab = function () {
-    var compTree = document
-        .getElementById("sciviews_rconsole_completion_tree_main");
-    sv.tools.e4x2dom.clear(compTree);
-}
-
-// Update completion list
-sv.r.console.updateCompletionTab = function (completions) {
-    var cmd = sv.r.console.getConsoleContent();
-    var histCompletions = [];
-    // TODO: consider using some sort of grep for this instead
-    try {
-        var cmdRx = new RegExp(sv.tools.strings.toRegex(cmd));
-        var currentCmd;
-        for (var i = sv.r.console.history.length - 1; i >= 0; i--) {
-            currentCmd = sv.r.console.history[i];
-            if (cmdRx.test(currentCmd))
-                histCompletions[histCompletions.length] = [currentCmd, "", ""];
-        }
-    } catch(e) {
-        // Problem when creating the RegExp
-        sv.log.exception(e, "Problem when creating the regex from the command");
-    }
-  
-    // TODO: use other objects for this
-    var argCompletions = [];
-    var argRx = new RegExp("=");
-    var packCompletions = [];
-    var packRx = new RegExp("::");
-    var otherCompletions = [];
-  
-    if( completions.length > 0) {
-        var tab, comp;
-        for (var i = 0; i < completions.length; i++) {
-            if (completions[i] != "") {
-                tab = completions[i].split("\t");
-                comp = tab[0];
-                if (argRx.test(comp)) {
-                    argCompletions[argCompletions.length] = tab;
-                } else if (packRx.test(comp)) {
-                    packCompletions[packCompletions.length] = tab;
-                } else {
-                    otherCompletions[otherCompletions.length] = tab;
-                }
+    // Since R Output panel is read-only, redirect any key typed there to the
+    // current editor buffer
+    // Note: the event that triggers this function is placed in
+    // this.initialize(), otherwise, it does not work!
+    this.routputOnKeyPress = function (event) {
+        try {
+        	// TODO: impossible to reallocate Ctrl+Enter keybindings when
+            // focus is on the R Output. So, we must solve the problem differently!
+            // if (ctrl+enter) then run sv.r.runEnter()
+            // otherwise it is not called
+            if (event.keyCode == 13 && event.ctrlKey) {
+                var editor = ko.views.manager.currentView;
+                editor.setFocus();
+                sv.r.runEnter();
             }
-        }
+            
+            // Backspace=8, tab=9, enter=13, insert=45, delete=46
+            //var isEditKey = (event.keyCode == 8 || event.keyCode == 9 ||
+            //    event.keyCode == 13 || event.keyCode == 45 ||
+            //    event.keyCode == 46);
+            var str = String.fromCharCode(event.charCode);
+        	if (str.length && !event.ctrlKey &&
+                !event.altKey && !event.metaKey) {
+        		var editor = ko.views.manager.currentView;
+                editor.setFocus();
+        		editor.scimoz.replaceSel(str);
+        	}
+        } catch(e) { }
     }
-  
-    // TODO: find a way to describe each completion
-    //        - description of function from help page
-    //        - description of arguments
-    //        - description of package : use packageDescription
-    var makeTree = function (tab, name, root) {
-        if (sv.prefs.getString( "sciviews.console.completion.setting.arguments")
-            == "true" && tab.length > 0) {
-            var newItem = <treeitem container="true" open="true">
-                <treerow>
-                    <treecell label={name} />
-                    <treecell label="" />
-                    <treecell label="" />
-                </treerow>
-                <treechildren />
-            </treeitem> ;
-            newItem.treechildren.treeitem = new XMLList();                
-            for (var i = 0; i < tab.length; i++) {
-                var item = tab[i];
-                newItem.treechildren.treeitem +=
-                    <treeitem>
-                        <treerow>
-                            <treecell label={item[0]} />
-                            <treecell label={item[1]} />
-                            <treecell label={item[2]} />
-                        </treerow>
-                    </treeitem>
-            }
-            sv.tools.e4x2dom.appendTo(newItem, root);
-        }
-    }
-    var compTree = document
-        .getElementById("sciviews_rconsole_completion_tree_main");
-  
-    // TODO: move the if to the makeTree function  
-    makeTree(argCompletions, "arguments", compTree);
-    makeTree(packCompletions, "packages", compTree);
-    makeTree(otherCompletions, "functions", compTree);
-    makeTree(histCompletions, "history", compTree);  
-}
 
-// Update completion choices
-sv.r.console.updateCompletionChoiceSetting = function (event, type) {
-    var checked = event.target.checked;
-    if (checked) {
-        checked = "false";
-    } else {
-        checked = "true";
-    }
-    sv.prefs.setString("sciviews.console.completion.setting." + type, checked); 
-}
+}).apply(sv.rconsole);
 
-// Completion counter
-sv.r.console._completionCounter = 0;
+window.addEventListener("load", sv.rconsole.initialize, false);
+

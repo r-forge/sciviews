@@ -13,6 +13,12 @@
 
 * Unit tests added (should run with both svUnit (advised) and RUnit).
 
+* A bug in objList() is corrected: if the list of objects in the environment is
+  cleared, e.g., by rm(list = ls()), the function returned as if nothing was
+  changed with compare = TRUE. Now, an attribute "changed" is set to TRUE or
+  FALSE to differentiate between "no changes" and "changes towards an empty
+  environment".
+
 
 == Changes in svMisc 0.9-61
 

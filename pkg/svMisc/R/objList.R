@@ -9,7 +9,7 @@ path = NULL, compare = TRUE, ...)
 
 	## Format envir as character (use only first item provided!)
 	if (!is.environment(envir)){
-		if(is.numeric(envir) && envir > 0)
+		if (is.numeric(envir) && envir > 0)
 			envir <- search()[envir]
 
 		if (is.character(envir)) {
@@ -56,68 +56,70 @@ path = NULL, compare = TRUE, ...)
 	} else {
 		## Get the list of objects in this environment
 		Items <- ls(envir = envir, all.names = all.names, pattern = pattern)
-		if (length(Items) == 0) return(Nothing)
-
-		## Get characteristics of all objects
-		describe <- function (name, all.info = FALSE) {
-			## Get a vector with five items:
-			## Name, Dims, Group, Class and Recursive
-			obj <- envir[[name]]
-			res <- c(
-				Name = name,
-				Dims = if (is.null(Dim <- dim(obj))) length(obj) else
-					paste(Dim, collapse = "x"),
-				Group = mode(obj),
-				Class = class(obj)[1],
-				Recursive = is.recursive(obj) || mode(obj) == "S4"
-			)
-			return(res)
-		}
-		res <- data.frame(t(sapply(Items, describe, all.info = all.info)),
-			stringsAsFactors = FALSE)
-
-		# Quote non-syntactic names
-		nsx <- res$Name != make.names(res$Name)
-		res$Full.name[!nsx] <- res$Name[!nsx]
-		res$Full.name[nsx] <- paste("`", res$Name[nsx], "`", sep = "")
-		res <- res[, c(1, 6, 2:5)]
+		if (length(Items) > 0) {
+			## Get characteristics of all objects
+			describe <- function (name, all.info = FALSE) {
+				## Get a vector with five items:
+				## Name, Dims, Group, Class and Recursive
+				obj <- envir[[name]]
+				res <- c(
+					Name = name,
+					Dims = if (is.null(Dim <- dim(obj))) length(obj) else
+						paste(Dim, collapse = "x"),
+					Group = mode(obj),
+					Class = class(obj)[1],
+					Recursive = is.recursive(obj) || mode(obj) == "S4"
+				)
+				return(res)
+			}
+			res <- data.frame(t(sapply(Items, describe, all.info = all.info)),
+				stringsAsFactors = FALSE)
+	
+			# Quote non-syntactic names
+			nsx <- res$Name != make.names(res$Name)
+			res$Full.name[!nsx] <- res$Name[!nsx]
+			res$Full.name[nsx] <- paste("`", res$Name[nsx], "`", sep = "")
+			res <- res[, c(1, 6, 2:5)]
+		} else res <- Nothing
+	
+		## No, because if rm(list = ls()), we must reactualize the objects
+		## browser anyway
+		#if (NROW(res) == 0) return(Nothing)
+	
+		if (isTRUE(all.info)) res <- cbind(Envir = ename, res)
+	
+		vMode <- Groups <- res$Group
+		vClass <- res$Class
+	
+		## Recalculate groups into meaningful ones for the object explorer
+		## 1) Correspondance of typeof() and group depicted in the browser
+		Groups[Groups %in% c("name", "environment", "promise", "language", "char",
+			"...", "any", "(", "call", "expression", "bytecode", "weakref",
+			"externalptr")] <- "language"
+	
+		Groups[Groups == "pairlist"] <- "list"
+	
+		## 2) All Groups not being language, function or S4 whose class is
+		##    different than typeof are flagged as S3 objects
+		Groups[!(Groups %in% c("language", "function", "S4")) &
+			vMode != vClass] <- "S3"
+	
+		## 3) Integers of class factor become factor in group
+		Groups[vClass == "factor"] <- "factor"
+	
+		## 4) Objects of class 'data.frame' are also group 'data.frame'
+		Groups[vClass == "data.frame"] <- "data.frame"
+	
+		## 5) Objects of class 'Date' or 'POSIXt' are of group 'DateTime'
+		Groups[vClass == "Date" | vClass == "POSIXt"] <- "DateTime"
+	
+		## Reaffect groups
+		res$Group <- Groups
+	
+		## Possibly filter according to group
+		if (!is.null(group) && group != "")
+			res <- res[Groups == group, ]
 	}
-
-	if (NROW(res) == 0) return(Nothing)
-
-	if (isTRUE(all.info)) res <- cbind(Envir = ename, res)
-
-	vMode <- Groups <- res$Group
-	vClass <- res$Class
-
-	## Recalculate groups into meaningful ones for the object explorer
-	## 1) Correspondance of typeof() and group depicted in the browser
-	Groups[Groups %in% c("name", "environment", "promise", "language", "char",
-		"...", "any", "(", "call", "expression", "bytecode", "weakref",
-		"externalptr")] <- "language"
-
-	Groups[Groups == "pairlist"] <- "list"
-
-	## 2) All Groups not being language, function or S4 whose class is
-	##    different than typeof are flagged as S3 objects
-	Groups[!(Groups %in% c("language", "function", "S4")) &
-		vMode != vClass] <- "S3"
-
-	## 3) Integers of class factor become factor in group
-	Groups[vClass == "factor"] <- "factor"
-
-	## 4) Objects of class 'data.frame' are also group 'data.frame'
-	Groups[vClass == "data.frame"] <- "data.frame"
-
-	## 5) Objects of class 'Date' or 'POSIXt' are of group 'DateTime'
-	Groups[vClass == "Date" | vClass == "POSIXt"] <- "DateTime"
-
-	## Reaffect groups
-	res$Group <- Groups
-
-	## Possibly filter according to group
-	if (!is.null(group) && group != "")
-		res <- res[Groups == group, ]
 
 	## Determine if it is required to refresh something
 	Changed <- TRUE
@@ -135,6 +137,7 @@ path = NULL, compare = TRUE, ...)
 	attr(res, "all.info") <- all.info
 	attr(res, "envir") <- ename
 	attr(res, "object") <- object
+	attr(res, "changed") <- Changed
 	attr(res, "class") <- c("objList", "data.frame")
 
 	if (is.null(path)) {  # Return results or "" if not changed
