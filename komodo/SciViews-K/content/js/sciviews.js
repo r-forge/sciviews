@@ -1349,7 +1349,7 @@ sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 	sv.toggleById("cmd_historyForward", level<2);
 	sv.toggleById("cmd_historyRecentLocations", level<2);
 	sv.toggleById("cmd_showUnsavedChanges", level<3);
-	sv.toggleById("cmd_saveProject", level<1);
+	//sv.toggleById("cmd_saveProject", level<1);
 	sv.toggleById("cmd_revertProject", level<2);
 	sv.toggleById("cmd_editProperties", level<1);
 	sv.toggleById("cmd_toolboxExportPackage", level<3);
