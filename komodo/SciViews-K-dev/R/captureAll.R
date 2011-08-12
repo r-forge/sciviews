@@ -1,3 +1,28 @@
+#: src/main/errors.c:551
+#msgid "Error in "
+#msgid "Error: "
+
+# replacement for 'base::as.character.error', which does not translate "Error"
+`as.character.error` <- function (x, ...) {
+    msg <- conditionMessage(x)
+    call <- conditionCall(x)
+    if (!is.null(call))
+	    paste(.gettextx("Error in ", domain="R"), deparse(call)[1L], ": ", msg, "\n",
+            sep = "")
+    else paste(.gettextx("Error: ", domain="R"), msg, "\n", sep = "")
+}
+
+
+# use ngettext instead of gettext, which fails to translate many strings in "R" domain
+# bug in R or a weird feature?
+`.gettextfx` <- function (fmt, ..., domain = NULL)
+sprintf(gettextx(fmt, domain = domain), ...)
+
+`.gettextx` <- function (..., domain = NULL) {
+    args <- lapply(list(...), as.character)
+	 unlist(lapply(unlist(args), function(x) .Internal(ngettext(1, x, "", domain))))
+}
+
 # inspired by 'capture.output' and utils:::.try_silent
 # Requires: R >= 2.13.0 [??]
 `captureAll` <- function(expr, split = FALSE, file = NULL, markStdErr=FALSE) {
@@ -25,7 +50,7 @@
 	})
 
 	inStdOut <- TRUE
-	marks <- list()
+	#marks <- list()
 
 	if (markStdErr) {
 		putMark <- function(to.stdout, id) {
@@ -43,8 +68,8 @@
 					do.mark <- TRUE
 			}}
 
-			if(do.mark)
-			marks <<- c(marks, list(c(pos = sum(nchar(rval)), stream = to.stdout)))
+			#if(do.mark)
+			#marks <<- c(marks, list(c(pos = sum(nchar(rval)), stream = to.stdout)))
 			#cat("<", id, inStdOut, ">")
 		}
 	} else {
@@ -54,32 +79,27 @@
 	`evalVis` <- function(x) withVisible(eval(x, .GlobalEnv))
 
 	`restartError` <- function(e, calls, off) {
+		#print(calls)
 		# remove call (eval(expr, envir, enclos)) from the message
 		ncls <- length(calls)
 
-		#DEBUG
-		#cat("n calls: ", ncls, "NframeOffset: ", NframeOffset, "\n")
-		#print(e$call)
-		#print(off)
-		#print(calls[[NframeOffset]])
-		#print(calls[[NframeOffset+ off]])
-		#browser()
-
 		if(isTRUE(all.equal(calls[[NframeOffset + off]], e$call, check.attributes=FALSE)))
 			e$call <- NULL
-
 		Traceback <<- rev(calls[-c(seq.int(NframeOffset + off), (ncls - 1L):ncls)])
-
+# TEST:
 #> cat(captureAll(expression(1:10, log(-1),log(""),1:10)), sep="\n")
-
-
 		putMark(FALSE, 1L)
-		cat(.makeMessage(e))
+
+		#cat(.makeMessage(e, domain="R"))
+		cat(as.character.error(e))
+
 		if(getWarnLev() == 0L && length(last.warning) > 0L)
-			cat(gettext("In addition: ", domain="R"))
+			cat(.gettextx("In addition: ", domain="R"))
 	}
 
 	if(!exists("show", mode="function")) show <- base::print
+
+	off <- 0L
 
 	res <- tryCatch(withRestarts(withCallingHandlers({
 			# TODO: allow for multiple expressions and calls (like in
@@ -88,11 +108,11 @@
 			#list(evalVis(expr))
 
 			for(i in expr) {
-				off <- 0L # TODO: better way to find the right sys.call...
+				off <<- 0L # TODO: better way to find the right sys.call...
 				res1 <- evalVis(i)
 				#cat('---\n')
 				# this will catch also 'print' errors
-				off <- -3L
+				off <<- -3L
 				if(res1$visible) show(res1$value)
 			}
 		},
@@ -127,7 +147,7 @@
 	grmbl = restartError),
 	error = function(e) { #XXX: this is called if warnLevel=2
 		putMark(FALSE, 5L)
-		cat(.makeMessage(e))
+		cat(as.character.error(e))
 		e #identity
 	}, finally = {	}
 	)
@@ -146,9 +166,9 @@
 		if(nwarn <= 10L) {
 			print.warnings(last.warning)
 		} else if (nwarn < 50L) {
-		   cat(gettextf("There were %d warnings (use warnings() to see them)\n", nwarn, domain="R"))
+		   cat(.gettextfx("There were %d warnings (use warnings() to see them)\n", nwarn, domain="R"))
 		} else {
-			cat(gettext("There were 50 or more warnings (use warnings() to see the first 50)\n", domain="R"))
+			cat(.gettextx("There were 50 or more warnings (use warnings() to see the first 50)\n", domain="R"))
 		}
 	}
 	putMark(TRUE, 7L)
@@ -157,10 +177,17 @@
 	close(tconn)
 	on.exit()
 
-	# allow for tracebacks of this call stack:
-	assign(".Traceback", lapply(Traceback, deparse), envir = baseenv())
+	filename <- attr(attr(match.fun(sys.call()[[1]]), "srcref"), "srcfile")$filename
 
-	attr(rval, "marks") <- marks
+	# allow for tracebacks of this call stack:
+	if(length(Traceback) > 0L)
+		assign(".Traceback", lapply(Traceback, function(x) {
+			sref <- attr(x, "srcref")
+			structure(deparse(x), srcref=if(is.null(sref) ||
+				attr(sref, "srcfile")$filename == filename)	NULL else sref)
+		}), envir = baseenv())
+
+	#attr(rval, "marks") <- marks
 
 	return(rval)
 }
