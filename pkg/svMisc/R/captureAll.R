@@ -71,8 +71,30 @@ markStdErr = FALSE) {
 		}
 		res <- withVisible(eval(x, .GlobalEnv))
 		## Do we have result to print?
-		if (inherits(res, "list") && res$visible)
-			print(res$value)
+		if (inherits(res, "list") && res$visible) {
+			## Printing is veeery slow on Windows when split = TRUE
+			## => unsplit temporarily, and print twice instead!
+			#print(res$value)
+			
+			if (split == TRUE) {
+				sink(type = "message")
+				sink(type = "output")
+				## Print first to the console
+				try(print(res$value))
+				sink(tconn, type = "message")
+				sink(tconn, type = "output", split = FALSE)
+				## Print a second time to the connection
+				try(print(res$value))
+				## Resink with split = TRUE
+				sink(type = "message")
+				sink(type = "output")
+				sink(stdout(), type = "message")
+				sink(tconn, type = "output", split = TRUE)
+			} else {
+				## This is the conventional way to do it
+				print(res$value)	
+			}	
+		}
 		
 		return(res)
 	}
