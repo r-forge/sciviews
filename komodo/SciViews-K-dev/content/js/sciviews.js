@@ -690,9 +690,6 @@ var styleNumCode = 22, styleNumResult = 0, styleNumErr = 23;
 
 var initialized = false; ///
 function _init() {
-	if (initialized) return;
-	initialized = true;
-
 	var scimoz = _this.scimoz;
 
 	//var colorForeCode =_rgb(80, 100, 255);

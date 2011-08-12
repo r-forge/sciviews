@@ -253,7 +253,7 @@ sv.r.source = function (what) {
 			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' + what);
 
 			var tempFile = sv.tools.file.temp();
-			sv.tools.file.write(tempFile, code, 'utf-8', false);
+			sv.tools.file.write(tempFile, code + "\n", 'utf-8', false);
 			tempFile = tempFile.addslashes();
 
 			var cmd = 'tryCatch(source("' + tempFile + '", encoding =' +
