@@ -1,7 +1,3 @@
-#: src/main/errors.c:551
-#msgid "Error in "
-#msgid "Error: "
-
 # replacement for 'base::as.character.error', which does not translate "Error"
 `as.character.error` <- function (x, ...) {
     msg <- conditionMessage(x)
@@ -113,7 +109,10 @@ sprintf(gettextx(fmt, domain = domain), ...)
 				#cat('---\n')
 				# this will catch also 'print' errors
 				off <<- -3L
-				if(res1$visible) show(res1$value)
+				if(res1$visible) if(mode(res1$value) == "S4")
+						show(res1$value) else
+						print(res1$value)
+
 			}
 		},
 
