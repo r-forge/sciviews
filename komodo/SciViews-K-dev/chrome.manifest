@@ -3,6 +3,8 @@ overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/overlayMai
 overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/RObjectsOverlay.xul
 overlay chrome://komodo/content/pref/pref.xul chrome://sciviewsk/content/prefOverlay.xul
 
+overlay chrome://komodo/content/pref/pref.xul chrome://sciviewsk/content/pkgman/pkgman.xul
+
 # The following items is not finished yet, and is thus commented out
 #overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/RConsoleOverlay.xul
 

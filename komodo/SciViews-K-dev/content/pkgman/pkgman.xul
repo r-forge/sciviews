@@ -1,0 +1,388 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!--<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>-->
+<!--<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>-->
+<!--<?xml-stylesheet href="chrome://komodo/skin/bindings/sidebar.css" type="text/css"?>-->
+<!--<?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>-->
+<!--<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>-->
+<!--<?xml-stylesheet href="chrome://komodo/skin/bindings/scrolltabs.css" type="text/css"?>-->
+<?xml-stylesheet href="chrome://mozapps/content/extensions/extensions.css" type="text/css"?>
+<?xml-stylesheet href="chrome://sciviewsk/skin/pkgman.css" type="text/css"?>
+
+
+
+<window id="RPackageManager" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  maxheight="350" maxwidth="300" title="R Package manager (pre-alpha)" >
+
+<script type="text/javascript">
+<![CDATA[
+
+var sv, ko;
+
+function JSONDecode(str) {
+	var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
+			.createInstance(Components.interfaces.nsIJSON);
+	try {
+		return nativeJSON.decode(str);
+	} catch(e) {
+		return null;
+	}
+}
+
+function pkgManInstall(pkg, ask) {
+	ask = ', ask='  + (ask? 'TRUE' : 'FALSE') + ', installDeps=' + (ask? 'FALSE' :  'TRUE');
+
+	var cmd = 'cat(simpsON(pkgManInstallPackages("' + pkg + '"' + ask + ')))';
+
+	sv.r.evalCallback(cmd,
+	function(res) {
+		var response = JSONDecode(res);
+		if (response == null) {
+			ko.dialogs.alert("R said:", res, document.title);
+			return;
+		} else if (response.status == "question") {
+			if(ko.dialogs.okCancel(response.message, "OK", null, "R package manager") == "OK") {
+				sv.r.evalCallback('cat(simpsON(pkgManInstallPackages("' + pkg +
+					'", ask=FALSE, installDeps=TRUE)))', updateInfo, "installed");
+				doInstall = true;
+			}
+		} else if (response.status == "done") {
+			ko.dialogs.alert("R said:", response.message, document.title);
+			//alert(pkgs);
+		}
+
+	});
+}
+
+function pkgManRemove(pkg) {
+	var cmd = 'cat(simpsON(pkgManRemovePackage("' + pkg + '")))';
+	sv.r.evalCallback(cmd, updateInfo, "removed");
+}
+
+function pkgManDetach(pkg) {
+	var cmd = 'cat(simpsON(pkgManDetachPackage("' + pkg + '")))';
+	sv.r.evalCallback(cmd, updateInfo, "detached");
+}
+
+function pkgManLoad(pkg) {
+	var cmd = 'cat(simpsON(pkgManLoadPackage("' + pkg + '")))';
+	sv.r.evalCallback(cmd, updateInfo, "loaded");
+}
+
+
+function updateInfo(res, what) {
+// add to installed / reload installed
+// update items in Available
+// remove from Updates
+
+	//ko.dialogs.alert(what, res);
+
+	var avpList = document.getElementById("rAvailablePackageList");
+	var instList = document.getElementById("rPackageList");
+
+	switch(what) {
+	case "installed":
+		response = JSONDecode(res);
+		if(response == null) {
+			ko.dialogs.alert("R said:", res, document.title + " updateInfo");
+			return;
+		}
+
+		var pkgs = response.packages;
+		if (typeof pkgs == "string") pkgs = [pkgs];
+
+		if(response.message)
+			ko.dialogs.alert("R said:" + what, response.message.join("\n"), document.title + " updateInfo");
+
+		var packageName, items;
+
+		for(var i in pkgs) {
+			packageName = pkgs[i];
+			items = avpList.getElementsByAttribute("label", packageName);
+			if(items.length == 0) continue;
+			for(var j = 0; j < items.length; j++) {
+				//alert("updating: " + packageName);
+				items[j].setAttribute("installedVersion", items[j].getAttribute("version"));
+				items[j].setAttribute("installed", true);
+			}
+		}
+		getInstalledPkgs();
+		break;
+	case "removed":
+		response = JSONDecode(res);
+		if(response == null) {
+			ko.dialogs.alert("Something went wrong...", res, document.title + " updateInfo");
+			return;
+		}
+		var items, changedCount = 0;
+		for(var packageName in response) {
+			if(response[packageName] == "TRUE") {
+				changedCount++;
+				items = avpList.getElementsByAttribute("label", packageName);
+				if(items.length == 0) continue;
+				for(var j = 0; j < items.length; j++) {
+					items[j].removeAttribute("installed");
+					items[j].setAttribute("installedVersion", "");
+				}
+			}
+		}
+		if(changedCount > 0) getInstalledPkgs();
+		break;
+	case "loaded":
+		getInstalledPkgs();
+		break;
+	case "detached":
+		response = JSONDecode(res);
+		if(response == null) {
+			ko.dialogs.alert("Something went wrong...", res, document.title + " updateInfo");
+			return;
+		}
+		var items, changedCount = 0;
+		var errors = [];
+		for(var packageName in response) {
+			if(response[packageName] == "TRUE") {
+				changedCount++;
+				items = avpList.getElementsByAttribute("label", packageName);
+				if(items.length == 0) continue;
+				for(var j = 0; j < items.length; j++) {
+					items[j].removeAttribute("loaded");
+				}
+			} else {
+				errors.push(packageName + ": " + response[packageName])
+			}
+		}
+		if(changedCount > 0) getInstalledPkgs();
+		if (errors.length > 0)
+			ko.dialogs.alert("By detaching the packages, R said:",
+				errors.join("\n"),  document.title);
+	default:
+	}
+}
+
+function getDescriptionFor(el) {
+	var pkg = el.label;
+	sv.r.evalCallback('pkgManGetDescription("' + pkg + '")', function(desc, el) {
+		el.desc = desc;
+	}, el);
+};
+
+function setCranMirror(url) {
+	if(!url) url = sv.pref.getPref("CRANMirror").trim();
+	sv.rconn.evalAtOnce("pkgManSetCRANMirror(\"" + url + "\")");
+	document.getElementById('selectedCranMirror').value = url;
+}
+
+function getCranMirrors() {
+	var mirror = sv.pref.getPref("CRANMirror").trim();
+	var cmd = "pkgManGetMirrors()";
+	var lines = sv.rconn.evalAtOnce(cmd, 3).split(/[\r\n]+/);
+	rl = document.getElementById("rCRANMirrorsList");
+	var sel = -1;
+	for(var i = 0; i < lines.length; i++) {
+		l = lines[i].trim().split(';');
+		var row = document.createElement('listitem');
+		row.setAttribute('value',  l[1]);
+		var cell = document.createElement('listcell');
+		cell.setAttribute('label',  l[0]);
+		row.appendChild(cell);
+		cell = document.createElement('listcell');
+		cell.setAttribute('label',  l[1] );
+		row.appendChild(cell);
+		if(l[1].indexOf(mirror) > -1) sel = i;
+		rl.appendChild(row);
+	}
+	var it =  rl.getItemAtIndex( sel );
+	rl.scrollToIndex( sel);
+	rl.ensureIndexIsVisible( sel);
+	//rl.timedSelect(it , 10);
+	rl.selectItem( it);
+}
+
+function makePkgItem(name, version, installedVersion, status, installed, old, loaded) {
+	var item = document.createElement("richlistitem");
+	item.setAttribute("label", name);
+	item.setAttribute("version", version);
+	if(installedVersion) item.setAttribute("installedVersion", installedVersion);
+	if(status) item.setAttribute("status", status);
+	if(installed) item.setAttribute("installed", installed);
+	if(old) item.setAttribute("old", old);
+	if(loaded) item.setAttribute("loaded", loaded);
+	return item;
+}
+
+
+
+function getInstalledPkgs() {
+	var lines = sv.rconn.evalAtOnce('pkgManGetInstalled()').trim();
+	if (lines == 'NULL') return;
+	lines = lines.split(/\t[\r\n]+/);
+	rl = document.getElementById("rPackageList");
+
+	var selectedIndex, selectedItem, selectedLabel;
+
+	selectedIndex = rl.selectedIndex;
+	selectedItem = rl.getSelectedItem(0);
+	if(selectedItem != null) selectedLabel = selectedItem.label;
+
+	while(rl.itemCount) rl.removeItemAt(0);
+	for(var i = 0; i < lines.length; i++){
+		l = lines[i].trim().split(';');
+		rl.appendChild(
+			makePkgItem(l[0], l[1], null, null, true, null, l[3] == 'TRUE')
+		);
+	}
+
+	if(selectedIndex != -1) {
+		for (var i = 0; i < rl.itemCount; i++)
+			if(rl.getItemAtIndex(i).label == selectedLabel) {
+				rl.selectedIndex = i;
+				break;
+			}
+	}
+}
+
+function getAvailablePkgs(page, reload) {
+	if (!page) page = '';
+	var searchPattern = document.getElementById('searchfield').value.trim();
+	searchPattern = sv.tools.string.toRegex(searchPattern);
+
+	var lines = sv.rconn.evalAtOnce('pkgManGetAvailable("' + page + '", pattern="' +
+		searchPattern + '", reload=' +
+		(reload ? 'TRUE': 'FALSE') + ')', 2).trim();
+
+	if (lines == 'NULL') return;
+
+	lines = lines.split(/\t[\r\n]+/);
+
+	rl = document.getElementById("rAvailablePackageList");
+	while(rl.itemCount) rl.removeItemAt(0);
+
+	idx = lines[0].trim().split(" ").map(function(x) parseInt(x));
+	var item;
+	var prevButton = document.getElementById('availablePackagesPrevButton');
+	if (idx[0] > 1) {
+		item = document.createElement("richlistitem");
+		item.setAttribute("class", "navButton");
+		item.setAttribute("oncommand", "getAvailablePkgs('prev')");
+		rl.appendChild(item);
+		prevButton.disabled = false;
+	} else {
+		prevButton.disabled = true;
+	}
+	for(var i = 1; i < lines.length; i++){
+		l = lines[i].trim().split(';');
+		rl.appendChild(makePkgItem(l[0], l[1], l[2], l[3], l[3] != '', l[3] == '1'));
+	}
+
+	var nextButton = document.getElementById('availablePackagesNextButton');
+	if (idx[1] < idx[2]) {
+		item = document.createElement("richlistitem");
+		item.setAttribute("class",  "navButton");
+		item.setAttribute("oncommand", "getAvailablePkgs('next')");
+		rl.appendChild(item);
+		nextButton.disabled = false;
+	} else {
+		nextButton.disabled = true;
+	}
+	var info = document.getElementById('availablePackagesInfo');
+	info.value = ' Showing packages '  + idx[0] + "-" + idx[1]  + ' of ' + idx[2]
+		+ ' total (from "' + lines[1].split(';', 1) + '" to "'
+		+ lines[lines.length-1].split(';', 1) + '")'
+}
+
+
+function init() {
+	var rDir = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R", "pkgman.R");
+	sv.r.evalHidden('if(!exists("pkgManGetInstalled", as.environment("komodoConnection"))) ' +
+	'sys.source("' + sv.tools.string.addslashes(rDir) +
+	'", as.environment("komodoConnection"));');
+
+	//sv.r.eval('sys.source("' + sv.tools.string.addslashes(rDir) + '", as.environment("komodoConnection"));');
+
+	setCranMirror();
+	getCranMirrors();
+	getAvailablePkgs("first", true);
+	getInstalledPkgs();
+
+}
+
+
+
+function pkgMgrOnLoad(event) {
+
+	var p = parent;
+	while (p = p.opener) {
+		if (p.ko) {
+			sv = p.sv;
+			ko = p.ko;
+			break;
+	}}
+
+	window.setTimeout(init, 256);
+}
+
+addEventListener("load", pkgMgrOnLoad, false);
+
+]]>
+</script>
+	<hbox id="topStackBar">
+		<radiogroup id="viewGroup" orient="horizontal" flex="2">
+			<radio id="search-view" label="Available"
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 0;"/>
+			<radio id="extensions-view" label="Installed"
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 1;"/>
+			<radio id="updates-view" label="Updates"
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 2;" disabled="true" />
+			<radio id="mirrors-view" label="CRAN mirrors" selected="true"
+				oncommand="document.getElementById('pkgPanels').selectedIndex = 3;"/>
+		</radiogroup>
+<spacer/>
+<button label="Close" onclick="self.close();"/>
+	</hbox>
+<deck id="pkgPanels" flex="1" style="padding: 0px; border: 0px black solid;"
+		persists="selectedIndex" selectedIndex="3">
+<box >
+<vbox flex="1">
+<hbox id="searchPanel" align="center">
+	<textbox id="searchfield" emptytext="Search packages" type="search"
+			 searchbutton="true" class="compact"
+			 oncommand="getAvailablePkgs('current')" />
+<spacer flex="1"/>
+<button label="Prev" id="availablePackagesPrevButton" oncommand="getAvailablePkgs('prev')" />
+<button label="Next" id="availablePackagesNextButton" oncommand="getAvailablePkgs('next')" />
+</hbox>
+<hbox>
+<label id="availablePackagesInfo" value="Bla bla bla" />
+</hbox>
+<hbox flex="1">
+ <richlistbox id="rAvailablePackageList" class="rPackageList" flex="1" />
+</hbox></vbox>
+</box>
+
+<box>
+<hbox flex="1">
+<richlistbox id="rPackageList" class="rPackageList" flex="1" />
+</hbox>
+</box>
+<box><label id="wtf1" value=""/></box>
+<vbox>
+<hbox><label value="Selected mirror: "/><label id="selectedCranMirror" value=""/></hbox>
+<hbox flex="1">
+ <listbox id="rCRANMirrorsList" suppressonselect="false" flex="1"
+	onclick="setCranMirror(this.selectedItem.value)">
+  <listhead>
+     <listheader label="Name" width="100"/>
+     <listheader label="URL" width="150"/>
+  </listhead>
+  <listcols>
+    <listcol flex="1"/>
+    <listcol flex="1"/>
+  </listcols>
+</listbox>
+
+</hbox>
+
+</vbox>
+</deck>
+
+</window>
