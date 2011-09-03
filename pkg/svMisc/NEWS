@@ -1,5 +1,11 @@
 = svMisc News
 
+== Changes in svMisc 0.9-63
+
+* progress() used \8, that was treated as octal for R < 2.14. Changed to \b in
+  order to correct this bug. Thanks Duncan Murdoch for pointing me on this.
+
+
 == Changes in svMisc 0.9-62
 
 * captureAll() now handles user interrupts and allows for traceback() afterwards
