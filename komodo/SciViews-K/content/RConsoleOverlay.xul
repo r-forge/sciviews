@@ -92,7 +92,7 @@
 							class="bulletlist-icon"
 							tooltiptext="Show R command history"
 							oncommand="sv.rconsole.toggleView();"
-							disabled="true"/>
+							disabled="false"/>
 						<toolbarbutton id="rconsole-close-button"
 							class="find-stop-icon"
 							tooltiptext="Clear R Output"
