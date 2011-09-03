@@ -434,17 +434,15 @@ sv.rconsole = {};
                 sv.r.runEnter();
             }
             
-            // Backspace=8, tab=9, enter=13, insert=45, delete=46
-            //var isEditKey = (event.keyCode == 8 || event.keyCode == 9 ||
-            //    event.keyCode == 13 || event.keyCode == 45 ||
-            //    event.keyCode == 46);
-            var str = String.fromCharCode(event.charCode);
-        	if (str.length && !event.ctrlKey &&
-                !event.altKey && !event.metaKey) {
-        		var editor = ko.views.manager.currentView;
-                editor.setFocus();
-        		editor.scimoz.replaceSel(str);
-        	}
+            // This does not work because another event is dealing with this
+            // case differently
+            //var str = String.fromCharCode(event.charCode);
+        	//if (str.length && !event.ctrlKey &&
+            //    !event.altKey && !event.metaKey) {
+        	//	var editor = ko.views.manager.currentView;
+            //    editor.setFocus();
+        	//	editor.scimoz.replaceSel(str);
+        	//}
         } catch(e) { }
     }
 
