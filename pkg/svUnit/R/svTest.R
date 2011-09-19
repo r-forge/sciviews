@@ -109,8 +109,11 @@ tag = "", msg = "", ...)
 
 runTest.list <- function(x, ...) {
   ## Run each test in x, giving each test the name it has in x
-  for (i in names(x))
-    runTest(x[[i]], name=i, unit="man")
+  lapply(x, function(item) {
+    unit <- ifelse(is.null(attr(item, "unit")), "**root**", attr(item, "unit"))
+    name <- attr(item, "name")
+    runTest(item, name=name, unit=unit)
+  })
 }
 
 runTest.svTest <- function (x, name = deparse(substitute(x)), objfile = "",
