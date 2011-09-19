@@ -28,7 +28,7 @@ makeTestListFromExamples <- function(packageName, manFilesDir) {
                      tryCatch(withCallingHandlers({ do.call(example, list(topic=x, package=packageName)); checkTrue(TRUE); },
                                                   warning=function(w) { checkIdentical(NULL, w) }),
                               error=function(w) checkIdentical(NULL, w)))
-    attr(result, 'unit') <- 'check.man'
+    attr(result, 'unit') <- 'examples'
     attr(result, 'name') <- x
     result
   })
