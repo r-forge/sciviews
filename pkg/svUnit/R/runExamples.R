@@ -23,8 +23,13 @@ makeTestListFromExamples <- function(packageName, manFilesDir) {
   })
   manPages <- manPages[manPages != paste(packageName, "package", sep="-")]
 
-  sapply(manPages, function(x) svTest(function() 
-                                      tryCatch(withCallingHandlers({ do.call(example, list(topic=x, package=packageName)); checkTrue(TRUE); },
-                                                                   warning=function(w) { checkIdentical(NULL, w) }),
-                                               error=function(w) checkIdentical(NULL, w))))
+  lapply(manPages, function(x) {
+    result <- svTest(function() 
+                     tryCatch(withCallingHandlers({ do.call(example, list(topic=x, package=packageName)); checkTrue(TRUE); },
+                                                  warning=function(w) { checkIdentical(NULL, w) }),
+                              error=function(w) checkIdentical(NULL, w)))
+    attr(result, 'unit') <- 'check.man'
+    attr(result, 'name') <- x
+    result
+  })
 }
