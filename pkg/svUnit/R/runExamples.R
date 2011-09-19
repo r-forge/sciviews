@@ -16,7 +16,11 @@
 
 makeTestListFromExamples <- function(packageName, manFilesDir) {
   manPageFiles <- list.files(manFilesDir, pattern="\\.Rd$")
-  manPages <- substr(manPageFiles, 1, nchar(manPageFiles) - 3)
+  manPages <- sapply(manPageFiles, function(filename) {
+    lines <- readLines(paste(manFilesDir, filename, sep="/"))
+    lines <- lines[grep("^\\\\name[ ]*\\{(.*)\\}", lines)]
+    sub("^\\\\name[ ]*\\{(.*)\\}", lines, replacement="\\1")
+  })
   manPages <- manPages[manPages != paste(packageName, "package", sep="-")]
 
   sapply(manPages, function(x) svTest(function() 
