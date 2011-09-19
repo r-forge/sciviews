@@ -107,6 +107,12 @@ tag = "", msg = "", ...)
 		msg = msg, ...))
 }
 
+runTest.list <- function(x, ...) {
+  ## Run each test in x, giving each test the name it has in x
+  for (i in names(x))
+    runTest(x[[i]], name=i, unit="man")
+}
+
 runTest.svTest <- function (x, name = deparse(substitute(x)), objfile = "",
 tag = "", msg = "", ...)
 {
@@ -114,7 +120,7 @@ tag = "", msg = "", ...)
 		stop("'x' must be a 'svTest' object")
 	## Names of object and test
 	test <- as.character(name)[1]
-	test <- .runTest(x, test = test, objfile = objfile, tag = tag, msg = msg)
+	test <- .runTest(x, test = test, objfile = objfile, tag = tag, msg = msg, ...)
 	.Log <- Log()
 	return(invisible(.Log[[test]]))
 }
