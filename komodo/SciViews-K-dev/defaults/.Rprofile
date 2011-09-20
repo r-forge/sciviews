@@ -1,2 +1,0 @@
-source("svStart.R")
-svStart()

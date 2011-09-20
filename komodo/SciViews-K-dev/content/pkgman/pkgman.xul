@@ -69,7 +69,6 @@ function pkgManLoad(pkg) {
 	sv.r.evalCallback(cmd, updateInfo, "loaded");
 }
 
-
 function updateInfo(res, what) {
 // add to installed / reload installed
 // update items in Available
@@ -169,7 +168,8 @@ function getDescriptionFor(el) {
 function setCranMirror(url) {
 	if(!url) url = sv.pref.getPref("CRANMirror").trim();
 	sv.rconn.evalAtOnce("pkgManSetCRANMirror(\"" + url + "\")");
-	document.getElementById('selectedCranMirror').value = url;
+	var selectedCranMirror = document.getElementById('selectedCranMirror');
+	if(selectedCranMirror) selectedCranMirror.value = url;
 }
 
 function getCranMirrors() {
@@ -184,9 +184,12 @@ function getCranMirrors() {
 		row.setAttribute('value',  l[1]);
 		var cell = document.createElement('listcell');
 		cell.setAttribute('label',  l[0]);
+		cell.setAttribute('image', "chrome://sciviewsk/skin/images/flags/" + l[2] + ".gif");
+		cell.className = "listcell-iconic";
+
 		row.appendChild(cell);
 		cell = document.createElement('listcell');
-		cell.setAttribute('label',  l[1] );
+		cell.setAttribute('label',  l[1]);
 		row.appendChild(cell);
 		if(l[1].indexOf(mirror) > -1) sel = i;
 		rl.appendChild(row);
@@ -209,7 +212,6 @@ function makePkgItem(name, version, installedVersion, status, installed, old, lo
 	if(loaded) item.setAttribute("loaded", loaded);
 	return item;
 }
-
 
 
 function getInstalledPkgs() {
@@ -309,7 +311,6 @@ function init() {
 
 
 function pkgMgrOnLoad(event) {
-
 	var p = parent;
 	while (p = p.opener) {
 		if (p.ko) {

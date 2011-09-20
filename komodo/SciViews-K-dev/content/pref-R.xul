@@ -152,11 +152,11 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 		</vbox>
 	</groupbox>
 
-	<groupbox orient="vertical"  align="left">
+	<groupbox orient="vertical"  align="left" hidden="true">
 		<caption label="Miscellanous"/>
 
 <label value="Startup packages"/>
-<!-- KB: Some users (including me) might not want having lots of unnecessary packages loaded at startup -->
+ <!--KB: Some users (including me) might not want having lots of unnecessary packages loaded at startup -->
 <vbox align="left">
 <description>
 &quot;SciViews-K&quot; needs packages &quot;svGUI&quot;, &quot;svSocket&quot;
@@ -184,8 +184,8 @@ startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
 		<hbox align="center"  hidden="true">
 			<checkbox id="sciviews.r.auto-start" disabled="true" label="Start R automatically"
 				pref="false" />
-		</hbox>
-	</groupbox>
+	</hbox>
+</groupbox>
 
 	<hbox>
 		<button label="Show advanced settings (rarely need to be changed)"
