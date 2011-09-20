@@ -3,18 +3,18 @@
     msg <- conditionMessage(x)
     call <- conditionCall(x)
     if (!is.null(call))
-	    paste(.gettextx("Error in ", domain="R"), deparse(call)[1L], ": ", msg, "\n",
-            sep = "")
-    else paste(.gettextx("Error: ", domain="R"), msg, "\n", sep = "")
+		paste(.gettextx("Error in "), deparse(call, control = NULL)[1L], ": ",
+			msg, "\n", sep = "")
+    else paste(.gettextx("Error: "), msg, "\n", sep = "")
 }
 
 
 # use ngettext instead of gettext, which fails to translate many strings in "R" domain
 # bug in R or a weird feature?
-`.gettextfx` <- function (fmt, ..., domain = NULL)
-sprintf(gettextx(fmt, domain = domain), ...)
+`.gettextfx` <- function (fmt, ..., domain = "R")
+sprintf(ngettext(1, fmt, "", domain = domain), ...)
 
-`.gettextx` <- function (..., domain = NULL) {
+`.gettextx` <- function (..., domain = "R") {
     args <- lapply(list(...), as.character)
 	 unlist(lapply(unlist(args), function(x) .Internal(ngettext(1, x, "", domain))))
 }
@@ -27,7 +27,7 @@ sprintf(gettextx(fmt, domain = domain), ...)
 	# markStdErr: if TRUE, stderr is separated from sddout by STX/ETX character
 
 	last.warning <- list()
-	Traceback <- list()
+	Traceback <- NULL
 	NframeOffset <- sys.nframe() + 19L # frame of reference (used in traceback) +
 								 # length of the call stack when a condition
 								 # occurs
@@ -46,11 +46,9 @@ sprintf(gettextx(fmt, domain = domain), ...)
 	})
 
 	inStdOut <- TRUE
-	#marks <- list()
 
 	if (markStdErr) {
 		putMark <- function(to.stdout, id) {
-
 			do.mark <- FALSE
 			if (inStdOut) {
 				if (!to.stdout) {
@@ -74,45 +72,41 @@ sprintf(gettextx(fmt, domain = domain), ...)
 
 	`evalVis` <- function(x) withVisible(eval(x, .GlobalEnv))
 
-	`restartError` <- function(e, calls, off) {
-		#print(calls)
+	`restartError` <- function(e, calls, foffset) {
 		# remove call (eval(expr, envir, enclos)) from the message
 		ncls <- length(calls)
 
-		if(isTRUE(all.equal(calls[[NframeOffset + off]], e$call, check.attributes=FALSE)))
-			e$call <- NULL
-		Traceback <<- rev(calls[-c(seq.int(NframeOffset + off), (ncls - 1L):ncls)])
-# TEST:
-#> cat(captureAll(expression(1:10, log(-1),log(""),1:10)), sep="\n")
-		putMark(FALSE, 1L)
+		#if(existsTemp("debugTest") && getTemp("debugTest"))		browser()
+		#cat("frame offset =", foffset, "\n")
 
+		if(isTRUE(all.equal(calls[[NframeOffset + foffset]], e$call, check.attributes=FALSE)))
+			e$call <- NULL
+		Traceback <<- rev(calls[-c(seq.int(NframeOffset + foffset), (ncls - 1L):ncls)])
+
+		putMark(FALSE, 1L)
 		#cat(.makeMessage(e, domain="R"))
 		cat(as.character.error(e))
-
 		if(getWarnLev() == 0L && length(last.warning) > 0L)
-			cat(.gettextx("In addition: ", domain="R"))
+			cat(.gettextx("In addition: "))
 	}
-
-	if(!exists("show", mode="function")) show <- base::print
-
-	off <- 0L
 
 	res <- tryCatch(withRestarts(withCallingHandlers({
 			# TODO: allow for multiple expressions and calls (like in
 			# 'capture.output'). The problem here is how to tell 'expression'
 			# from 'call' without evaluating it?
-			#list(evalVis(expr))
+			off <- 0L
 
 			for(i in expr) {
-				off <<- 0L # TODO: better way to find the right sys.call...
+				# 'off' is passed to 'restartError'
+				off <- 0L # TODO: better way to find the right sys.call...
 				res1 <- evalVis(i)
-				#cat('---\n')
-				# this will catch also 'print' errors
-				off <<- -3L
-				if(res1$visible) if(mode(res1$value) == "S4")
-						show(res1$value) else
-						print(res1$value)
-
+				off <- -2L
+				if(res1$visible) {
+					#(if(isS4(res1$value)) show else print)(res1$value)
+					# print/show should be evaluated also in .GlobalEnv
+					do.call("eval", list(call(if(isS4(res1$value)) "show"
+						else "print", res1$value)), envir=.GlobalEnv)
+				}
 			}
 		},
 
@@ -139,7 +133,7 @@ sprintf(gettextx(fmt, domain = domain), ...)
 	# TODO: how to trigger interrupt remotely?
 	abort = function(...) {
 		putMark(FALSE, 4L)
-		cat("Execution aborted.\n") #DEBUG
+		cat("Execution aborted. \n") #DEBUG
 	},
 
 	muffleWarning = function() NULL,
@@ -151,12 +145,6 @@ sprintf(gettextx(fmt, domain = domain), ...)
 	}, finally = {	}
 	)
 
-	#lapply(res, function(x) {
-	#	if(inherits(x, "list") && x$visible) {
-	#		print(x$value)
-	#	} #else { cat('<invisible>\n') }
-	#})
-
 	if(getWarnLev() == 0L) {
 		nwarn <- length(last.warning)
 		assign("last.warning", last.warning, envir=baseenv())
@@ -165,9 +153,9 @@ sprintf(gettextx(fmt, domain = domain), ...)
 		if(nwarn <= 10L) {
 			print.warnings(last.warning)
 		} else if (nwarn < 50L) {
-		   cat(.gettextfx("There were %d warnings (use warnings() to see them)\n", nwarn, domain="R"))
+		   cat(.gettextfx("There were %d warnings (use warnings() to see them)\n", nwarn))
 		} else {
-			cat(.gettextx("There were 50 or more warnings (use warnings() to see the first 50)\n", domain="R"))
+			cat(.gettextx("There were 50 or more warnings (use warnings() to see the first 50)\n"))
 		}
 	}
 	putMark(TRUE, 7L)
@@ -176,17 +164,40 @@ sprintf(gettextx(fmt, domain = domain), ...)
 	close(tconn)
 	on.exit()
 
-	filename <- attr(attr(match.fun(sys.call()[[1]]), "srcref"), "srcfile")$filename
+	#filename <- attr(attr(sys.function(sys.parent()), "srcref"), "srcfile")$filename
 
 	# allow for tracebacks of this call stack:
-	if(length(Traceback) > 0L)
-		assign(".Traceback", lapply(Traceback, function(x) {
-			sref <- attr(x, "srcref")
-			structure(deparse(x), srcref=if(is.null(sref) ||
-				attr(sref, "srcfile")$filename == filename)	NULL else sref)
-		}), envir = baseenv())
+	if(!is.null(Traceback)) {
+		assign(".Traceback",
+			#if (is.null(filename)) {
+				#lapply(Traceback, deparse, control=NULL)
+				# keep only 'srcref' attribute
+				lapply(Traceback,  function(x) structure(deparse(x, control=NULL), srcref=attr(x, "srcref")))
 
-	#attr(rval, "marks") <- marks
-
+			#} else {
+			#	lapply(Traceback, function(x) {
+			#		srcref <- attr(x, "srcref")
+			#		srcfile <- if(is.null(srcref)) NULL else attr(srcref, "srcfile")
+			#		structure(deparse(x, control=NULL), srcref =
+			#			if(is.null(srcfile) || srcfile$filename == filename) NULL else srcref)
+			#	})
+			#}
+			, envir = baseenv())
+	}
 	return(rval)
 }
+
+attr(captureAll, "srcref") <- NULL
+
+
+# TESTS:
+# cat(captureAll(expression(1:10, log(-1),log(""),1:10)), sep="\n")
+
+# foo <- structure(list(a=1, b=2), class="foo")
+# print.foo <- function(x, ...) stop("Foo print error!")
+# captureAll(expression(foo))
+# traceback()
+# captureAll(expression(print(foo)))
+# traceback()
+# foo
+# print(foo)
