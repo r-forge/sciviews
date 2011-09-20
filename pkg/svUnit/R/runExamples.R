@@ -29,7 +29,6 @@ makeTestListFromExamples <- function(packageName, manFilesDir) {
                                                   warning=function(w) { checkIdentical(NULL, w) }),
                               error=function(w) checkIdentical(NULL, w)))
     attr(result, 'unit') <- 'examples'
-    attr(result, 'name') <- x
     result
   })
 }
