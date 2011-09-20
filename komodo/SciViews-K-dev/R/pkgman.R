@@ -41,8 +41,10 @@ pkgManGetMirrors <- function() {
 		mirrors <- getCRANmirrors()
 		assignTemp(tmpVar, mirrors)
 	}
-	write.table(mirrors[, c(1,4)], row.names = FALSE, col.names = F, sep=';', quote = F, na="")
+	write.table(mirrors[, c("Name", "URL", "CountryCode")],
+		row.names = FALSE, col.names = F, sep=';', quote = F, na="")
 }
+
 
 pkgManGetAvailable <- function(page = "next", pattern = "", ilen=50,
 	col=c("Package", "Version", "InstalledVersion", "Status"),
@@ -186,4 +188,3 @@ pkgManDetachPackage <- function(pkgName) {
 		})
 	}, simplify = FALSE)
 }
-

@@ -317,7 +317,7 @@ function PrefR_updateCommandLine(update) {
 		args1 += " --svStartPkgs=SciViews,MASS,ellipse";
 
    	var cwd = sv.tools.file.path("ProfD", "extensions",
-		"sciviewsk@sciviews.org", "defaults");
+		"sciviewsk@sciviews.org", "R");
 
 	cmdArgs = cmdArgs.replace(/\s*--[sm]di\b/, "");
 
