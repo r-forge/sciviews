@@ -22,12 +22,14 @@ makeTestListFromExamples <- function(packageName, manFilesDir) {
     sub("^\\\\name[ ]*\\{(.*)\\}", lines, replacement="\\1")
   })
   manPages <- manPages[manPages != paste(packageName, "package", sep="-")]
+  names(manPages) <- manPages
 
   lapply(manPages, function(x) {
-    result <- svTest(function() 
-                     tryCatch(withCallingHandlers({ do.call(example, list(topic=x, package=packageName)); checkTrue(TRUE); },
+    testCall <- call("example", x, packageName)
+    result <- svTest(function() {
+                     tryCatch(withCallingHandlers({ eval(testCall); checkTrue(TRUE); },
                                                   warning=function(w) { checkIdentical(NULL, w) }),
-                              error=function(w) checkIdentical(NULL, w)))
+                              error=function(w) checkIdentical(NULL, w))})
     attr(result, 'unit') <- 'rcheck.examples'
     result
   })
