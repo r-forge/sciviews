@@ -109,10 +109,9 @@ tag = "", msg = "", ...)
 
 runTest.list <- function(x, ...) {
   ## Run each test in x, giving each test the name it has in x
-  lapply(names(x), function(name) {
-    item <- x[[name]]
+  lapply(names(x), function(name, item=x[[name]]) {
     unit <- ifelse(is.null(attr(item, "unit")), "**root**", attr(item, "unit"))
-    runTest(item, name=name, unit=unit)
+    runTest(item, name=name, unit=unit, ...)
   })
 }
 
