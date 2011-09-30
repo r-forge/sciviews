@@ -48,7 +48,7 @@ runTest(x, \dots)
 	tag = "", msg = "", \dots)
 \method{runTest}{list}(x, \dots)
 
-makeTestListFromExamples(packageName, manFilesDir)
+makeTestListFromExamples(packageName, manFilesDir, skipFailing=FALSE)
 }
 
 \arguments{
@@ -82,6 +82,9 @@ makeTestListFromExamples(packageName, manFilesDir)
     from which to extract examples. }
   \item{manFilesDir}{ a character string identifying the directory
     holding the manual pages and examples. }
+  \item{skipFailing}{ a logical indicating whether missing or failing
+    documentation examples should be marked as `skipped` instead of as
+    `failure`. }
   \item{\dots}{ further arguments to the method (not used yet). }
 }
 
