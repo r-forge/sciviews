@@ -1,4 +1,9 @@
-# replacement for 'base::as.character.error', which does not translate "Error"
+# 'imports'
+if(existsFunction("getSrcFilename", where="package:utils")) {
+	getSrcFilename <- utils::getSrcFilename
+}
+
+# Replacement for 'base::as.character.error', which does not translate "Error"
 `as.character.error` <- function (x, ...) {
     msg <- conditionMessage(x)
     call <- conditionCall(x)
@@ -6,6 +11,34 @@
 		paste(.gettextx("Error in "), deparse(call, control = NULL)[1L], ": ",
 			msg, "\n", sep = "")
     else paste(.gettextx("Error: "), msg, "\n", sep = "")
+}
+
+# Replacement for 'base::print.warnings'. Deparses using control=NULL to produce
+#  result identical to that in console
+`print.warnings` <- function (x, ...) {
+    if (n <- length(x)) {
+        cat(ngettext(n, "Warning message:\n", "Warning messages:\n"))
+        msgs <- names(x)
+        for (i in seq_len(n)) {
+            ind <- if (n == 1L) ""
+            else paste(i, ": ", sep = "")
+            out <- if (length(x[[i]])) {
+                temp <- deparse(x[[i]], width.cutoff = 50L, nlines = 2L,
+					control = NULL) # the only modification
+                sm <- strsplit(msgs[i], "\n")[[1L]]
+                nl <- if (nchar(ind, "w") + nchar(temp[1L], "w") +
+                  nchar(sm[1L], "w") <= 75L)
+                  " "
+                else "\n  "
+                paste(ind, "In ", temp[1L], if (length(temp) >
+                  1L)
+                  " ...", " :", nl, msgs[i], sep = "")
+            }
+            else paste(ind, msgs[i], sep = "")
+            do.call("cat", c(list(out), attr(x, "dots"), fill = TRUE))
+        }
+    }
+    invisible(x)
 }
 
 
@@ -21,7 +54,8 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 
 # inspired by 'capture.output' and utils:::.try_silent
 # Requires: R >= 2.13.0 [??]
-`captureAll` <- function(expr, split = FALSE, file = NULL, markStdErr=FALSE) {
+`captureAll` <- function(expr, split = FALSE, file = NULL, markStdErr=FALSE,
+		envir = .GlobalEnv) {
 	# TODO: support for 'file' and 'split'
 
 	# markStdErr: if TRUE, stderr is separated from sddout by STX/ETX character
@@ -70,7 +104,7 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 		putMark <- function(to.stdout, id) {}
 	}
 
-	`evalVis` <- function(x) withVisible(eval(x, .GlobalEnv))
+	`evalVis` <- function(x) withVisible(eval(x, envir))
 
 	`restartError` <- function(e, calls, foffset) {
 		# remove call (eval(expr, envir, enclos)) from the message
@@ -101,19 +135,37 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 				off <- 0L # TODO: better way to find the right sys.call...
 				res1 <- evalVis(i)
 				off <- -2L
+
 				if(res1$visible) {
-					#(if(isS4(res1$value)) show else print)(res1$value)
-					# print/show should be evaluated also in .GlobalEnv
-					do.call("eval", list(call(if(isS4(res1$value)) "show"
-						else "print", res1$value)), envir=.GlobalEnv)
+					# print/show should be evaluated also in 'envir'
+					resval <- res1$value
+					if(!missing(resval)) {
+						printfun <- as.name(if(isS4(resval)) "show" else "print")
+						if(is.language(resval))
+							eval(substitute(printfun(quote(resval))), envir)
+						else
+							eval(substitute(printfun(resval)), envir)
+					} else {
+						cat("\n")
+					}
+# DEBUG
+#sink(type="m");sink(type="o");browser()
+# END DEBUG
 				}
 			}
 		},
 
+		message = function(e)  {
+			putMark(FALSE, 8L)
+			cat(conditionMessage(e), sep = "")
+			putMark(TRUE, 9L)
+			invokeRestart("muffleMessage")
+		},
 		error = function(e) invokeRestart("grmbl", e, sys.calls(), off),
 		warning = function(e) {
+
 			# remove call (eval(expr, envir, enclos)) from the message
-			if(isTRUE(all.equal(sys.call(NframeOffset), e$call, check.attributes=FALSE)))
+			if(isTRUE(all.equal(sys.call(NframeOffset + off), e$call, check.attributes=FALSE)))
 				e$call <- NULL
 
 			last.warning <<- c(last.warning, structure(list(e$call), names=e$message))
@@ -133,9 +185,10 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 	# TODO: how to trigger interrupt remotely?
 	abort = function(...) {
 		putMark(FALSE, 4L)
-		cat("Execution aborted. \n") #DEBUG
+		cat("Execution aborted. \n")
 	},
 
+	muffleMessage = function() NULL,
 	muffleWarning = function() NULL,
 	grmbl = restartError),
 	error = function(e) { #XXX: this is called if warnLevel=2
@@ -149,7 +202,7 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 		nwarn <- length(last.warning)
 		assign("last.warning", last.warning, envir=baseenv())
 
-		if(nwarn > 0L) putMark(FALSE, 6L)
+		if(nwarn != 0L) putMark(FALSE, 6L)
 		if(nwarn <= 10L) {
 			print.warnings(last.warning)
 		} else if (nwarn < 50L) {
@@ -165,39 +218,34 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 	on.exit()
 
 	#filename <- attr(attr(sys.function(sys.parent()), "srcref"), "srcfile")$filename
+	filename <- getSrcFilename(sys.function(sys.parent()), full.names=TRUE)
+	if(length(filename) == 0) filename <- NULL
+
+	#print(sys.function(sys.parent()))
 
 	# allow for tracebacks of this call stack:
 	if(!is.null(Traceback)) {
 		assign(".Traceback",
-			#if (is.null(filename)) {
+			if (is.null(filename)) {
 				#lapply(Traceback, deparse, control=NULL)
 				# keep only 'srcref' attribute
-				lapply(Traceback,  function(x) structure(deparse(x, control=NULL), srcref=attr(x, "srcref")))
+				lapply(Traceback,  function(x) structure(deparse(x, control=NULL),
+					srcref=attr(x, "srcref")))
 
-			#} else {
-			#	lapply(Traceback, function(x) {
-			#		srcref <- attr(x, "srcref")
-			#		srcfile <- if(is.null(srcref)) NULL else attr(srcref, "srcfile")
-			#		structure(deparse(x, control=NULL), srcref =
-			#			if(is.null(srcfile) || srcfile$filename == filename) NULL else srcref)
-			#	})
-			#}
+			} else {
+				lapply(Traceback, function(x) {
+					srcref <- attr(x, "srcref")
+					srcfile <- if(is.null(srcref)) NULL else attr(srcref, "srcfile")
+					structure(deparse(x, control=NULL), srcref =
+						if(is.null(srcfile) || isTRUE(srcfile$filename == filename))
+						NULL else srcref)
+				})
+			}
 			, envir = baseenv())
 	}
 	return(rval)
 }
 
-attr(captureAll, "srcref") <- NULL
 
-
-# TESTS:
-# cat(captureAll(expression(1:10, log(-1),log(""),1:10)), sep="\n")
-
-# foo <- structure(list(a=1, b=2), class="foo")
-# print.foo <- function(x, ...) stop("Foo print error!")
-# captureAll(expression(foo))
-# traceback()
-# captureAll(expression(print(foo)))
-# traceback()
-# foo
-# print(foo)
+`captureAllQ` <- function(expr, ...)
+	captureAll(as.expression(substitute(expr)), ...)

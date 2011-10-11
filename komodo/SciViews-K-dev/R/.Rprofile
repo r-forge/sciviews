@@ -1,10 +1,11 @@
 options(json.method="R")
 
+if(existsFunction("stopAllConnections")) stopAllConnections()
+if(existsFunction("stopAllServers")) stopAllServers()
+
+
 if("komodoConnection" %in% search()) detach("komodoConnection")
 attach(new.env(), name="komodoConnection")
-
-if(existsFunction("stopAllServers")) stopAllServers()
-if(existsFunction("stopAllConnections")) stopAllConnections()
 
 with(as.environment("komodoConnection"), {
 
@@ -109,7 +110,9 @@ Rservers <- enumServers()
 if(is.numeric(getOption("ko.port")) && length(Rservers) > 0) {
 	cat("Server started at port", Rservers, "\n")
 	invisible(koCmd(paste(
-		"sv.cmdout.append('R is started')",
+		"sv.cmdout.clear()",
+		#"sv.cmdout.append('R is started')",
+		sprintf("sv.cmdout.append('%s is started')", R.version.string),
 		"sv.command.updateRStatus(true)",
 		sprintf("sv.pref.setPref('sciviews.r.port', %s)", tail(Rservers, 1)),
 		sep = ";")))
@@ -128,6 +131,9 @@ if (!is.na(rprofile)) {
 	source(rprofile)
 	cat("Loaded file:", rprofile, "\n")
 }
+
+if(.Platform$GUI == "Rgui" && file.exists("Rconsole"))
+	utils:::loadRconsole("Rconsole")
 
 
 if(!any(c("--vanilla", "--no-restore", "--no-restore-data") %in% commandArgs())
