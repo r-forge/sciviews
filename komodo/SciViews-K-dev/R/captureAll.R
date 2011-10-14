@@ -62,7 +62,7 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 
 	last.warning <- list()
 	Traceback <- NULL
-	NframeOffset <- sys.nframe() + 19L # frame of reference (used in traceback) +
+	NframeOffset <- sys.nframe() + 19L + 4L # frame of reference (used in traceback) +
 								 # length of the call stack when a condition
 								 # occurs
 	# Note: if 'expr' is a call not expression, 'NframeOffset' is lower by 2
@@ -110,12 +110,14 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 		# remove call (eval(expr, envir, enclos)) from the message
 		ncls <- length(calls)
 
-		#if(existsTemp("debugTest") && getTemp("debugTest"))		browser()
-		#cat("frame offset =", foffset, "\n")
-
 		if(isTRUE(all.equal(calls[[NframeOffset + foffset]], e$call, check.attributes=FALSE)))
 			e$call <- NULL
-		Traceback <<- rev(calls[-c(seq.int(NframeOffset + foffset), (ncls - 1L):ncls)])
+
+		cfrom <- ncls - 2L
+		cto <- NframeOffset + foffset
+
+		Traceback <<- if(cfrom < cto) list() else
+			calls[seq.int(cfrom, cto, by=-1L)]
 
 		putMark(FALSE, 1L)
 		#cat(.makeMessage(e, domain="R"))
