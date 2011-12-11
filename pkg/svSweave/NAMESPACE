@@ -1,3 +1,5 @@
 import(utils)
 
-export(cleanLyxRnw)
+export(cleanLyxRnw,
+       tangleLyxRnw,
+       weaveLyxRnw)

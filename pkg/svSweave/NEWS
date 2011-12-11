@@ -1,5 +1,11 @@
 = svSweave News
 
+== Changes in svSweave 0.9-3
+
+* Added functions tangleLyxRnw() and weaveLyxRnw() to be called directly from
+  LyX using R -e svSweave::weaveLyxRnw("$$i")
+
+
 == Changes in svSweave 0.9-2
 
 * Added a svSweave-package help page.

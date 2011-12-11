@@ -1,5 +1,13 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-45
+
+* Similar custom menus as winMenuXXX() functions are added and allow to add
+  custom menus on the Mac (both R.app and terminal) and for R run on a
+  Gnome desktop, providing the system is configured to manage such menus,
+  see ?menuAdd.
+
+
 == Changes in svDialogs 0.9-44
 
 * The guiDlgXXX() functions are reworked into S3 methods and their interface

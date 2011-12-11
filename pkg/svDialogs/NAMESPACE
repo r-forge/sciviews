@@ -1,8 +1,7 @@
 # To be eliminated, except for svGUI
 import(tcltk, svMisc, svGUI)
 
-export(
-       dlgDir,
+export(dlgDir,
        dlgInput,
        dlgList,
        dlgMessage,
@@ -16,7 +15,11 @@ export(
        guiPane.tcltk,
        guiPane.entry.tcltk,
        guiPane.list.tcltk,
-       guiSetStyle.tcltk)
+       guiSetStyle.tcltk,
+       menuAdd,
+       menuAddItem,
+       menuDel,
+       menuDelItem)
 
 # To be eliminated
 S3method(display, guiDlg)
