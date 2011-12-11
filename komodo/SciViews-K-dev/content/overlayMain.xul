@@ -334,7 +334,7 @@
 
 <menupopup id="places-files-popup">
 	<menuseparator id="placesContextMenu_separatorR"
-		testEval_HideIf="!sv.command.places.anyRFilesSelected"
+		testEval_HideIf="!sv.command.places.anyRFilesSelected &amp;&amp; !sv.command.places.anyRDataFilesSelected"
 	/>
 <menuitem oncommand="sv.command.places.sourceSelection()"
 		  disableIf="folder"
@@ -343,17 +343,16 @@
 		  label="Source into R"
 		  testEval_HideIf="!sv.command.places.anyRFilesSelected"
 />
+
+<menuitem oncommand="sv.command.places.loadSelection()"
+		  disableIf="folder"
+		  class="menuitem-iconic"
+		  id="placesContextMenu_Rload"
+		  label="Load into R"
+		  testEval_HideIf="!sv.command.places.anyRDataFilesSelected"
+/>
+
 </menupopup>
-
-
-
-
-
-
-
-
-
-
 
 
 
