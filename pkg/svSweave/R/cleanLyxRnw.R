@@ -1,19 +1,28 @@
-cleanLyxRnw <- function (RnwCon, RnwCon2 = RnwCon)
+cleanLyxRnw <- function (RnwCon, RnwCon2 = RnwCon, encoding = "UTF-8")
 {
+	## Run in LyX as the Sweave copier using something like:
+	##> R -e svSweave::cleanLyxRnw(\"$$i\",\"$$o\") -q --vanilla --slave
+	
+	## Make sure default encoding is the same
+	options(encoding = encoding)
+	Sys.setlocale("LC_CTYPE", "UTF-8")
+	
 	## Read the data in the Rnw file
-	Rnw <- readLines(RnwCon)
+	Rnw <- readLines(RnwCon, encoding = encoding)
 
 	## If the Rnw file is produced with LyX and SciViews Sweave module, chunks are
 	## separated by \rchunk{<<[pars]>>= ... @}
 
 	## Beginning of R-Chunks (rewrite into <<[pars]>>=)
-	starts <- grepl("^\\\\rchunk\\{<<.*>>=$", Rnw)
-	Rnw[starts] <- sub("^\\\\rchunk\\{", "", Rnw[starts])
+	#starts <- grepl("^\\\\rchunk\\{<<.*>>=$", Rnw)
+	#Rnw[starts] <- sub("^\\\\rchunk\\{", "", Rnw[starts])
+	starts <- grepl("^<<.*>>=$", Rnw)
 
 	## End of R-Chunks (rewrite as @)
-	ends <- grepl("^@[ \t]*\\}$", Rnw)
-	Rnw[ends] <- "@"
-
+	#ends <- grepl("^@[ \t]*\\}$", Rnw)
+	#Rnw[ends] <- "@"
+	ends <- Rnw == "@"
+	
 	parts <- cumsum(starts | ends)
 	chunk <- parts %% 2 > 0 	# R chunks are odd parts
 
@@ -35,5 +44,6 @@ cleanLyxRnw <- function (RnwCon, RnwCon2 = RnwCon)
 	Rnw[chunk] <- gsub("\t", "    ", Rnw[chunk])
 
 	## Write the result to the new .Rnw file
-	return(writeLines(Rnw, RnwCon2))
+	## TODO: test useBytes = TRUE!
+	return(writeLines(Rnw, RnwCon2, useBytes = TRUE))
 }

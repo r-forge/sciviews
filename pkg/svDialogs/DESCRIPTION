@@ -5,8 +5,8 @@ Depends: R (>= 2.6.0), svGUI (>= 0.9-52), tcltk, svMisc
 SystemRequirements: TODO!!!
 Description: Rapidly construct dialog boxes for your GUI, including an automatic
   function assistant
-Version: 0.9-44
-Date: 2011-07-29
+Version: 0.9-45
+Date: 2011-11-11
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL-2

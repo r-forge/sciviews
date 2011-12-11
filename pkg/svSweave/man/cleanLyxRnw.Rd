@@ -1,8 +1,12 @@
 \name{cleanLyxRnw}
 \alias{cleanLyxRnw}
+\alias{tangleLyxRnw}
+\alias{weaveLyxRnw}
 
-\title{ Clean up R noweb files produced by LyX with SciViews Sweave module }
+\title{ Clean up, weave or tangle Sweave files produced by LyX with the SciViews Sweave module }
 \description{
+  These functions process .Rnw files produced by LyX and the SciViews Sweave
+  module (not the standard Sweave module provided with LyX <= 2.0.0!)
   The SciViews-LyX extension defines \code{rchunk} commands to contain
   R chunks (embedded R code processed by Sweave). Unfortunately, LyX use to
   write two line feed for each line of code, introducing extra lines in the R
@@ -13,7 +17,11 @@
 }
 
 \usage{
-cleanLyxRnw(RnwCon, RnwCon2 = RnwCon)
+cleanLyxRnw(RnwCon, RnwCon2 = RnwCon, encoding = "UTF-8")
+weaveLyxRnw(file, driver = RweaveLatex(), syntax = getOption("SweaveSyntax"),
+    encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
+tangleLyxRnw(file, driver = Rtangle(), syntax = getOption("SweaveSyntax"),
+    encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, annotate = TRUE, \dots)
 }
 
 \arguments{
@@ -21,10 +29,21 @@ cleanLyxRnw(RnwCon, RnwCon2 = RnwCon)
     path to a R noweb file to be read. }
   \item{RnwCon2}{ idem, but where the cleaned up R noweb file should be written
     (by default, on the same file or connection). }
+  \item{encoding}{ the encoding of the .Rnw file. It is UTF-8 by default, but
+    you can change it here }
+  \item{file}{ the Sweave source file }
+  \item{driver}{ the actual function to do the process, see \code{?Sweave} }
+  \item{syntax}{ \code{NULL} or an object of class SweaveSyntax or a character
+    string with its name,  see \code{?Sweave} }
+  \item{width}{ the width used for outputs, 80 characters by default }
+  \item{useFancyQuotes}{ do we use fancy quotes in R outputs? }
+  \item{annotate}{ is the R code extracted from the .Rnw file annotated? } 
+  \item{\dots}{ further arguments passed to the driver's setup function of
+    \code{Sweave()} or \code{Stangle()} }
 }
 
 \value{
-  \code{NULL}, this function is invoked for its side effect.
+  \code{NULL}, these functions are invoked for their side effects.
 }
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
