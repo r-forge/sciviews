@@ -517,16 +517,32 @@ this.getRProc = function(property) {
 this.places = {
 	sourceSelection: function sv_sourcePlacesSelection() {
 		var files = ko.places.manager.getSelectedItems()
-			.filter(function(x)(x.name.search(/\.[Rr]$/) != -1))
+			.filter(function(x) (x.file.ext.toLowerCase() == ".r"))
 			.map(function(x) x.file.path);
 		if (!files.length) return;
-		var cmd = files.map(function(x) "source('" + sv.tools.string.addslashes(x) +"')" ).join("\n");
+		var cmd = files.map(function(x) "source('" + 
+			sv.tools.string.addslashes(x) +"')" ).join("\n");
 		sv.rconn.eval(cmd, null, false);
 	},
 
 	get anyRFilesSelected()
-		ko.places.manager.getSelectedItems()
-		.some(function(x) /\.[Rr]$/.test(x.name))
+		ko.places.manager.getSelectedItems().some(function(x) 
+			x.file.ext.toLowerCase() == ".r"),
+		
+	loadSelection: function sv_loadPlacesSelection() {
+		var files = ko.places.manager.getSelectedItems()
+			.filter(function(x) (x.file.ext.toLowerCase() == ".rdata"))
+			.map(function(x) x.file.path);
+		if (!files.length) return;
+		var cmd = files.map(function(x) "load('" + 
+			sv.tools.string.addslashes(x) +"')" ).join("\n");
+		sv.rconn.eval(cmd, null, false);
+	},
+		
+	get anyRDataFilesSelected()
+		ko.places.manager.getSelectedItems().some(
+			function(x) x.file.ext.toLowerCase() == ".rdata")
+		
 }
 
 //}
