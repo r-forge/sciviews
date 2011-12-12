@@ -50,8 +50,6 @@ import logging
 log = logging.getLogger('RLinter')
 log.setLevel(logging.DEBUG)
 
-
-
 #ss = s * 5000
 #t0 = time.clock()
 #for n in range(100):
@@ -99,12 +97,12 @@ class KoRLinter:
             fout = open(tmp_filename, 'wb')
             fout.write(text)
             fout.close()
-            command = 'cat(quick.lint(\"' + tmp_filename.replace('\\', '/') + '", encoding="UTF-8"))'
+            command = 'cat(quickParse(\"' + tmp_filename.replace('\\', '/') + '", encoding = "UTF-8"))'
             #log.debug(command)
         except Exception, e:
             log.exception(e)
         try:
-            lines = self.sv_utils.execInR(command, "h", 1.5).rstrip() \
+            lines = self.sv_utils.execInR(command, "json h", 1.5).rstrip() \
                 .replace('\x03', '').replace('\x02', '')
             if lines == 'timed out':
                 raise ServerException(nsError.NS_ERROR_NOT_AVAILABLE)
@@ -136,4 +134,5 @@ class KoRLinter:
             log.exception(e)
         finally:
             os.unlink(tmp_filename)
+            pass
         return results

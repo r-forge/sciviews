@@ -8,7 +8,7 @@ if(existsFunction("getSrcFilename", where="package:utils")) {
     msg <- conditionMessage(x)
     call <- conditionCall(x)
     if (!is.null(call))
-		paste(.gettextx("Error in "), deparse(call, control = NULL)[1L], ": ",
+		paste(.gettextx("Error in "), deparse(call, control = NULL)[1L], " : ",
 			msg, "\n", sep = "")
     else paste(.gettextx("Error: "), msg, "\n", sep = "")
 }
@@ -52,6 +52,14 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 	 unlist(lapply(unlist(args), function(x) .Internal(ngettext(1, x, "", domain))))
 }
 
+unsink <- function() {
+# DEBUG
+sink(type="m");sink(type="o")
+#browser()
+# END DEBUG
+}
+
+
 # inspired by 'capture.output' and utils:::.try_silent
 # Requires: R >= 2.13.0 [??]
 `captureAll` <- function(expr, split = FALSE, file = NULL, markStdErr=FALSE,
@@ -62,7 +70,7 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 
 	last.warning <- list()
 	Traceback <- NULL
-	NframeOffset <- sys.nframe() + 19L + 4L # frame of reference (used in traceback) +
+	NframeOffset <- sys.nframe() + 19L + 3L # frame of reference (used in traceback) +
 								 # length of the call stack when a condition
 								 # occurs
 	# Note: if 'expr' is a call not expression, 'NframeOffset' is lower by 2
@@ -110,11 +118,14 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 		# remove call (eval(expr, envir, enclos)) from the message
 		ncls <- length(calls)
 
-		if(isTRUE(all.equal(calls[[NframeOffset + foffset]], e$call, check.attributes=FALSE)))
+		#browser()
+
+		if(identical(calls[[NframeOffset + foffset]], conditionCall(e)))
 			e$call <- NULL
 
 		cfrom <- ncls - 2L
 		cto <- NframeOffset + foffset
+
 
 		Traceback <<- if(cfrom < cto) list() else
 			calls[seq.int(cfrom, cto, by=-1L)]
@@ -143,16 +154,16 @@ sprintf(ngettext(1, fmt, "", domain = domain), ...)
 					resval <- res1$value
 					if(!missing(resval)) {
 						printfun <- as.name(if(isS4(resval)) "show" else "print")
-						if(is.language(resval))
+						if(is.language(resval)) {
+							#browser()
+							#eval(substitute(printfun(resval)), envir)
+							#utils::str(resval)
 							eval(substitute(printfun(quote(resval))), envir)
-						else
+						}	else
 							eval(substitute(printfun(resval)), envir)
 					} else {
 						cat("\n")
 					}
-# DEBUG
-#sink(type="m");sink(type="o");browser()
-# END DEBUG
 				}
 			}
 		},

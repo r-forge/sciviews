@@ -262,6 +262,24 @@ function rHelpSearch(topic) {
 		rHelpBrowser.webNavigation.LOAD_FLAGS_NONE, null, null, null);
 }
 
+//var cont = window._content;
+//var sel = cont.getSelection();
+//var text = sel.anchorNode.textContent;
+//var pos = sel.anchorOffset;
+//print(text.charCodeAt(pos));
+//
+//
+//var start = text[pos - 1] == '\n' ? pos - 1 : text.substr(0, pos - 1).lastIndexOf("\n") + 1;
+//if(start == -1) start = 0;
+//var end = pos + text.substr(pos, text.length).indexOf("\n");
+//
+//if(end == -1) end= text.length;
+//print(start + "," + end) print("*" + text.substring(start, end) + "*");
+//pos = cont.getSelection().anchorOffset;
+//for(var i = -3; i < 4; i++)
+//	print(i + "\t" + text[pos + i] + "//"+ text.charCodeAt(pos + i));
+//-1 //10
+
 function _getHomePage(browser, goTo) {
 	var isWin = navigator.platform.search(/Win\d+$/) === 0;
     // Everything is changed in R 2.10
