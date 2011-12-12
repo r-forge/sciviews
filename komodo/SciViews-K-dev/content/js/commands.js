@@ -128,7 +128,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		// do something here...
 		sv.cmdout.message("SciViews-R is closed with code" + exitCode, 2000, true);
 		_this.updateRStatus(false);
-		alert("R is closed with code " + exitCode);
+		//alert("R is closed with code " + exitCode);
 	}
 
 	this.startR = function () {
@@ -149,6 +149,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		var isWin = navigator.platform.indexOf("Win") === 0;
 		var id = sv.pref.getPref("svRApplication",
 			isWin? "r-gui" : "r-terminal");
+		var env = [];
 		switch (id) {
 			case "r-tk":
 				env.push("Rid=R-tk");
@@ -172,13 +173,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		var process;
 		if(runInConsole) {
 			// XXX: This does not return a process!
-			runSvc.Run(cmd, rDir, "", runInConsole, null);
+			runSvc.Run(cmd, rDir, env.join("\n"), runInConsole, null);
 			process = null;
 			// Observe = 'status_message'
 			// subject.category = "run_command"
 			// subject.msg = "'%s' returned %s." % (command, retval)
 		} else {
-			process = runSvc.RunAndNotify(cmd, rDir, "", null);
+			process = runSvc.RunAndNotify(cmd, rDir, env.join("\n"), null);
 			// Observe = 'run_terminated'
 			// subject = child
 			// data = command
@@ -520,29 +521,29 @@ this.places = {
 			.filter(function(x) (x.file.ext.toLowerCase() == ".r"))
 			.map(function(x) x.file.path);
 		if (!files.length) return;
-		var cmd = files.map(function(x) "source('" + 
+		var cmd = files.map(function(x) "source('" +
 			sv.tools.string.addslashes(x) +"')" ).join("\n");
 		sv.rconn.eval(cmd, null, false);
 	},
 
 	get anyRFilesSelected()
-		ko.places.manager.getSelectedItems().some(function(x) 
+		ko.places.manager.getSelectedItems().some(function(x)
 			x.file.ext.toLowerCase() == ".r"),
-		
+
 	loadSelection: function sv_loadPlacesSelection() {
 		var files = ko.places.manager.getSelectedItems()
 			.filter(function(x) (x.file.ext.toLowerCase() == ".rdata"))
 			.map(function(x) x.file.path);
 		if (!files.length) return;
-		var cmd = files.map(function(x) "load('" + 
+		var cmd = files.map(function(x) "load('" +
 			sv.tools.string.addslashes(x) +"')" ).join("\n");
 		sv.rconn.eval(cmd, null, false);
 	},
-		
+
 	get anyRDataFilesSelected()
 		ko.places.manager.getSelectedItems().some(
 			function(x) x.file.ext.toLowerCase() == ".rdata")
-		
+
 }
 
 //}
