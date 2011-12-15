@@ -1044,7 +1044,7 @@ sv.r.pkg.unload_select = function (pkgs) {
 		var topic = ko.dialogs.selectFromList("Unload R package",
 		"Select one R package to unload:", items, "one");
 		if (topic != null)
-		res = sv.r.eval("detach(\"package:" + topic[0].trim()+ "\")");
+		res = sv.r.eval("detach(\"package:" + topic[0].trim()+ "\", unload = TRUE)");
 	}
 	return(res);
 }

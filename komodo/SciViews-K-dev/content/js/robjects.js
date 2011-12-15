@@ -1064,7 +1064,7 @@ this.removeSelected = function (doRemove) {
 	}
 
 	for (var i in envToDetach) {
-		cmd.push('detach("' + envToDetach[i].addslashes() + '")');
+		cmd.push('detach("' + envToDetach[i].addslashes() + '", unload = TRUE)');
 		for (var j in _this.treeData) {
 			if (_this.treeData[j].name == envToDetach[i]) {
 				_this.treeData.splice(j, 1);
@@ -1212,7 +1212,7 @@ this.contextOnShow = function (event) {
 	var multipleSelection = _this.selection.count > 1;
 
 	// Help can be shown only for one object:
-	var noHelp = !isPackage || !isInPackage;
+	var noHelp = isPackage || !isInPackage;
 
 	//var menuNode = document.getElementById("rObjectsContext");
 	var menuItems = event.target.childNodes;
@@ -1460,9 +1460,8 @@ this.packageListObserver = {
 				} else {
 					_this.getPackageList();
 				}
-				if (message) {
+				if (message)
 					sv.alert(sv.translate("Load library, R said:"), message);
-				}
 			}
 			);
 		}
@@ -1513,15 +1512,15 @@ this.packageListKeyEvent = function (event) {
 
 		sv.r.evalCallback(
 		'tryCatch(detach("' + pkg.addslashes() +
-		'"), error=function(e) cat("<error>"));',
+		'", unload=TRUE), error=function(e) cat("<error>"));',
 		function _packageListKeyEvent_callback (data) {
 			sv.log.debug(data);
 			if (data.trim() != "<error>") {
 				_removeObjectList(pkg);
 				listbox.removeChild(listItem);
-				print(sv.translate("Namespace \"%S\" detached.", pkg));
+				print(sv.translate("Database \"%S\" detached.", pkg));
 			} else {
-				print(sv.translate("Namespace \"%S\" could not be detached.", pkg));
+				print(sv.translate("Database \"%S\" could not be detached.", pkg));
 			}
 		});
 		return;
