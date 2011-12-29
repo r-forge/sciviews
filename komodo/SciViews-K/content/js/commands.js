@@ -141,6 +141,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		"koType=" + clientType,
 		"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
 		"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
+		"koKotype=" + sv.prefs.getString("sciviews.server.type", "file"),
 		"koDebug=" + String(sv.socket.debug).toUpperCase(),
 		"koAppFile=" + sv.tools.file.path("binDir", "komodo" + (isWin? ".exe" : "")),
 		"OutDec=" + sv.prefs.getString("r.csv.dec", "."),

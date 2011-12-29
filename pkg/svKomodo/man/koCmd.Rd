@@ -12,7 +12,7 @@
 
 \usage{
 koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
-    port = getOption("ko.port"), timeout = 1,
+    port = getOption("ko.port"), kotype = getOption("ko.kotype"), timeout = 2,
     type = c("js", "rjsonp", "output"), pad = NULL, \dots)
 }
 
@@ -29,6 +29,8 @@ koCmd(cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
   \item{port}{ The socket port where the SciViews-K server is listening, by
     default, it is port 7052. Can be changed by setting
     \code{options(ko.port = ....)}. }
+  \item{kotype}{ the type of Komodo server in use. Currently
+    (SciViews-K >= 0.9-25), it can be either \code{"socket"} or \code{"file"}. }
   \item{timeout}{ number of seconds to wait for response. }
   \item{type}{ which type of Komodo command do we send? If \code{type = "js"}
     (by default), \code{cmd} is considered to be JavaScript code to be evaluated

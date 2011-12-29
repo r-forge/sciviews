@@ -16,6 +16,7 @@
 
 	Contributor(s):
 	Philippe Grosjean
+	Kamil Barton
 	ActiveState Software Inc (code inspired from)
 
 	Alternatively, the contents of this file may be used under the terms of
@@ -134,6 +135,21 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 						<textbox id="sciviews.server.host" pref="true" width="150"
 						disabled="true"/>
 				</row>
+			</rows>
+		</grid>
+		<hbox align="center">
+		  <label value="Client type:" control="sciviews.server.type"/>
+		  <menulist pref="true" id="sciviews.server.type"
+		   values="file socket" persist="values">
+		   <menupopup />
+		  </menulist>
+		</hbox>		
+		<grid>
+		  <columns>
+				<column flex="1"/> <column flex="2"/> <column flex="1"/> <column
+					flex="2"/>
+			</columns>
+		  <rows>		
 				<row align="center">
 					<label value="Client port #:" control="sciviews.server.socket" />
 					<textbox id="sciviews.server.socket" pref="true" width="50" />

@@ -123,8 +123,6 @@ function PrefR_OnLoad() {
 	// Get the sv object:
 	var p = parent;
 	while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
-    //p = parent;
-	//while (p.opener && (p = p.opener) && !ko) if (p.ko) ko = p.ko;
 
 	var os = Components.classes['@activestate.com/koOs;1']
 		.getService(Components.interfaces.koIOs);
@@ -157,9 +155,9 @@ function PrefR_OnLoad() {
     apps = tmp;
 
     for (var i in apps)
-    menu.appendItem(apps[i].label, i, null);
+		menu.appendItem(apps[i].label, i, null);
 
-    // update cran mirror list (first local, then tries remote at CRAN)
+    // Update cran mirror list (first local, then tries remote at CRAN)
 	if (!PrefR_UpdateCranMirrors(true))
     PrefR_UpdateCranMirrors(false);
 
@@ -272,12 +270,21 @@ function OnPreferencePageOK(prefset) {
 
 	menuListGetValues();
 
-	// Restart socket server if running and port changed
+	// Restart socket server if running and port or channel changed
+	var serverType = document.getElementById('sciviews.server.type').value;
 	var serverPort = document.getElementById('sciviews.server.socket').value;
 	if (sv.socket.serverIsStarted &&
-		serverPort != prefset.getStringPref("sciviews.server.socket")){
+		(serverPort != prefset.getStringPref("sciviews.server.socket") ||
+		serverType != sv.serverType)) {
 		prefset.setStringPref("sciviews.server.socket", serverPort);
+		prefset.setStringPref("sciviews.server.type", serverType);
+		sv.serverType = serverType;
 		sv.socket.serverStart();
+		// TODO: change config in R (better), or warn that R must be restarted!
+	} else {
+		// Just change config
+		prefset.setStringPref("sciviews.server.socket", serverPort);
+		prefset.setStringPref("sciviews.server.type", serverType);
 	}
 	return(true);
 }
@@ -341,7 +348,7 @@ function PrefR_updateCommandLine(update) {
     var cmdArgs = document.getElementById("svRArgs").value;
 	var args1 = "";
 
-	if(document.getElementById("sciviews.pkgs.sciviews").checked)
+	if (document.getElementById("sciviews.pkgs.sciviews").checked)
 			args1 += " --svStartPkgs=SciViews";
 
    	var cwd = sv.tools.file.path("ProfD", "extensions",

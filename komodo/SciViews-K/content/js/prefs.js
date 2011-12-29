@@ -19,6 +19,7 @@ if (typeof(sv.prefs) == "undefined") sv.prefs = {};
 // sv.prefs.defaults[preferenceName] = preferenceValue
 sv.prefs.defaults = {
 	"sciviews.server.socket": "7052",
+	"sciviews.server.type": "file",
 	"sciviews.client.type": "socket",
 	"sciviews.client.socket": "8888",
 	"sciviews.client.id": "SciViewsK",
