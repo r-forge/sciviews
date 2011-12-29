@@ -22,6 +22,7 @@
 // sv.socket.rUpdate();								  	// Update R options
 //
 /////// Socket server //////
+// sv.serverType				// A global variable with 'file' or 'socket'
 // sv.socket.debug              // Debugging mode (in Command Output)
 // sv.socket.serverIsLocal      // Is the socket servicing only localhost?
 //
@@ -44,8 +45,9 @@
 //   does not help at all. (PhG: stange! It works like a charm for me on Mac)
 ////////////////////////////////////////////////////////////////////////////////
 
-// Make sure sv.clientType is defined according to current prefs
+// Make sure sv.clientType and sv.serverType are defined using current prefs
 sv.clientType = sv.prefs.getString("sciviews.client.type", "socket");
+sv.serverType = sv.prefs.getString("sciviews.server.type", "socket");
 
 // Define the 'sv.socket' namespace
 if (typeof(sv.socket) == 'undefined') sv.socket = {};
@@ -57,7 +59,7 @@ var _this = this;
 /////// Socket client //////////////////////////////////////////////////////
 // svSocketMinVersion, partial and _converter are global variables
 // defined in svRinterpreter.js
-this.svSocketMinVersion = "0.9-50";// Min version of svSocket package required
+this.svSocketMinVersion = "0.9-52";// Min version of svSocket package required
 this.svHttpMinVersion = "0.9-52";  // Minimum version of svHttp package required
 this.partial = false;			   // Is the last command send to R partial?
 this.lastCmd = "";				   // Last command issued
@@ -497,6 +499,7 @@ this.rUpdate = function () {
 
 /////// Socket server //////////////////////////////////////////////////////
 this.debug = sv.log.isAll();	// Set to true for debugging mode
+
 this.serverIsLocal = true;		// Is the socket servicing only localhost?
 const nsITransport = Components.interfaces.nsITransport;
 
@@ -505,6 +508,10 @@ var _inputString;				// The string with command send by R
 var _outputString;				// The string with the result to send to R
 var _output = [];				// An array with outputs
 var _timeout = 250;				// Maximal ms to wait for input
+var _gDocFile = "";             // The math to the file we are looking for
+var _gDoc;                      // The file we are looking for, if in file mode
+var _gDocIntervalID = 0;        // The ID if the interval timer
+
 
 // Debug only
 this.serverSocket = _serverSocket;
@@ -595,94 +602,197 @@ this.onStopListening = function (socket, status) {
 };
 // End of 'nsIServerSocketListener' methods
 
-// Core function for the SciViews-K socket server
+// The following function implements the file server reaction in Komodo
+this.checkFile = function ()
+{
+	try {
+		if (_gDoc.differentOnDisk()) {
+			_output = [];
+			if (_this.debug)
+				sv.log.debug("File server: " + _gDocFile + "\n");
+			_gDoc.load();
+			// Reset res file
+			sv.tools.file.write(_gDocFile + ".out", "", "UTF-8", false);
+			var cmd = _gDoc.buffer;
+			if (cmd == "") {
+				_output.push("Error: no command send!");
+			} else {
+				// Process the command
+				if (_this.debug)
+						sv.log.debug("Command send by the client:\n" + cmd);
+				// Note that cmd starts with <<<xxxxxxxx>>> where x = 0-9
+				try {
+					if (cmd.match(/^<<<[0-9]{8}>>><<<js>>>/)) {
+						eval(cmd.substring(22));
+					} else if (cmd.match(/^<<<[0-9]{8}>>><<<rjsonp>>>/)) {
+						sv.rjson.eval(cmd.substring(26));
+					} else {
+						// TODO: this is some output data... wait that R finishes
+						// Sending the output and echo it into the R Output panel
+						sv.r.print(cmd.substring(14), false, false, false);
+					}
+				} catch(e) {
+					_output.push(e.toString());
+				}		
+			}
+			if (_this.debug) sv.log.debug(_output.length ?
+				("Result:\n" + _output.join("\n")) :
+				("Nothing to return to the socket client"));
+			// And finally, return the result to the file client
+			// (append \n at the end)
+			sv.tools.file.write(_gDocFile + ".out",
+				_output.join("\n") + "\n", "UTF-8", true);
+	    }
+	} catch (e) {
+		sv.log.exception(e, "File server: checkFile()," +
+			" unmanaged error");
+	}
+}
+
+// Core function for the SciViews-K socket/file server
 // Create the _serverSocket object
 // TODO: it does not handle correctly conversion
 //       (now an UTF-8 string is returned)
 this.serverStart = function (port) {
-	if (_this.debug) sv.log.debug("Socket server: serverStart");
+	if (_this.debug) sv.log.debug("Socket/file server: serverStart");
 
-	if (_this.serverIsStarted) try {
+	try {
 		_serverSocket.close();
 	} catch(e) {
 		sv.log.exception(e, "sv.socket.serverStart() failed to close the" +
-			" socket before reopening it");
+			" socket/file before reopening it");
 	}
-	try {
-		_serverSocket = Components
-			.classes["@mozilla.org/network/server-socket;1"]
-			.createInstance(Components.interfaces.nsIServerSocket);
-		if (port) {
-			sv.prefs.setString("sciviews.server.socket", port);
-		} else {
-			port = sv.prefs.getString("sciviews.server.socket", "7052");
+	// Make sure port is OK
+	if (port) {
+		sv.prefs.setString("sciviews.server.socket", port);
+	} else {
+		port = sv.prefs.getString("sciviews.server.socket", "7052");
+	}
+	// The way the server is started depends on its type (file or socket)
+	if (sv.serverType == "file") {
+		// File name is: <tempdir>.sv<port>
+		// <tempdir> is /tmp/ everywhere, except on Windows, where it is the
+		// the default system temp dir
+		var tempdir = "/tmp/"
+		if (navigator.platform.indexOf("Win") == 0) {
+			var nsIFile = Components.interfaces.nsIFile;
+			var dirSvc = Components
+				.classes["@mozilla.org/file/directory_service;1"]
+				.getService(Components.interfaces.nsIProperties);
+			tempdir = dirSvc.get("TmpD", nsIFile).path + "\\";
 		}
+		var file = ".sv" + port
+		_gDocFile = tempdir + file; 
+		// (re)create this file
+		sv.tools.file.write(_gDocFile, "\n", "UTF-8", false);
+		var documentService = Components
+			.classes["@activestate.com/koDocumentService;1"].getService();
+		_gDoc = documentService
+			.createDocumentFromURI(ko.uriparse.localPathToURI(_gDocFile));
+		_gDoc.addReference();
+		if (!_gDoc) alert("Problem creating or accessing '" + _gDocFile + "'");
+		_gDoc.load();
+		_gDocIntervalID = window.setInterval('sv.socket.checkFile()', 500);
+		ko.statusBar.AddMessage("Listening to " + _gDocFile, "SciViews-K",
+			3000, true);
+	} else { // Must be a socket server
+		try {
+			_serverSocket = Components
+				.classes["@mozilla.org/network/server-socket;1"]
+				.createInstance(Components.interfaces.nsIServerSocket);
+			_serverSocket.init(port, _this.serverIsLocal, -1);
+			_serverSocket.asyncListen(_this);
+			this.serverSocket = _serverSocket;
+		} catch(e) {
+			//TODO: add exception type checking here (see below)
+			port = parseInt(port);
+			// PhG: do this silently!
+			//if (ko.dialogs.okCancel(
+			//	sv.translate("Cannot open a server socket to allow communication "
+			//		+ " from R to Komodo on port %S.\n" +
+			//		"Click OK to change port to %S and try again.", port, port + 1),
+			//		"OK", null, "SciViews-K") == "OK") {
+			// Avoid increasing constantly the port number!
+			if (port >= 8000) port = 7051;
+			sv.prefs.setString("sciviews.server.socket", port + 1);
+			_this.serverStart();
+			//}
+			return;
 
-		_serverSocket.init(port, _this.serverIsLocal, -1);
-		_serverSocket.asyncListen(_this);
-		this.serverSocket = _serverSocket;
-	} catch(e) {
-		//TODO: add exception type checking here (see below)
-		port = parseInt(port);
-		// PhG: do this silently!
-		//if (ko.dialogs.okCancel(
-		//	sv.translate("Cannot open a server socket to allow communication "
-		//		+ " from R to Komodo on port %S.\n" +
-		//		"Click OK to change port to %S and try again.", port, port + 1),
-		//		"OK", null, "SciViews-K") == "OK") {
-		// Avoid increasing constantly the port number!
-		if (port >= 8000) port = 7051;
-		sv.prefs.setString("sciviews.server.socket", port + 1);
-		_this.serverStart();
-		//}
-		return;
-
-		// sv.log.exception(e, "SciViews-K cannot open a server socket on port "
-		//	+ port + ".\nMake sure the port is not already used by another" +
-		//	" Komodo instance" + "\nor choose another port in the" +
-		//	" preferences and restart Komodo", false);
-		// If the port is already used, I got:
-		// "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame ::
-		// chrome://sciviewsk/content/js/socket.js :: anonymous :: line 285
+			// sv.log.exception(e, "SciViews-K cannot open a server socket on port "
+			//	+ port + ".\nMake sure the port is not already used by another" +
+			//	" Komodo instance" + "\nor choose another port in the" +
+			//	" preferences and restart Komodo", false);
+			// If the port is already used, I got:
+			// "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame ::
+			// chrome://sciviewsk/content/js/socket.js :: anonymous :: line 285
+		}
 	}
 	if (_this.debug)
-		sv.log.debug("serverStart: Socket server started");
+		sv.log.debug("serverStart: Socket/file server started");
 	ko.statusBar.AddMessage(
-		"SciViews-K socket server started", "SciViews-K server", 2000, true);
+		"SciViews-K socket/file server started", "SciViews-K server",
+		2000, true);
 }
 
-// Stop the SciViews-K socket server
+// Stop the SciViews-K socket/file server
 this.serverStop = function () {
-	if (_this.serverIsStarted) {
+	var isStopped = false;
+	// Try stopping the file server
+	if (_gDocIntervalID != 0) {
 		try {
-			_serverSocket.close();
-		} catch(e) {
+			isStopped = true;
+			window.clearInterval(_gDocIntervalID);
+			_gDocIntervalID = 0;
+			_gDoc.releaseReference();
+			ko.statusBar.AddMessage("Stop listening to " + _gDocFile,
+				"SciViews-K", 3000, true);
+		} catch (e) {
 			sv.log.exception(e, "Socket server: serverStop() cannot" +
-				" close the socket", true);
+				" close the file", true);				
+		}	
+	}
+	// Try stopping the socket server
+	if (typeof(sv.socket.serverSocket) != "undefined") {
+		try {
+			_this.serverSocket.asyncListen(_this);
+		} catch(e) {
+			if (e.name == "NS_ERROR_IN_PROGRESS") {
+				isStopped = true;
+				try {
+					_serverSocket.close();
+				} catch(e) {
+				sv.log.exception(e, "Socket server: serverStop() cannot" +
+					" close the socket", true);
+				}
+			}
 		}
-		if (_this.debug) sv.log.debug("Socket server stopped");
+	}
+	if (!isStopped) {
 		ko.statusBar.AddMessage(
-			"SciViews-K socket server stopped", "SciViews-K server",
-			2000, true);
-	} else {
-		ko.statusBar.AddMessage(
-			"SciViews-K socket server is not started", "SciViews-K server",
+			"SciViews-K socket/file server is not started", "SciViews-K server",
 			2000, true);
 	}
 }
 
 // Is the SciViews-K socket server started?
 this.__defineGetter__ ('serverIsStarted', function () {
-	// Use brute force to find whether socketServer is initiated and listening
-	if (typeof(sv.socket.serverSocket) == "undefined") return(false);
-	try {
-		_this.serverSocket.asyncListen(_this);
-	} catch(e) {
-		if (e.name == "NS_ERROR_IN_PROGRESS") return(true);
-		else if (e.name == "NS_ERROR_NOT_INITIALIZED") return(false);
-		else sv.log.exception(e);
+	// Depends on the server type
+	if (sv.serverType == "file") {
+		// Look at _gDocIntervalID
+		return(_gDocIntervalID != 0);
+	} else { // Must be a socket server	
+		// Use brute force to find whether socketServer is initiated and listening
+		if (typeof(sv.socket.serverSocket) == "undefined") return(false);
+		try {
+			_this.serverSocket.asyncListen(_this);
+		} catch(e) {
+			if (e.name == "NS_ERROR_IN_PROGRESS") return(true);
+			else if (e.name == "NS_ERROR_NOT_INITIALIZED") return(false);
+			else sv.log.exception(e);
+		}
+		return(true);
 	}
-	return(true);
 });
 
 // What is the current SciViews-K socket server config?
@@ -691,16 +801,22 @@ this.serverConfig = function () {
 	if (_this.serverIsStarted) serverStatus = " (started)"
 	var port = sv.prefs.getString("sciviews.server.socket", "7052");
 	if (_this.serverIsLocal) {
-		return("Local socket server on port " + port + serverStatus);
+		return("Local " + sv.serverType + " server on port " +
+			port + serverStatus);
 	} else {
-		return("Global socket server on port " + port + serverStatus);
+		return("Global " + sv.serverType + " server on port " +
+			port + serverStatus);
 	}
 }
 
 // Write to the socket server, use this to return something to the client
 this.serverWrite = function (data) {
 	if (_this.serverIsStarted) {
-		_output.push(_fromUnicode(data));
+		if (sv.serverType == "file") {
+			_output.push(data);
+		} else { // This must be a socket server, and I have to translate
+			_output.push(_fromUnicode(data));
+		}
 	} else {
 		sv.alert("The socket server in unavailable",
 			"Trying to write data though the SciViews-K socket server" +

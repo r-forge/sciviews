@@ -53,7 +53,7 @@
 FIXME: A loose list: PhG: YES, we definitely need to rethink SciViews-K
 shortcuts, but:
 1) The FX shortcuts you propose for main R interaction function (send to R,
-   source, etc.) are not easy to remeber, and are not easy to use on a Mac. FX
+   source, etc.) are not easy to remember, and are not easy to use on a Mac. FX
    keys are NOT commonly used on a Mac, and you have to press Fn+FX in original
    keyboard config (this can be changed in the system preferences),
 2) The key combinations should work on all three platforms Windows, Linux & Mac

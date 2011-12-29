@@ -1,5 +1,10 @@
 = svKomodo News
 
+== Changes in svKomodo 0.9-53
+
+* koCmd() can now use either socket or file for communication with Komodo.
+
+
 == Changes in svKomodo 0.9-52
 
 * The package is created from svGUI 0.9-51 (functions that concern interaction

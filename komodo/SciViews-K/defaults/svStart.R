@@ -5,6 +5,7 @@
 ## Version 0.9.19, 2010-10-03 mod by Ph. Grosjean
 ## Version 0.9.20, 2010-11-10 mod by K. Barton
 ## Version 0.9.23, 2011-08-05 mod by Ph. Grosjean
+## Version 0.9.25, 2011-12-28 mod by Ph. Grosjean
 
 ## TODO: also use value in koDebug to debug server from within R!
 ## TODO: use the mechanism of startHttpServer() to retrieve default config
@@ -14,6 +15,9 @@
 ## that way, one should be able to reconfigure R for SciViews communication
 ## just by loading the svKomodo package... but without rechecking if
 ## required packages are installed, versions, etc...
+## TODO: I have now a work-around with print.help_files_with_topic but still
+## help(package = ....) gets to the R.app help => I also need a workaround
+## there!
 
 "svStart" <-
 function (minRVersion = "2.11.1", minVersion = NA,
@@ -164,6 +168,8 @@ skip = NULL)
 		svOption("ko.port", default = 7052, args = args, as.type = as.integer)
 		## The id used by Komodo
 		svOption("ko.id", default = "SciViewsK", args = args)
+		## Which type of Komodo server do we use?
+		svOption("ko.kotype", default = "file", args = args)
 		## Do we reactivate Komodo?
 		svOption("ko.activate", default = FALSE, args = args, as.type = as.logical)
 		## The id used for this R kernel in Komodo
@@ -561,8 +567,10 @@ skip = NULL)
 ## a work-around for this in R 2.12!!!)
 if (compareVersion(rVersion, "2.11.0") < 0) {
 	source("print.help_files_with_topic210.R")
-} else {
+} else if (compareVersion(rVersion, "2.14.0") < 0) {
 	source("print.help_files_with_topic211.R")
+} else {
+	source("print.help_files_with_topic214.R")
 }
 
 		## Change the working directory to the provided directory
