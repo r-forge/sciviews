@@ -81,6 +81,7 @@ sv.rconsole = {};
             }
             _ClearUI();
     
+            // TODO: shouldn't we eliminate this???
             var treeWidget = document.getElementById("rconsole-tree");
             var boxObject = treeWidget.treeBoxObject
                 .QueryInterface(Components.interfaces.nsITreeBoxObject);
@@ -95,7 +96,7 @@ sv.rconsole = {};
             _gRTerminalView.initWithTerminal(_gRTerminalHandler);
             boxObject.view = _gRTerminalHandler;
     
-            // This does not work!? cf. window.frameElement reproted as null
+            // This does not work!? cf. window.frameElement reported as null
             //["mousedown", "focus"].forEach(function(eventname) {
             //        window.frameElement.addEventListener(eventname, function(event) {
             //        if (event.originalTarget == event.target) {
@@ -109,6 +110,10 @@ sv.rconsole = {};
             // Also make sure to trigger initialisation of R Output scimoz
             // by appending the prompt to it
             sv.cmdout.append(":> ", false);
+            // Observe keypress event on the R Console panel
+            document.getElementById("rconsole-scintilla")
+                .addEventListener('keypress', sv.rconsole.rconsoleOnKeyPress,
+                true);            
             // And observe keypress events on the R Output panel
             document.getElementById("rconsole-scintilla2")
                 .addEventListener('keypress', sv.rconsole.routputOnKeyPress,
@@ -144,13 +149,13 @@ sv.rconsole = {};
     
     // Start a terminal session with R in the console with the given command.
     // This raises an exception if the R console window is currently busy.
-    // No! No exception, replaced by simple dispaly of the R Console tab
+    // No! No exception, replaced by simple display of the R Console tab
     //    "command" is the command being used to start R (note that this is the
     //    command string *for display* which might be slight different
     //    -- passwords obscured -- than the actual command)
     //    "cwd" is the directory in which the command is being run
     //    "clearContent" is a boolean indicating whether to clear the
-    //      R console window content (by default "true").
+    //    R console window content (by default "true").
     this.startSession = function RConsole_StartSession(command, cwd,
         clearContent /* =true */)
     {
@@ -336,15 +341,15 @@ sv.rconsole = {};
         //var scimoz = document.getElementById("runoutput-scintilla").scimoz;
         var scimoz = _gRTerminalView;
         var eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
-        if (newline || newline === undefined) str += eolChar;
-        //var str_bytelength = ko.stringutils.bytelength(str);
+        if (newline || newline === undefined) command += eolChar;
+        //var cmd_bytelength = ko.stringutils.bytelength(command);
         //var readOnly = scimoz.readOnly;
         try {
         //    scimoz.readOnly = false;
         //    scimoz.documentEnd()
             // TODO: elliminate current line being edited
             //TODO: code here!!!
-        //    scimoz.appendText(str_bytelength, str);
+        //    scimoz.appendText(cmd_bytelength, command);
         } finally {
         //    scimoz.readOnly = readOnly;
         }
@@ -418,8 +423,30 @@ sv.rconsole = {};
     
     window.addEventListener("focus", this.onFocus, false);
     
+    // This is used to avoid double printing of R commands: erase current line
+    // before sending it to R...
+    this.rconsoleOnKeyPress = function (event) {
+        try {
+        	// TODO: implement the function that erase the command
+            if (event.keyCode == 13) {
+                // TODO: what am I supposed to do here???
+            }
+            
+            // This does not work because another event is dealing with this
+            // case differently
+            //var str = String.fromCharCode(event.charCode);
+        	//if (str.length && !event.ctrlKey &&
+            //    !event.altKey && !event.metaKey) {
+        	//	var editor = ko.views.manager.currentView;
+            //    editor.setFocus();
+        	//	editor.scimoz.replaceSel(str);
+        	//}
+        } catch(e) { }
+    }
+    
     // Since R Output panel is read-only, redirect any key typed there to the
     // current editor buffer
+    // TODO: shouldn't we redirect to the R console instead???
     // Note: the event that triggers this function is placed in
     // this.initialize(), otherwise, it does not work!
     this.routputOnKeyPress = function (event) {
