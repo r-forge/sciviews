@@ -196,8 +196,8 @@ menuDelItem <- function (menuname, itemname)
 		setwd("..")
 		folder <- file.path(".", basename(.unixMenuFolder()))
 		unlink(folder, recursive = TRUE)
+		dir.create(folder, recursive = TRUE)
 	}
-	dir.create(folder, recursive = TRUE)
     ## Now, I can assume that the dir is created and is empty
     return(invisible(NULL))
 }
