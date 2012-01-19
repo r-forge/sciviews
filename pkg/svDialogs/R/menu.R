@@ -190,7 +190,7 @@ menuDelItem <- function (menuname, itemname)
     res <- try(setwd(.unixMenuFolder()), silent = TRUE)
 	if (inherits(res, "try-error")) {
 		## The directory does not exists yet... create it!
-		dir.create(.uniMenuFolder(), recursive = TRUE)
+		dir.create(.unixMenuFolder(), recursive = TRUE)
 	} else {
 		## The directory already exists... clear it now
 		setwd("..")
