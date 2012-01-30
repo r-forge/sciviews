@@ -9,6 +9,16 @@
 	return(invisible(res))
 }
 
+.menuFileInit <- function ()
+{
+		res <- switch(Sys.info()["sysname"],
+		Windows = NULL,
+		Darwin = NULL, # TODO: should we have a default menu?
+		.unixMenuFileInit()
+	)
+	return(invisible(res))
+}
+
 menuAdd <- function (menuname)
 {
 	res <- switch(Sys.info()["sysname"],
@@ -159,8 +169,25 @@ menuDelItem <- function (menuname, itemname)
     return(invisible(NULL))    
 }
 
+## This holds the custom menu structure in an R object
+.Rmenu <- function ()
+{
+	## The custom R menu is cached in a Rmenu object in TempEnv
+	return(getTemp("Rmenu", default = list(), mode = "list"))
+}
 
 ## Linux/Unix version
+## To use R custom context menu, you have to install xvkbd and xdotool
+## You need also to compile and install myGtkmenu
+## On Ubuntu:
+## sudo apt-get install xvkbd xdotool
+## Warning, you need to insqtall the English (US) keymap, even if you don't use
+## it. Otherwise, xvkbd will issue strange things in your R console!
+## TODO: install and configure myGTKmenu... + add shortcut keys!
+## Use xbindkeys to bind shell commands to keyboard and mouse keys
+## chmod +x myGtkmenu
+##
+## THIS IS THE OLD VERSION (COMMENTED CODE BELLOW!)
 ## Explanation: to run this, you need to install xvkbd and file-browser-applet
 ## for Gnome. Under Ubuntu, you make:
 ## sudo apt-get install file-browser-apple
@@ -169,7 +196,7 @@ menuDelItem <- function (menuname, itemname)
 ## Then, you need to install and configure a file browser applet in a panel
 ## right-click in a panel, select 'add to Panel...' and drag&drop a 'File Browser'
 ## Right-click on the file browser and select 'Preferences'. In the preference
-## box, eleminate the default entry (Home) and add all subdirectories from
+## box, eliminate the default entry (Home) and add all subdirectories from
 ## ~/Scripts/Applications/R. You can access R menus from there, and it sends
 ## corresponding commands to the focused window (e.g., a terminal running R)
 ## TODO: find a similar item for KDE and new Ubuntu unity interface!
@@ -178,76 +205,267 @@ menuDelItem <- function (menuname, itemname)
 .unixMenuFolder <- function ()
 {
 	## Get the root folder for the R menus
-	return(getOption("menuFolder", default = "~/R/R menu"))
+	return(getOption("menuFolder", default = "/tmp"))
 }
 
-.unixMenuClear <- function () {
+.unixMenuFile <- function ()
+{
+	## Get the name of the file that contains the R menu
+	return(file.path(.unixMenuFolder(), paste(Sys.getenv("WINDOWID"),
+		"Menu.txt", sep = "")))
+}
+
+.unixMenuFileInit <- function ()
+{
+	## Initialize the R menu file with default items
+	fil <- .unixMenuFile()
+	## Get the default R menu and start from there
+	def <- file.path("~", "SciViews", "menus", "RMenu.txt")
+	if (file.exists(def)) {
+		file.copy(def, fil, overwrite = TRUE)
+	} else file.copy(system.file("gui", "RMenu.txt", package = "svDialogs"),
+		fil, overwrite = TRUE)
+	return(invisible(NULL))
+}
+
+.unixMenuSave <- function (mnu, file = TRUE)
+{
+	## Save the menu structure in both Rmenu object in TempEnv and in a file
+	## mnu is either a list of lists with menu entries, or NULL to delete all
+	## custom menus
+	assignTemp("Rmenu", mnu)
+	if (!isTRUE(file)) return(invisible(NULL))
+	## The menu file is:
+	fil <- .unixMenuFile()
+	if (is.null(mnu)) {
+		## Clear the file
+		unlink(fil)
+	} else {
+		## Populate the file with the content of the Rmenu object
+		makeMenu <- function (lst, indent = 0, file = fil) {
+			l <- length(lst)
+			if (l < 1) return()
+			nms <- names(lst)
+			for (i in 1:l) {
+				item <- nms[i]
+				if (is.list(lst[[i]])) {
+					## Create a new menu
+					cat("\n", rep("\t", indent), "submenu=", item, "\n",
+						sep = "", file = file, append = TRUE)
+					makeMenu(lst[[i]], indent = indent + 1)
+				} else {
+					## Is this a separator?
+					if (grepl("^-",  item)) {
+						cat("\n", rep("\t", indent), "separator\n",
+							sep = "", file = file, append = TRUE)
+					} else { # Add an item in current menu
+						ind <- rep("\t", indent)
+						## Rework commands using xvkbd -text "cmd\r"
+						cmd <- as.character(lst[[i]])[1]
+						if (cmd == "none") {
+							cmd <- "NULL" # This is the "no cmd" for ctxmenu
+						} else {
+							cmd <- paste(cmd, "\\r", sep = "")
+							cmd <- paste("xvkbd -text", shQuote(cmd))
+						}
+						cat("\n", ind, "item=", item, "\n", ind, "cmd=", cmd,
+							"\n", sep = "", file = file, append = TRUE)
+					}
+				}
+			}
+		}
+		## Initialize the menu with default items
+		.unixMenuFileInit()
+		## Add custom menus to it...
+		cat("\nseparator # Here starts the custom R menus\n\n",
+			file = fil, append = TRUE)
+		makeMenu(mnu)
+	}
+	return(invisible(fil))
+}
+
+.unixMenuClear <- function ()
+{
     ## To be called when svDialogs package loads: make sure to zap all
     ## custom menu items that may have been previously defined
     ## (also call it when the package closes)
-    odir <- getwd()
-    on.exit(setwd(odir))
-    res <- try(setwd(.unixMenuFolder()), silent = TRUE)
-	if (inherits(res, "try-error")) {
-		## The directory does not exists yet... create it!
-		dir.create(.unixMenuFolder(), recursive = TRUE)
-	} else {
-		## The directory already exists... clear it now
-		setwd("..")
-		folder <- file.path(".", basename(.unixMenuFolder()))
-		unlink(folder, recursive = TRUE)
-		dir.create(folder, recursive = TRUE)
-	}
+#    odir <- getwd()
+#    on.exit(setwd(odir))
+#    res <- try(setwd(.unixMenuFolder()), silent = TRUE)
+#	if (inherits(res, "try-error")) {
+#		## The directory does not exists yet... create it!
+#		dir.create(.unixMenuFolder(), recursive = TRUE)
+#		## TODO: put the default R menu there...
+#	} else {
+#		## The directory already exists... clear it now
+#		setwd("..")
+#		folder <- file.path(".", basename(.unixMenuFolder()))
+#		unlink(folder, recursive = TRUE)
+#		dir.create(folder, recursive = TRUE)
+#		## TODO: a different procedure that does not delete the default R menu
+#	}
     ## Now, I can assume that the dir is created and is empty
+
+	## Make also sure that 'Rmenu' application is installed
+	## TODO...
+
+	## Also clear the local object
+	.unixMenuSave(NULL)
+	unlink(.unixMenuFile())
     return(invisible(NULL))
 }
 
-.unixMenuAdd <- function (menuname) {
-    ## I just need to create (recursively) the directories
-    dir.create(file.path(.unixMenuFolder(), menuname),
-		showWarnings = FALSE, recursive = TRUE)
-    return(invisible(NULL))
+.unixMenuAdd <- function (menuname, itemname = NULL, action = "none") {
+#    ## I just need to create (recursively) the directories
+#    dir.create(file.path(.unixMenuFolder(), menuname),
+#		showWarnings = FALSE, recursive = TRUE)
+
+	## Add this menu to our Rmenu object
+	mnu <- .Rmenu()
+	items <- strsplit(as.character(menuname), "/", fixed = TRUE)[[1]]
+	## allow for a maximum of 5 sublevels (should be largely enough!)
+	l <- length(items)
+	if (l == 1) {
+		if (!is.null(mnu[[items[1]]])) {
+			## If this is not a list, we got an error
+			if (!is.list(mnu[[items[1]]]))
+				stop(menuname, " is already defined and is not a menu")
+		} else { # Create it
+			mnu[[items[1]]] <- list()
+		}
+		## Do we create an menu item there too?
+		if (!is.null(itemname))
+			mnu[[items[1]]][[itemname]] <- action
+	} else if (l == 2) {
+		if (!is.null(mnu[[items[1]]][[items[2]]])) {
+			## If this is not a list, we got an error
+			if (!is.list(mnu[[items[1]]][[items[2]]]))
+				stop(menuname, " is already defined and is not a menu")
+		} else { # Create it
+			mnu[[items[1]]][[items[2]]] <- list()
+		}
+		## Do we create an menu item there too?
+		if (!is.null(itemname))
+			mnu[[items[1]]][[items[2]]][[itemname]] <- action
+	} else if (l == 3) {
+				if (!is.null(mnu[[items[1]]][[items[2]]][[items[3]]])) {
+			## If this is not a list, we got an error
+			if (!is.list(mnu[[items[1]]][[items[2]]][[items[3]]]))
+				stop(menuname, " is already defined and is not a menu")
+		} else { # Create it
+			mnu[[items[1]]][[items[2]]][[items[3]]] <- list()
+		}
+		## Do we create an menu item there too?
+		if (!is.null(itemname))
+			mnu[[items[1]]][[items[2]]][[items[3]]][[itemname]] <- action
+	} else if (l == 4) {
+		if (!is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]])) {
+			## If this is not a list, we got an error
+			if (!is.list(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]]))
+				stop(menuname, " is already defined and is not a menu")
+		} else { # Create it
+			mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]] <- list()
+		}
+		## Do we create an menu item there too?
+		if (!is.null(itemname))
+			mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[itemname]] <- action
+	} else if (l == 5) {
+		if (!is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]])) {
+			## If this is not a list, we got an error
+			if (!is.list(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]]))
+				stop(menuname, " is already defined and is not a menu")
+		} else { # Create it
+			mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]] <- list()
+		}
+		## Do we create an menu item there too?
+		if (!is.null(itemname))
+			mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]][[itemname]] <- action
+	} else if (l > 5) {
+		stop("You cannot use more than 5 menu levels")
+	}
+	## Save these changes
+	.unixMenuSave(mnu)
+	return(invisible(NULL))
 }
 
 .unixMenuAddItem <- function (menuname, itemname, action) {
-    ## Make sure that the dir is created
-    .unixMenuAdd(menuname)
-    ## Add an executable file in it with 'itemname' name
-    ## and containing: xvkbd -text "action\r" except if action is "none"
-    cmdFile <- file.path(.unixMenuFolder(), menuname, itemname)
-	if (action == "none") {
-		cat("\n", file = cmdFile)
-    } else {
-		## Make sure to quote "
-		action <- gsub('"', '\\\\"', action)
-		## Also replace \n, \r and \t (and wait 200ms between lines)
-		action <- gsub('\n', '\\\\r\\\\D2', action)
-		action <- gsub('\r', '\\\\r\\\\D2', action)
-		action <- gsub('\t', '    ', action)
-		cat("xvkbd -text \"", action, "\\r\"\n", sep = "", file = cmdFile)
-    }
-    ## Make this file executable
-    Sys.chmod(cmdFile, mode = "755")
-    return(invisible(NULL))
+	return(.unixMenuAdd(menuname, itemname, action))
+#    ## Make sure that the dir is created
+#    .unixMenuAdd(menuname)
+#    ## Add an executable file in it with 'itemname' name
+#    ## and containing: xvkbd -text "action\r" except if action is "none"
+#    cmdFile <- file.path(.unixMenuFolder(), menuname, itemname)
+#	if (action == "none") {
+#		cat("\n", file = cmdFile)
+#    } else {
+#		## Make sure to quote "
+#		action <- gsub('"', '\\\\"', action)
+#		## Also replace \n, \r and \t (and wait 200ms between lines)
+#		action <- gsub('\n', '\\\\r\\\\D2', action)
+#		action <- gsub('\r', '\\\\r\\\\D2', action)
+#		action <- gsub('\t', '    ', action)
+#		cat("xvkbd -text \"", action, "\\r\"\n", sep = "", file = cmdFile)
+#    }
+#    ## Make this file executable
+#    Sys.chmod(cmdFile, mode = "755")
+#    return(invisible(NULL))
 }
 
 .unixMenuDel <- function (menuname) {
-    ## Unlink does not like ~ => change working dir first
-    odir <- getwd()
-    on.exit(setwd(odir))
-    setwd(.unixMenuFolder())
-    unlink(menuname, recursive = TRUE)
-    return(invisible(NULL))
+	mnu <- .Rmenu()
+	items <- strsplit(as.character(menuname), "/", fixed = TRUE)[[1]]
+	## Allow for a maximum of 5 sublevels (should be largely enough!)
+	l <- length(items)
+	if (l == 1 && !is.null(mnu[[items[1]]])) {
+		mnu[[items[1]]] <- NULL
+	} else if (l == 2 && !is.null(mnu[[items[1]]][[items[2]]])) {
+		mnu[[items[1]]][[items[2]]] <- NULL
+	} else if (l == 3 && !is.null(mnu[[items[1]]][[items[2]]][[items[3]]])) {
+		mnu[[items[1]]][[items[2]]][[items[3]]] <- NULL
+	} else if (l == 4 && !is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]])) {
+		mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]] <- NULL
+	} else if (l == 5 && !is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]])) {
+		mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]] <- NULL
+	} else return(invisible(NULL))
+	## Save these changes
+	.unixMenuSave(mnu)
+	return(invisible(NULL))	
+		
+#    ## Unlink does not like ~ => change working dir first
+#    odir <- getwd()
+#    on.exit(setwd(odir))
+#    setwd(.unixMenuFolder())
+#    unlink(menuname, recursive = TRUE)
+#    return(invisible(NULL))
 }
 
 .unixMenuDelItem <- function (menuname, itemname) {
-    ## Unlink does not like ~ => change working dir first
-    path <- file.path(.unixMenuFolder(), menuname)
-    if (file.exists(path) && file.info(path)$isdir) {
-		odir <- getwd()
-		on.exit(setwd(odir))
-		setwd(path)
-		unlink(itemname)
-    }
-    return(invisible(NULL))    
+	mnu <- .Rmenu()
+	items <- strsplit(as.character(menuname), "/", fixed = TRUE)[[1]]
+	## Allow for a maximum of 5 sublevels (should be largely enough!)
+	l <- length(items)
+	if (l == 1 && !is.null(mnu[[items[1]]][[itemname]])) {
+		mnu[[items[1]]][[itemname]] <- NULL
+	} else if (l == 2 && !is.null(mnu[[items[1]]][[items[2]]][[itemname]])) {
+		mnu[[items[1]]][[items[2]]][[itemname]] <- NULL
+	} else if (l == 3 && !is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[itemname]])) {
+		mnu[[items[1]]][[items[2]]][[items[3]]][[itemname]] <- NULL
+	} else if (l == 4 && !is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[itemname]])) {
+		mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[itemname]] <- NULL
+	} else if (l == 5 && !is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]][[itemname]])) {
+		mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]][[itemname]] <- NULL
+	} else return(invisible(NULL))
+	## Save these changes
+	.unixMenuSave(mnu)
+	return(invisible(NULL))	
+	
+#    ## Unlink does not like ~ => change working dir first
+#    path <- file.path(.unixMenuFolder(), menuname)
+#    if (file.exists(path) && file.info(path)$isdir) {
+#		odir <- getwd()
+#		on.exit(setwd(odir))
+#		setwd(path)
+#		unlink(itemname)
+#    }
+#    return(invisible(NULL))    
 }

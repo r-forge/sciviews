@@ -58,6 +58,6 @@ imgtype = "tkImage")
 	## Create image resources by reading a series of image files from the 'gui'
 	## subdirectory of a package
 	dir <- system.file(subdir, package = package)
-	res <- ImgRead(dir= dir, type = type, imgtype = imgtype)
+	res <- ImgRead(dir = dir, type = type, imgtype = imgtype)
 	return(invisible(res))
 }
