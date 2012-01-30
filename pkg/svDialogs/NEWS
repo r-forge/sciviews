@@ -1,5 +1,12 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-46
+
+* The functions to handle menus in Linux are completely rewritten to use a menu
+  configuration file that a modified version of myGtkMenu (named ctxmenu) can
+  read and interpret to display the corresponding menus.
+
+
 == Changes in svDialogs 0.9-45
 
 * Similar custom menus as winMenuXXX() functions are added and allow to add

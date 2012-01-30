@@ -1,0 +1,371 @@
+# R default menu
+
+menupos= 0 0
+
+item=SciViews R
+cmd=NULL
+
+separator
+
+submenu=File
+	
+	item=_Source R code...
+	cmd=sh -c 'xvkbd -window `xdotool getactivewindow` -text "source(\""`zenity --file-selection --title="Source an R file" --file-filter="R files (*.R) | *.R *.r"`"\")\r"'
+	
+	item=_New script
+	cmd=NULL
+	
+	item=_Open script...
+	cmd=NULL
+	
+	item=_Display file(s)...
+	cmd=NULL
+	
+	separator
+	
+	item=_Load Workspace...
+	cmd=NULL # R images (*.Rdata)
+	
+	item=_Save Workspace...
+	cmd=NULL
+	
+	separator
+	
+	item=_Load History...
+	cmd=NULL # (*.*)
+	
+	item=_Save History...
+	cmd=NULL
+	
+	separator
+	
+	item=_Change dir...
+	cmd=NULL
+	
+	separator
+	
+	item=_Print...
+	cmd=NULL
+	
+	item=_Save to File...
+	cmd=NULL # lastsave.txt - Text file (*.txt)
+	
+	separator
+	
+	item=_Exit
+	cmd=NULL
+
+submenu=_Edit
+
+	item=Copy
+	cmd=NULL
+	
+	item=Paste
+	cmd=NULL
+	
+	item=Paste commands only
+	cmd=NULL
+	
+	item=Copy and Paste
+	cmd=NULL
+	
+	item=Clear console
+	cmd=NULL
+	
+	separator
+	
+	item=Data editor...
+	cmd=NULL
+	
+	separator
+	
+	item=GUI preferences...
+	cmd=NULL
+	
+submenu=_Misc
+	
+	item=Stop current computation
+	cmd=NULL
+	
+	item=Stop all computations
+	cmd=NULL
+	
+	separator
+	
+	item=Buffered output
+	cmd=NULL
+	
+	item=Word completion
+	cmd=NULL
+	
+	item=Filename completion
+	cmd=NULL
+	
+	separator
+	
+	item=List objects
+	cmd=xvkbd -text "ls()\r"
+	
+	item=Remove all objects
+	cmd=sh -c 'zenity --question --title="Remove all objects" --text="Are you sure?" && xvkbd -text "rm(list = ls(all = TRUE))\r"'
+	
+	item=List search path
+	cmd=xvkbd -text "search()\r"
+	
+submenu=_Packages
+	
+	item=Load package...
+	cmd=xvkbd -text "local({pkg <- select.list(sort(.packages(all.available = TRUE)), graphics = TRUE)\r    if (nchar(pkg)) library(pkg, character.only = TRUE)})\r"
+	
+	separator
+	
+	item=Set CRAN mirror...
+	cmd=xvkbd -text "chooseCRANmirror()\r"
+	
+	item=Select repositories...
+	cmd=xvkbd -text "setRepositories()\r"
+	
+	item=Install package(s)...
+	cmd=NULL #object not found! xvkbd -text "utils:::menuInstallPkgs()\r"
+	
+	item=Update packages...
+	cmd=xvkbd -text "update.packages(ask = 'graphics', checkBuild = TRUE)\r"
+	
+	separator
+	
+	item=Install package(s) from local files...
+	cmd=NULL #utils:::menuInstallLocal()[select one or more .tar.gz file(s) or .tgz]xvkbd -text "install.packages(<file>, repos = NULL)"
+	
+submenu=_Windows
+	
+	item=New graph
+	cmd=xvkbd -text "dev.new()\r"
+	
+	item=Activate next graph
+	cmd=xvkbd -text "dev.set()\r"
+	
+	item=Close all graphs
+	cmd=xvkbd -text "graphics.off()\r"
+	
+submenu=_Help
+	
+	item=Console
+	cmd=NULL
+	
+	separator
+	
+	item=FAQ on R
+	cmd=NULL
+	
+	submenu=_Manuals (in PDF)
+		
+		item=An introduction to R
+		cmd=NULL
+		
+		item=R Reference Manual
+		cmd=NULL
+		
+		item=R Data Import/Export
+		cmd=NULL
+		
+		item=R Language Definition
+		cmd=NULL
+		
+		item=Writing R Extensions
+		cmd=NULL
+		
+		item=R Internals
+		cmd=NULL
+		
+		item=R Installation and Administration
+		cmd=NULL
+		
+		item=Sweave User
+		cmd=NULL
+		
+	separator
+	
+	item=R functions (text)...
+	cmd=NULL #help(<topic>)
+	
+	item=Html help
+	cmd=xvkbd -text "help.start()\r"
+	
+	item=Search help...
+	cmd=NULL #help.search(<topic>)
+	
+	item=search.r-project.org...
+	cmd=NULL #RSiteSearch(<topic>)
+	
+	separator
+	
+	item=Apropos...
+	cmd=NULL #apropos(<topic>)
+	
+	separator
+	
+	item=R project home page
+	cmd=NULL #display http://www.r-project.org
+	
+	item=CRAN home page
+	cmd=NULL #display http://cran.r-project.org 
+	
+	separator
+	
+	item=About
+	cmd=sh -c 'Rversion=`R --version`; zenity --info --title="About SciViews R" --text="$Rversion\n\nSciViews R extensions, copyright (c) 2012 Ph. Grosjean." --timeout=10'
+	
+
+#context menu:
+#item=Copy
+#cmd=NULL
+#
+#item=Paste
+#cmd=NULL
+#
+#item=Paste commands only
+#cmd=NULL
+#
+#item=Copy and paste
+#cmd=NULL
+#
+#separator
+#
+#item=Clear window
+#cmd=NULL
+#
+#separator
+#
+#item=Select all
+#cmd=NULL
+#
+#separator
+#
+#item=Buffered output
+#cmd=NULL
+#
+#item=Stay on top
+#cmd=NULL
+
+# Graph device menu...
+#submenu=_File
+#
+#	submenu=_Save as
+#
+#		item=Metafile...
+#		cmd=NULL
+#
+#		item=Postscript...
+#		cmd=NULL
+#
+#		item=PDF...
+#		cmd=NULL
+#
+#		item=Png...
+#		cmd=NULL
+#
+#		item=Bmp...
+#		cmd=NULL
+#
+#		item=TIFF...
+#		cmd=NULL
+#
+#		submenu=_Jpeg
+#
+#			item=50% quality...
+#			cmd=NULL
+#
+#			item=75% quality...
+#			cmd=NULL
+#
+#			item=100% quality...
+#			cmd=NULL
+#
+#	submenu=_Copy to the clipboard
+#
+#		item=as a Bitmap
+#		cmd=NULL
+#
+#		item=as a Metafile
+#		cmd=NULL
+#
+#	separator
+#
+#	item=Print...
+#	cmd=NULL
+#
+#	separator
+#
+#	item=close Device
+#	cmd=NULL
+#
+#submenu=_History
+#
+#	item=Recording
+#	cmd=NULL
+#
+#	separator
+#
+#	item=Add
+#	cmd=NULL
+#
+#	item=Replace
+#	cmd=NULL
+#
+#	separator
+#
+#	item=Previous
+#	cmd=NULL
+#
+#	item=Next
+#	cmd=NULL
+#
+#	separator
+#
+#	item=Save to variable...
+#	cmd=NULL
+#
+#	item=Get from variable...
+#	cmd=NULL
+#
+#	separator
+#
+#	item=Clear history
+#	cmd=NULL
+#
+#submenu=_Resize
+#
+#	item=R mode
+#	cmd=NULL
+#
+#	item=Fit to window
+#	cmd=NULL
+#
+#	item=Fixed size
+#	cmd=NULL
+#
+#context menu:
+#item=Copy as metafile
+#cmd=NULL
+#
+#item=Copy as bitmap
+#cmd=NULL
+#
+#separator
+#
+#item=Save as metafile...
+#cmd=NULL
+#
+#item=Save as postscript...
+#cmd=NULL
+#
+#separator
+#
+#item=Stay on top
+#cmd=NULL
+#
+#separator
+#
+#item=Print...
+#cmd=NULL
+	

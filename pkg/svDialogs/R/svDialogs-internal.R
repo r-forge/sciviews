@@ -2,6 +2,8 @@
 {
 	## Clear menus
 	.menuClear()
+	## ... and create the default one
+	.menuFileInit()
 }
 
 .onUnload <- function (libpath)
