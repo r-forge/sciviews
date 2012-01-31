@@ -183,9 +183,9 @@ menuDelItem <- function (menuname, itemname)
 ## sudo apt-get install xvkbd xdotool
 ## Warning, you need to insqtall the English (US) keymap, even if you don't use
 ## it. Otherwise, xvkbd will issue strange things in your R console!
-## TODO: install and configure myGTKmenu... + add shortcut keys!
+## TODO: install and configure ctxmenu... + add shortcut keys!
 ## Use xbindkeys to bind shell commands to keyboard and mouse keys
-## chmod +x myGtkmenu
+## chmod +x ctxmenu
 ##
 ## THIS IS THE OLD VERSION (COMMENTED CODE BELLOW!)
 ## Explanation: to run this, you need to install xvkbd and file-browser-applet
@@ -220,7 +220,8 @@ menuDelItem <- function (menuname, itemname)
 	## Initialize the R menu file with default items
 	fil <- .unixMenuFile()
 	## Get the default R menu and start from there
-	def <- file.path("~", "SciViews", "menus", "RMenu.txt")
+	def <- getOption("RMenuFile",
+		default = file.path("~", ".ctxmenu", "RMenu.txt"))
 	if (file.exists(def)) {
 		file.copy(def, fil, overwrite = TRUE)
 	} else file.copy(system.file("gui", "RMenu.txt", package = "svDialogs"),
