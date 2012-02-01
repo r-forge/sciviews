@@ -4,6 +4,7 @@
 	.menuClear()
 	## ... and create the default one
 	.menuFileInit()
+	.ctxMenuFileInit()
 }
 
 .onUnload <- function (libpath)

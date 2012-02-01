@@ -19,7 +19,9 @@ export(dlgDir,
        menuAdd,
        menuAddItem,
        menuDel,
-       menuDelItem)
+       menuDelItem,
+       menuNames,
+       menuItems)
 
 # To be eliminated
 S3method(display, guiDlg)
