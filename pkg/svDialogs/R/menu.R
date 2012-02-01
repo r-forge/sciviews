@@ -19,8 +19,66 @@
 	return(invisible(res))
 }
 
+.ctxMenuFileInit <- function ()
+{
+		res <- switch(Sys.info()["sysname"],
+		Windows = NULL,
+		Darwin = NULL, # TODO: should we have a default menu?
+		.unixCtxMenuFileInit()
+	)
+	return(invisible(res))
+}
+
+.checkMenuName <- function (menuname)
+{
+	## Make sure menuname is correct...
+	menuname <- as.character(menuname)
+	if (length(menuname) != 1)
+		stop("'menuname' must be a single character string")
+	
+	## $ConsoleMain/<menu> is equivalent, and thus, transformed into <menu>
+	menuname <- sub("^\\$ConsoleMain/", "", menuname)
+	
+	if (menuname == "")
+		stop("You cannot use an empty menuname")
+	## Do not accept $ConsoleMain, $ConsolePopup, $Graph<n>Main,
+	## or $Graph<n>Popup alone: need a / after the name of a special menu
+	if (grepl("^\\$Console(Main|Popup)", menuname) &&
+		!grepl("^\\$Console(Main|Popup)/.+", menuname))
+		stop("You must define a submenu after the name of a special menu")
+	if (grepl("^\\$Graph[0-9]+(Main|Popup)", menuname) &&
+		!grepl("^\\$Graph[0-9]+(Main|Popup)/.+", menuname))
+		stop("You must define a submenu after the name of a special menu")
+	## Return the (possibly arranged) menuname
+	return(menuname)
+}
+
+menuNames <- function ()
+{
+	res <- switch(Sys.info()["sysname"],
+		Windows = winMenuNames(),
+		Darwin = .macMenuNames(),
+		.unixMenuNames()
+	)
+	return(res)
+}
+
+menuItems <- function (menuname)
+{
+	menuname <- .checkMenuName(menuname)
+	
+	res <- switch(Sys.info()["sysname"],
+		Windows = winMenuItems(menuname),
+		Darwin = .macMenuItems(menuname),
+		.unixMenuItems(menuname)
+	)
+	return(res)
+}
+
 menuAdd <- function (menuname)
 {
+	menuname <- .checkMenuName(menuname)
+	
 	res <- switch(Sys.info()["sysname"],
 		Windows = winMenuAdd(menuname),
 		Darwin = .macMenuAdd(menuname),
@@ -31,8 +89,10 @@ menuAdd <- function (menuname)
 
 menuAddItem <- function (menuname, itemname, action)
 {
+	menuname <- .checkMenuName(menuname)
+	
 	res <- switch(Sys.info()["sysname"],
-		Windows = winMenuAddItem(menuname, itemname, action),
+		Windows = .winMenuAddItem(menuname, itemname, action),
 		Darwin = .macMenuAddItem(menuname, itemname, action),
 		.unixMenuAddItem(menuname, itemname, action)
 	)
@@ -41,6 +101,8 @@ menuAddItem <- function (menuname, itemname, action)
 
 menuDel <- function (menuname)
 {
+	menuname <- .checkMenuName(menuname)
+	
 	res <- switch(Sys.info()["sysname"],
 		Windows = try(winMenuDel(menuname), silent = TRUE),
 		Darwin = .macMenuDel(menuname),
@@ -51,6 +113,8 @@ menuDel <- function (menuname)
 
 menuDelItem <- function (menuname, itemname)
 {
+	menuname <- .checkMenuName(menuname)
+	
 	res <- switch(Sys.info()["sysname"],
 		Windows = try(winMenuDelItem(menuname, itemname), silent = TRUE),
 		Darwin = .macMenuDelItem(menuname, itemname),
@@ -62,6 +126,21 @@ menuDelItem <- function (menuname, itemname)
 
 ## Windows version and standard winMenuXXX
 ## TODO: fallback system for Rterm???
+.winMenuAddItem <- function (menuname, itemname, action)
+{
+	## As in R 2.14.1, the original winMenuAddItem() does things I don't like
+	## much when usin 'enable' or 'disable' for action, on a non existing menu:
+	## it creates it with the action being 'enable' or 'disable'... I suppose
+	## if is a feature, but I want a different behaviour here: to ignore such
+	## a command applied to a non-existing menu item!
+	if (action %in% c("enable", "disable")) {
+		menus <- winMenuItems(menuname)
+		if (!is.null(menus) && itemname %in% names(menus)) {
+			## The menu exists... enable or disable it!
+			return(winMenuAddItem(menuname, itemname, action))
+		} else return(invisible(NULL))
+	} else return(winMenuAddItem(menuname, itemname, action))
+}
 
 ## Mac OS X version
 ## Note, either we use AppleScript folder (by default) or the XMenu folder
@@ -100,6 +179,16 @@ menuDelItem <- function (menuname, itemname)
     return(invisible(NULL))
 }
 
+.macMenuNames <- function ()
+{
+	stop("Not implemented yet!")
+}
+
+.macMenuItems <- function (menuname)
+{
+	stop("Not implemented yet!")
+}
+
 .macMenuAdd <- function (menuname)
 {
     ## Menus are folders created in ~/Scripts/Applications/R/Custom
@@ -111,7 +200,8 @@ menuDelItem <- function (menuname, itemname)
 
 .macMenuAddItem <- function (menuname, itemname, action)
 {
-    ## Make sure that the dir is created
+    ## TODO: manage 'enable' and 'disable'!!!
+	## Make sure that the dir is created
     .macMenuAdd(menuname)
     ## Switch to this folder
 	odir <- getwd()
@@ -229,6 +319,27 @@ menuDelItem <- function (menuname, itemname)
 	return(invisible(NULL))
 }
 
+.unixCtxMenuFile <- function ()
+{
+	## Get the name of the file that contains the R context menu
+	return(file.path(.unixMenuFolder(), paste(Sys.getenv("WINDOWID"),
+		"CtxMenu.txt", sep = "")))
+}
+
+.unixCtxMenuFileInit <- function ()
+{
+	## Initialize the R context menu file with default items
+	fil <- .unixCtxMenuFile()
+	## Get the default R context menu and start from there
+	def <- getOption("RCtxMenuFile",
+		default = file.path("~", ".ctxmenu", "RCtxMenu.txt"))
+	if (file.exists(def)) {
+		file.copy(def, fil, overwrite = TRUE)
+	} else file.copy(system.file("gui", "RCtxMenu.txt", package = "svDialogs"),
+		fil, overwrite = TRUE)
+	return(invisible(NULL))
+}
+
 .unixMenuSave <- function (mnu, file = TRUE)
 {
 	## Save the menu structure in both Rmenu object in TempEnv and in a file
@@ -238,22 +349,28 @@ menuDelItem <- function (menuname, itemname)
 	if (!isTRUE(file)) return(invisible(NULL))
 	## The menu file is:
 	fil <- .unixMenuFile()
+	ctxfil <- .unixCtxMenuFile()
 	if (is.null(mnu)) {
 		## Clear the file
 		unlink(fil)
 	} else {
 		## Populate the file with the content of the Rmenu object
-		makeMenu <- function (lst, indent = 0, file = fil) {
+		makeMenu <- function (lst, indent = 0, file = fil, ctxfile = ctxfil) {
 			l <- length(lst)
 			if (l < 1) return()
 			nms <- names(lst)
 			for (i in 1:l) {
 				item <- nms[i]
 				if (is.list(lst[[i]])) {
-					## Create a new menu
-					cat("\n", rep("\t", indent), "submenu=", item, "\n",
-						sep = "", file = file, append = TRUE)
-					makeMenu(lst[[i]], indent = indent + 1)
+					## Special case for '$ConsolePopup'
+					if (item == "$ConsolePopup" && !is.null(ctxfile)) {
+						makeMenu(lst[[i]], indent = 0, file = ctxfile, ctxfile = NULL)
+					} else {
+						## Create a new menu
+						cat("\n", rep("\t", indent), "submenu=", item, "\n",
+							sep = "", file = file, append = TRUE)
+						makeMenu(lst[[i]], indent = indent + 1, file = file, ctxfile = NULL)
+					}
 				} else {
 					## Is this a separator?
 					if (grepl("^-",  item)) {
@@ -263,8 +380,8 @@ menuDelItem <- function (menuname, itemname)
 						ind <- rep("\t", indent)
 						## Rework commands using xvkbd -text "cmd\r"
 						cmd <- as.character(lst[[i]])[1]
-						if (cmd == "none") {
-							cmd <- "NULL" # This is the "no cmd" for ctxmenu
+						if (cmd == "none" || !is.null(attr(lst[[i]], "state"))) {
+							cmd <- "NULL" # This is the "no cmd" or "disabled" for ctxmenu
 						} else {
 							cmd <- paste(cmd, "\\r", sep = "")
 							cmd <- paste("xvkbd -text", shQuote(cmd))
@@ -277,9 +394,12 @@ menuDelItem <- function (menuname, itemname)
 		}
 		## Initialize the menu with default items
 		.unixMenuFileInit()
+		.unixCtxMenuFileInit()
 		## Add custom menus to it...
 		cat("\nseparator # Here starts the custom R menus\n\n",
 			file = fil, append = TRUE)
+		cat("\nseparator # Here starts the custom R context menus\n\n",
+			file = ctxfil, append = TRUE)
 		makeMenu(mnu)
 	}
 	return(invisible(fil))
@@ -313,7 +433,47 @@ menuDelItem <- function (menuname, itemname)
 	## Also clear the local object
 	.unixMenuSave(NULL)
 	unlink(.unixMenuFile())
+	unlink(.unixCtxMenuFile())
     return(invisible(NULL))
+}
+
+.unixMenuNames <- function (mnu = .Rmenu(), parent = character(0))
+{
+	if (!length(mnu)) return(character(0))
+	## List all custom menu and (sub)menu
+	## Iteratively traverse the list and enumerate all sublists (= submenus)
+	items <- names(mnu)
+	submnus <- character(0)
+	for (item in items)
+		if (is.list(mnu[[item]]))
+			submnus <- c(submnus, paste(parent, item, sep = ""),
+				.unixMenuNames(mnu[[item]],
+					parent = paste(parent, item, "/", sep = "")))
+	names(submnus) <- NULL
+	## Eliminate $ConsolePopup, $Graph<n>Main & $Graph<n>Popup
+	submnus <- submnus[submnus != "$ConsolePopup"]
+	isGraphMenu <- grepl("^\\$Graph[0-9]+(Main|Popup)$", submnus)
+	submnus <- submnus[!isGraphMenu]
+	return(submnus)
+}
+
+.unixMenuItems <- function (menuname)
+{
+	## List all menu items in a given (sub)menu
+	mnu <- .Rmenu()
+	items <- strsplit(as.character(menuname), "/", fixed = TRUE)[[1]]
+	## Traverse the menu hierarchy
+	for (i in items) {
+		mnu <- mnu[[i]]
+		if (is.null(mnu) || !is.list(mnu))
+			stop("unable to retrieve items for ", menuname,
+				" (menu does not exist)")
+	}
+	if (length(mnu) == 0) return(character(0))
+	## Set all submenu items to NULL
+	for (i in 1:length(mnu))
+		if (is.list(mnu[[i]])) mnu[[i]] <- NULL
+	if (length(mnu) == 0) return(character(0)) else return(unlist(mnu))
 }
 
 .unixMenuAdd <- function (menuname, itemname = NULL, action = "none") {
@@ -390,7 +550,35 @@ menuDelItem <- function (menuname, itemname)
 }
 
 .unixMenuAddItem <- function (menuname, itemname, action) {
-	return(.unixMenuAdd(menuname, itemname, action))
+	if (action %in% c("enable", "disable")) {
+		## Enable or disable an existing menu item
+		if (action == "enable") action <- NULL # To eliminate the attribute
+		mnu <- .Rmenu()
+		items <- strsplit(as.character(menuname), "/", fixed = TRUE)[[1]]
+		## allow for a maximum of 5 sublevels (should be largely enough!)
+		l <- length(items)
+		if (l == 1) {
+			if (!is.null(mnu[[items[1]]][[itemname]]))
+				attr(mnu[[items[1]]][[itemname]], "state") <- action
+		} else if (l == 2) {
+			if (!is.null(mnu[[items[1]]][[items[2]]][[itemname]]))
+				attr(mnu[[items[1]]][[items[2]]][[itemname]], "state") <- action
+		} else if (l == 3) {
+			if (!is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[itemname]]))
+				attr(mnu[[items[1]]][[items[2]]][[items[3]]][[itemname]], "state") <- action
+		} else if (l == 4) {
+			if (!is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[itemname]]))
+				attr(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[itemname]], "state") <- action
+		} else if (l == 5) {
+			if (!is.null(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]][[itemname]]))
+				attr(mnu[[items[1]]][[items[2]]][[items[3]]][[items[4]]][[items[5]]][[itemname]], "state") <- action
+		} else if (l > 5) {
+			stop("You cannot use more than 5 menu levels")
+		}
+		## Save these changes
+		.unixMenuSave(mnu)
+		return(invisible(NULL))
+	} else return(.unixMenuAdd(menuname, itemname, action))
 #    ## Make sure that the dir is created
 #    .unixMenuAdd(menuname)
 #    ## Add an executable file in it with 'itemname' name

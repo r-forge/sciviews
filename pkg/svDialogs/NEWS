@@ -1,5 +1,28 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-47
+
+* Now, menuAddItem() implements 'enable' and 'disable' in action to change the
+  state of an existing menu item.
+
+* On Windows, using an action as 'enable' or 'disable' on nonexisting menus just
+  does nothing (on the contrary to the original winMenuAddItem() which creates
+  that menus with the action being 'enable' or 'disable', respectively).
+  
+* '$ConsoleMain/<menu>' is now accepted as a synonym of '<menu>' in all
+  menuXXX() functions, according to corresponding winMenuXXX() functions.
+
+* The menuXXX() functions now check for bad synthax with the special menus
+  $ConsoleMain, $ConsolePopup, $Graph<n>Main and $Graph<n>Popup: special menu
+  not followed by at least one submenu.
+  
+* The console context menu is now implemented too, and '$ConsolePopup/<menu>'
+  menus allow for adding submenus to it.
+
+* Addition of menuNames() and menuItems(), working the same way as
+  winMenuNames() and winMenuItems() under Windows.
+
+
 == Changes in svDialogs 0.9-46
 
 * The functions to handle menus in Linux are completely rewritten to use a menu

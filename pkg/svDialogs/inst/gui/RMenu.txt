@@ -72,6 +72,9 @@ submenu=_Edit
 	item=Copy and Paste
 	cmd=xvkbd -text "\CC\CV" @@@ Same note as for copy / paste
 	
+	item=Select all
+	cmd=NULL
+	
 	item=Clear console
 	cmd=xvkbd -text "system(\"clear\") # Or menu Terminal -> Reset and clear\r"
 	@@@ Clear the console, but does not reset its content per se.
@@ -204,37 +207,6 @@ submenu=_Help
 	item=About
 	cmd=sh -c 'Rversion=`R --version`; zenity --info --title="About SciViews R" --text="$Rversion\n\nSciViews R extensions, version 1.0-0.\nCopyright (c) 2012 Ph. Grosjean." --timeout=10'
 	
-
-@@@context menu:
-@@@item=Copy
-@@@cmd=NULL
-@@@
-@@@item=Paste
-@@@cmd=NULL
-@@@
-@@@item=Paste commands only
-@@@cmd=NULL
-@@@
-@@@item=Copy and paste
-@@@cmd=NULL
-@@@
-@@@separator
-@@@
-@@@item=Clear window
-@@@cmd=NULL
-@@@
-@@@separator
-@@@
-@@@item=Select all
-@@@cmd=NULL
-@@@
-@@@separator
-@@@
-@@@item=Buffered output
-@@@cmd=NULL
-@@@
-@@@item=Stay on top
-@@@cmd=NULL
 
 @@@ Graph device menu...
 @@@submenu=_File

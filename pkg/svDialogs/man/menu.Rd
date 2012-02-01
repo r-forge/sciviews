@@ -3,6 +3,8 @@
 \alias{menuAddItem}
 \alias{menuDel}
 \alias{menuDelItem}
+\alias{menuNames}
+\alias{menuItems}
 
 \title{ Manage custom R menus }
 \description{
@@ -14,13 +16,16 @@ menuAdd(menuname)
 menuAddItem(menuname, itemname, action)
 menuDel(menuname)
 menuDelItem(menuname, itemname)
+menuNames()
+menuItems(menuname)
 }
 
 \arguments{
   \item{menuname}{ a character string naming a menu. }
   \item{itemname}{ a character string naming a menu item on an existing menu. }
   \item{action}{ a character string describing the action when that menu is
-    selected, or \code{"none"} for no action. }
+    selected, or \code{"none"} for no action. Use \code{"enable"} or
+    \code{"disable"} to activate or desactivate an existing menu item. }
 }
 
 \details{
