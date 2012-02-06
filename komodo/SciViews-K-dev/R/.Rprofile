@@ -75,10 +75,9 @@ with(as.environment("komodoConnection"), {
 	require(utils)
 	require(stats)
 
-
 	env <- as.environment("komodoConnection")
-	src <- dir(pattern="\\.R$")
-	lapply(src[src != "init.R"], sys.source, envir=env)
+	src <- dir(pattern = "\\.R$")
+	lapply(src[src != "init.R"], sys.source, envir = env)
 	invisible()
 })
 
@@ -132,9 +131,10 @@ if (!is.na(rprofile)) {
 	cat("Loaded file:", rprofile, "\n")
 }
 
-if(.Platform$GUI == "Rgui" && file.exists("Rconsole"))
-	utils:::loadRconsole("Rconsole")
-
+if(.Platform$GUI == "Rgui") {
+	if(file.exists("Rconsole"))	utils:::loadRconsole("Rconsole")
+	utils::setWindowTitle("talking to Komodo")
+}
 
 if(!any(c("--vanilla", "--no-restore", "--no-restore-data") %in% commandArgs())
 	&& file.exists(".RData")) {

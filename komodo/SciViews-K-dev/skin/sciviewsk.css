@@ -339,3 +339,10 @@
 #sciviews_robjects_filterbox.badRegEx {
 	color: #ea0000;
 }
+
+
+
+.languageicon[language="R"],
+treechildren::-moz-tree-image(LanguageR) {
+  list-style-image: url("chrome://sciviewsk/skin/images/r_16x16.png");
+}
