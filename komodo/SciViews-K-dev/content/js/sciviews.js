@@ -671,8 +671,13 @@ var _this = this;
 this.__defineGetter__('eolChar', function()
 	["\r\n", "\n", "\r"][_this.scimoz.eOLMode]);
 
-this.__defineGetter__('scimoz', function()
-	document.getElementById("runoutput-scintilla").scimoz);
+this.__defineGetter__('scimoz', function() {
+	if(window.frames["runoutput-desc-tabpanel"]) // Komodo 7
+		return window.frames["runoutput-desc-tabpanel"]
+			.document.getElementById("runoutput-scintilla").scimoz;
+	else
+		return document.getElementById("runoutput-scintilla").scimoz;
+});
 
 
 function _rgb(r, g, b) {
@@ -781,8 +786,12 @@ this.append = function (str, newline, scrollToStart) {
 
 	if (scrollToStart === undefined) scrollToStart = false;
 
-	ko.uilayout.ensureOutputPaneShown();
-	ko.uilayout.ensureTabShown("runoutput_tab", false);
+	try {
+		ko.uilayout.ensureOutputPaneShown();
+		ko.uilayout.ensureTabShown("runoutput_tab", false);
+	} catch(e) { // Komodo 7
+		ko.run.output.show();
+	}
 
 	str = fixEOL(str);
 
@@ -895,8 +904,15 @@ this.clear = function (all) {
 }
 // Display message on the status bar (default) or command output bar
 this.message = function (msg, timeout, highlight) {
-	document.getElementById('output_tabpanels').selectedIndex = 0;
-	var runoutputDesc = document.getElementById('runoutput-desc');
+	try {
+		ko.uilayout.ensureOutputPaneShown();
+		ko.uilayout.ensureTabShown("runoutput_tab", false);
+	} catch(e) { // Komodo 7
+		ko.run.output.show();
+	}
+	var win = (window.frames["runoutput-desc-tabpanel"])?
+		window.frames["runoutput-desc-tabpanel"] : window;
+	var runoutputDesc = win.document.getElementById('runoutput-desc');
 	if (msg == null) msg = "";
 	runoutputDesc.parentNode.style.backgroundColor =
 		(highlight && msg) ? "highlight" : "";

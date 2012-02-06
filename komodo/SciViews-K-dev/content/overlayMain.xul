@@ -243,13 +243,16 @@
 		</menu>
 	</menubar>
 
-	<toolbar id="main-toolboxrow">
-		<toolbaritem class="chromeclass-toolbar"
+	<toolboxrow id="main-toolboxrow">
+		<toolbar class="chromeclass-toolbar"
 			id="RToolbar"
+			toolboxid="toolbox_main"
 			broadcaster="cmd_viewrtoolbar"
 			grippyhidden="true"
 			align="center"
-			persist="hidden collapsed buttonstyle"
+			kohidden="true"
+			mode="icons"
+			persist="kohidden collapsed buttonstyle mode"
 			buttonstyle="pictures">
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rEscape;"
@@ -311,8 +314,8 @@
 						   class="r-source-function-icon"
 						   observes="cmd_svRSourceFunction"
 						   label="rSrcFun;" />
-		</toolbaritem>
-	</toolbar>
+		</toolbar>
+	</toolboxrow>
 
 	<menupopup id="context-toolbox-menu">
 		<menuitem id="context_viewrtoolbar"
