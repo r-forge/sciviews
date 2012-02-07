@@ -40,6 +40,7 @@
 	%komodoDTD;
 	<!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
 	%sciviewskDTD;
+	<!ENTITY % console SYSTEM "chrome://global/locale/console.dtd"> %console;
 ]>
 
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
@@ -334,16 +335,23 @@
 			type="checkbox"
 			/>
 	</menupopup>
-<!-- Ko7 -->	
+<!-- Ko7 -->
 <ko-pane id="workspace_left_area">
 <browser type="ko-widget"
 	id="rbrowser_tabpanel"
 	label="&sciviews.robjects.tab;"
 	src="chrome://sciviewsk/content/rbrowser-pane.xul"
-	/>
-	<!--
 	tab_onfocus="sv.rbrowser.focus();"
-	!-->
+	/>
+</ko-pane>
+
+
+<ko-pane id="workspace_bottom_area">
+<browser type="ko-widget"
+	id="errorconsole_tabpanel"
+	label="&errorConsole.title;"
+	src="chrome://global/content/console.xul"
+	/>
 </ko-pane>
 
 </overlay>
