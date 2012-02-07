@@ -182,5 +182,28 @@
 </binding>
 
 
+<!-- based on preferences.xml paneButton -->
+<binding id="viewbutton" extends="chrome://global/content/bindings/radio.xml#radio">
+    <resources>
+      <stylesheet src="chrome://sciviewsk/skin/pkgman.css"/>
+    </resources>
+    <content>
+      <xul:image class="viewButtonIcon" xbl:inherits="src"/>
+      <xul:label class="viewButtonLabel" xbl:inherits="value=label"/>
+    </content>
+    <implementation implements="nsIAccessibleProvider">
+      <property name="accessibleType" readonly="true">
+        <getter>
+          <![CDATA[
+            return Components.interfaces.nsIAccessibleProvider.XULListitem;
+          ]]>
+        </getter>
+      </property>
+    </implementation>
+  </binding>
+</bindings>
+
+
+
 
 </bindings>

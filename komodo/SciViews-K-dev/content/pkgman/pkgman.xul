@@ -6,10 +6,8 @@
 <!--<?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>-->
 <!--<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>-->
 <!--<?xml-stylesheet href="chrome://komodo/skin/bindings/scrolltabs.css" type="text/css"?>-->
-<?xml-stylesheet href="chrome://mozapps/content/extensions/extensions.css" type="text/css"?>
+<!--<?xml-stylesheet href="chrome://mozapps/content/extensions/extensions.css" type="text/css"?>-->
 <?xml-stylesheet href="chrome://sciviewsk/skin/pkgman.css" type="text/css"?>
-
-
 
 <window id="RPackageManager" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
   maxheight="350" maxwidth="300" title="R Package manager (pre-alpha)" >
