@@ -144,6 +144,8 @@ tcl('source', "compile_json.tcl")
 				msg <- 'Parse error'
 			} else {
 				ret <- captureAll(expr, markStdErr=TRUE)
+				#browser()
+				#ret <- eval(call("captureAll", expr, markStdErr=TRUE), envir=.GlobalEnv)
 				msg <- 'Done'
 				# TODO: later
 				#lapply(unlist(strsplit(c(prevcode, x), "(\r?\n|\r)")), function(entry)
@@ -154,6 +156,7 @@ tcl('source', "compile_json.tcl")
 				rm(list=prevcodeVarName, envir=.tempEnv)
 		}
 		###########
+
 
 		if (identical(getOption("json.method"), "R")) {
 			tcl("set", "retval", simpsON(list(result=c(ret), message=msg)))
@@ -170,7 +173,6 @@ tcl('source', "compile_json.tcl")
 	}
 }
 tclfun(TclReval, "Rserver::Reval", retval="retval")
-
 
 tcJSON <- function(x, msg = "Done") {
 	.Tcl("set result {}")
