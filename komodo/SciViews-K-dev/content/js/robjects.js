@@ -118,9 +118,10 @@ for(i in objects) {
 }
 
 */
-
+//var sv = parent.sv;
 
 sv.rbrowser = {};
+
 
 ////DEBUG///
 var print = sv.cmdout.append;	/// XXX DEBUG
@@ -1541,6 +1542,9 @@ this.selectAllSiblings = function(idx, augment) {
 	_this.selection.rangedSelect(startIndex, endIndex, augment)
 }
 
+this.focus = function() {
+
+}
 
 //_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragdrop",
 //		"nsDragAndDrop.drop(event, sv.rbrowser.packageListObserver);"
