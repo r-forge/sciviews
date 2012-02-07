@@ -73,41 +73,31 @@ if (typeof(sv) == "undefined") var sv = {};
 // Create the 'sv.tools' namespace
 if (typeof(sv.tools) == "undefined") sv.tools = {};
 
+//sv._version
+/*= (function() {
+	var koVersion = Components.classes["@activestate.com/koInfoService;1"]
+		.getService(Components.interfaces.koIInfoService).version;
+	if(koVersion)
+})();*/
+
+try { // Komodo 7
+	Components.utils.import("resource://gre/modules/AddonManager.jsm");
+	AddonManager.getAddonByID("sciviewsk@sciviews.org", function(addon) {
+		sv._version = addon.version; });
+} catch(e) {
+	sv._version = Components.classes["@mozilla.org/extensions/manager;1"]
+	.getService(Components.interfaces.nsIExtensionManager)
+	.getItemForID("sciviewsk@sciviews.org").version;
+}
+sv.__defineGetter__("version", function() sv._version);
+
 // IMPORTANT: now sv.version is a "X.X.X" string, and sv.checkVersion accepts only such format
 // please update all macros using sv.checkVersion
-sv.__defineGetter__("version", function() Components.classes["@mozilla.org/extensions/manager;1"]
-	.getService(Components.interfaces.nsIExtensionManager)
-	.getItemForID("sciviewsk@sciviews.org").version);
 sv.showVersion = true;
 
-sv._compareVersion = function (a, b) {
-	if (!a)	return(-1);
-	if (!b)	return(1);
-
-	// try is necessary only till I find where is that damn macro causing an error
-	// at startup /-;
-	try {
-		a = a.split(/[.\-]/);
-		for (i in a) a[i] = parseInt(a[i]);
-		b = b.split(/[.\-]/);
-		for (i in b) b[i] = parseInt(b[i]);
-
-		for (k in a) {
-			if (k < b.length) {
-				if (a[k] > b[k]) {
-					return(1);
-				} else if (a[k] < b[k]) {
-					return(-1);
-				}
-			} else {
-				return(1);
-			}
-		}
-		return((b.length > a.length) ? -1 : 0);
-	} catch(e) {
-		return(1);
-	}
-}
+sv._compareVersions = function(a, b) Components
+	.classes["@mozilla.org/xpcom/version-comparator;1"]
+	.getService(Components.interfaces.nsIVersionComparator).compare(a, b);
 
 sv.checkVersion = function (version) {
 	if (sv._compareVersion(sv.version, version) < 0) {
@@ -174,7 +164,7 @@ sv.getTextRange = function (what, gotoend, select, range, includeChars) {
 			text = msel.join("\n");
 			// TODO: What to do with multiple ranges?
 			pStart = scimoz.getSelectionNStart(0);
-			pEnd = 	scimoz.getSelectionNEnd(nSelections - 1);
+			pEnd = scimoz.getSelectionNEnd(nSelections - 1);
 		}
 		break;
 	 case "word":
@@ -787,10 +777,11 @@ this.append = function (str, newline, scrollToStart) {
 	if (scrollToStart === undefined) scrollToStart = false;
 
 	try {
+		ko.run.output.show();
+	} catch(e) { // Komodo 6
 		ko.uilayout.ensureOutputPaneShown();
 		ko.uilayout.ensureTabShown("runoutput_tab", false);
-	} catch(e) { // Komodo 7
-		ko.run.output.show();
+
 	}
 
 	str = fixEOL(str);
@@ -905,11 +896,13 @@ this.clear = function (all) {
 // Display message on the status bar (default) or command output bar
 this.message = function (msg, timeout, highlight) {
 	try {
+		ko.run.output.show();
+	} catch(e) { // Komodo 6
 		ko.uilayout.ensureOutputPaneShown();
 		ko.uilayout.ensureTabShown("runoutput_tab", false);
-	} catch(e) { // Komodo 7
-		ko.run.output.show();
+
 	}
+
 	var win = (window.frames["runoutput-desc-tabpanel"])?
 		window.frames["runoutput-desc-tabpanel"] : window;
 	var runoutputDesc = win.document.getElementById('runoutput-desc');

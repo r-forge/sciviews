@@ -222,7 +222,7 @@ sv.r.source = function (what) {
 		if (!view) return(false); // No current view, do nothing!
 		view.setFocus();
 		var scimoz = view.scimoz;
-		var doc = view.document;
+		var doc = view.koDoc;
 
 		var file;
 		if (!doc.isUntitled && doc.file) {
