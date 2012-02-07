@@ -151,9 +151,9 @@
 	list-style-image: url("chrome://komodo/skin/images/bulletlist.png");
 }
 
-.searchPath-icon:hover{
+/*.searchPath-icon:hover{
 	list-style-image : url("chrome://komodo/skin/images/bulletlist_hover.png");
-}
+}*/
 
 .refresh-icon{
 	list-style-image: url("chrome://komodo/skin/global/images/refresh.png");

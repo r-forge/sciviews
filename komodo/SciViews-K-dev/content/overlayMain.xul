@@ -334,57 +334,16 @@
 			type="checkbox"
 			/>
 	</menupopup>
-
-<menupopup id="places-files-popup">
-	<menuseparator id="placesContextMenu_separatorR"
-		testEval_HideIf="!sv.command.places.anyRFilesSelected &amp;&amp; !sv.command.places.anyRDataFilesSelected"
+<!-- Ko7 -->	
+<ko-pane id="workspace_left_area">
+<browser type="ko-widget"
+	id="rbrowser_tabpanel"
+	label="&sciviews.robjects.tab;"
+	src="chrome://sciviewsk/content/rbrowser-pane.xul"
 	/>
-<menuitem oncommand="sv.command.places.sourceSelection()"
-		  disableIf="folder"
-		  class="menuitem-iconic"
-		  id="placesContextMenu_Rsource"
-		  label="Source into R"
-		  testEval_HideIf="!sv.command.places.anyRFilesSelected"
-/>
+	<!--
+	tab_onfocus="sv.rbrowser.focus();"
+	!-->
+</ko-pane>
 
-<menuitem oncommand="sv.command.places.loadSelection()"
-		  disableIf="folder"
-		  class="menuitem-iconic"
-		  id="placesContextMenu_Rload"
-		  label="Load into R"
-		  testEval_HideIf="!sv.command.places.anyRDataFilesSelected"
-/>
-
-</menupopup>
-
-
-
-	<tabbox id="rightTabBox">
-		<tabs id="right_toolbox_tabs">
-			<tab id="rhelp_tab"
-				 label="R Help tabbed"
-				 accesskey="r"
-				 insertafter="toolbox_tab"
-				 oncommand="ko.toolboxes.user.viewMgr.tree.focus();"
-				 onfocus="ko.toolboxes.user.viewMgr.focus();"
-				 hidden="true"
-				 persist="hidden"
-				 />
-		</tabs>
-		<tabpanels id="right_toolbox_tabpanels">
-			<tabpanel id="rhelpviewbox"
-					  flex="1"
-					  insertafter="toolboxviewbox"
-					  hidden="true"
-					  persist="hidden"
-					  >
-				<vbox id="rhelpviewbox-vbox" flex="1">
-				<iframe id="rhelpview-frame"
-						src="about:blank"
-						flex="1"
-						/>
-				</vbox>
-			</tabpanel>
-		</tabpanels>
-	</tabbox>
 </overlay>
