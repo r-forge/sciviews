@@ -201,9 +201,10 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			sv.r.running = running;
 			xtk.domutils.fireEvent(window, 'r_app_started_closed');
 			window.updateCommands('r_app_started_closed');
-			sv.cmdout.message("R status: " + (running? "" : "not ") + "running" );
+			sv.addNotification("R is " + (running? "" : "not ") + "running", 0, 2000);
 		}
 	}
+
 
 this.openPkgManager = function () {
 	var win = _getWindowRef("chrome://sciviewsk/content/pkgman/pkgman.xul",
@@ -275,8 +276,8 @@ this.openHelp = function (uri) {
 			// try/catch here somehow prevented from storing window
 			// reference in RHelpWin. No idea why...
 			RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
-			"chrome=yes,dependent,resizable=yes," +
-			"scrollbars=yes,status=no,close,dialog=no", sv, uri);
+				"chrome=yes,dependent,resizable=yes," +
+				"scrollbars=yes,status=no,close,dialog=no", sv, uri);
 		} else {
 			RHelpWin.go(uri);
 		}
@@ -321,7 +322,6 @@ function _setControllers () {
 		'cmd_svSessionMgr': [ "sv.command.openSessionMgr();", 0 ],
 		'cmd_svStartR': ['sv.command.startR();', XRStopped],
 		'cmd_svREscape': [ 'sv.r.escape();', XRRunning ],
-		// 'cmd_svUpdateRInfo': ['sv.socket.rUpdate();', XRRunning],
 		'cmd_svRRunAll': [ 'sv.r.send("all");',XisRDoc | XRRunning ],
 		'cmd_svRSourceAll': [ 'sv.r.source("all");',XisRDoc | XRRunning ],
 		'cmd_svRRunBlock': [ 'sv.r.send("block");',XisRDoc | XRRunning ],
@@ -518,7 +518,7 @@ this.getRProc = function(property) {
 this.places = {
 	sourceSelection: function sv_sourcePlacesSelection() {
 		var files = ko.places.manager.getSelectedItems()
-			.filter(function(x) (x.file.ext.toLowerCase() == ".r"))
+			.filter(function(x) (x.file.isLocal && x.file.ext.toLowerCase() == ".r"))
 			.map(function(x) x.file.path);
 		if (!files.length) return;
 		var cmd = files.map(function(x) "source('" +
@@ -528,11 +528,12 @@ this.places = {
 
 	get anyRFilesSelected()
 		ko.places.manager.getSelectedItems().some(function(x)
+			x.file.isLocal && 
 			x.file.ext.toLowerCase() == ".r"),
 
 	loadSelection: function sv_loadPlacesSelection() {
 		var files = ko.places.manager.getSelectedItems()
-			.filter(function(x) (x.file.ext.toLowerCase() == ".rdata"))
+			.filter(function(x) (x.file.isLocal && x.file.ext.toLowerCase() == ".rdata"))
 			.map(function(x) x.file.path);
 		if (!files.length) return;
 		var cmd = files.map(function(x) "load('" +
@@ -542,7 +543,7 @@ this.places = {
 
 	get anyRDataFilesSelected()
 		ko.places.manager.getSelectedItems().some(
-			function(x) x.file.ext.toLowerCase() == ".rdata")
+			function(x) x.file.isLocal && x.file.ext.toLowerCase() == ".rdata")
 
 }
 
@@ -573,6 +574,14 @@ function svCleanup() {
 ko.main.addWillCloseHandler(svCleanup);
 
 addEventListener("load", _this.onLoad, false);
+
+function ObserveR () {
+	var el = document.getElementById('cmd_svRStarted');
+	el.setAttribute("checked", _isRRunning());
+}
+
+addEventListener("r_app_started_closed", ObserveR, false);
+
 
 }).apply(sv.command);
 

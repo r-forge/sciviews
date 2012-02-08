@@ -147,13 +147,9 @@ this.escape = function(command) _svuSvc.escape(command);
 this.testRAvailability = function(checkProc) {
 	var result = _this.evalAtOnce("cat(123)");
 	var connectionUp = result.indexOf("123") != -1;
-	var ret;
-	if(!connectionUp) {
-		ret = "Cannot connect to R";
-	} else {
-		ret = "Connection with R successful.";
-	}
-	sv.cmdout.append("R connection test:\n" + ret);
+	var ret = connectionUp? "Connection with R successful." :
+		"Cannot connect to R.";
+	sv.addNotification("R connection test: " + ret, 0, 1000);
 	return connectionUp;
 }
 
@@ -302,7 +298,6 @@ this.printCommandinfo = function(cinfo) {
 
 
 this.printResults = function(result, command, executed, wantMore) {
-	//alert(result + "\n" + command +  "\n" + executed);
 	var msg;
 	command = _curCommand + _curPrompt + ' ' + command + sv.cmdout.eolChar;
 	window.clearTimeout(_waitMessageTimeout);

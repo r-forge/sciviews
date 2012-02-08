@@ -5,7 +5,7 @@ if(existsFunction("stopAllServers")) stopAllServers()
 
 
 if("komodoConnection" %in% search()) detach("komodoConnection")
-attach(new.env(), name="komodoConnection")
+attach(new.env(), name = "komodoConnection")
 
 with(as.environment("komodoConnection"), {
 
@@ -60,9 +60,9 @@ with(as.environment("komodoConnection"), {
 		if(tools:::httpdPort == 0) suppressMessages(tools:::startDynamicHelp(TRUE))
 		help_type <- "html"
 		ret <- NULL
-		oBrowser <- options(browser=function(url) ret <<- url)
+		oBrowser <- options(browser = function(url) ret <<- url)
 		on.exit(options(oBrowser))
-		if(mode((cl <- match.call())[[2]][[1]]) == "name") { # handle old syntax
+		if(mode((cl <- match.call())[[2L]][[1L]]) == "name") { # handle old syntax
 			cl <- cl[[2]]
 			cl$help_type <- help_type
 			print(eval(cl, .GlobalEnv))
@@ -77,84 +77,63 @@ with(as.environment("komodoConnection"), {
 
 	env <- as.environment("komodoConnection")
 	src <- dir(pattern = "\\.R$")
-	lapply(src[src != "init.R"], sys.source, envir = env)
+	lapply(src[src != "init.R"], sys.source, envir = env, keep.source = FALSE)
 	invisible()
 })
 
 
-
-#svOption("ko.port", as.type=as.numeric)
-#svOption("ko.host", default="localhost")
-
-.Last <- function() {
-	try({
+`.Last` <- function() {
+	tryCatch({
+	koCmd("sv.addNotification(\"R says bye!\"); sv.command.updateRStatus(false);")
 	stopAllServers()
 	stopAllConnections()
-	})
+	}, error = function(...) NULL)
 }
 
 
 local({
+	port <- 1111L
+	while((port < 1125L) && (as.character(startServer(port)) == "0"))
+		port <- port + 1L
 
-port <- 1111L
-while((port < 1115L) && (as.character(startServer(port)) == "0")) port <- port + 1L
+	cwd0 <- normalizePath(".")
+	if(file.exists("init.R")) source("init.R")
 
-cwd0 <- normalizePath(".")
+	Rservers <- enumServers()
+	if(is.numeric(getOption("ko.port")) && length(Rservers) > 0L) {
+		cat("Server started at port", Rservers, "\n")
+		invisible(koCmd(paste(
+			"sv.cmdout.clear()",
+			sprintf("sv.cmdout.append('%s is started')", R.version.string),
+			"sv.command.updateRStatus(true)",
+			sprintf("sv.pref.setPref('sciviews.r.port', %s)", tail(Rservers, 1L)),
+			sep = ";")))
+	}
 
-#cat("cwd0 is ", sQuote(getwd()), "\n")
+	cat("cwd is now ", sQuote(getwd()), "\n")
 
-if(file.exists("init.R")) source("init.R")
+	## Do we have a .Rprofile file to source?
+	#rprofile <- file.path(c(getwd(), Sys.getenv("R_USER")), ".Rprofile")
+	cwd <- normalizePath(getwd())
+	isBaseDir <- file.exists(file.path(cwd, "sv-basedir")) || (cwd == cwd0)
+	rprofile <- file.path(c(if(!isBaseDir) getwd(), Sys.getenv("R_USER")), ".Rprofile")
+	rprofile <- rprofile[file.exists(rprofile)][1L]
 
-Rservers <- enumServers()
-if(is.numeric(getOption("ko.port")) && length(Rservers) > 0) {
-	cat("Server started at port", Rservers, "\n")
-	invisible(koCmd(paste(
-		"sv.cmdout.clear()",
-		#"sv.cmdout.append('R is started')",
-		sprintf("sv.cmdout.append('%s is started')", R.version.string),
-		"sv.command.updateRStatus(true)",
-		sprintf("sv.pref.setPref('sciviews.r.port', %s)", tail(Rservers, 1)),
-		sep = ";")))
-}
+	if (!is.na(rprofile)) {
+		source(rprofile)
+		cat("Loaded file:", rprofile, "\n")
+	}
 
-cat("cwd is now ", sQuote(getwd()), "\n")
+	if(.Platform$GUI == "Rgui") {
+		if(file.exists("Rconsole"))	utils:::loadRconsole("Rconsole")
+		utils::setWindowTitle("talking to Komodo")
+	}
 
-## Do we have a .Rprofile file to source?
-#rprofile <- file.path(c(getwd(), Sys.getenv("R_USER")), ".Rprofile")
-cwd <- normalizePath(getwd())
-isBaseDir <- file.exists(file.path(cwd, "sv-basedir")) || (cwd == cwd0)
-rprofile <- file.path(c(if(!isBaseDir) getwd(), Sys.getenv("R_USER")), ".Rprofile")
-rprofile <- rprofile[file.exists(rprofile)][1]
-
-if (!is.na(rprofile)) {
-	source(rprofile)
-	cat("Loaded file:", rprofile, "\n")
-}
-
-if(.Platform$GUI == "Rgui") {
-	if(file.exists("Rconsole"))	utils:::loadRconsole("Rconsole")
-	utils::setWindowTitle("talking to Komodo")
-}
-
-if(!any(c("--vanilla", "--no-restore", "--no-restore-data") %in% commandArgs())
-	&& file.exists(".RData")) {
-	#sys.load.image(".RData", FALSE)
-}
-if(file.exists(".Rhistory")) loadhistory(".Rhistory")
-
-
-#obj <- ls(.GlobalEnv)
-#conflictObjs <- obj[obj %in% ls("komodoConnection")]
-#
-#if(length(conflictObjs) > 0) {
-#	cat("Following objects in .GlobalEnv were conflicting and  should be removed: \n")
-#	cat(sQuote(conflictObjs), "\n")
-#	rm(list=conflictObjs, envir=.GlobalEnv, inherits=FALSE)
-#}
+	if(!any(c("--vanilla", "--no-restore", "--no-restore-data") %in% commandArgs())
+		&& file.exists(".RData")) {
+		#sys.load.image(".RData", FALSE)
+	}
+	if(file.exists(".Rhistory")) loadhistory(".Rhistory")
 
 
 })
-
-#with(as.environment("komodoConnection"), {
-#rm(getHelpURL,  envir=.GlobalEnv)
-#})

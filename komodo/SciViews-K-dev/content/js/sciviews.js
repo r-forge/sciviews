@@ -724,27 +724,30 @@ this.print = function (str) {
 	_this.append(str, true, false);
 }
 
+this.ensureShown = function () {
+	ko.uilayout.ensureOutputPaneShown();
+	if(document.getElementById("runoutput_tab") == null)
+		ko.uilayout.ensureTabShown("runoutput-desc-tabpanel", false);
+	else ko.uilayout.ensureTabShown("runoutput_tab", false);
+}
+
 function fixEOL(str) str.replace(/(\r?\n|\r)/g, _this.eolChar);
 
 this.print2 = function (command, result, done) {
 	var scimoz = _this.scimoz;
 	var eolChar = _this.eolChar;
-
+	_this.ensureShown();
 	command = fixEOL(command);
 	result = fixEOL(result);
-
+	var readOnly = scimoz.readOnly;
 	scimoz.readOnly = false;
 	if (!done) {
 		_this.clear();
 		command = command.replace(/^ {3}(?= *\S)/gm, ":+ "); // + eolChar;
 		result += eolChar;
 		scimoz.appendText(ko.stringutils.bytelength(command), command);
-		//scimoz.text += command;
 		this.styleLines(0, scimoz.lineCount, styleNumCode);
 		scimoz.appendText(ko.stringutils.bytelength(result), result);
-		//scimoz.text += result;
-		//alert(scimoz.lineCount);
-
 	} else {
 		var lineNum = scimoz.lineCount - 2;
 		if(this.getLine(lineNum) == '...' + eolChar) {
@@ -758,6 +761,7 @@ this.print2 = function (command, result, done) {
 	}
 	var firstVisibleLine = Math.max(scimoz.lineCount - scimoz.linesOnScreen - 1, 0);
 	scimoz.firstVisibleLine = firstVisibleLine;
+	scimoz.readOnly = readOnly;
 }
 
 this.replaceLine = function(lineNum, text, eol) {
@@ -773,21 +777,10 @@ this.replaceLine = function(lineNum, text, eol) {
 this.append = function (str, newline, scrollToStart) {
 	var scimoz = _this.scimoz;
 	var eolChar = _this.eolChar;
-
+	_this.ensureShown();
 	if (scrollToStart === undefined) scrollToStart = false;
-
-	try {
-		ko.run.output.show();
-	} catch(e) { // Komodo 6
-		ko.uilayout.ensureOutputPaneShown();
-		ko.uilayout.ensureTabShown("runoutput_tab", false);
-
-	}
-
 	str = fixEOL(str);
-
 	var lineCountBefore = scimoz.lineCount;
-
 	if (newline || newline === undefined) str += eolChar;
 	var readOnly = scimoz.readOnly;
 	try {
@@ -803,7 +796,8 @@ this.append = function (str, newline, scrollToStart) {
 	if (!scrollToStart) {
 		firstVisibleLine = Math.max(scimoz.lineCount - scimoz.linesOnScreen, 0);
 	} else {
-		firstVisibleLine = Math.min(lineCountBefore - 1, scimoz.lineCount - scimoz.linesOnScreen);
+		firstVisibleLine = Math.min(lineCountBefore - 1, scimoz.lineCount
+			- scimoz.linesOnScreen);
 	}
 	scimoz.firstVisibleLine = firstVisibleLine;
 
@@ -816,22 +810,9 @@ this.getLine = function(lineNumber) {
 	if (lineNumber === undefined) lineNumber = lineCount - 1;
 	while (lineNumber < 0) lineNumber = lineCount + lineNumber;
 	var oLine = {};
-	//return lineNumber;
 	scimoz.getLine(lineNumber, oLine);
 	return oLine.value;
 }
-
-//var re = /[\x02\x03]/;
-//var str0 = res, newStr = "";
-//var pos = [], pos0;
-//while(1){
-//	pos0 = str0.search(re);
-//	if (pos0 == -1) break;
-//	pos.push(pos0 + newStr.length);
-//	newStr += RegExp.leftContext;
-//	str0 = RegExp.rightContext;
-//}
-//newStr += str0;
 
 this.styleLines = function(startLine, endLine, styleNum) {
 	_init();
@@ -895,14 +876,7 @@ this.clear = function (all) {
 }
 // Display message on the status bar (default) or command output bar
 this.message = function (msg, timeout, highlight) {
-	try {
-		ko.run.output.show();
-	} catch(e) { // Komodo 6
-		ko.uilayout.ensureOutputPaneShown();
-		ko.uilayout.ensureTabShown("runoutput_tab", false);
-
-	}
-
+	_this.ensureShown();
 	var win = (window.frames["runoutput-desc-tabpanel"])?
 		window.frames["runoutput-desc-tabpanel"] : window;
 	var runoutputDesc = win.document.getElementById('runoutput-desc');
@@ -996,32 +970,32 @@ if (typeof(sv.log) == 'undefined') sv.log = {};
 }).apply(sv.log);
 
 
+//sv.addNotification2 = function(msg, severity, timeout) {
+//	var n = ko.notifications.createNotification("sciviews-status-message",
+//		["sciviews-k"], 1, 	window, Ci.koINotificationManager.TYPE_STATUS);
+//	n.log = true;
+//	n.msg = n.description = msg;
+//	n.severity = severity;
+//	n.timeout = timeout;
+//	nm.addNotification(n);
+//}
+//    //n instanceof Ci.koIStatusMessage;
+//    //n instanceof Ci.koINotificationProgress;
+//            //n.maxProgress = Ci.koINotificationProgress.PROGRESS_NOT_APPLICABLE;
+
+sv.addNotification = function(msg, severity, timeout) {
+	var sm = Components.classes["@activestate.com/koStatusMessage;1"]
+		.createInstance(Components.interfaces.koIStatusMessage);
+	sm.category = "SV";
+	sm.msg = msg;
+	sm.log = true;
+	sm.severity = severity;
+	sm.timeout = timeout;
+	ko.notifications.addNotification(sm);
+}
+
+
 sv.log.all(true);
-
-//// Tests... default level do not print debug and infos!
-//sv.log.all(false);
-//alert(sv.log.isAll());
-//try {
-//   test = nonexistingvar;
-//} catch(e) {sv.log.exception(e, "Test it exception"); }
-//sv.log.critical("Test it critical");
-//sv.log.error("Test it error");
-//sv.log.warn("Test it warning");
-//sv.log.info("Test it info");
-//sv.log.debug("Test it debug");
-//sv.log.warnStack("Test it warn with stack");
-//// Set at debug/info level
-//sv.log.all(true);
-//alert(sv.log.isAll());
-//sv.log.critical("Test it critical 2");
-//sv.log.error("Test it error 2");
-//sv.log.warn("Test it warning 2");
-//sv.log.info("Test it info 2");
-//sv.log.debug("Test it debug 2");
-//sv.log.warnStack("Test it warn with stack 2");
-//// Show Komodo log
-//sv.log.show();
-
 // Installs toolboxes
 sv.checkToolbox = function () {
 

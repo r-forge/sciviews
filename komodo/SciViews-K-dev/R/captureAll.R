@@ -108,17 +108,13 @@ sink(type="m");sink(type="o")
 			#marks <<- c(marks, list(c(pos = sum(nchar(rval)), stream = to.stdout)))
 			#cat("<", id, inStdOut, ">")
 		}
-	} else {
-		putMark <- function(to.stdout, id) {}
-	}
+	} else 	putMark <- function(to.stdout, id) {}
 
 	`evalVis` <- function(x) withVisible(eval(x, envir))
 
 	`restartError` <- function(e, calls, foffset) {
 		# remove call (eval(expr, envir, enclos)) from the message
 		ncls <- length(calls)
-
-		#browser()
 
 		if(identical(calls[[NframeOffset + foffset]], conditionCall(e)))
 			e$call <- NULL
@@ -176,21 +172,21 @@ sink(type="m");sink(type="o")
 		},
 		error = function(e) invokeRestart("grmbl", e, sys.calls(), off),
 		warning = function(e) {
-
 			# remove call (eval(expr, envir, enclos)) from the message
-			if(isTRUE(all.equal(sys.call(NframeOffset + off), e$call, check.attributes=FALSE)))
+			if(isTRUE(all.equal(sys.call(NframeOffset + off), e$call,
+				check.attributes = FALSE)))
 				e$call <- NULL
-
-			last.warning <<- c(last.warning, structure(list(e$call), names=e$message))
 
 			if(getWarnLev() != 0L) {
 				putMark(FALSE, 2L)
 				.Internal(.signalCondition(e, conditionMessage(e), conditionCall(e)))
 				.Internal(.dfltWarn(conditionMessage(e), conditionCall(e)))
 				putMark(TRUE, 3L)
+			} else {
+				last.warning <<- c(last.warning, structure(list(e$call),
+					names = e$message))
 			}
 			invokeRestart("muffleWarning")
-
 		}),
 	# Restarts:
 
@@ -213,7 +209,7 @@ sink(type="m");sink(type="o")
 
 	if(getWarnLev() == 0L) {
 		nwarn <- length(last.warning)
-		assign("last.warning", last.warning, envir=baseenv())
+		assign("last.warning", last.warning, envir = baseenv())
 
 		if(nwarn != 0L) putMark(FALSE, 6L)
 		if(nwarn <= 10L) {
