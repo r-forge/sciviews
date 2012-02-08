@@ -21,18 +21,14 @@ ko.help.language = function () {
     if (view != null) {
         if (view.koDoc) {
             language = view.koDoc.subLanguage;
-            if (language == "XML") {
-                language = view.koDoc.language;
-            }
-        } else {
-            language = view.language;
-        }
+            if (language == "XML") language = view.koDoc.language;
+        } else language = view.language;
     }
 
     var command = null, name = null;
     if (language) {
-        if (gPrefs.hasStringPref(language + "HelpCommand")) {
-            command = gPrefs.getStringPref(language + "HelpCommand");
+        if (ko.prefs.hasStringPref(language + "HelpCommand")) {
+            command = ko.prefs.getStringPref(language + "HelpCommand");
         } else {
             var langRegistrySvc = Components
 				.classes['@activestate.com/koLanguageRegistryService;1']
@@ -47,12 +43,12 @@ ko.help.language = function () {
         }
     }
     if (!command) {
-        command = gPrefs.getStringPref("DefaultHelpCommand");
+        command = ko.prefs.getStringPref("DefaultHelpCommand");
         name = "Help";
     }
 
 	if (command.search(/^\s*javascript:\s*(\S.*)\s*$/) != -1)  {
-		command = ko.interpolate.interpolateStrings(RegExp.$1);
+		command = ko.interpolate.interpolateString(RegExp.$1);
 		eval(command);
 	} else {
 		ko.run.runCommand(window, command, null, null, false, false, true,

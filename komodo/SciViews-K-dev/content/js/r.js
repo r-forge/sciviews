@@ -872,6 +872,8 @@ sv.r.quit = function (save) {
 	ko.statusBar.AddMessage("", "SciViews-K");
 	// Clear the objects browser
 	sv.rbrowser.clearPackageList();
+	setTimeout(function() sv.command.updateRStatus(sv.rconn.testRAvailability()),
+		1000);
 }
 
 //// Define the 'sv.r.pkg' namespace ///////////////////////////////////////////

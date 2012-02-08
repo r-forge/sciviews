@@ -79,6 +79,9 @@
 			persist="checked"
 			oncommand="ko.commands.doCommandAsync('cmd_viewrtoolbar', event)"
 		/>
+		<broadcaster id="cmd_svRStarted"
+			oncommand="ko.commands.doCommand(sv.r.running? 'cmd_svQuitR' : 'cmd_svStartR');"
+			/>
 	</broadcasterset>
 
 	<commandset id="allcommands">
@@ -87,14 +90,14 @@
 			events="r_app_started_closed">
 			<command id="cmd_svStartR" key="key_cmd_svStartR"
 				oncommand="ko.commands.doCommand('cmd_svStartR');"
-				desc="R: &StartR;" label="&StartR;" accesskey="&StartR.key;"/>
+				desc="R: &StartR;" label="&StartR;" accesskey="&StartR.key;"
+				/>
 			<command id="cmd_svQuitR" key="key_cmd_svQuitR"
 				oncommand="ko.commands.doCommand('cmd_svQuitR');"
 				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
 			<command id="cmd_svREscape" key="key_cmd_svREscape"
 				oncommand="ko.commands.doCommand('cmd_svREscape');"
 				desc="R: &rEscape;" label="&rEscape;" accesskey="&rEscape.key;"/>
-
 			<command id="cmd_svOpenPkgManager" key="key_cmd_svOpenPkgManager"
 				oncommand="ko.commands.doCommand('cmd_svOpenPkgManager');" disabled="false"
 				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
@@ -245,75 +248,99 @@
 	</menubar>
 
 	<toolboxrow id="main-toolboxrow">
-		<toolbar class="chromeclass-toolbar"
+		<toolbar
 			id="RToolbar"
+			class="chromeclass-toolbar"
 			toolboxid="toolbox_main"
+			align="center"
 			broadcaster="cmd_viewrtoolbar"
 			grippyhidden="true"
-			align="center"
 			kohidden="true"
 			mode="icons"
 			persist="kohidden collapsed buttonstyle mode"
-			buttonstyle="pictures">
+			buttonstyle="pictures"
+			tooltiptext="R Toolbar"
+			customizable="true"
+			>
+			<toolbarbutton buttonstyle="pictures"
+						   tooltiptext="&StartR;"
+						   type="checkbox"
+						   autoCheck="false"
+						   persist="buttonstyle"
+						   class="r-run-command-icon"
+						   observes="cmd_svRStarted"
+						   id="RToolbarStartR"
+						   label="&StartR;" />
+
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rEscape;"
 						   persist="buttonstyle"
 						   class="stop-icon"
 						   observes="cmd_svREscape"
+						   id="RToolbarEscape"
 						   label="&rEscape;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSendLineOrSelection;"
 						   persist="buttonstyle"
 						   class="r-run-selection-icon"
 						   observes="cmd_svRRunLineOrSelection"
+						   id="RToolbarRunLineOrSelection"
 						   label="&rSendLineOrSelection;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSendFile;"
 						   persist="buttonstyle"
 						   class="r-run-all-icon"
 						   observes="cmd_svRRunAll"
+						   id="RToolbarRunAll"
 						   label="&rSendFile;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSrcFile;"
 						   persist="buttonstyle"
 						   class="r-source-all-icon"
 						   observes="cmd_svRSourceAll"
+						   id="RToolbarSourceAll"
 						   label="&rSrcFile;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSendBlock;"
 						   persist="buttonstyle"
 						   class="r-run-block-icon"
 						   observes="cmd_svRRunBlock"
+						   id="RToolbarRunBlock"
 						   label="&rSendBlock;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSrcBlock;"
 						   persist="buttonstyle"
 						   class="r-source-block-icon"
 						   observes="cmd_svRSourceBlock"
+						   id="RToolbarSourceBlock"
 						   label="&rSrcBlock;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSendPara;"
 						   persist="buttonstyle"
 						   class="r-run-para-icon"
 						   observes="cmd_svRRunPara"
+						   id="RToolbarRunPara"
 						   label="&rSendPara;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSrcPara;"
 						   persist="buttonstyle"
 						   class="r-source-para-icon"
 						   observes="cmd_svRSourcePara"
+						   id="RToolbarSourcePara"
 						   label="&rSrcPara;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSendFun;"
 						   persist="buttonstyle"
 						   class="r-run-function-icon"
 						   observes="cmd_svRRunFunction"
+						   id="RToolbarRunFunction"
 						   label="&rSendFun;" />
 			<toolbarbutton buttonstyle="pictures"
 						   tooltiptext="&rSrcFun;"
 						   persist="buttonstyle"
 						   class="r-source-function-icon"
 						   observes="cmd_svRSourceFunction"
+						   id="RToolbarSourceFunction"
 						   label="rSrcFun;" />
 		</toolbar>
 	</toolboxrow>
