@@ -1,11 +1,14 @@
-= svDialogs..tcltk News
+= svDialogstcltk News
 
 == Changes in svDialogs 0.9-1
 
-* The message argument in dlgDir.tcltkWidgets() is replaced by title to match
+* xxxx.tcltkWidgets() is now rewritten as xxxx.tcltkGUI() to match convention
+  used in svDialogs (nativeGUI).
+
+* The message argument in dlgDir.tcltkGUI() is replaced by title to match
   change made in svDialogs 0.9-48.
   
-* There is a new dlgOpen.tcltkWidgets() function.
+* There are new dlgOpen.tcltkGUI() and dlgSave.tcltkGUI() functions.
 
 
 == Changes in svDialogs 0.9-0

@@ -1,8 +1,8 @@
 ## A Tcl/Tk version of the file open dialog box
-dlgOpen.tcltkWidgets <- function (default, title, multiple = FALSE,
+dlgOpen.tcltkGUI <- function (default, title, multiple = FALSE,
 filters = dlgFilters["All", ], ..., gui = .GUI)
 {
-    gui$setUI(widgets = "tcltkWidgets")
+    gui$setUI(widgets = "tcltkGUI")
     ## In tkgetOpenFile, filters are presented differently!
     filters <- gui$args$filters
 	filters <- paste("{\"", filters[, 1], "\" {\"", gsub(";", "\" \"",

@@ -17,7 +17,8 @@ rownames(dlgFilters) <- c("R", "emf", "ps", "pdf", "png", "bmp", "jpeg",
 
 ## Define the S3 method
 dlgOpen <- function (default, title, multiple = FALSE,
-filters = dlgFilters["All", ], ..., gui = .GUI) {
+filters = dlgFilters["All", ], ..., gui = .GUI)
+{
     ## An 'open file(s)' dialog box
     ## title is used as caption of the dialog box
     ## defaultFile allows to preselect a file
@@ -32,17 +33,16 @@ filters = dlgFilters["All", ], ..., gui = .GUI) {
 	## always the first filter that is selected by default in the dialog box
 	## To specify an initial dir, but no initial file, use /dir/*.*
 	
+	if (missing(default) || !length(default)) default <- character(0)
 	if (!gui$startUI("dlgOpen", call = match.call(), default = default,
 		msg = "Displaying a modal open file dialog box",
 		msg.no.ask = "A modal open file dialog box was by-passed"))
 		return(invisible(gui))
 	
 	## Check and rework main arguments and place them in gui$args
-	if (missing(default) || is.null(default))
-		default <- file.path(path.expand(getwd()), "*.*", sep = "")
-	if (!is.null(default) && !inherits(default, "character") &&
-		length(default) != 1)
-        stop("'default' must be a length 1 character string or NULL")
+	if (missing(default) || !length(default))
+		default <- file.path(path.expand(getwd()), "*.*")
+	default <- as.character(default)[1]
 	## Under Windows, it uses \\ as separator, although .Platform$file.sep
 	## is now / (tested in R 2.11.1) => replace it
 	if (.Platform$OS.type == "windows")
@@ -50,24 +50,25 @@ filters = dlgFilters["All", ], ..., gui = .GUI) {
 	## Check that dir and file already exists
 	dir <- dirname(default)
 	if (!file.exists(dir) || !file.info(dir)$isdir)
-		stop("Directory of 'default' does not exists (", dir, ")")
+		default <- file.path(getwd(), basename(default))
 	## Check that file exists
 	file <- basename(default)
 	if (file != "*.*" && file != "*" && !file.exists(default))
-		stop("File provided as 'default' does not exists (", default, ")")
+		default <- file.path(dirname(default), "*.*")
 	multiple <- isTRUE(as.logical(multiple))
-	if (missing(title) || title == "") {
+	if (missing(title) || !length(title) || title == "") {
 		if (multiple) title <- "Select files" else title <- "Select file"
 	} else title <- as.character(title)[1]
 	## Check that filter is a nx2 character matrix, or try reshape it as such
 	if (is.matrix(filters)) {
 		if (ncol(filters) != 2 || !is.character(filters))
-			stop("'filters' must be a nx2 matrix of character strings")
+			filters <- dlgFilters["All", , drop = FALSE]
 	} else {
-		if (length(filters) %% 2 != 0)
-			stop("'filters' but be a vector of characters with an even length")
-		## Try to reshape it
-		filters <- matrix(as.character(filters), ncol = 2, byrow = TRUE)
+		if (length(filters) %% 2 != 0) {
+			filters <- dlgFilters["All", , drop = FALSE]
+		} else { # Try to reshape it
+			filters <- matrix(as.character(filters), ncol = 2, byrow = TRUE)
+		}
 	}
 	gui$setUI(args = list(default = default, title = title,
 		multiple = multiple, filters = filters))
@@ -76,10 +77,11 @@ filters = dlgFilters["All", ], ..., gui = .GUI) {
 	UseMethod("dlgOpen", gui)
 }
 
-## Used to break the chain of NextMethod(), searching for a usable method
+## Used to break the chain of NextMethod(), searching for an usable method
 ## in the current context
 dlgOpen.gui <- function (default, title, multiple = FALSE,
-filters = dlgFilters["All", ], ..., gui = .GUI) {
+filters = dlgFilters["All", ], ..., gui = .GUI)
+{
 	msg <- paste("No workable method available to display a file open dialog box using:",
 		paste(guiWidgets(gui), collapse = ", "))
 	gui$setUI(status = "error", msg = msg, widgets = "none")
@@ -87,8 +89,11 @@ filters = dlgFilters["All", ], ..., gui = .GUI) {
 }
 
 ## The pure textual version used as fallback in case no GUI could be used
+## TODO: there is a problem with /dir/*.* => return => use it as a default
+## and then, issues a warning that the file does not exist!
 dlgOpen.textCLI <- function (default, title, multiple = FALSE,
-filters = dlgFilters["All", ], ..., gui = .GUI) {
+filters = dlgFilters["All", ], ..., gui = .GUI)
+{
 	gui$setUI(widgets = "textCLI")
 	## Ask for the file
 	res <- readline(paste(gui$args$title, " [", gui$args$default, "]: ",
@@ -99,6 +104,7 @@ filters = dlgFilters["All", ], ..., gui = .GUI) {
 	## In case we pasted a string with single, or double quotes, or spaces
 	## eliminate them
 	res <- sub("^['\" ]+", "", sub("['\" ]+$", "", res))
+	res <- res[res != ""]
 	## If we have serveral files returned, but multiple is FALSE, keep only
 	## first one with a warning
 	if (!gui$args$multiple && length(res) > 1) {
@@ -112,7 +118,8 @@ filters = dlgFilters["All", ], ..., gui = .GUI) {
 		res <- character(0) # Same as if the user did cancel the dialog box
 	} else {
 		## Keep only existing files
-		warning("There are inexistent files that will be ignored")
+		if (!all(isThere))
+			warning("There are inexistent files that will be ignored")
 		res <- res[isThere]
 	}
 	if (length(res)) res <- normalizePath(res)
@@ -129,7 +136,7 @@ filters = dlgFilters["All", ], ..., gui = .GUI)
     ## If cancelled, then return character(0)
     ## This dialog box is always modal
 	##
-	## It is a replacement for choose.files(), tkgetOpenFile() & file.choose(new = FALSE)
+	## Replacement for choose.files(), tkgetOpenFile() & file.choose(new=FALSE)
 	res <- switch(Sys.info()["sysname"],
 		Windows = .winDlgOpen(gui$args$default, gui$args$title,
 			gui$args$multiple, gui$args$filters),
@@ -150,9 +157,12 @@ filters = dlgFilters["All", ], ..., gui = .GUI)
 .winDlgOpen <- function (default, title, multiple = FALSE,
 filters = dlgFilters["All", ])
 {
+	if (!is.matrix(filters)) filters <- matrix(filters, ncol = 2, byrow = TRUE)
+	if (missing(default) || !length(default)) default <- ""
 	res <- choose.files(default = default, caption = title, multi = multiple,
 		filters = filters, index = 1)
     if (length(res)) res <-  gsub("\\\\", "/", res)
+	if (length(res) == 1 && res == "") res <- character(0)
 	return(res)
 }
 
@@ -161,6 +171,7 @@ filters = dlgFilters["All", ])
 filters = dlgFilters["All", ])
 {
     ## TODO: filters are implemented differently on the Mac => how to do this???
+	if (!is.matrix(filters)) filters <- matrix(filters, ncol = 2, byrow = TRUE)
 	## Display a modal file open selector with native Mac dialog box
 	if (.Platform$GUI == "AQUA") app <- "(name of application \"R\")" else
 		app <- "\"Terminal\""
@@ -190,7 +201,7 @@ filters = dlgFilters["All", ])
 			" to set filename to choose file ", mcmd,
 			"' -e 'POSIX path of filename'", sep = "")
 	}
-	## For some reasons, I cannot use system(intern = TRUE) with this in R.app/R64.app
+	## I cannot use system(intern = TRUE) with this in R.app/R64.app
 	## (deadlock situation?), but I can in R run in a terminal. system2() also
 	## works, but this preclue of using svDialogs on R < 2.12.0.
 	## The hack is thus to redirect output to a file, then, to read the content
@@ -221,6 +232,7 @@ filters = dlgFilters["All", ])
     ## Use zenity to display the file open selection
     ## Construct the -file-filter options
 	if (multiple) fcmd <- "--multiple" else fcmd <- ""
+	if (!is.matrix(filters)) filters <- matrix(filters, ncol = 2, byrow = TRUE)
 	nf <- nrow(filters)
 	if (nf > 0) for (i in 1:nf)
 		fcmd <- paste(fcmd, " --file-filter=\"", filters[i, 1], " | ",

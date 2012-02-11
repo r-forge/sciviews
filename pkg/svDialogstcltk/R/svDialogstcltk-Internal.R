@@ -1,7 +1,7 @@
 .onLoad <- function (lib, pkg)
 {
-	## Add a dispatch to 'tcltkWidgets' in the .GUI object
-	guiWidgets(.GUI) <- "tcltkWidgets"
+	## Add a dispatch to 'tcltkGUI' in the .GUI object
+	guiWidgets(.GUI) <- "tcltkGUI"
 }
 
 #.onUnload <- function (libpath)

@@ -1,8 +1,8 @@
 ## A Tcl/Tk implementation of the input box
-dlgInput.tcltkWidgets <- function (message = "Enter a value", default = "", ...,
+dlgInput.tcltkGUI <- function (message = "Enter a value", default = "", ...,
 gui = .GUI)
 {
-    gui$setUI(widgets = "tcltkWidgets")
+    gui$setUI(widgets = "tcltkGUI")
 	## A simple text input box
     ## This dialog box is always modal
     ## Return either a string, or character(0) if 'Cancel' clicked

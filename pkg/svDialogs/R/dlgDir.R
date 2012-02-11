@@ -1,26 +1,26 @@
 ## Define the S3 method
-dlgDir <- function (default = getwd(), title, ..., gui = .GUI) {
+dlgDir <- function (default = getwd(), title, ..., gui = .GUI)
+{
 	if (!gui$startUI("dlgDir", call = match.call(), default = default,
 		msg = "Displaying a modal dir selection dialog box",
 		msg.no.ask = "A modal dir selection dialog box was by-passed"))
 		return(invisible(gui))
 	
 	## Check and rework main arguments and place them in gui$args
-	if (!is.null(default) && !inherits(default, "character") &&
-		length(default) != 1)
-        stop("'default' must be a length 1 character string or NULL")
-	if (is.null(default)) default <- getwd()
-    if (file.exists(default)) {
-        if (!file.info(default)$isdir)
-            stop("'default' must be a directory, not a file!")
-    }
+	if (!length(default)) default <- getwd() else
+		default <- as.character(default)[1]
+    if (file.exists(default))
+        if (!file.info(default)$isdir) default <- dirname(default) # Need a dir 
 	default <- path.expand(default)
 	## Under Windows, it uses \\ as separator, although .Platform$file.sep
 	## is now / (tested in R 2.11.1) => replace it
 	if (.Platform$OS.type == "windows")
 		default <- gsub("\\\\", "/", default)
-	if (missing(title) || title == "") title <- "Choose a directory" else
-		title <- paste(title, collapse = "\n")
+	if (missing(title) || !length(title) || title == "") {
+		title <- "Choose a directory"
+	} else {
+		title <- paste(as.character(title), collapse = "\n")
+	}
 	gui$setUI(args = list(default = default, title = title))
 	
 	## ... and dispatch to the method
@@ -29,7 +29,8 @@ dlgDir <- function (default = getwd(), title, ..., gui = .GUI) {
 
 ## Used to break the chain of NextMethod(), searching for a usable method
 ## in the current context
-dlgDir.gui <- function (default = getwd(), title, ..., gui = .GUI) {
+dlgDir.gui <- function (default = getwd(), title, ..., gui = .GUI)
+{
 	msg <- paste("No workable method available to display a dir selection dialog box using:",
 		paste(guiWidgets(gui), collapse = ", "))
 	gui$setUI(status = "error", msg = msg, widgets = "none")
@@ -79,7 +80,7 @@ dlgDir.nativeGUI <- function (default = getwd(), title, ..., gui = .GUI)
     ## If cancelled, then return character(0)
     ## This dialog box is always modal
 	##
-	## It is a replacement for choose.dir(), tk_choose.dir() & tkchooseDirectory()
+	## Replacement for choose.dir(), tk_choose.dir() & tkchooseDirectory()
 	res <- switch(Sys.info()["sysname"],
 		Windows = .winDlgDir(gui$args$default, gui$args$title),
 		Darwin = .macDlgDir(gui$args$default, gui$args$title),
@@ -116,7 +117,7 @@ dlgDir.nativeGUI <- function (default = getwd(), title, ..., gui = .GUI)
 	cmd <- paste("-e 'tell application ", app,
 		" to set foldername to choose folder ", mcmd, "default location \"",
 		default , "\"' -e 'POSIX path of foldername'", sep = "")
-	## For some reasons, I cannot use system(intern = TRUE) with this in R.app/R64.app
+	## I cannot use system(intern = TRUE) with this in R.app/R64.app
 	## (deadlock situation?), but I can in R run in a terminal. system2() also
 	## works, but this preclue of using svDialogs on R < 2.12.0.
 	## The hack is thus to redirect output to a file, then, to read the content
@@ -128,9 +129,6 @@ dlgDir.nativeGUI <- function (default = getwd(), title, ..., gui = .GUI)
 	if (inherits(res, "try-error") || !length(res)) return(character(0))
 	if (res > 0) return(character(0)) # User cancelled input
 	res <- readLines(tfile)
-	#res <- sub("^text returned:", "", res)
-	#res <- sub(", button returned:.*$", "", res)
-	#res <- paste(res, collapse = " ")
 	return(res)	
 }
 
