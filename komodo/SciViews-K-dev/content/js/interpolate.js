@@ -84,12 +84,12 @@ function svWindowPatcher () {
 		family = <menuitem label="Tools"
 			src="chrome://sciviewsk/skin/icons/Tools.html"/>;
 		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		
+
 		// Keep Open Office family, but place it at the end of the list
 		family = <menuitem label="[Open Office Icons]"
 			src="chrome://openoffice/content/industrial.html"/>;
 		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		
+
 		// Add a pointer to the icon makers web sites (required by fugue and
 		// diagona icons)
 		var label = win.document.getElementById("iconlabel");
@@ -115,7 +115,7 @@ function svWindowObserver() {
 		}
 	}
 }
- 
+
 var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
     .getService(Components.interfaces.nsIWindowWatcher);
 ww.registerNotification(new svWindowObserver());
@@ -158,9 +158,9 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 {
     try {
     if (typeof(queryTitle) == 'undefined') queryTitle = null;
-	log.info("interpolate.interpolate(editor, strings=[" + strings +
-        "], bracketedStrings=[" + bracketedStrings + "], queryTitle='" +
-        queryTitle + "', viewData)");
+	//log.info("interpolate.interpolate(editor, strings=[" + strings +
+        //"], bracketedStrings=[" + bracketedStrings + "], queryTitle='" +
+        //queryTitle + "', viewData)");
 	viewData = ko.interpolate.getViewData(editor, viewData);
 
     var lastErrorSvc = Components.classes["@activestate.com/koLastErrorService;1"]
@@ -176,7 +176,7 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 		brStr = brStr.replace(/%tr:/g, "");
 		bracketedStrings[0] = brStr;
 	} catch(e) { }
-	
+
 	// Interpolation step 1: get queries.
     var queriesCountObj = new Object();
     var queriesObj = new Array();
@@ -206,7 +206,7 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
         obj.title = queryTitle;
 		// PhG: this is added to allow access to sv... functions
 		obj.sv = sv;
-        
+
 		// PhG: replaced this by my own dialog box with extra features
 		//window.openDialog("chrome://komodo/content/run/interpolationquery.xul",
         window.openDialog("chrome://sciviewsk/content/Rinterpolationquery.xul",
@@ -246,7 +246,7 @@ ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
 		}
 	}
 
-    log.info("interpolate.interpolate: istrings=[" + istrings + "]");
+    //log.info("interpolate.interpolate: istrings=[" + istrings + "]");
     return(istrings);
     } catch(e) {
         log.exception(e);

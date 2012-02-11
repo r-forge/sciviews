@@ -145,7 +145,7 @@ this.escape = function(command) _svuSvc.escape(command);
 //}
 
 this.testRAvailability = function(checkProc) {
-	var result = _this.evalAtOnce("cat(123)");
+	var result = _this.evalAtOnce("cat(123L)");
 	var connectionUp = result.indexOf("123") != -1;
 	var ret = connectionUp? "Connection with R successful." :
 		"Cannot connect to R.";

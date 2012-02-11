@@ -1,13 +1,16 @@
 content sciviewsk jar:sciviewsk.jar!/content/ xpcnativewrappers=yes
-overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/overlayMain.xul
+
+overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/overlayMain.xul appversion>6.99
+overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/overlayMain-ko6.xul appversion<=6.99
+
 overlay chrome://komodo/content/pref/pref.xul chrome://sciviewsk/content/prefOverlay.xul
 
-overlay chrome://komodo/content/pref/pref.xul chrome://sciviewsk/content/pkgman/pkgman.xul
-
-overlay chrome://places/content/places_panel.xul chrome://sciviewsk/content/places.xul
+overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/rbrowserOverlay-ko6.xul appversion<=6.99
+overlay chrome://places/content/places_panel.xul chrome://sciviewsk/content/places.xul appversion>6.99
 
 locale  sciviewsk     en-GB     jar:sciviewsk.jar!/locale/en-GB/
 locale  sciviewsk     fr-FR     jar:sciviewsk.jar!/locale/fr-FR/
 
 skin    sciviewsk  classic/1.0  jar:sciviewsk.jar!/skin/
 
+manifest components/component.manifest

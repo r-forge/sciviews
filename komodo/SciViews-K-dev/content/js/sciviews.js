@@ -983,16 +983,23 @@ if (typeof(sv.log) == 'undefined') sv.log = {};
 //    //n instanceof Ci.koINotificationProgress;
 //            //n.maxProgress = Ci.koINotificationProgress.PROGRESS_NOT_APPLICABLE;
 
-sv.addNotification = function(msg, severity, timeout) {
-	var sm = Components.classes["@activestate.com/koStatusMessage;1"]
-		.createInstance(Components.interfaces.koIStatusMessage);
-	sm.category = "SV";
-	sm.msg = msg;
-	sm.log = true;
-	sm.severity = severity;
-	sm.timeout = timeout;
-	ko.notifications.addNotification(sm);
+if(ko.notifications) {
+	sv.addNotification = function(msg, severity, timeout) {
+		var sm = Components.classes["@activestate.com/koStatusMessage;1"]
+			.createInstance(Components.interfaces.koIStatusMessage);
+		sm.category = "SV";
+		sm.msg = msg;
+		sm.log = true;
+		sm.severity = severity;
+		sm.timeout = timeout;
+		ko.notifications.addNotification(sm);
+	}
+} else {
+	sv.addNotification = function(msg, severity, timeout) {
+		ko.statusBar.AddMessage(msg, 'sciviewsk', timeout, false, false, true);
+	}
 }
+
 
 
 sv.log.all(true);
