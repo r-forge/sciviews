@@ -2,7 +2,7 @@
 dlgMessage.tcltkWidgets <- function (message, type = c("ok", "okcancel", "yesno",
 "yesnocancel"), ..., gui = .GUI)
 {
-    gui$setUI(widgets = "nativeGUI")
+    gui$setUI(widgets = "tcltkWidgets")
 	## TODO: use custom dialog boxes, not tkmessageBox() cf. ugly in Linux and buggy in Mac
     ## Use tkmessageBox for now
     tkDefault <- switch(gui$args$type,

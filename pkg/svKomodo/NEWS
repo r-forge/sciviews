@@ -1,5 +1,14 @@
 = svKomodo News
 
+== Changes in svKomodo 0.9-54
+
+* Startup code is changed... a part of the code in svStart.R in the SciViews-K
+  plugin is now executed here!
+  
+* Save and load SciViews config in ~/.SciViewsConfig.RData file, so that it is
+  possible to reconfigure R for SciViews just by reloading the present package.
+
+
 == Changes in svKomodo 0.9-53
 
 * koCmd() can now use either socket or file for communication with Komodo.

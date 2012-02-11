@@ -3,6 +3,8 @@
 \alias{dlgMessage.gui}
 \alias{dlgMessage.textCLI}
 \alias{dlgMessage.nativeGUI}
+\alias{msgBox}
+\alias{okCancelBox}
 
 \title{ Display a message box }
 \description{
@@ -12,6 +14,8 @@
 \usage{
 dlgMessage(message,  type = c("ok", "okcancel", "yesno", "yesnocancel"),
     \dots, gui = .GUI)
+msgBox(message)
+okCancelBox(message)
 
 ## These should not be called directly
 \method{dlgMessage}{gui}(message,  type = c("ok", "okcancel", "yesno", "yesnocancel"),
@@ -35,6 +39,8 @@ dlgMessage(message,  type = c("ok", "okcancel", "yesno", "yesnocancel"),
   The modified 'gui' object is returned invisibly. A string with the name of
   the button ("ok", "cancel", "yes" or "no") that the user pressed can be
   obtained from \code{gui$res} (see example).
+  \code{msgBox()} just returns the name of the button (ok), while okCancelBox()
+  returns \code{TRUE} if ok was clicked or \code{FALSE} if cancel was clicked.
 }
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
@@ -54,6 +60,10 @@ dlgMessage("Do you like apples?", "yesno")$res
 ## Idem, but one can interrupt too
 res <- dlgMessage("Do you like oranges?", "yesnocancel")$res
 if (res == "cancel") cat("Ah, ah! You refuse to answer!\n")
+
+## Simpler version with msgBox and okCancelBox
+msgBox("Information message") # Use this to interrupt script and inform user
+if (okCancelBox("Continue?")) cat("we continue\n") else cat("stop it!\n")
 }
 
 \keyword{ misc }

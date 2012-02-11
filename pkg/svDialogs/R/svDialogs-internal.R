@@ -9,8 +9,14 @@
 
 .onUnload <- function (libpath)
 {
-	## Clear menus again
-	.menuClear()
+	## Clear menus
+	try(.menuClear())
+}
+
+.Last.lib <- function (libpath)
+{
+	## Clear menus
+	try(.menuClear())
 }
 
 .packageName <- "svDialogs"

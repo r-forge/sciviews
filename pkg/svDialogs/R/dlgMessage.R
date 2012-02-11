@@ -1,3 +1,14 @@
+## Simplified versions of dlgMessage()
+msgBox <- function (message) {
+	require(svDialogs)
+	dlgMessage(message = message)$res
+}
+
+okCancelBox <- function (message) {
+	require(svDialogs)
+	return(dlgMessage(message = message, type = "okcancel")$res == "ok")
+}
+
 ## Define the S3 method
 dlgMessage <- function (message, type = c("ok", "okcancel", "yesno",
 "yesnocancel"), ..., gui = .GUI) {

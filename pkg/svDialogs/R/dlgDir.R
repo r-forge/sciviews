@@ -1,5 +1,5 @@
 ## Define the S3 method
-dlgDir <- function (default = getwd(), message, ..., gui = .GUI) {
+dlgDir <- function (default = getwd(), title, ..., gui = .GUI) {
 	if (!gui$startUI("dlgDir", call = match.call(), default = default,
 		msg = "Displaying a modal dir selection dialog box",
 		msg.no.ask = "A modal dir selection dialog box was by-passed"))
@@ -19,9 +19,9 @@ dlgDir <- function (default = getwd(), message, ..., gui = .GUI) {
 	## is now / (tested in R 2.11.1) => replace it
 	if (.Platform$OS.type == "windows")
 		default <- gsub("\\\\", "/", default)
-	if (missing(message) || message == "") message <- "Choose a directory" else
-		message <- paste(message, collapse = "\n")
-	gui$setUI(args = list(default = default, message = message))
+	if (missing(title) || title == "") title <- "Choose a directory" else
+		title <- paste(title, collapse = "\n")
+	gui$setUI(args = list(default = default, title = title))
 	
 	## ... and dispatch to the method
 	UseMethod("dlgDir", gui)
@@ -29,7 +29,7 @@ dlgDir <- function (default = getwd(), message, ..., gui = .GUI) {
 
 ## Used to break the chain of NextMethod(), searching for a usable method
 ## in the current context
-dlgDir.gui <- function (default = getwd(), message, ..., gui = .GUI) {
+dlgDir.gui <- function (default = getwd(), title, ..., gui = .GUI) {
 	msg <- paste("No workable method available to display a dir selection dialog box using:",
 		paste(guiWidgets(gui), collapse = ", "))
 	gui$setUI(status = "error", msg = msg, widgets = "none")
@@ -37,13 +37,16 @@ dlgDir.gui <- function (default = getwd(), message, ..., gui = .GUI) {
 }
 
 ## The pure textual version used a fallback in case no GUI could be used
-dlgDir.textCLI <- function (default = getwd(), message, ..., gui = .GUI)
+dlgDir.textCLI <- function (default = getwd(), title, ..., gui = .GUI)
 {
 	gui$setUI(widgets = "textCLI")
 	## Ask for the directory
-	res <- readline(paste(gui$args$message, " [", gui$args$default, "]: ",
+	res <- readline(paste(gui$args$title, " [", gui$args$default, "]: ",
 		sep = ""))
 	if (res == "") res <- gui$args$default else res <- res
+	## In case we pasted a string with single, or double quotes, or spaces
+	## eliminate them
+	res <- sub("^['\" ]+", "", sub("['\" ]+$", "", res))
 	## To get the same behaviour as the GUI equivalents, we must make sure
 	## it is a directory, or try to create it (possibly recursively, if it
 	## does not exist). Also return absolute path
@@ -67,7 +70,7 @@ dlgDir.textCLI <- function (default = getwd(), message, ..., gui = .GUI)
 }
 
 ## The native version of the input box
-dlgDir.nativeGUI <- function (default = getwd(), message, ..., gui = .GUI)
+dlgDir.nativeGUI <- function (default = getwd(), title, ..., gui = .GUI)
 {
 	gui$setUI(widgets = "nativeGUI")
 	## A 'choose a directory' dialog box
@@ -78,9 +81,9 @@ dlgDir.nativeGUI <- function (default = getwd(), message, ..., gui = .GUI)
 	##
 	## It is a replacement for choose.dir(), tk_choose.dir() & tkchooseDirectory()
 	res <- switch(Sys.info()["sysname"],
-		Windows = .winDlgDir(gui$args$default, gui$args$message),
-		Darwin = .macDlgDir(gui$args$default, gui$args$message),
-		.unixDlgDir(gui$args$default, gui$args$message)
+		Windows = .winDlgDir(gui$args$default, gui$args$title),
+		Darwin = .macDlgDir(gui$args$default, gui$args$title),
+		.unixDlgDir(gui$args$default, gui$args$title)
 	)
 	
 	## Do we need to further dispatch?
@@ -91,15 +94,15 @@ dlgDir.nativeGUI <- function (default = getwd(), message, ..., gui = .GUI)
 }
 
 ## Windows version
-.winDlgDir <- function (default = getwd(), message = "")
+.winDlgDir <- function (default = getwd(), title = "")
 {
-	res <- choose.dir(default = default, caption = message)
+	res <- choose.dir(default = default, caption = title)
     if (is.na(res)) res <- character(0) else res <-  gsub("\\\\", "/", res)
 	return(res)
 }
 
 ## Mac OS X version
-.macDlgDir <- function (default = getwd(), message = "")
+.macDlgDir <- function (default = getwd(), title = "")
 {
     ## Display a modal directory selector with native Mac dialog box
 	if (.Platform$GUI == "AQUA") app <- "(name of application \"R\")" else
@@ -108,8 +111,8 @@ dlgDir.nativeGUI <- function (default = getwd(), message, ..., gui = .GUI)
 	owarn <- getOption("warn")
 	on.exit(options(warn = owarn))
 	options(warn = -1)
-	if (message == "") mcmd <- "" else mcmd <- paste("with prompt \"",
-		message, "\" ", sep = "")
+	if (title == "") mcmd <- "" else mcmd <- paste("with prompt \"",
+		title, "\" ", sep = "")
 	cmd <- paste("-e 'tell application ", app,
 		" to set foldername to choose folder ", mcmd, "default location \"",
 		default , "\"' -e 'POSIX path of foldername'", sep = "")
@@ -132,7 +135,7 @@ dlgDir.nativeGUI <- function (default = getwd(), message, ..., gui = .GUI)
 }
 
 ## Linux/Unix version
-.unixDlgDir <- function (default = getwd(), message = "")
+.unixDlgDir <- function (default = getwd(), title = "")
 {
     ## zenity must be installed on this machine!
     if (Sys.which("zenity") == "") return(NULL)
@@ -142,20 +145,20 @@ dlgDir.nativeGUI <- function (default = getwd(), message, ..., gui = .GUI)
     options(warn = -1)
     ## Use zenity to display the directory selection
 	## There is no message area here, but one can set the title
-	if (message == "") {
-		message <- "Choose a directory" # Default message
-	} else {
-		## Determine if the message is multiline...
-		if (regexpr("\n", message) > 0) {
-			## Try to use a notification instead
-			if (Sys.which("notify-send") != "") {
-				system(paste("notify-send --category=\"R\"",
-					" \"R message\" \"", message, "\"", sep = ""), wait = FALSE)
-				message <- "Choose folder"			
-			} # Else the wole message cannot be displayed!!
-		}
-	}
-    msg <- paste("zenity --file-selection --title=\"", message,
+	if (title == "") {
+		title <- "Choose a directory" # Default title
+	} #else {
+	#	## Determine if the title is multiline...
+	#	if (regexpr("\n", title) > 0) {
+	#		## Try to use a notification instead
+	#		if (Sys.which("notify-send") != "") {
+	#			system(paste("notify-send --category=\"R\"",
+	#				" \"R message\" \"", title, "\"", sep = ""), wait = FALSE)
+	#			title <- "Choose folder"			
+	#		} # Else the wole title cannot be displayed!!
+	#	}
+	#}
+    msg <- paste("zenity --file-selection --title=\"", title,
 	"\" --directory --filename=\"", default, "\"", sep = "")
     res <- system(msg, intern = TRUE)
     return(res)	

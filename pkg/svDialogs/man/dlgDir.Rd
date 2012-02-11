@@ -10,20 +10,17 @@
 }
 
 \usage{
-dlgDir(default = getwd(), message, \dots, gui = .GUI)
+dlgDir(default = getwd(), title, \dots, gui = .GUI)
 
 ## These should not be called directly
-\method{dlgDir}{gui}(default = getwd(), message, \dots, gui = .GUI)
-\method{dlgDir}{textCLI}(default = getwd(), message, \dots, gui = .GUI)
-\method{dlgDir}{nativeGUI}(default = getwd(), message, \dots, gui = .GUI)
+\method{dlgDir}{gui}(default = getwd(), title, \dots, gui = .GUI)
+\method{dlgDir}{textCLI}(default = getwd(), title, \dots, gui = .GUI)
+\method{dlgDir}{nativeGUI}(default = getwd(), title, \dots, gui = .GUI)
 }
 
 \arguments{
   \item{default}{ the directory to start with. }
-  \item{message}{ a message to display on top of the dialog box. Multiple
-    lines are allowed, but avoid it as much as possible because in some
-    implementations, only the first line of the message is displayed
-    in the title of the dialog box. }
+  \item{title}{ a title to display on top of the dialog box. }
   \item{\dots}{ pass further arguments to methods. }
   \item{gui}{ the 'gui' object concerned by this dialog box. }
 }
@@ -36,7 +33,7 @@ dlgDir(default = getwd(), message, \dots, gui = .GUI)
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
 
-%\seealso{ \code{\link{dlgOpen}},  \code{\link{dlgSave}} }
+\seealso{ \code{\link{dlgOpen}},  \code{\link{dlgSave}} }
 
 \examples{
 ### A quick default directory changer

@@ -1,5 +1,24 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-48
+
+* Argument message is changed to title in dlgDir() function, to match
+  corresponding argument in dlgOpen() and dlgSave() and also to indicate it can
+  only be a single line of text!
+
+* Added msgBox() and okCancelBox() function for simpler message box handling.
+
+* dlgOpen() is now implemented and its textCLI version also accepts single and
+  double quotes around file path (allow to drag&drop from, e.g., nautilus to
+  gnome-terminal in Gnome Linux), on the contrary to file.choose().
+  
+* dlgFilters is similar to Filters matrix under Windows, and it provides a
+  series of default file types and filters for dlgOpen() and dlgSave().
+  
+* dlgSave() is also implemented, but it uses choose.files() on Windows, which is
+  merely designed to open file(s) instead of providing a file name to save to.
+
+
 == Changes in svDialogs 0.9-47
 
 * Now, menuAddItem() implements 'enable' and 'disable' in action to change the

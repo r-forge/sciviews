@@ -301,7 +301,11 @@ menuDelItem <- function (menuname, itemname)
 .unixMenuFile <- function ()
 {
 	## Get the name of the file that contains the R menu
-	return(file.path(.unixMenuFolder(), paste(Sys.getenv("WINDOWID"),
+	winid <- getTemp(".winid", default = Sys.getenv("WINDOWID"))
+	assignTemp(".winid", winid)
+	user <- getTemp(".user", default = Sys.getenv("USER"))
+	assignTemp(".user", user)
+	return(file.path(.unixMenuFolder(), paste(user, winid,
 		"Menu.txt", sep = "")))
 }
 
@@ -322,7 +326,11 @@ menuDelItem <- function (menuname, itemname)
 .unixCtxMenuFile <- function ()
 {
 	## Get the name of the file that contains the R context menu
-	return(file.path(.unixMenuFolder(), paste(Sys.getenv("WINDOWID"),
+	winid <- getTemp(".winid", default = Sys.getenv("WINDOWID"))
+	assignTemp(".winid", winid)
+	user <- getTemp(".user", default = Sys.getenv("USER"))
+	assignTemp(".user", user)
+	return(file.path(.unixMenuFolder(), paste(user, winid,
 		"CtxMenu.txt", sep = "")))
 }
 
@@ -383,7 +391,7 @@ menuDelItem <- function (menuname, itemname)
 						if (cmd == "none" || !is.null(attr(lst[[i]], "state"))) {
 							cmd <- "NULL" # This is the "no cmd" or "disabled" for ctxmenu
 						} else {
-							cmd <- paste(cmd, "\\r", sep = "")
+							cmd <- paste(cmd, "\\n", sep = "")
 							cmd <- paste("xvkbd -text", shQuote(cmd))
 						}
 						cat("\n", ind, "item=", item, "\n", ind, "cmd=", cmd,
