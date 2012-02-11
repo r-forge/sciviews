@@ -1,10 +1,10 @@
 ## Define the S3 method
 dlgList <- function (choices, preselect = NULL, multiple = FALSE, title = NULL,
-..., gui = .GUI) {
+..., gui = .GUI)
+{
 	## Check arguments
 	choices <- as.character(choices)
-	if (is.null(choices) || !length(choices)) # Nothing to select
-		return(character(0))
+	if (!length(choices)) return(character(0)) # Nothing to select	
 	preselect <- as.character(preselect)
 	preselect <- preselect[preselect %in% choices]
 	if (!length(preselect)) preselect <- choices[1] # Select first item by default
@@ -16,10 +16,8 @@ dlgList <- function (choices, preselect = NULL, multiple = FALSE, title = NULL,
 		return(invisible(gui))
 	
 	## Further argument checking
-	if (!is.null(multiple) && !is.na(multiple))
-		multiple <- (multiple[1] == TRUE) else multiple <- FALSE
-	if (!is.null(title) && (!is.character(title) || length(title) != 1)) 
-        stop("'title' must be NULL or a length-1 character vector")
+	multiple <- isTRUE(as.logical(multiple))
+	if (!length(title)) title <- NULL else title <- as.character(title)[1]
 	gui$setUI(args = list(choices = choices, preselect = preselect,
 		multiple = multiple, title = title))
 	
@@ -30,7 +28,8 @@ dlgList <- function (choices, preselect = NULL, multiple = FALSE, title = NULL,
 ## Used to break the chain of NextMethod(), searching for a usable method
 ## in the current context
 dlgList.gui <- function (choices, preselect = NULL, multiple = FALSE,
-title = NULL, ..., gui = .GUI) {
+title = NULL, ..., gui = .GUI)
+{
 	msg <- paste("No workable method available to display a list dialog box using:",
 		paste(guiWidgets(gui), collapse = ", "))
 	gui$setUI(status = "error", msg = msg, widgets = "none")
@@ -39,7 +38,8 @@ title = NULL, ..., gui = .GUI) {
 
 ## The pure textual version used a fallback in case no GUI could be used
 dlgList.textCLI <- function (choices, preselect = NULL, multiple = FALSE,
-title = NULL, ..., gui = .GUI) {
+title = NULL, ..., gui = .GUI)
+{
 	gui$setUI(widgets = "textCLI")
 	## Ask a selection in a textual menu
 	choices <- gui$args$choices
@@ -50,7 +50,6 @@ title = NULL, ..., gui = .GUI) {
 	## character(0) => change this for consistency
 	if (!multiple && res == "" && !"" %in% choices)
 		res <- character(0)
-#PhG? To eliminate?	res$gui <- res
 	gui$setUI(res = res, status = NULL)
 	return(invisible(gui))
 }
@@ -134,7 +133,8 @@ title = NULL)
 
 ## Linux/Unix version
 .unixDlgList <- function (choices, preselect = NULL, multiple = FALSE,
-title = NULL) {
+title = NULL)
+{
     ## We don't use the ugly (on Linux) Tk version tk_select.list()
     ## In zenity, the normal list mode do not allow for preselections
     ## => switch to --checklist (multiple) or --radiolist (single) in this case
@@ -144,7 +144,7 @@ title = NULL) {
 	} else {
 		kind <- "--radiolist --column=\"Pick\" --column=\"Item\""
 	}
-	## Make sure only one item is preselected if multiple is FALSE (keep first one)
+	## Only one item is preselected if multiple is FALSE (keep first one)
     if (!multiple) preselect <- preselect[1]
 	## Create a string with TRUE/FALSE item alternated
     sel <- choices %in% preselect

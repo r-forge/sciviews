@@ -1,26 +1,28 @@
 ## Simplified versions of dlgMessage()
-msgBox <- function (message) {
+msgBox <- function (message)
+{
 	require(svDialogs)
 	dlgMessage(message = message)$res
 }
 
-okCancelBox <- function (message) {
+okCancelBox <- function (message)
+{
 	require(svDialogs)
 	return(dlgMessage(message = message, type = "okcancel")$res == "ok")
 }
 
 ## Define the S3 method
 dlgMessage <- function (message, type = c("ok", "okcancel", "yesno",
-"yesnocancel"), ..., gui = .GUI) {
+"yesnocancel"), ..., gui = .GUI)
+{
 	if (!gui$startUI("dlgMessage", call = match.call(), default = "ok",
 		msg = "Displaying a modal message dialog box",
 		msg.no.ask = "A modal message dialog box was by-passed"))
 		return(invisible(gui))
 	
 	## Check and rework main arguments and place them in gui$args
-    if (missing(message) || !inherits(message, "character"))
-        stop("'message' must be a character string!")
-    message <- paste(message, collapse = "\n")
+    if (missing(message)) message <- "[Your message here...]"
+    message <- paste(as.character(message), collapse = "\n")
     type <- match.arg(type)
 	gui$setUI(args = list(message = message, type = type))
 	
@@ -31,7 +33,8 @@ dlgMessage <- function (message, type = c("ok", "okcancel", "yesno",
 ## Used to break the chain of NextMethod(), searching for a usable method
 ## in the current context
 dlgMessage.gui <- function (message, type = c("ok", "okcancel", "yesno",
-"yesnocancel"), ..., gui = .GUI) {
+"yesnocancel"), ..., gui = .GUI)
+{
 	msg <- paste("No workable method available to display a message dialog box using:",
 		paste(guiWidgets(gui), collapse = ", "))
 	gui$setUI(status = "error", msg = msg, widgets = "none")
@@ -89,7 +92,7 @@ dlgMessage.nativeGUI <- function (message, type = c("ok", "okcancel", "yesno",
 "yesnocancel"))
 {
 	res <- winDialog(type = type, message = message)
-	## Rework result to match the other functions
+	## Rework result to match the result from the other functions
 	if (type == "ok") return(invisible("ok")) else return(tolower(res))
 }
 
@@ -168,7 +171,8 @@ dlgMessage.nativeGUI <- function (message, type = c("ok", "okcancel", "yesno",
     if (res > 1) return(NULL) else res <- results[res + 1]
     ## Do we ask to continue (if was yesnocancel)?
     if (confirm) {
-        conf <- system("zenity --question --text=\"Continue?\" --ok-label=\"OK\" --cancel-label=\"Cancel\" --title=\"Confirm\"")
+        conf <- system(paste("zenity --question --text=\"Continue?\"",
+			"--ok-label=\"OK\" --cancel-label=\"Cancel\" --title=\"Confirm\""))
         if (conf == 1) return("cancel")
     }
     return(res)

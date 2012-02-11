@@ -1,19 +1,16 @@
 ## Define the S3 method
 dlgInput <- function (message = "Enter a value",
-default = "", ..., gui = .GUI) {
+default = "", ..., gui = .GUI)
+{
 	if (!gui$startUI("dlgInput", call = match.call(), default = default,
 		msg = "Displaying a modal input dialog box",
 		msg.no.ask = "A modal input dialog box was by-passed"))
 		return(invisible(gui))
 	
 	## Check and rework main arguments and place them in gui$args
-	if (is.null(message) || !inherits(message, "character"))
-        stop("'message' must be a character string!")
-	message <- paste(message, collapse = "\n")
-    if (is.null(default)) default <- "" else {
-        if (!inherits(default, "character") || length(default) != 1)
-            stop("'default' must be a unique character string or NULL!")
-    }
+	if (!length(message)) message <- "Enter a value"
+	message <- paste(as.character(message), collapse = "\n")
+    if (is.null(default)) default <- "" else default <- as.character(default)[1]
 	gui$setUI(args = list(message = message, default = default))
 	
 	## ... and dispatch to the method
@@ -23,7 +20,8 @@ default = "", ..., gui = .GUI) {
 ## Used to break the chain of NextMethod(), searching for a usable method
 ## in the current context
 dlgInput.gui <- function (message = "Enter a value",
-default = "", ..., gui = .GUI) {
+default = "", ..., gui = .GUI)
+{
 	msg <- paste("No workable method available to display an input dialog box using:",
 		paste(guiWidgets(gui), collapse = ", "))
 	gui$setUI(status = "error", msg = msg, widgets = "none")
@@ -85,7 +83,7 @@ default = "", ..., gui = .GUI)
 		" to display dialog \"", message, "\" default answer \"", default,
 		"\" with title \"Question\" buttons {\"Cancel\",\"OK\"} cancel button 1",
 		" default button 2'", sep = "")
-	## For some reasons, I cannot use system(intern = TRUE) with this in R.app/R64.app
+	## FI cannot use system(intern = TRUE) with this in R.app/R64.app
 	## (deadlock situation?), but I can in R run in a terminal. system2() also
 	## works, but this preclue of using svDialogs on R < 2.12.0.
 	## The hack is thus to redirect output to a file, then, to read the content

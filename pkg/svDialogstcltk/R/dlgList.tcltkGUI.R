@@ -1,8 +1,8 @@
 ## The Tcl/Tk version of the list dialog box
-dlgList.tcltkWidgets <- function (choices, preselect = NULL, multiple = FALSE,
+dlgList.tcltkGUI <- function (choices, preselect = NULL, multiple = FALSE,
 title = NULL, ..., gui = .GUI)
 {	
-	gui$setUI(widgets = "tcltkWidgets")
+	gui$setUI(widgets = "tcltkGUI")
 	res <- tk_select.list(choices = gui$args$choices,
 		preselect = gui$args$preselect, multiple = gui$args$multiple,
 		title = gui$args$title)

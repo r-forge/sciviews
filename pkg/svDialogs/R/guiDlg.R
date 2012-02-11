@@ -1,15 +1,22 @@
 ## These items still need to be implemented!
-#dlgAssistant <- function (...)
-#{
-#    ## This is a non modal assistant dialog box... could also display tips
-#    ## TODO...
-#    stop("Not yet implemented!")
-#}
-
 #dlgColor <- function (...)
 #{
 #    ## A color selection dialog box
 #    ## TODO: a color range selector?
+#    stop("Not yet implemented!")
+#}
+
+#dlgFont <- function (...)
+#{
+#    ## A font selector dialog box
+#    ## TODO...
+#    stop("Not yet implemented!")
+#}
+
+#dlgAssistant <- function (...)
+#{
+#    ## This is a non modal assistant dialog box... could also display tips
+#    ## TODO...
 #    stop("Not yet implemented!")
 #}
 
@@ -22,13 +29,6 @@
 #    ##    (transfer = TRUE)
 #    ## 2) make a double selection in two separate lists
 #    ## This dialog box is always modal
-#    stop("Not yet implemented!")
-#}
-
-#dlgFont <- function (...)
-#{
-#    ## A font selector dialog box
-#    ## TODO...
 #    stop("Not yet implemented!")
 #}
 

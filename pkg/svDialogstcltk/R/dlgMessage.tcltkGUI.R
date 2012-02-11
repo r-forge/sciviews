@@ -1,9 +1,10 @@
 ## A Tcl/Tk version of the message box
-dlgMessage.tcltkWidgets <- function (message, type = c("ok", "okcancel", "yesno",
+dlgMessage.tcltkGUI <- function (message, type = c("ok", "okcancel", "yesno",
 "yesnocancel"), ..., gui = .GUI)
 {
-    gui$setUI(widgets = "tcltkWidgets")
-	## TODO: use custom dialog boxes, not tkmessageBox() cf. ugly in Linux and buggy in Mac
+    gui$setUI(widgets = "tcltkGUI")
+	## TODO: use custom dialog boxes, not tkmessageBox() cf. ugly in Linux
+	## and buggy in Mac!!!
     ## Use tkmessageBox for now
     tkDefault <- switch(gui$args$type,
         "ok" = "ok",
