@@ -1,10 +1,10 @@
 Package: svDialogstcltk
 Type: Package
 Title: SciViews GUI API - Dialog boxes using Tcl/Tk
-Depends: R (>= 2.6.0), svDialogs, tcltk
+Depends: R (>= 2.6.0), svDialogs (>= 0.9-48), tcltk
 Description: Reimplementation of the svDialogs dialog boxes in Tcl/Tk
-Version: 0.9-0
-Date: 2011-08-01
+Version: 0.9-1
+Date: 2012-02-05
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 License: GPL-2

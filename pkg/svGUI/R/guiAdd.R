@@ -12,7 +12,7 @@ reset = FALSE, ask)
 	if (exists(gui.name, envir = .TempEnv(), inherits = FALSE)) {
 		guiObj <- get(gui.name, envir = .TempEnv(), inherits = FALSE)
 		if (!is.gui(guiObj))
-			stop("'gui.name' must be a character string naming a gui object in TempEnv")
+			stop("'gui.name' must be a character string naming a 'gui' object in TempEnv")
 		guiWidgets(guiObj, reset = reset) <- widgets
 		if (isTRUE(reset)) {
 			## Make sure name is correct
@@ -20,7 +20,7 @@ reset = FALSE, ask)
 			## Use default for ask, if not provided
 			if (missing(ask)) guiObj$ask <- NULL
 		}
-	} else { # Create a new gui object in TempEnv
+	} else { # Create a new 'gui' object in TempEnv
 		if (is.na(gui.name))
 			stop("Wrong 'gui.name', provide a length 1 character string")
 		guiObj <- new.env(parent = .GlobalEnv)
@@ -54,7 +54,7 @@ guiRemove <- function (gui.name)
 	return(invisible(TRUE))	
 }
 
-## List all 'gui' objects found in TempEnv
+## List all GUI objects found in TempEnv
 guiList <- function ()
 {
 	lst <- ls(envir = .TempEnv(), all.names = TRUE)
@@ -70,10 +70,10 @@ guiWidgets <- function (gui, gui.name = ".GUI")
 	if (missing(gui))
 		if (exists(gui.name, envir = .TempEnv(), inherits = FALSE)) {
 			gui <- get(gui.name, envir = .TempEnv(), inherits = FALSE)
-		} else stop("GUI object '", gui.name, "' not found")
+		} else stop("'gui' object '", gui.name, "' not found")
 	if (!is.gui(gui)) stop("Provide a 'gui' object or its name")
 	classes <- class(gui)
-	## Keep only all classes before "gui"
+	## Keep only all classes before 'gui'
 	classes <- classes[!cumsum(classes == "gui")]
 	return(classes)
 }
@@ -109,7 +109,7 @@ guiAsk <- function (gui.or.name, ask)
 	} else {
 		if (is.gui(gui.or.name)) guiObj <- gui.or.name else {
 			if (!exists(gui.or.name, envir = .TempEnv(), inherits = FALSE))
-				stop("GUI object '", gui.or.name, "' not found")
+				stop("'gui' object '", gui.or.name, "' not found")
 			guiObj <- get(gui.or.name, envir = .TempEnv(), inherits = FALSE)
 			if (!is.gui(guiObj))
 				stop("'gui.or.name' must be a 'gui' object in TempEnv or its name")

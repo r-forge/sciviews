@@ -50,7 +50,8 @@ title = NULL, ..., gui = .GUI) {
 	## character(0) => change this for consistency
 	if (!multiple && res == "" && !"" %in% choices)
 		res <- character(0)
-	res$gui <- res
+#PhG? To eliminate?	res$gui <- res
+	gui$setUI(res = res, status = NULL)
 	return(invisible(gui))
 }
 

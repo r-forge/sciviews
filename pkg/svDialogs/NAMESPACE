@@ -5,8 +5,17 @@ export(dlgDir,
        dlgInput,
        dlgList,
        dlgMessage,
-       #dlgOpen,
+       dlgOpen,
        #dlgSave,
+       msgBox,
+       okCancelBox,
+       menuAdd,
+       menuAddItem,
+       menuDel,
+       menuDelItem,
+       menuNames,
+       menuItems,
+       .Last.lib,
        # To be reworked
        display,
        guiDlg,
@@ -15,13 +24,7 @@ export(dlgDir,
        guiPane.tcltk,
        guiPane.entry.tcltk,
        guiPane.list.tcltk,
-       guiSetStyle.tcltk,
-       menuAdd,
-       menuAddItem,
-       menuDel,
-       menuDelItem,
-       menuNames,
-       menuItems)
+       guiSetStyle.tcltk,)
 
 # To be eliminated
 S3method(display, guiDlg)
@@ -42,9 +45,9 @@ S3method(dlgMessage, gui)
 S3method(dlgMessage, textCLI)
 S3method(dlgMessage, nativeGUI)
 
-#S3method(dlgOpen, gui)
-#S3method(dlgOpen, textCLI)
-#S3method(dlgOpen, nativeGUI)
+S3method(dlgOpen, gui)
+S3method(dlgOpen, textCLI)
+S3method(dlgOpen, nativeGUI)
 
 #S3method(dlgSave, gui)
 #S3method(dlgSave, textCLI)
