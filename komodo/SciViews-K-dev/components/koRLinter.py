@@ -50,24 +50,6 @@ import logging
 log = logging.getLogger('RLinter')
 log.setLevel(logging.DEBUG)
 
-#ss = s * 5000
-#t0 = time.clock()
-#for n in range(100):
-#    ss.replace("\x03", "").replace("\x02", "")
-#t1 = time.clock() - t0
-#print(t1)
-##0.19073865575
-#ss = s * 5000
-#pat = re.compile('[\x02\x03]')
-#t0 = time.clock()
-#for n in range(100):
-#    pat.sub("", ss)
-#t1 = time.clock() - t0
-#print(t1)
-##0.836379887645
-
-
-
 class KoRLinter:
     _com_interfaces_ = [components.interfaces.koILinter]
     _reg_desc_ = "Komodo R Linter"
@@ -84,10 +66,11 @@ class KoRLinter:
             getService(components.interfaces.svIUtils)
         pass
 
+        # 'lint' first evaluates in R 'quickParse(filename)' which returns R-style
+        # formatted error or empty string. Then it retrieves from the error message
+        # the position within text and description
     def lint(self, request):
-        # TODO: R does not like utf-8 produced by Komodo => use a different encoding?
         text = request.content.encode("utf-8")
-
         tabWidth = request.koDoc.tabWidth
         log.debug("linting %s" % text[1:15])
 

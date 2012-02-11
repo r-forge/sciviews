@@ -126,7 +126,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 	_RterminationCallback = function(exitCode) {
 		// do something here...
-		sv.cmdout.message("SciViews-R is closed with code" + exitCode, 2000, true);
+		sv.addNotification("SciViews-R is closed with code" + exitCode, 2000, true);
 		_this.updateRStatus(false);
 		//alert("R is closed with code " + exitCode);
 	}
@@ -528,7 +528,7 @@ this.places = {
 
 	get anyRFilesSelected()
 		ko.places.manager.getSelectedItems().some(function(x)
-			x.file.isLocal && 
+			x.file.isLocal &&
 			x.file.ext.toLowerCase() == ".r"),
 
 	loadSelection: function sv_loadPlacesSelection() {
