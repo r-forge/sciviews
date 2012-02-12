@@ -35,7 +35,7 @@
 
 from xpcom import components, nsError, COMException
 from xpcom._xpcom import getProxyForObject, PROXY_SYNC, PROXY_ALWAYS, PROXY_ASYNC
-from xpcom.server import WrapObject, UnwrapObject
+from xpcom.server import WrapObject #, UnwrapObject
 import os, sys, re
 import string
 from xpcom.server.enumerator import SimpleEnumerator
@@ -103,7 +103,6 @@ class svUtils:
 
     def makeStyledText(self, text):
         return _makeStyledText(text)
-
 
     def setSocketInfo(self, host, port, outgoing):
         log.debug("setSocketInfo (%s): %s:%d" % ('outgoing' if outgoing else 'incoming', host, port))
@@ -217,7 +216,7 @@ class svUtils:
         message = ''
         if useJSON:
             # Fix bad JSON: R escapes nonprintable characters as octal numbers
-            # (\OOO), but json apparently needs unicode notation (\uHHHH).
+            # (\OOO), but json needs unicode notation (\uHHHH).
             result = re.sub('(?<=\\\\)[0-9]{3}', lambda x: ("u%04x" % int(x.group(0), 8)), result)
             try:
                 resultObj = json.loads(result)
@@ -419,7 +418,8 @@ class svUtils:
         #scimoz.autoCSetFillUps(" []{}<>/():;%+-*@!\t\n\r=$`")
         #autoCSeparatorChar = chr(ke.autoCSeparator)
         if not autoCstring: return
-        autoCstring = re.split("[\r\n]+",autoCstring.replace('\r\n', chr(scimoz.autoCSeparator)), 1)
+        autoCstring = re.split("[\r\n]+", autoCstring.replace('\r\n', \
+            chr(scimoz.autoCSeparator)), 1)
         trigLen = int(autoCstring[0])
         autoCstring = autoCstring[1]
 
