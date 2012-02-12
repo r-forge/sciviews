@@ -51,7 +51,6 @@ interface svICommandInfo: nsISupports {
 	ACString styledResult();
 };
 
-
 [scriptable, uuid(22A6C234-CC35-D374-2F01-FD4C605C905C)]
 interface svIUtils : nsISupports {
     nsISimpleEnumerator getproc(in string propertyName);
