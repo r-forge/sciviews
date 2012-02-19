@@ -1,5 +1,11 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-49
+
+* Added dlgForm() for flexible form dialog box. Only the Linuxc implementation
+  using yad and the textual version are currently implemented.
+
+
 == Changes in svDialogs 0.9-48
 
 * Argument message is changed to title in dlgDir() function, to match
