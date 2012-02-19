@@ -505,8 +505,11 @@ skip = NULL)
 				url <- sub("^/", "file:///", url)
 				koCmd(sprintf("sv.command.openHelp(\"%s\")", url))
 			}
-
-			options(editor = Komodo, browser = svBrowser, pager = svPager)
+			## The current SciViews-K help window in Komodo is buggy
+			## it let's Komodo crash on closing, and probably causes
+			## other problems => for now, just use the default browser!
+			#options(editor = Komodo, browser = svBrowser, pager = svPager)
+			options(editor = Komodo)
 		} else {
 			Komodo <- NULL
 			cat("R cannot find Komodo.", file = stderr())

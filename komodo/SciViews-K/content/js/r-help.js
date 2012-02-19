@@ -2,7 +2,7 @@
 // Define functions to pilot R from Komodo Edit 'sv.r' & 'sv.r.pkg'
 // based on original Komodo code
 // Copyright (c) 2000-2007, ActiveState Software Inc
-// Copyright (c) 2009-2010, Kamil Bartoñ
+// Copyright (c) 2009-2010, Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // ko.help.language();	// Replacement for language specific help on selection

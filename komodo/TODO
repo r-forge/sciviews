@@ -1,22 +1,9 @@
 = SciViews-K To Do
  
-* In version 0.9.16, there is still a problem with the selection of the
-R interpreter: in Windows, switching from RGui to console do not switch
-from Rgui.exe and Rterm.exe and vice-versa.
+* Solve crash on closing Komodo. Seems related with the help window.
 
 * Resolve conflicting shortcuts and define shortcuts that can be used on all
 platforms => difficult task!
-
-* svRQuiet should be a string, not a boolean. Shouldn't we switch to svRArgs
-which would contain more args than just --quiet?
-
-* Allow defining in which library to install R packages during configuration of
-R.
-
-* Start from the R server port configuration and make it a multi-session system.
-
-* There is a bug with the abbrev expansion that prevents correct detection of
-abbrev when the file is not saved or saved with a different extension than .R
 
 * svIO and svViews in relation to objects explorer
 
@@ -28,19 +15,15 @@ abbrev when the file is not saved or saved with a different extension than .R
 
 * Tidy R code tool
 
-* Use JSON to transport objects between R and Komodo
-
 * Configuration of R when started from .RData files.
 
 * R reference cards
 
-* All the Tinn-R function that are still missing
-
 * Make Rd syntax highlighting; sweave later on
 
-* R Linter
+* R Linter does not work under Windows
 
-* Add SciViews-K Unit features to SciViews-K
+* Rework SciViews-K Unit to work with Komodo 6
 
 * Make the User's and Developer's manuals
 
