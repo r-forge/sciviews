@@ -2,6 +2,7 @@
 import(tcltk, svMisc, svGUI)
 
 export(dlgDir,
+       dlgForm,
        dlgInput,
        dlgList,
        dlgMessage,
@@ -32,6 +33,10 @@ S3method(display, guiDlg)
 S3method(dlgDir, gui)
 S3method(dlgDir, textCLI)
 S3method(dlgDir, nativeGUI)
+
+S3method(dlgForm, gui)
+S3method(dlgForm, textCLI)
+S3method(dlgForm, nativeGUI)
 
 S3method(dlgInput, gui)
 S3method(dlgInput, textCLI)
