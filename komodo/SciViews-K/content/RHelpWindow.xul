@@ -50,7 +50,7 @@
 <window
     id="RHelpWindow" title="R Help"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    width="700" height="500" screenX="20" screenY="20"
+    width="700" height="500"
     persist="screenX screenY width height"
     style="min-height: 400px; min-width: 300px;">
 <script type="text/javascript">
@@ -248,7 +248,7 @@ function runSelAsRCode() {
 	sv.r.eval(selText);
 }
 
-// display formatted search results in a help window
+// Display formatted search results in a help window
 function rHelpSearch(topic) {
 	if (!topic)	return;
 
