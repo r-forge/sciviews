@@ -2,7 +2,19 @@
 #    is generic (either S3 or S4), returns only arguments for an appropriate
 #    method and/or default method if not found.
 # Usage:
-#    getFunArgs("anova", fm1) # if fm1 is glm returns argument names for 'anova.glm'
+#    getFunArgs("anova", fm1) # if 'fm1' is of class 'glm', it returns argument
+#    						  #names for 'anova.glm'
+#    getFunArgs("[", object)
+#    getFunArgs("stats::`anova`", fm1) # function names may be backtick quoted,
+#                                      # and have a namespace extractor
+# Note: the function assumes that method is dispatched based on the first
+#    argument which may be incorrect.
+#    TODO: should check whether the name of the argument is also the first
+#    argument for the generic function.
+
+# 'completeSpecial' prints newline separated completions for some special cases.
+#    currently package and namespace list
+
 
 # "imports":
 tail <- utils::tail
@@ -10,7 +22,7 @@ getS3method <- utils::getS3method
 findGeneric <- utils:::findGeneric
 
 `getFunArgs` <- function(FUNC.NAME, ...) {
-	rx <- regexpr("^([\\w\\.]+):{2,3}(`|)([\\w\\.]+)\\2$", FUNC.NAME, perl = TRUE)
+	rx <- regexpr("^([\\w\\.]+):{2,3}(`|)([\\w\\.\\[\\%]+)\\2$", FUNC.NAME, perl = TRUE)
 	if (rx == 1L) {
 		cs <- attr(rx,"capture.start")
 		fn <- substring(FUNC.NAME, cs, cs - 1L + attr(rx,"capture.length"))[c(1,3)]
@@ -21,6 +33,7 @@ findGeneric <- utils:::findGeneric
 		envir <- .GlobalEnv
 		inherit <- TRUE
 	}
+	#cat(FUNC.NAME, "\n")
 
 	if(exists(FUNC.NAME, envir = envir, mode = "function", inherits = inherit)) {
 		fun <- get(FUNC.NAME, envir = envir, mode = "function", inherits = inherit)
@@ -33,16 +46,18 @@ findGeneric <- utils:::findGeneric
 		cls <- NA_character_
 		if(length(cl) > 2L){
 			object <- cl[[3L]]
-			if(mode(object) == "call") {
-				if ("~" %in% all.names(object, functions = TRUE, max.names = 4L))
-					cls <- "formula"
-			} else {
-				object <- tryCatch(eval(object), error = function(e) NULL)
-				cls <- class(object)
+			if (!missing(object)) {
+				if(mode(object) == "call") {
+					if ("~" %in% all.names(object, functions = TRUE, max.names = 4L))
+						cls <- "formula"
+				} else {
+					object <- tryCatch(eval(object), error = function(e) NULL)
+					cls <- class(object)
+				}
 			}
 		}
 
-		if(is.na(cls)) {
+		if(is.na(cls[1L])) {
 			ret <- names(formals(getS3method(FUNC.NAME, "default",
 				optional = TRUE)))
 		} else {
@@ -69,8 +84,9 @@ findGeneric <- utils:::findGeneric
 `completeSpecial` <- function(what) {
 	res <- switch(what, search = {
 			res <- search()
-			res[!(res %in%  c(".GlobalEnv", "package:tcltk", "package:utils", "komodoConnection",
-				"package:methods", "TempEnv", "Autoloads", "package:base"))]
+			res[!(res %in% c(".GlobalEnv", "package:tcltk", "package:utils",
+				"komodoConnection", "package:methods", "TempEnv", "Autoloads",
+				"package:base"))]
 	   }, library = {
 			res <- unique(unlist(lapply(.libPaths(), dir), use.names = FALSE))
 	   }, return(invisible(NULL)))
@@ -81,11 +97,11 @@ findGeneric <- utils:::findGeneric
 
 
 
-# From svMisc::completion (simpllified)
+# From svMisc::completion (simplified)
 
 `completion` <- function (code, field.sep = "\x1e", sep = "\n",
-						  pos = nchar(code), min.length = 2,
-						  addition = FALSE, max.fun = 100,
+						  pos = nchar(code), min.length = 2L,
+						  addition = FALSE, max.fun = 100L,
 						  skip.used.args = FALSE) {
 
 	types <- list(fun = "function", var = "variable",
@@ -129,14 +145,14 @@ findGeneric <- utils:::findGeneric
 	}
 
 	## If code ends with a single [, then look for names in the object
-	if (regexpr("[^[][[]$", code) > 0) {
+	if (regexpr("[^[][[]$", code) > 0L) {
 		## TODO: look for object names... currently, return nothing
 		return(invisible(""))
 	}
 
 	## If code ends with a double [[, then, substitute $ instead and indicate
 	## to quote returned arguments (otherwise, [[ is not correctly handled)!
-	if (regexpr("[[][[]$", code) > 0) {
+	if (regexpr("[[][[]$", code) > 0L) {
 		code <- sub("[[][[]$", "$", code)
 		dblBrackets <- TRUE
 	} else dblBrackets <- FALSE
