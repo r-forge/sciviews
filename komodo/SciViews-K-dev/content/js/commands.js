@@ -564,6 +564,11 @@ this.onLoad = function(event) {
 	 _setKeybindings();
 
 	sv.rconn.startSocketServer();
+
+	// For completions
+	var cuihproto = ko.codeintel.CompletionUIHandler.prototype;
+	cuihproto.types.argument = cuihproto.types.interface;
+	cuihproto.types.environment = cuihproto.types.namespace;
 }
 
 // Just in case, run a clean-up before quitting Komodo:

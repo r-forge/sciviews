@@ -10,7 +10,7 @@
 <?xml-stylesheet href="chrome://sciviewsk/skin/pkgman.css" type="text/css"?>
 
 <window id="RPackageManager" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-  maxheight="350" maxwidth="300" title="R Package manager (pre-alpha)" >
+  maxheight="350" maxwidth="300" title="R Package manager (beta)" >
 
 <script type="text/javascript">
 <![CDATA[
