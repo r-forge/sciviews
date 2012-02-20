@@ -5,7 +5,7 @@ This file will be imported by the codeintel system on startup and the
 register() function called to register this language with the system. All
 Code Intelligence for this language is controlled through this module.
 """
-import os, sys, re
+import os, sys
 import logging
 import operator
 
@@ -53,6 +53,8 @@ keywords = [
 class RLexer(UDLLexer):
     lang = lang
 
+# TODO: how to update keyword lists dynamically?
+
     #def __init__(self):
     #self._properties = SilverCity.PropertySet()
     #self._keyword_lists = [
@@ -81,9 +83,6 @@ class RLexer(UDLLexer):
 # lines
 ## completion for 'library(' or 'require(' R command :
 ## 'unique(unlist(lapply(.libPaths(), dir)))'
-
-# TODO: skip if completion is none, i.e. equals the text
-
 
 #---- LangIntel class
 # Dev Notes:
@@ -149,26 +148,21 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         char = accessor.char_at_pos(last_pos)
         style = accessor.style_at_pos(last_pos)
         if style == self.operator_style:
-            if char in '(':
-                in_fun = self._in_func(pos, accessor)
-                if in_fun != None and in_fun[2] in ('library', 'require'):
-                    if(style == self.whitespace_style):
-                         text = ''
-                    else:
-                        start, end, text = self._get_word_back(last_pos, accessor)
-                    # lang, form, type, pos, implicit,
-                    return Trigger(self.lang, TRG_FORM_CPLN, "installed-pkgs", \
-                        pos, implicit=True)
-            else:
-                lw_start, lw_end, last_word = self._get_word_back(last_pos, accessor)
-                if last_word in ('@', '$', '::', ':::'):
-                    start, end, objname = self._get_word_back(lw_start - 1, accessor)
-                    style2 = accessor.style_at_pos(end - 1)
-                    if style2 in (self.keyword_style, self.identifier_style, self.variable_style):
-                        return Trigger(self.lang, TRG_FORM_CPLN, "list-elements", \
-                            start, False, obj_name = objname + last_word)
-            return None
+            if char in '[(,':
+                infun = self._in_func(pos, accessor)
+                if infun != None:
+                    s, e, funcname, nargs, argnames, firstarg = infun
+                    return Trigger(self.lang, TRG_FORM_CPLN, "args", pos, True,
+                        funcname = funcname, firstarg = firstarg, nargs = nargs,
+                        argnames = argnames)
+                return None
 
+            elif char in '@$:' and (char != ':' or \
+                accessor.char_at_pos(last_pos - 1) == ':'):
+                vr = self._get_var_back(last_pos, accessor)
+                if vr is not None:
+                    return Trigger(self.lang, TRG_FORM_CPLN, "variable", vr[4],
+                        True, obj_name = ''.join(vr[2]), cutoff = vr[3])
         return None
 
     def _unquote(self, text, quotes = '`"\''):
@@ -197,7 +191,8 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         ch = acc.char_at_pos(pos)
         prv_ch = acc.char_at_pos(last_pos)
         #print 'w = "%s", ' % (w, ch, )
-        log.debug('w = "%s", ch = "%s", prv_ch = "%s", pos = %d, curr_pos = %d ' % (w, ch, prv_ch, pos, curr_pos, ))
+        log.debug('w = "%s", ch = "%s", prv_ch = "%s", pos = %d, curr_pos = %d ' \
+                  % (w, ch, prv_ch, pos, curr_pos, ))
         if style in self.word_styles:
             if self._is_bquoted(w):
                 return None
@@ -272,10 +267,14 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             ctlr.done("error")
             return
 
-        if completions == None or completions[0] != "success":
+        if completions == None:
+            ctlr.done("not found")
+            return
+        if completions[0] == "error":
             ctlr.error("Nothing found" if completions is None else completions[1])
             ctlr.done("error")
-        else:
+            return
+        if completions[0] == "success":
             completions[1].sort(key = lambda x: x[1].lower() )
             ctlr.set_cplns(completions[1])
             ctlr.done(completions[0])
@@ -316,16 +315,19 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             argnames = ''
 
         else:
-            cmd = 'cat(getFunArgs("%s", %s), sep = "\\\n")' % (fname, frstarg, )
+            cmd = 'cat(getFunArgs("%s", %s), sep = "\\n")' % (fname, frstarg, )
             types = 'argument'
             sfx = ' ='
         res = R.execInR(cmd, "json h", .5)
-        if res.startswith(u'\x03') or not len(res.strip()):
+        if not len(res.strip()):
+            return ('none found', 'no completions found')
+
+        if res.startswith(u'\x03'):
             return ('error', res.strip("\x02\x03\r\n"))
 
         if len(argnames):
             return ('success', [(types, x + sfx) for x in res.splitlines()
-                if not x in argnames ])
+                if x not in argnames ])
         else:
             return ('success', [(types, x + sfx) for x in res.splitlines() ])
 
@@ -397,7 +399,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                 token += [ w, w2 ]
             else:
                 return None
-        elif not style in ( self.identifier_style, self.keyword_style ):
+        elif style not in ( self.identifier_style, self.keyword_style ):
             return None
         token.reverse()
 
@@ -424,12 +426,14 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                 return None
             elif ch == "[":
                 fn_start, fn_end, fn_word = self._get_word_back(p, acc)
-                # TODO: _get_var_back ===> (s, e0, token, cutoff, trg_pos)
-                start, end, word, x_, x_ = self._get_var_back(fn_start - 1, acc)
-                #start, end, word = self._get_word_back(fn_start - 1, acc)
-                if acc.style_at_pos(start) in self.word_styles:
-                    argnames.reverse()
-                    return (fn_start, p, fn_word, arg_count, argnames, ''.join(word) )
+                # _get_var_back ===> (s, e0, token, cutoff, trg_pos)
+                vr = self._get_var_back(fn_start - 1, acc)
+                if vr is not None:
+                    start, end, word, x_, x_ = self._get_var_back(fn_start - 1, acc)
+                    #start, end, word = self._get_word_back(fn_start - 1, acc)
+                    if acc.style_at_pos(start) in self.word_styles:
+                        argnames.reverse()
+                        return (fn_start, p, fn_word, arg_count, argnames, ''.join(word) )
                 return None
             elif ch == "(":
                 # function name:
