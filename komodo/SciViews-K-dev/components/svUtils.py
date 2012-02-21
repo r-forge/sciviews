@@ -381,6 +381,7 @@ class svUtils:
            indentstr = ' ' * indent
         lines = re.findall(re_line, text)
         indent_len = map(lambda line: len(string.expandtabs(line[0], tabwidth)), lines)
+        ## XXX: indent_len = [ len(string.expandtabs(line[0], tabwidth)) for line in lines ]
         baseind = min(indent_len)
         if (baseind == 0 and indent == 0): return text
         return eol.join(map(lambda nspaces, line: \

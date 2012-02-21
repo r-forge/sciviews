@@ -13,7 +13,8 @@
 #    argument for the generic function.
 
 # 'completeSpecial' prints newline separated completions for some special cases.
-#    currently package and namespace list
+#    currently package, namespace, graphical parameters, and quoted items for 
+#    use with `[` or `[[`
 
 
 # "imports":
@@ -74,14 +75,14 @@ findGeneric <- utils:::findGeneric
 				ret <- unique(unlist(ret, FALSE, FALSE))
 		}
 	} else ret <- character(0L)
-	ret <- unique(c(ret, names(formals(fun))))
+	ret <- unique(c(ret, names(formals(args(fun)))))
 	if (length(ret) > 1L && (FUNC.NAME == "[" || FUNC.NAME == "[["))
 		ret <- ret[-1L]
 	return(ret[ret != "..."])
 }
 
 # provide special completions
-`completeSpecial` <- function(what) {
+`completeSpecial` <- function(what, object = NULL) {
 	res <- switch(what, search = {
 			res <- search()
 			res[!(res %in% c(".GlobalEnv", "package:tcltk", "package:utils",
@@ -89,12 +90,15 @@ findGeneric <- utils:::findGeneric
 				"package:base"))]
 	   }, library = {
 			res <- unique(unlist(lapply(.libPaths(), dir), use.names = FALSE))
+	   }, par = {
+			res <- names(par())
+	   }, "[" = {
+			res <- tryCatch(paste("\"", names(object), "\"", sep = ""),
+							error = function(e) "")
 	   }, return(invisible(NULL)))
-	cat(res, sep='\n')
+	cat(res, sep = '\n')
 	return(invisible(NULL))
 }
-
-
 
 
 # From svMisc::completion (simplified)
