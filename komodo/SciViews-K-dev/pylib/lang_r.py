@@ -39,7 +39,7 @@ R = components.classes["@sciviews.org/svUtils;1"].\
 #---- Globals
 lang = "R"
 log = logging.getLogger("R-codeintel")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.WARNING)
 
 # These keywords and builtin functions are copied from "Rlex.udl".
 # Reserved keywords
@@ -190,20 +190,18 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
 
         ch = acc.char_at_pos(pos)
         prv_ch = acc.char_at_pos(last_pos)
-        #print 'w = "%s", ' % (w, ch, )
         log.debug('w = "%s", ch = "%s", prv_ch = "%s", pos = %d, curr_pos = %d ' \
                   % (w, ch, prv_ch, pos, curr_pos, ))
         if style in self.word_styles:
             if self._is_bquoted(w):
                 return None
             s2, e2, w2 = self._get_word_back(s - 1, acc)
-            #print 'w2 = "%s" ' % (w2, )
             log.debug( 'w2 = "%s" ' % (w2, ) )
 
             if w2[-1] in ',(':
                 infun = self._in_func(last_pos, acc)
                 if infun is not None:
-                    print 'complete variable or argument "%s" for "%s"' % ( w, infun[2], )
+                    #print 'complete variable or argument "%s" for "%s"' % ( w, infun[2], )
                     s2, e2, funcname, nargs, argnames, firstarg = infun
                     return Trigger(self.lang, TRG_FORM_CPLN, "args", s, False,
                         funcname = funcname, firstarg = firstarg, nargs = nargs,
@@ -213,33 +211,37 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             else:
                 vr = self._get_var_back(last_pos, acc)
                 if vr is not None:
-                    print 'complete variable "%s"' % ( ''.join(vr[2]), )
+                    #print 'complete variable "%s"' % ( ''.join(vr[2]), )
                     return Trigger(self.lang, TRG_FORM_CPLN, "variable", vr[4],
                         False, obj_name = ''.join(vr[2]), cutoff = vr[3])
+                return None
         if w[-1] in ',(':
-            infun = self._in_func(s + 1, acc)
+            infun = self._in_func(pos, acc)
             if infun is not None:
                 s2, e2, funcname, nargs, argnames, firstarg = infun
                 print 'arguments for "%s"' % ( infun[2], )
                 return Trigger(self.lang, TRG_FORM_CPLN, "args", \
-                    pos, False, funcname = funcname, firstarg = firstarg,
+                    pos, False, funcname = funcname, firstarg = firstarg, \
                     nargs = nargs, argnames = argnames)
 
-        elif w[-1] in '@$:' or style in self.word_styles:
+        elif w[-1] in '@$:':
             vr = self._get_var_back(last_pos, acc)
             if vr is not None:
                 v = ''.join(vr[2])
                 print 'complete "%s"' % ( v, )
-                return Trigger(self.lang, TRG_FORM_CPLN, "variable", vr[4],
+                return Trigger(self.lang, TRG_FORM_CPLN, "variable", vr[4], ### pos + 1
                     False, obj_name = v, cutoff = vr[3])
         elif w in ('[', '[['):
             infun = self._in_func(pos, acc)
             if infun is not None:
+                log.debug( 'w = "%s", in_func = "%s" ' % (w, str(infun), ) )
                 s2, e2, funcname, nargs, argnames, firstarg = infun
                 log.debug('arguments for "%s"' % ( infun[2], ))
                 return Trigger(self.lang, TRG_FORM_CPLN, "args", \
-                    pos, False, funcname = funcname, firstarg = firstarg,
+                    pos, False, funcname = funcname, firstarg = firstarg, \
                     nargs = nargs, argnames = argnames)
+            else:
+                log.debug( 'w = "%s", in_func is None' % (w, ) )
 
         log.debug( 'None? w = "%s" ' % (w, ) )
 
@@ -298,38 +300,40 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     def _get_completions_args(self, fname, frstarg, nargs, argnames):
         fname = self._unquote(fname)
         log.debug("fname = '%s'" % (fname, ) )
+# XXX: this can be simpler:
         if fname in ('library', 'require', 'base::library', 'base::require') \
             and nargs == 1:
-            #cmd = "cat(unique(unlist(lapply(.libPaths(), dir, pattern='%s'))), sep='\\n')" \
-                #% (('^' + frstarg if(frstarg) else ''), )
-            cmd = 'completeSpecial("library")'
-            types = 'module'
-            sfx = ''
+            optlist = [ ('completeSpecial("library")', 'module', '') ]
             argnames = ''
         elif fname in ('detach', 'base::detach') and nargs == 1:
-            #cmd = "cat(unique(unlist(lapply(.libPaths(), dir, pattern='%s'))), sep='\\n')" \
-                #% (('^' + frstarg if(frstarg) else ''), )
-            cmd = 'completeSpecial("search")'
-            types = 'namespace'
-            sfx = ''
+            optlist = [ ('completeSpecial("search")', 'namespace', '') ]
             argnames = ''
-
+        elif fname == 'par':
+            optlist = [('completeSpecial("par"); cat(getFunArgs("par"), sep="\\n")',
+                    'argument', ' =') ]
+        elif fname in ('[', '[['):
+            optlist = [ ('cat(getFunArgs("%s", %s), sep="\\n")' % (fname, frstarg, ),
+                           'argument', ' =') ]
+            if fname == '[[' or nargs == 2:
+                optlist += [ ('completeSpecial("[", %s)' % (frstarg, ), '$variable', ''), ]
         else:
-            cmd = 'cat(getFunArgs("%s", %s), sep = "\\n")' % (fname, frstarg, )
-            types = 'argument'
-            sfx = ' ='
-        res = R.execInR(cmd, "json h", .5)
-        if not len(res.strip()):
+            optlist = [ ('cat(getFunArgs("%s", %s), sep="\\n")' % (fname, frstarg, ),
+                     'argument', ' =') ]
+        ret = []
+        for opt in optlist:
+            cmd, types, sfx = opt
+            res = R.execInR(cmd, "json h", .5).strip()
+            if len(res):
+                if res.startswith(u'\x03'):
+                    return ('error', res.strip("\x02\x03\r\n"))
+                if len(argnames):
+                    ret += [(types, x + sfx) for x in res.splitlines() if x not in argnames ]
+                else:
+                    ret += [(types, x + sfx) for x in res.splitlines() ]
+
+        if not len(ret):
             return ('none found', 'no completions found')
-
-        if res.startswith(u'\x03'):
-            return ('error', res.strip("\x02\x03\r\n"))
-
-        if len(argnames):
-            return ('success', [(types, x + sfx) for x in res.splitlines()
-                if x not in argnames ])
-        else:
-            return ('success', [(types, x + sfx) for x in res.splitlines() ])
+        return ('success', ret, )
 
 
     def _get_completions_default(self, text, cutoff):
@@ -370,6 +374,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         style = acc.style_at_pos(s)
         if style in self.word_styles:
             token += [ w ]
+            s0 = s
             cutoff = e0 - s
             trg_pos = s
             s, e, w = self._get_word_back(s - 1, acc)
@@ -384,6 +389,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                 style = acc.style_at_pos(s)
                 if style in self.word_styles:
                     token += [ w, w2 ]
+                    s0 = s
                 else:
                     break
             else:
@@ -397,16 +403,16 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             style = acc.style_at_pos(s)
             if style == self.variable_style:
                 token += [ w, w2 ]
+                s0 = s
             else:
                 return None
-        elif style not in ( self.identifier_style, self.keyword_style ):
+        elif not style in ( self.identifier_style, self.keyword_style ):
             return None
+        print s, s0
+
         token.reverse()
-
-        cutoff = reduce(lambda v, x: v + len(x), token, 0) - cutoff
-
-        return (s, e0, token, cutoff, trg_pos)
-
+        return (s0, e0, token, reduce(lambda v, x: v + len(x), token, 0) - cutoff,
+                trg_pos)
 
     def _in_func(self, pos, acc):
         p = pos - 1
@@ -424,6 +430,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             #elif ch in "[{":
             elif ch == "{":
                 return None
+
             elif ch == "[":
                 fn_start, fn_end, fn_word = self._get_word_back(p, acc)
                 # _get_var_back ===> (s, e0, token, cutoff, trg_pos)
@@ -435,6 +442,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                         argnames.reverse()
                         return (fn_start, p, fn_word, arg_count, argnames, ''.join(word) )
                 return None
+
             elif ch == "(":
                 # function name:
                 fn_start, fn_end, fn_word = self._get_word_back(p - 1, acc)
