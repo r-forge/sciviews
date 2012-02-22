@@ -362,6 +362,8 @@
 			type="checkbox"
 			/>
 	</menupopup>
+
+	
 <!-- Ko7 -->
 <ko-pane id="workspace_left_area">
 <browser type="ko-widget"
@@ -380,5 +382,15 @@
 	src="chrome://global/content/console.xul"
 	/>
 </ko-pane>
+
+<!--
+<ko-pane id="workspace_bottom_area">
+<browser type="ko-widget"
+	id="pyshell_tabpanel"
+	label="Python shell"
+	src="chrome://extensiondev/content/pyshell.xul"
+	/>
+</ko-pane>
+-->
 
 </overlay>

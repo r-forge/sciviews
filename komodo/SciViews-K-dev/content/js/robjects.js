@@ -4,7 +4,7 @@
 //  License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.rbrowser properties and methods
-//TODO: complete this documentation, clean up the code
+//TODO: complete this documentation
 //
 ///// These variables store all the information ////////////////////////////////
 // treeData - original tree data
@@ -880,7 +880,7 @@ this.listObserver = {
 		if (pos == -1) return(false);
 
 		document.getElementById("sciviews_robjects_searchpath_listbox")
-		.getItemAtIndex(pos).checked = true;
+			.getItemAtIndex(pos).checked = true;
 		_addObject(path, "", this.parseObjListResult);
 		return(true);
 	},
@@ -930,8 +930,6 @@ this.displayPackageList = function() {
 		node.appendChild(item);
 	}
 
-
-
 	if (selectedLabel != null) {
 		for(var i = 0; i < node.itemCount; i++) {
 			if (node.getItemAtIndex(i).label == selectedLabel) {
@@ -969,7 +967,8 @@ this.toggleViewSearchPath = function (event) {
 	}
 
 	if (!box.collapsed) {
-		if (!_this.searchPath.length) _this.getPackageList();
+		//if (!_this.searchPath.length) _this.getPackageList();
+		_this.smartRefresh();
 	}
 }
 
@@ -996,7 +995,6 @@ this.refreshGlobalEnv = function refreshGlobalEnv(data) {
 	}
 }
 
-//TODO: on package deletion -> remove it also from the search path
 this.removeSelected = function (doRemove) {
 	var item, type, name, vItem, cmd = [];
 	var rmItems = {}, ObjectsToRemove = {}, envToDetach = [];
@@ -1016,18 +1014,18 @@ this.removeSelected = function (doRemove) {
 		if (rxBackticked.test(name)) name = name.substr(1, name.length - 2);
 
 		switch (type) {
-			case "environment":
+		case "environment":
 			if (name != ".GlobalEnv" && name != "TempEnv")
-			envToDetach.push(name);
+				envToDetach.push(name);
 			break;
-			case "object":
-			case "sub-object":
+		case "object":
+		case "sub-object":
 			var env = item.env;
 			thisItem:
 			if (envToDetach.indexOf(env) == -1) {
 				var parent = vItem;
 				while (parent && parent.parentIndex &&
-				parent.parentIndex != -1) {
+					parent.parentIndex != -1) {
 					parent = this.visibleData[parent.parentIndex].origItem;
 
 					if (!parent || (rmItems[env] &&
@@ -1037,8 +1035,7 @@ this.removeSelected = function (doRemove) {
 					break thisItem;
 				}
 				if (typeof(rmItems[env]) == "undefined")
-				rmItems[env] = [];
-
+					rmItems[env] = [];
 				rmItems[env].push(name);
 
 				if (type == "sub-object") {
@@ -1060,7 +1057,7 @@ this.removeSelected = function (doRemove) {
 				}
 			}
 			break;
-			default:
+		default:
 		}
 	}
 
@@ -1075,26 +1072,29 @@ this.removeSelected = function (doRemove) {
 	}
 
 	for (var env in ObjectsToRemove)
-	cmd.push('rm(list = c("' + ObjectsToRemove[env].join('", "') +
-	'"), pos = "' + env + '")');
+		cmd.push('rm(list = c("' + ObjectsToRemove[env].join('", "') +
+			'"), pos = "' + env + '")');
 
 	for (var env in ObjectsToSetNull) {
 		cmd.push('eval(expression(' +
-		ObjectsToSetNull[env].join(" <- NULL, ") +
-		' <- NULL), envir = as.environment("' + env + '"))');
+			ObjectsToSetNull[env].join(" <- NULL, ") +
+			' <- NULL), envir = as.environment("' + env + '"))');
 	}
 
 	_createVisibleData();
 
-	if (!cmd.length) return(false);
+	if (!cmd.length) return false;
 
 	if (doRemove) {
 		// Remove immediately
-		sv.r.evalCallback(cmd.join("\n"), print );
+		sv.r.evalCallback(cmd.join("\n"), function(res) {
+			print(res);
+			if(envToDetach.length) _this.smartRefresh();
+		});
 	} else {
 		// Insert commands to current document
 		var view = ko.views.manager.currentView;
-		if (!view) return(false);
+		if (!view) return false;
 		//view.setFocus();
 		var scimoz = view.scimoz;
 		var nl = ";" + ["\r\n", "\n", "\r"][scimoz.eOLMode];
@@ -1104,7 +1104,7 @@ this.removeSelected = function (doRemove) {
 
 	_this.selection.select(Math.min(rows[0], _this.rowCount - 1));
 	//_this.selection.clearSelection();
-	return(true);
+	return true;
 }
 
 this.getSelectedNames = function (fullNames, extended) {
@@ -1504,7 +1504,7 @@ getSupportedFlavours: function () {
 this.packageListKeyEvent = function (event) {
 	var keyCode = event.keyCode;
 	switch(keyCode) {
-		case 46: // Delete key
+	case 46: // Delete key
 		var listbox = event.target;
 		var listItem = listbox.selectedItem;
 		var pkg = listItem.getAttribute("label");
@@ -1512,20 +1512,20 @@ this.packageListKeyEvent = function (event) {
 		if (pkg == ".GlobalEnv" || pkg == "TempEnv") return;
 
 		sv.r.evalCallback(
-		'tryCatch(detach("' + pkg.addslashes() +
-		'", unload=TRUE), error=function(e) cat("<error>"));',
-		function _packageListKeyEvent_callback (data) {
-			sv.log.debug(data);
-			if (data.trim() != "<error>") {
-				_removeObjectList(pkg);
-				listbox.removeChild(listItem);
-				print(sv.translate("Database \"%S\" detached.", pkg));
-			} else {
-				print(sv.translate("Database \"%S\" could not be detached.", pkg));
-			}
-		});
+			'tryCatch(detach("' + pkg.addslashes() +
+			'", unload=TRUE), error=function(e) cat("<error>"));',
+			function _packageListKeyEvent_callback (data) {
+				sv.log.debug(data);
+				if (data.trim() != "<error>") {
+					_removeObjectList(pkg);
+					listbox.removeChild(listItem);
+					print(sv.translate("Database \"%S\" detached.", pkg));
+				} else {
+					print(sv.translate("Database \"%S\" could not be detached.", pkg));
+				}
+			});
 		return;
-		default:
+	default:
 		return;
 	}
 }
