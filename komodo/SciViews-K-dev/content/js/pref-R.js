@@ -102,7 +102,7 @@ function _App(id, name, path, app, required, platform) {
 
 var apps = [
 new _App("", "Choose...", "", "", "", "Lin,Mac,Win"),
-new _App("r-terminal", "in default terminal", "\"%Path%\" %args%", "R", "R", "Lin,Mac"),
+new _App("r-terminal", "in default terminal", "x-terminal-emulator -e '%Path% %args%'", "R", "x-terminal-emulator,R", "Lin,Mac"),
 new _App("r-terminal", "in console window", "\"%Path%\" %args%", "R.exe", "R", "Win"),
 new _App("r-gnome-term", "in Gnome terminal", "gnome-terminal --hide-menubar --working-directory='%cwd%' -t '%title%' -x '%Path%' %args%", "R", "gnome-terminal,R", "Lin"),
 new _App("r-kde-term", "in Konsole", "konsole --workdir '%cwd%' --title %title% -e \"%Path%\" %args%", "R", "konsole,R", "Lin"),
