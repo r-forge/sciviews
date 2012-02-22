@@ -519,21 +519,26 @@ this.getRProc = function(property) {
 
 this.places = {
 	sourceSelection: function sv_sourcePlacesSelection() {
+		if(!sv.r.running) return;
 		var files = ko.places.manager.getSelectedItems()
 			.filter(function(x) (x.file.isLocal && x.file.ext.toLowerCase() == ".r"))
 			.map(function(x) x.file.path);
 		if (!files.length) return;
 		var cmd = files.map(function(x) "source('" +
 			sv.tools.string.addslashes(x) +"')" ).join("\n");
-		sv.rconn.eval(cmd, null, false);
+		sv.rconn.eval(cmd, function(z) {
+			sv.rbrowser.smartRefresh(true);
+			}, false);
 	},
 
 	get anyRFilesSelected()
+		sv.r.running &&
 		ko.places.manager.getSelectedItems().some(function(x)
 			x.file.isLocal &&
 			x.file.ext.toLowerCase() == ".r"),
 
 	loadSelection: function sv_loadPlacesSelection() {
+		if(!sv.r.running) return;
 		var files = ko.places.manager.getSelectedItems()
 			.filter(function(x) (x.file.isLocal &&
 				// for '.RData', .ext is ''
@@ -542,10 +547,13 @@ this.places = {
 		if (!files.length) return;
 		var cmd = files.map(function(x) "load('" +
 			sv.tools.string.addslashes(x) +"')" ).join("\n");
-		sv.rconn.eval(cmd, null, false);
+		sv.rconn.eval(cmd, function(z) {
+			sv.rbrowser.smartRefresh(true);
+			}, false);
 	},
 
 	get anyRDataFilesSelected()
+		sv.r.running &&
 		ko.places.manager.getSelectedItems().some(
 			function(x) x.file.isLocal &&
 			(x.file.ext || x.file.leafName).toLowerCase() == ".rdata")

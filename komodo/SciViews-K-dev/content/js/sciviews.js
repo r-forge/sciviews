@@ -84,9 +84,6 @@ try { // Komodo 7
 	Components.utils.import("resource://gre/modules/AddonManager.jsm");
 	AddonManager.getAddonByID("sciviewsk@sciviews.org", function(addon) {
 		sv._version = addon.version; });
-
-
-
 } catch(e) {
 	sv._version = Components.classes["@mozilla.org/extensions/manager;1"]
 	.getService(Components.interfaces.nsIExtensionManager)
