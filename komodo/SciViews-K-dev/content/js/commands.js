@@ -146,6 +146,8 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		var cmd = sv.pref.getPref("svRCommand");
 		var runInConsole = false;
 
+		// sv.tools.file.whereIs("x-terminal-emulator")
+
 		var isWin = navigator.platform.indexOf("Win") === 0;
 		var id = sv.pref.getPref("svRApplication",
 			isWin? "r-gui" : "r-terminal");
@@ -159,13 +161,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				if (!XEnv.has("DISPLAY"))	env.push("DISPLAY=:0");
 				delete(XEnv);
 			break;
-			case "r-terminal":
+			//case "r-terminal":
 				//runIn = "new-console";
-				runInConsole = true;
+				//runInConsole = true;
 			break;
 			default:
 		}
-
+		//alert(cmd);
 
 		var runSvc = Components.classes['@activestate.com/koRunService;1']
 			.getService(Components.interfaces.koIRunService);
@@ -533,7 +535,9 @@ this.places = {
 
 	loadSelection: function sv_loadPlacesSelection() {
 		var files = ko.places.manager.getSelectedItems()
-			.filter(function(x) (x.file.isLocal && x.file.ext.toLowerCase() == ".rdata"))
+			.filter(function(x) (x.file.isLocal &&
+				// for '.RData', .ext is ''
+				(x.file.ext || x.file.leafName).toLowerCase() == ".rdata"))
 			.map(function(x) x.file.path);
 		if (!files.length) return;
 		var cmd = files.map(function(x) "load('" +
@@ -543,7 +547,8 @@ this.places = {
 
 	get anyRDataFilesSelected()
 		ko.places.manager.getSelectedItems().some(
-			function(x) x.file.isLocal && x.file.ext.toLowerCase() == ".rdata")
+			function(x) x.file.isLocal &&
+			(x.file.ext || x.file.leafName).toLowerCase() == ".rdata")
 
 }
 
