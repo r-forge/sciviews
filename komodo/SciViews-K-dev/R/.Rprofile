@@ -43,12 +43,12 @@ with(as.environment("komodoConnection"), {
 		require(utils)
 		`readline` <- function (prompt = "")
 			paste(koCmd(sprintf("ko.dialogs.prompt('%s', '', '', 'R asked a question', 'R-readline')", prompt),
-			timeout=0), collapse=" ")
-		unlockBinding("readline", env=baseenv())
-		bindingIsLocked("readline", env=baseenv())
+			timeout=0), collapse = " ")
+		unlockBinding("readline", env = baseenv())
+		bindingIsLocked("readline", env = baseenv())
 		assign("readline", value=readline, envir = baseenv())
-		utils::assignInNamespace("readline", value=readline, ns="base")
-		lockBinding("readline", env=baseenv())
+		utils::assignInNamespace("readline", value=readline, ns = "base")
+		lockBinding("readline", env = baseenv())
 	})
 
 	options(browser = svBrowser, pager = svPager)
@@ -73,11 +73,28 @@ with(as.environment("komodoConnection"), {
 	}
 
 	require(utils)
-	require(stats)
+	#require(stats)
 
 	env <- as.environment("komodoConnection")
 	src <- dir(pattern = "\\.R$")
-	lapply(src[src != "init.R"], sys.source, envir = env, keep.source = FALSE)
+	src <- src[src != "init.R"]
+	Rdata <- "startup.RData"
+
+	if(file.exists(Rdata) && {
+		mtime <- file.info(c(Rdata, src))[, "mtime"]
+		all(mtime[-1] <= mtime[1])
+	}) {
+		cat('komodoConnection loaded from "startup.RData" \n')
+		load(Rdata, envir = env)
+		rm(mtime)
+		#sys.source("rserver.R", envir = env)
+	} else{
+		lapply(src, sys.source, envir = env, keep.source = FALSE)
+		suppressWarnings(save(list = ls(env), file = Rdata, envir = env))
+		cat('komodoConnection loaded from source files \n')
+	}
+	init.Rserver()
+	rm(env, Rdata, src)
 	invisible()
 })
 

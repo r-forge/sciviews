@@ -21,7 +21,9 @@
 # The connection can be permanent.
 # TODO: how to send user interrupt?
 
-options(json.method="R")
+# the (faster?) alternative would be 'json.method' = "tcl", but it is faulty
+# currently.
+options(json.method = "R")
 
 require(tcltk)
 
@@ -38,32 +40,26 @@ tcl <- tcltk::tcl
 # # then, include it the 'retval' argument
 # tclfun(funTest, retval="retval")
 # .Tcl("funTest 5")
-`tclfun` <- function(f, fname=deparse(substitute(f)),
-	retval=NA, body="%s") {
+`tclfun` <- function(f, fname = deparse(substitute(f)), retval = NA,
+					 body = "%s") {
 	cmd <- .Tcl.callback(f)
 	if (is.character(retval))
-		body <- paste("%s; return $", retval, sep="")
+		body <- paste("%s; return $", retval, sep = "")
 	cmd2 <- sprintf(paste("proc %s {%s} {", body, "}"),
 		fname,
-		paste(names(formals(f)), collapse=" "),
-		gsub("%", "$", cmd, fixed=TRUE))
+		paste(names(formals(f)), collapse = " "),
+		gsub("%", "$", cmd, fixed = TRUE))
 	.Tcl(cmd2)
 	cmd2
 }
 
 #-------------------------------------------------------------------------------
 
-if(!file.exists("rserver.tcl")) stop("Cannot find file 'rserver.tcl'")
-tcl('source', "rserver.tcl")
-tcl('source', "compile_json.tcl")
-
-
-#-------------------------------------------------------------------------------
 
 `TempEnv` <- function() {
 	srch <- search()
     if (is.na(match("TempEnv", srch)))
-        attach(NULL, name="TempEnv", pos = length(srch) - 1L)
+        attach(NULL, name = "TempEnv", pos = length(srch) - 1L)
     as.environment("TempEnv")
 }
 
@@ -77,7 +73,9 @@ tcl('source', "compile_json.tcl")
 
 
 `getTemp` <- function (x, default = NULL, mode = "any", item = NULL) {
-    if (is.null(item)) Mode <- mode else Mode <- "any"
+    if (is.null(item))
+		Mode <- mode else
+		Mode <- "any"
     if  (exists(x, envir = TempEnv(), mode = Mode, inherits = FALSE)) {
         dat <- get(x, envir = TempEnv(), mode = Mode, inherits = FALSE)
         if (is.null(item)) return(dat) else {
@@ -87,7 +85,7 @@ tcl('source', "compile_json.tcl")
                 if (mode != "any" && mode(dat) != mode) dat <- default
                 return(dat)
             } else {
-                return(default)
+				return(default)
             }
         }
     } else { # Variable not found, return the default value
@@ -134,6 +132,7 @@ tcl('source', "compile_json.tcl")
 		if (mode != "h") cat(":> ", c(prevcode, x), "\n") # if mode in [e,u]
 
 		expr <- parseText(c(prevcode, x))
+
 		if(!is.expression(expr) && is.na(expr)) {
 			ret <- ''
 			msg <- 'Want more'
@@ -143,7 +142,7 @@ tcl('source', "compile_json.tcl")
 				ret <- c('\x03', c(expr), '\x02')
 				msg <- 'Parse error'
 			} else {
-				ret <- captureAll(expr, markStdErr=TRUE)
+				ret <- captureAll(expr, markStdErr = TRUE)
 				#browser()
 				#ret <- eval(call("captureAll", expr, markStdErr=TRUE), envir=.GlobalEnv)
 				msg <- 'Done'
@@ -153,13 +152,13 @@ tcl('source', "compile_json.tcl")
 			}
 
 			if(exists(prevcodeVarName, .tempEnv, inherits = FALSE))
-				rm(list=prevcodeVarName, envir=.tempEnv)
+				rm(list = prevcodeVarName, envir = .tempEnv)
 		}
 		###########
 
 
 		if (identical(getOption("json.method"), "R")) {
-			tcl("set", "retval", simpsON(list(result=c(ret), message=msg)))
+			tcl("set", "retval", simpsON(list(result = c(ret), message = msg)))
 		} else {
 			tcl(if(length(ret) == 1) "lappend" else "set", "result", ret)
 			.Tcl("set result {}")
@@ -172,17 +171,6 @@ tcl('source', "compile_json.tcl")
 		tcl("set", "retval", "") # is set in the function scope
 	}
 }
-tclfun(TclReval, "Rserver::Reval", retval="retval")
-
-tcJSON <- function(x, msg = "Done") {
-	.Tcl("set result {}")
-	tcl(if(length(x) == 1) "lappend" else "set", "result", x)
-	.Tcl("set retval [dict create]")
-	.Tcl("dict set retval result $result")
-	tcl("dict", "set", "retval", "message", msg)
-	.Tcl("set retval [compile_json {dict result list message string} $retval]")
-}
-tclfun(tcJSON, "TestJSON", retval="retval")
 
 #-------------------------------------------------------------------------------
 
@@ -191,14 +179,13 @@ function() as.character(.Tcl("array names Rserver::Server"))
 
 #-------------------------------------------------------------------------------
 
-`TclRprint` <- function(x, debug=0) {
+`TclRprint` <- function(x, debug = 0) {
 	if(debug < getOption('warn')) {
 		Encoding(x) <- "UTF-8"
 		cat(sprintf("[[ %s ]]", x), "\n")
 	}
 	invisible(x)
 }
-tclfun(TclRprint, 'Rserver::Rprint')
 #-------------------------------------------------------------------------------
 
 `startServer` <-
@@ -222,37 +209,98 @@ function() as.character(.Tcl("array names Rserver::Connection"))
 	return(num)
 }
 
-`koCmd` <- function (cmd, data = NULL, async = FALSE, host = getOption("ko.host"),
-    port = getOption("ko.port"), timeout = 1, type = c("js",
-        "rjsonp", "output"), pad = NULL, ...) {
+#`koCmd` <- function (cmd, data = NULL, async = FALSE,
+#					 host = getOption("ko.host"),
+#					 port = getOption("ko.port"),
+#					 timeout = 1,	# not really used
+#					 ...) {
+#
+#	if(!is.numeric(port)) stop("Invalid port: ", port)
+#
+#    #type <- match.arg(type)
+#	conn <- .Tcl(sprintf("set ko_Conn1 [::Rclient::Start %d {%s} %d]", port,
+#						 host, timeout))
+#	if(as.character(conn) == "-1") {
+#		warning("timeout")
+#		return(NULL)
+#	}
+#	res <- as.character(.Tcl(sprintf("Rclient::Ask {%s} $ko_Conn1 {%s}", cmd,
+#									 "<<<js>>>")))
+#	.Tcl("close $ko_Conn1")
+#	res
+#}
 
-	if(is.na(port) || !is.numeric(port)) stop("Invalid port: ", port)
+# from svGUI::koCmd (modified)
+`koCmd` <- function (cmd, data = NULL, async = FALSE, # 'data' is not used
+				   host = getOption("ko.host"),
+				   port = getOption("ko.port"),
+				   timeout = 1,
+				   #type = c("js", "rjsonp", "output"), # type is always 'js'
+				   ...)
+{
+	if(!is.numeric(port)) stop("Invalid port: ", port)
 
-    type <- match.arg(type)
-	conn <- .Tcl(sprintf("set ko_Conn1 [::Rclient::Start %d {%s} %d]", port, host, timeout))
-	if(as.character(conn) == "-1") {
-		warning("timeout")
-		return(NULL)
-	}
-	res <- as.character(.Tcl(sprintf("Rclient::Ask {%s} $ko_Conn1 {%s}", cmd, "<<<js>>>")))
-	.Tcl("close $ko_Conn1")
-	res
+
+    cmd <- paste(gsub("\f", "\\f", gsub("\r", "\\r", gsub("\n", "\\n",
+				gsub("\\", "\\\\", cmd, fixed = TRUE), fixed = TRUE),
+				fixed = TRUE), fixed = TRUE),
+				collapse = "\\n")
+
+	#set command [string map [list "\\" {\\} "\n" {\n} "\r" {\r} "\f" {\f}] $command]
+    prevopt <- options(timeout = max(1, floor(timeout)))
+
+	tryCatch(con <- socketConnection(host = host, port = port, blocking = !async),
+		warning = function(e) stop(simpleError(paste("timeout on ", host, ":",
+													 port, sep = ""))))
+
+    writeLines(paste("<<<js>>>", cmd, sep = ""), con)
+    res <- readLines(con)
+    close(con)
+    options(prevopt)
+    return(res)
 }
+
 
 # simple-JSON for lists containing character strings
 simpsON <- function(x) {
-	if(!is.list(x) && length(x) == 1L) return(encodeString(x, quote='"'))
+	if(!is.list(x) && length(x) == 1L) return(encodeString(x, quote = '"'))
 	x <- lapply(x, simpsON)
 	x <- if(is.list(x) || length(x) > 1L) {
 		nms <- names(x)
 		if(is.null(nms))
-			paste('[', paste(x, collapse=','), ']', sep="")
+			paste('[', paste(x, collapse = ','), ']', sep = "")
 		else
-			paste("{", paste(paste(encodeString(make.unique(nms, sep='#'), quote='"'),
-			":", x, sep=""), collapse=","),"}", sep="")
+			paste("{", paste(paste(encodeString(make.unique(nms, sep = '#'),
+				quote = '"'), ":", x, sep = ""), collapse = ","),"}",
+				  sep = "")
 	}
 	x
 }
+
+# tcl-based JSON - not working properly so far.
+tcJSON <- function(x, msg = "Done") {
+	.Tcl("set result {}")
+	tcl(if(length(x) == 1) "lappend" else "set", "result", x)
+	.Tcl("set retval [dict create]")
+	.Tcl("dict set retval result $result")
+	tcl("dict", "set", "retval", "message", msg)
+	.Tcl("set retval [compile_json {dict result list message string} $retval]")
+}
+
+init.Rserver <- function() {
+	if(!file.exists("rserver.tcl")) stop("Cannot find file 'rserver.tcl'")
+	tcl('source', "rserver.tcl")
+	tcl('source', "compile_json.tcl")
+	tclfun(TclReval, "Rserver::Reval", retval = "retval")
+	tclfun(TclRprint, 'Rserver::Rprint')
+	tclfun(tcJSON, "TestJSON", retval = "retval")
+	cat("tcl functions defined")
+
+}
+
+#===============================================================================
+
+#.init.Rserver()
 
 #===============================================================================
 #startServer(11111)

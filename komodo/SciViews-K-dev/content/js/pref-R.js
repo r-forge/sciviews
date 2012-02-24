@@ -164,7 +164,7 @@ function PrefR_OnLoad() {
 
 //TODO: check if there is new R version installed and ask whether to switch to it.
 function PrefR_PopulateRInterps() {
-	var prefset = parent.hPrefWindow.prefset;
+    var prefset = parent.hPrefWindow.prefset;
 
     var prefExecutable = prefset.getStringPref('svRDefaultInterpreter');
 
@@ -209,9 +209,9 @@ function PrefR_PopulateRInterps() {
         menu.appendItem(rs[i], rs[i], null);
     }
 
-    if (rs.length > 0) {
-        document.getElementById("no-avail-interps-message").hidden = true;
-    }
+    document.getElementById("no-avail-interps-message").hidden =
+		!rs.every(function(x) !x);
+
 }
 
 function OnPreferencePageLoading(prefset) {}
