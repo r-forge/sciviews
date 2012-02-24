@@ -134,7 +134,18 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	this.startR = function () {
 		var svfile = sv.tools.file;
 		var svstr = sv.tools.string;
-
+		
+	
+		if (!sv.pref.getPref("svRCommand")) {
+		    if(ko.dialogs.okCancel(
+			sv.translate("R interpreter is not set in " +
+				     "Preferences. Would you like to do it now?"),
+				"OK", null, "SciViews-K") == "OK") {
+			prefs_doGlobalPrefs("svPrefRItem", true);
+		    }
+		    return;
+		}		
+		
 		var rDir = svfile.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R");
 
 		svfile.write(svfile.path(rDir, "init.R"),
@@ -159,7 +170,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				var XEnv = Components.classes["@activestate.com/koEnviron;1"]
 					.createInstance(Components.interfaces.koIEnviron);
 				if (!XEnv.has("DISPLAY"))	env.push("DISPLAY=:0");
-				delete(XEnv);
+				XEnv = null;
 			break;
 			//case "r-terminal":
 				//runIn = "new-console";
@@ -433,7 +444,7 @@ function _setKeybindings (clearOnly) {
 		function _getSvKeys (data, pattern) {
 			if (!pattern) pattern = "";
 			var keys = data.match(new RegExp("^binding " + pattern +
-			".*$", "gm"));
+				".*$", "gm"));
 			var res = {};
 			for (var j in keys) {
 			try {
@@ -572,16 +583,24 @@ this.onLoad = function(event) {
 									//at startup...
 		_this.updateRStatus(sv.rconn.testRAvailability(false));
 		if(sv.r.running) sv.rbrowser.smartRefresh(true);
+		
+		
+		// For completions
+		var cuih = ko.codeintel.CompletionUIHandler;
+		cuih.prototype.types.argument = cuih.prototype.types.interface;
+		cuih.prototype.types.environment = cuih.prototype.types.namespace;
+		cuih.prototype.types.file = "chrome://sciviewsk/skin/images/cb_file.png";
+		//alert(cuih.prototype.types)		
+		
+		
 
 	}, 600);
 	 _setKeybindings();
 
 	sv.rconn.startSocketServer();
 
-	// For completions
-	var cuihproto = ko.codeintel.CompletionUIHandler.prototype;
-	cuihproto.types.argument = cuihproto.types.interface;
-	cuihproto.types.environment = cuihproto.types.namespace;
+
+
 }
 
 // Just in case, run a clean-up before quitting Komodo:

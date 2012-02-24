@@ -35,11 +35,11 @@ from xpcom import components
 R = components.classes["@sciviews.org/svUtils;1"].\
     getService(components.interfaces.svIUtils)
 
-
 #---- Globals
 lang = "R"
 log = logging.getLogger("R-codeintel")
 log.setLevel(logging.WARNING)
+log.setLevel(logging.DEBUG)
 
 # These keywords and builtin functions are copied from "Rlex.udl".
 # Reserved keywords
@@ -119,7 +119,11 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     word_styles      = ( variable_style, identifier_style, keyword_style)
 
     type_sep = u'\u001e'
+    pathsep = os.sep + ("" if(os.altsep is None) else os.altsep)
 
+
+    koPrefs = components.classes["@activestate.com/koPrefService;1"] \
+        .getService(components.interfaces.koIPrefService).prefs
 
     #def __init__:
     #    CitadelLangIntel.__init__(self)
@@ -143,14 +147,14 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         if pos < 3:
             return None
 
-        accessor = buf.accessor
+        acc = buf.accessor
         last_pos = pos - 1
-        char = accessor.char_at_pos(last_pos)
-        style = accessor.style_at_pos(last_pos)
+        char = acc.char_at_pos(last_pos)
+        style = acc.style_at_pos(last_pos)
         if style == self.operator_style:
             if char in '[(,':
-                infun = self._in_func(pos, accessor)
-                if infun != None:
+                infun = self._in_func(pos, acc)
+                if infun is not None:
                     s, e, funcname, nargs, argnames, firstarg = infun
                     return Trigger(self.lang, TRG_FORM_CPLN, "args", pos, True,
                         funcname = funcname, firstarg = firstarg, nargs = nargs,
@@ -158,12 +162,18 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                 return None
 
             elif char in '@$:' and (char != ':' or \
-                accessor.char_at_pos(last_pos - 1) == ':'):
-                vr = self._get_var_back(last_pos, accessor)
+                acc.char_at_pos(last_pos - 1) == ':'):
+                vr = self._get_var_back(last_pos, acc)
                 if vr is not None:
                     return Trigger(self.lang, TRG_FORM_CPLN, "variable", vr[4],
                         True, obj_name = ''.join(vr[2]), cutoff = vr[3])
+        if style == self.string_style and char in self.pathsep:
+            s, e, w = self._get_word_back(last_pos, acc)
+            if len(w) < 2:
+                return None
+            return self._trg_complete_path(w, pos)
         return None
+
 
     def _unquote(self, text, quotes = '`"\''):
         if(text[0] in quotes and text[-1] == text[0]):
@@ -205,7 +215,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                     s2, e2, funcname, nargs, argnames, firstarg = infun
                     return Trigger(self.lang, TRG_FORM_CPLN, "args", s, False,
                         funcname = funcname, firstarg = firstarg, nargs = nargs,
-                        argnames = argnames)
+                        argnames = argnames, text = w)
                 else:
                     return None
             else:
@@ -215,6 +225,11 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                     return Trigger(self.lang, TRG_FORM_CPLN, "variable", vr[4],
                         False, obj_name = ''.join(vr[2]), cutoff = vr[3])
                 return None
+        if style == self.string_style:
+            if len(w) < 2:
+                return None
+            return self._trg_complete_path(w, pos)
+
         if w[-1] in ',(':
             infun = self._in_func(pos, acc)
             if infun is not None:
@@ -254,22 +269,26 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             ctlr = UnwrapObject(ctlr)
         pos = trg.pos
         ctlr.start(buf, trg)
+        extra = trg.extra
+
 
         if trg.id == (self.lang, TRG_FORM_CPLN, "args") or \
             trg.id == (self.lang, TRG_FORM_CPLN, "variable-or-args") :
-            completions = self._get_completions_args(trg.extra.get('funcname'),
-                trg.extra.get('firstarg'), trg.extra.get('nargs'),
-                trg.extra.get('argnames'))
+            completions = self._get_completions_args(
+                extra.get('funcname'), extra.get('firstarg'), extra.get('nargs'),
+                extra.get('argnames'), extra.get("text"))
         elif trg.id == (self.lang, TRG_FORM_CPLN, "variable") or \
             trg.id == (self.lang, TRG_FORM_CPLN, "sub-items") :
             completions = self._get_completions_default(
-                trg.extra.get('obj_name'), trg.extra.get('cutoff'))
+                extra.get('obj_name'), extra.get('cutoff'))
+        elif trg.id == (self.lang, TRG_FORM_CPLN, "path"):
+            completions = self._get_completions_path(extra.get('text'))
         else:
             ctlr.error("Unknown trigger type: %r" % (trg, ))
             ctlr.done("error")
             return
 
-        if completions == None:
+        if completions is None:
             ctlr.done("not found")
             return
         if completions[0] == "error":
@@ -297,44 +316,75 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     #  ctlr.set_cplns() or ctlr.set_calltips().
     #- Must call ctlr.done(some_reason_string) when done.
 
-    def _get_completions_args(self, fname, frstarg, nargs, argnames):
+    def _trg_complete_path(self, w, pos):
+        path = w.lstrip('\'\"')
+        abspath = os.path.expanduser(path)
+        isabs = os.path.isabs(abspath)
+        #posoff = 1 if all([ path.find(x) == -1 for x in self.pathsep ]) else 1
+        # append /
+        tokenlen = len(os.path.basename(abspath))
+        abspath = os.path.dirname(abspath)
+        if not abspath or abspath[-1] not in self.pathsep:
+            abspath += os.sep
+
+        if not isabs and self.koPrefs.hasStringPref("sciviews.session.dir"):
+            abspath = os.path.expanduser(self.koPrefs. \
+                getStringPref("sciviews.session.dir")) + os.sep + abspath
+        log.debug("Path: " + abspath);
+        if os.path.exists(abspath):
+            log.debug("Complete abs path: " + abspath);
+            return Trigger(self.lang, TRG_FORM_CPLN, "path",
+                pos - tokenlen, False, text = abspath)
+        return None
+
+    def _get_completions_args(self, fname, frstarg, nargs, argnames = None,
+            text = ''):
         fname = self._unquote(fname)
         log.debug("fname = '%s'" % (fname, ) )
-# XXX: this can be simpler:
+
         if fname in ('library', 'require', 'base::library', 'base::require') \
             and nargs == 1:
-            optlist = [ ('completeSpecial("library")', 'module', '') ]
-            argnames = ''
+            cmd = 'completeSpecial("library")'
         elif fname in ('detach', 'base::detach') and nargs == 1:
-            optlist = [ ('completeSpecial("search")', 'namespace', '') ]
-            argnames = ''
+            cmd = 'completeSpecial("search")'
         elif fname == 'par':
-            optlist = [('completeSpecial("par"); cat(getFunArgs("par"), sep="\\n")',
-                    'argument', ' =') ]
+            cmd = 'completeSpecial("par"); completeArgs("par")'
+        elif fname in ('options', 'getOption'):
+            cmd = 'completeSpecial("options"); completeArgs("%s")'
         elif fname in ('[', '[['):
-            optlist = [ ('cat(getFunArgs("%s", %s), sep="\\n")' % (fname, frstarg, ),
-                           'argument', ' =') ]
+            cmd = 'completeArgs("%s", %s)' % (fname, frstarg, )
             if fname == '[[' or nargs == 2:
-                optlist += [ ('completeSpecial("[", %s)' % (frstarg, ), '$variable', ''), ]
+                cmd += 'completeSpecial("[", %s)' % (frstarg, )
         else:
-            optlist = [ ('cat(getFunArgs("%s", %s), sep="\\n")' % (fname, frstarg, ),
-                     'argument', ' =') ]
-        ret = []
-        for opt in optlist:
-            cmd, types, sfx = opt
-            res = R.execInR(cmd, "json h", .5).strip()
-            if len(res):
-                if res.startswith(u'\x03'):
-                    return ('error', res.strip("\x02\x03\r\n"))
-                if len(argnames):
-                    ret += [(types, x + sfx) for x in res.splitlines() if x not in argnames ]
-                else:
-                    ret += [(types, x + sfx) for x in res.splitlines() ]
-
-        if not len(ret):
+            cmd = ('completeArgs("%s", %s);' % (fname, frstarg, )) \
+                + ('completion("%s")' % (text, ) if text else '')
+        #ret = []
+        res = R.execInR(cmd, "json h", .5).rstrip()
+        if len(res) == 0:
             return ('none found', 'no completions found')
+
+        if res.startswith(u'\x03'):
+            return ('error', res.strip("\x02\x03\r\n"))
+
+        ret = [ tuple(x.split(self.type_sep)) for x in res.split(os.linesep) ]
+        if argnames:
+            #log.debug("argnames = %s" % (", ".join(argnames) , ))
+            argnames = [ x + ' =' for x in argnames ]
+            ret = [ x for x in ret if x[1] not in argnames ]
+            if not len(ret):
+                return ('none found', 'no completions found')
         return ('success', ret, )
 
+    def _get_completions_path(self, text):
+        try:
+            res = os.listdir(text)
+            log.debug("Complete abs path: %d" % (len(res), ))
+            return ('success', [ \
+                ("directory" if os.path.isdir(text + os.sep + x) else \
+                 "file", x, ) for x in res ] )
+            #return ('success', [('directory', x) for x in res ], )
+        except:
+            return ('none found', None, )
 
     def _get_completions_default(self, text, cutoff):
         if not text.strip(): return None
@@ -347,8 +397,10 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         cplstr = res.replace('\x03', '').replace('\x02', '')
         if not cplstr: return None
 
-        cpl = [ (y[1], y[0][cutoff: ] ) for y in [ x.rstrip().split(self.type_sep, 1)
-            for x in cplstr.rsplit('\n')[1:]] if len(y[0]) > cutoff ]
+        cpl = [ ( x[0], x[1][cutoff:] )
+            for x in [ tuple(x.split(self.type_sep)) for x in
+                      res.split(os.linesep) ] if len(x[1]) > cutoff ]
+
         if len(cpl):
             return ('success', cpl)
 
@@ -365,8 +417,10 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         e = min(pos + 1, e)
         return (s, e, acc.text_range(s, e))
 
-    # TODO: identifier_style @ `identifier_style` @ variable_style
+
     def _get_var_back(self, pos, acc):
+        if pos < 2:
+            return None
         token = []
         # variable [$@]? <|>
         s, e0, w = self._get_word_back(pos, acc)
@@ -377,12 +431,13 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             s0 = s
             cutoff = e0 - s
             trg_pos = s
-            s, e, w = self._get_word_back(s - 1, acc)
+            if s > 1:
+                s, e, w = self._get_word_back(s - 1, acc)
         elif style == self.operator_style:
             cutoff = 0
             trg_pos = pos + 1
 
-        while True:
+        while s > 1:
             if w in '$@':
                 s, e, w2 = self._get_word_back(s - 1, acc)
                 print 'w = %r, w2 = %r' % (w, w2, )
@@ -398,7 +453,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             if not (style == self.variable_style or self._is_bquoted(w2)):
                 break
 
-        if w in ('::', ':::'):
+        if w in ('::', ':::') and s > 1:
             s, e, w2 = self._get_word_back(s - 1, acc)
             style = acc.style_at_pos(s)
             if style == self.variable_style:
@@ -414,9 +469,11 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         return (s0, e0, token, reduce(lambda v, x: v + len(x), token, 0) - cutoff,
                 trg_pos)
 
+
     def _in_func(self, pos, acc):
         p = pos - 1
-        p_min = max(0, pos - 200)
+        p_min = max(0, pos - 500) #  whole function call in R can be very long
+                                  #  e.g. with 'lapply'
         scimoz = acc.scimoz()
         arg_count = 1
         argnames = list()
@@ -430,11 +487,14 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
             #elif ch in "[{":
             elif ch == "{":
                 return None
+                # TODO: 'name[' --> '`[`(name'
 
             elif ch == "[":
                 fn_start, fn_end, fn_word = self._get_word_back(p, acc)
+                print "word = '%s', start = %d" % (fn_word, fn_start, )
                 # _get_var_back ===> (s, e0, token, cutoff, trg_pos)
                 vr = self._get_var_back(fn_start - 1, acc)
+                print "_get_var_back(%d) = '%s'" % (fn_start - 1, vr, )
                 if vr is not None:
                     start, end, word, x_, x_ = self._get_var_back(fn_start - 1, acc)
                     #start, end, word = self._get_word_back(fn_start - 1, acc)
@@ -448,12 +508,14 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                 fn_start, fn_end, fn_word = self._get_word_back(p - 1, acc)
                 if acc.style_at_pos(fn_start) in self.word_styles:
                     # namespace ::[:] function:
-                    start, end, op_word = self._get_word_back(fn_start - 1, acc)
-                    if op_word in ('::', ':::'):
-                        start, end, ns_word = self._get_word_back(start - 1, acc)
-                        if acc.style_at_pos(start) == self.variable_style:
-                            fn_word = ns_word + op_word + fn_word
-                            fn_start = start
+                    #print "fn_start = ", fn_start
+                    if fn_start > 1:
+                        start, end, op_word = self._get_word_back(fn_start - 1, acc)
+                        if op_word in ('::', ':::'):
+                            start, end, ns_word = self._get_word_back(start - 1, acc)
+                            if acc.style_at_pos(start) == self.variable_style:
+                                fn_word = ns_word + op_word + fn_word
+                                fn_start = start
                     argnames.reverse()
                     return (fn_start, p, fn_word, arg_count, argnames,
                                 acc.text_range(p + 1, commapos).strip()
@@ -474,6 +536,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                     p = p1
         return None
 
+
 #u"\x03Error in formals(bb) : object 'bb' not found\r\n\x02"
 #u'\x03Error in loadNamespace(name) : there is no package called \u2018pkg\u2019\r\n\x02'
 
@@ -484,7 +547,7 @@ class RBuffer(UDLBuffer):
     lang = lang
     cb_show_if_empty = True
     cpln_fillup_chars = "\t" #"~`!$@#%^&*()-=+{}[]|\\;:'\",<>?/\t\n\r"
-    cpln_stop_chars = "~`!$@#%^&*()-=+{}[]|\\;:'\",<>?/ "
+    cpln_stop_chars = "~`!$@#%^&*()-=+{}[]|\\;:'\",<>?/"
 
     # Dev Note: many details elided.
 
