@@ -70,7 +70,7 @@ function go(uri, loadFlags) {
 		rHelpBrowser.goHome();
 		return;
 	 case "@CRAN@":
-		uri = sv.prefs.getString("CRANMirror");
+		uri = sv.prefs.getString("r.cran.mirror");
 		if (!uri || uri.indexOf("ftp:/") === 0)
 			uri = "http://cran.r-project.org/";
 	}

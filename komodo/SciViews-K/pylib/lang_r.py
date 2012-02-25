@@ -40,7 +40,6 @@ register() function called to register this language with the system. All
 Code Intelligence for this language is controlled through this module.
 """
 # TODO: include calltip for abbreviations in the code intelligence (+ cache entries?)
-# TODO: include completion list for %xxx% operators
 
 import os
 import sys

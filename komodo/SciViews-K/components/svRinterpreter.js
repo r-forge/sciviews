@@ -33,21 +33,21 @@ svRinterpreter.prototype = {
     // Category: An array of categories to register this component in.
     _xpcom_categories: [{
 
-      // Each object in the array specifies the parameters to pass to
-      // nsICategoryManager.addCategoryEntry(). 'true' is passed for both
-      // aPersist and aReplace params.
-      category: "r",
+		// Each object in the array specifies the parameters to pass to
+		// nsICategoryManager.addCategoryEntry(). 'true' is passed for both
+		// aPersist and aReplace params.
+		category: "r",
 
-      // Optional, defaults to the object's classDescription
-      //entry: "",
+		// Optional, defaults to the object's classDescription
+		//entry: "",
 
-      // Optional, defaults to object's contractID (unless 'service' specified)
-      //value: "...",
+		// Optional, defaults to object's contractID (unless 'service' specified)
+		//value: "...",
 
-      // Optional, defaults to false. When set to true, and only if 'value' is
-      // not specified, the concatenation of the string "service," and the
-      // object's contractID is passed as aValue parameter of addCategoryEntry.
-       service: false
+		// Optional, defaults to false. When set to true, and only if 'value' is
+		// not specified, the concatenation of the string "service," and the
+		// object's contractID is passed as aValue parameter of addCategoryEntry.
+		service: false
     }],
 
     // QueryInterface implementation, e.g. using the generateQI helper
@@ -61,7 +61,7 @@ svRinterpreter.prototype = {
     */
     escape: function () {
 		// Currently do noting
-		return null;
+		return(null);
 	},
 
     /**
@@ -242,7 +242,6 @@ var converter = Components
 	.createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
 
 // Use UTF-8 encoding by default, except on Windows where ISO8859-1 is a better bet
-
 try {
 	if (navigator.platform.search(/Win\d+$/) === 0) {
 		converter.charset = "ISO8859-1";

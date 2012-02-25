@@ -79,26 +79,25 @@
 		/>
 	</broadcasterset>
 
-<!-- PhG: commands updating disabled because it does not always work
-          => sometimes, required commands remain disabled!!!!
-	KB: re-enabled commandupdater for now, but before we work out better
-	mechanism to check for R availability now it assumes that R is always on
-	(whether it really is or not), (see commands.js)
-
--->
 	<commandset id="allcommands">
 		<commandset id="cmdset_rApp" commandupdater="true"
 			oncommandupdate="ko.commands.updateCommandset(this);"
 			events="r_app_started_closed">
+			<command id="cmd_svConfigureR" key="key_cmd_svConfigureR"
+				oncommand="ko.commands.doCommand('cmd_svConfigureR');"
+				desc="R: &ConfigureR;" label="&ConfigureR;" accesskey="&ConfigureR.key;"/>
+			<command id="cmd_svInstallRtoolbox" key="key_cmd_svInstallRtoolbox"
+				oncommand="ko.commands.doCommand('cmd_svInstallRtoolbox');"
+				desc="R: &InstallRtoolbox;" label="&InstallRtoolbox;" accesskey="&InstallRtoolbox.key;"/>
+			<command id="cmd_svUIlevel" key="key_cmd_svUIlevel"
+				oncommand="ko.commands.doCommand('cmd_svUIlevel');"
+				desc="R: &UIlevel;" label="&UIlevel;" accesskey="&UIlevel.key;"/>
 			<command id="cmd_svStartR" key="key_cmd_svStartR"
 				oncommand="ko.commands.doCommand('cmd_svStartR');"
 				desc="R: &StartR;" label="&StartR;" accesskey="&StartR.key;"/>
 			<command id="cmd_svQuitR" key="key_cmd_svQuitR"
 				oncommand="ko.commands.doCommand('cmd_svQuitR');"
 				desc="R: &QuitR;" label="&QuitR;" accesskey="&QuitR.key;"/>
-			<command id="cmd_svOpenPkgManager" key="key_cmd_svOpenPkgManager"
-				oncommand="ko.commands.doCommand('cmd_svOpenPkgManager');" disabled="false"
-				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
 			<command id="cmd_svOpenHelp" key="key_cmd_svOpenHelp"
 				oncommand="ko.commands.doCommand('cmd_svOpenHelp');"
 				desc="R: &helpStart;" label="&helpStart;" accesskey="&helpStart.key;"/>
@@ -108,11 +107,13 @@
 			<command id="cmd_svSessionMgr" key="key_cmd_svSessionMgr"
 				oncommand="ko.commands.doCommand('cmd_svSessionMgr');"
 				desc="R: &svOpenSessMgr;" label="&svOpenSessMgr;" accesskey="&svOpenSessMgr.key;"/>
+			<command id="cmd_svOpenPkgManager" key="key_cmd_svOpenPkgManager"
+				oncommand="ko.commands.doCommand('cmd_svOpenPkgManager');" disabled="false"
+				desc="R: &pkgMgr;" label="&pkgMgr;" accesskey="&pkgMgr.key;"/>
 		</commandset>
 
 <!-- event names changed in Komodo 6: keeping the old one for compatibility
-(current_view_language_changed)
--->
+(current_view_language_changed)-->
 		<commandset id="cmdset_r_control" commandupdater="true"
 		  events="current_view_language_changed,language_changed,current_view_changed,r_app_started_closed"
 		  oncommandupdate="ko.commands.updateCommandset(this);">
@@ -153,8 +154,92 @@
 				accesskey="&rSrcLineOrSelection.key;"/>
 			<command id="cmd_svREscape" key="key_cmd_svREscape"
 				oncommand="ko.commands.doCommand('cmd_svREscape');"
-				desc="R: &rEscape;" label="&rEscape;" accesskey="&rEscape.key;"/>
-
+				desc="R: &rEscape;" label="&rEscape;" accesskey="&rEscape.key;"/>		
+			<command id="cmd_svRRunLineEnter" key="key_cmd_svRRunLineEnter"
+				oncommand="ko.commands.doCommand('cmd_svRRunLineEnter');"
+				desc="R: &rRunLineEnter;" label="&rRunLineEnter;" accesskey="&rRunLineEnter.key;"/>
+			<command id="cmd_svRHelpContext" key="key_cmd_svRHelpContext"
+				oncommand="ko.commands.doCommand('cmd_svRHelpContext');"
+				desc="R: &rHelpContext;" label="&rHelpContext;" accesskey="&rHelpContext.key;"/>
+			<command id="cmd_svRHelpSearch" key="key_cmd_svRHelpSearch"
+				oncommand="ko.commands.doCommand('cmd_svRHelpSearch');"
+				desc="R: &rHelpSearch;" label="&rHelpSearch;" accesskey="&rHelpSearch.key;"/>
+			<command id="cmd_svRObjStructure" key="key_cmd_svRObjStructure"
+				oncommand="ko.commands.doCommand('cmd_svRObjStructure');"
+				desc="R: &rObjStructure;" label="&rObjStructure;" accesskey="&rObjStructure.key;"/>
+			<command id="cmd_svRObjRefreshDisplay" key="key_cmd_svRObjRefreshDisplay"
+				oncommand="ko.commands.doCommand('cmd_svRObjRefreshDisplay');"
+				desc="R: &rObjRefreshDisplay;" label="&rObjRefreshDisplay;" accesskey="&rObjRefreshDisplay.key;"/>
+			<command id="cmd_svRObjList" key="key_cmd_svRObjList"
+				oncommand="ko.commands.doCommand('cmd_svRObjList');"
+				desc="R: &rObjList;" label="&rObjList;" accesskey="&rObjList.key;"/>
+			<command id="cmd_svRObjRemove" key="key_cmd_svRObjRemove"
+				oncommand="ko.commands.doCommand('cmd_svRObjRemove');"
+				desc="R: &rObjRemove;" label="&rObjRemove;" accesskey="&rObjRemove.key;"/>
+			<command id="cmd_svRActiveDF" key="key_cmd_svRActiveDF"
+				oncommand="ko.commands.doCommand('cmd_svRActiveDF');"
+				desc="R: &rActiveDF;" label="&rActiveDF;" accesskey="&rActiveDF.key;"/>
+			<command id="cmd_svRLoadDF" key="key_cmd_svRLoadDF"
+				oncommand="ko.commands.doCommand('cmd_svRLoadDF');"
+				desc="R: &rLoadDF;" label="&rLoadDF;" accesskey="&rLoadDF.key;"/>
+			<command id="cmd_svRActiveLM" key="key_cmd_svRActiveLM"
+				oncommand="ko.commands.doCommand('cmd_svRActiveLM');"
+				desc="R: &rActiveLM;" label="&rActiveLM;" accesskey="&rActiveLM.key;"/>
+			<command id="cmd_svRListDemos" key="key_cmd_svRListDemos"
+				oncommand="ko.commands.doCommand('cmd_svRListDemos');"
+				desc="R: &rListDemos;" label="&rListDemos;" accesskey="&rListDemos.key;"/>
+			<command id="cmd_svRBrowseVignettes" key="key_cmd_svRBrowseVignettes"
+				oncommand="ko.commands.doCommand('cmd_svRBrowseVignettes');"
+				desc="R: &rBrowseVignettes;" label="&rBrowseVignettes;" accesskey="&rBrowseVignettes.key;"/>
+			<command id="cmd_svRSiteSearch" key="key_cmd_svRSiteSearch"
+				oncommand="ko.commands.doCommand('cmd_svRSiteSearch');"
+				desc="R: &rSiteSearch;" label="&rSiteSearch;" accesskey="&rSiteSearch.key;"/>
+			<command id="cmd_svRRunExample" key="key_cmd_svRRunExample"
+				oncommand="ko.commands.doCommand('cmd_svRRunExample');"
+				desc="R: &rRunExample;" label="&rRunExample;" accesskey="&rRunExample.key;"/>
+			<command id="cmd_svRClearSessionData" key="key_cmd_svRClearSessionData"
+				oncommand="ko.commands.doCommand('cmd_svRClearSessionData');"
+				desc="R: &rClearSessionData;" label="&rClearSessionData;" accesskey="&rClearSessionData.key;"/>
+			<command id="cmd_svRWorkspaceLoad" key="key_cmd_svRWorkspaceLoad"
+				oncommand="ko.commands.doCommand('cmd_svRWorkspaceLoad');"
+				desc="R: &rWorkspaceLoad;" label="&rWorkspaceLoad;" accesskey="&rWorkspaceLoad.key;"/>
+			<command id="cmd_svRWorkspaceSave" key="key_cmd_svRWorkspaceSave"
+				oncommand="ko.commands.doCommand('cmd_svRWorkspaceSave');"
+				desc="R: &rWorkspaceSave;" label="&rWorkspaceSave;" accesskey="&rWorkspaceSave.key;"/>
+			<command id="cmd_svRHistoryLoad" key="key_cmd_svRHistoryLoad"
+				oncommand="ko.commands.doCommand('cmd_svRHistoryLoad');"
+				desc="R: &rHistoryLoad;" label="&rHistoryLoad;" accesskey="&rHistoryLoad.key;"/>
+			<command id="cmd_svRHistorySave" key="key_cmd_svRHistorySave"
+				oncommand="ko.commands.doCommand('cmd_svRHistorySave');"
+				desc="R: &rHistorySave;" label="&rHistorySave;" accesskey="&rHistorySave.key;"/>
+			<command id="cmd_svRWDFile" key="key_cmd_svRWDFile"
+				oncommand="ko.commands.doCommand('cmd_svRWDFile');"
+				desc="R: &rWDFile;" label="&rWDFile;" accesskey="&rWDFile.key;"/>
+			<command id="cmd_svRWDSession" key="key_cmd_svRWDSession"
+				oncommand="ko.commands.doCommand('cmd_svRWDSession');"
+				desc="R: &rWDSession;" label="&rWDSession;" accesskey="&rWDSession.key;"/>
+			<command id="cmd_svRWDPrevious" key="key_cmd_svRWDPrevious"
+				oncommand="ko.commands.doCommand('cmd_svRWDPrevious');"
+				desc="R: &rWDPrevious;" label="&rWDPrevious;" accesskey="&rWDPrevious.key;"/>
+			<command id="cmd_svRNewGraph" key="key_cmd_svRNewGraph"
+				oncommand="ko.commands.doCommand('cmd_svRNewGraph');"
+				desc="R: &rNewGraph;" label="&rNewGraph;" accesskey="&rNewGraph.key;"/>
+			<command id="cmd_svRNextGraph" key="key_cmd_svRNextGraph"
+				oncommand="ko.commands.doCommand('cmd_svRNextGraph');"
+				desc="R: &rNextGraph;" label="&rNextGraph;" accesskey="&rNextGraph.key;"/>
+			<command id="cmd_svRCloseGraph" key="key_cmd_svRCloseGraph"
+				oncommand="ko.commands.doCommand('cmd_svRCloseGraph');"
+				desc="R: &rCloseGraph;" label="&rCloseGraph;" accesskey="&rCloseGraph.key;"/>
+			<command id="cmd_svRCloseAllGraphs" key="key_cmd_svRCloseAllGraphs"
+				oncommand="ko.commands.doCommand('cmd_svRCloseAllGraphs');"
+				desc="R: &rCloseAllGraphs;" label="&rCloseAllGraphs;" accesskey="&rCloseAllGraphs.key;"/>
+			<command id="cmd_svRSaveGraphPDF" key="key_cmd_svRSaveGraphPDF"
+				oncommand="ko.commands.doCommand('cmd_svRSaveGraphPDF');"
+				desc="R: &rSaveGraphPDF;" label="&rSaveGraphPDF;" accesskey="&rSaveGraphPDF.key;"/>
+			<command id="cmd_svRSaveGraphPNG" key="key_cmd_svRSaveGraphPNG"
+				oncommand="ko.commands.doCommand('cmd_svRSaveGraphPNG');"
+				desc="R: &rSaveGraphPNG;" label="&rSaveGraphPNG;" accesskey="&rSaveGraphPNG.key;"/>
+			
 			<commandset id="cmdset_r_control" commandupdater="false" events="select"
 				oncommandupdate="ko.commands.updateCommandset(this);">
 				<command id="cmd_svRRunSelection" key="key_cmd_svRRunSelection"
@@ -185,47 +270,122 @@
 			insertbefore="menu_window,help_menu">
 			<menupopup id="popup_sciviews_main">
 				<menuitem id="r_start_console_menu" observes="cmd_svStartR"
-					class="menuitem-iconic r-run-command-icon"/>
+					class="menuitem-iconic"/>
 				<menuitem id="r_quit_console_menu" observes="cmd_svQuitR"
-					class="menuitem-iconic r-quit-command-icon"/>
-				<menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager"
-					class="menuitem-iconic r-pkg-manager"/>
-				<menuitem id="r_start_help" observes="cmd_svOpenHelp"
-						  class="menuitem-iconic help-icon"/>
+					class="menuitem-iconic"/>
+				<menuseparator/>
+			  <menuitem id="r_loaddf" observes="cmd_svRLoadDF"
+					class="menuitem-iconic r-load-df-icon"/>
+				<menuitem id="r_activedf" observes="cmd_svRActiveDF"
+					class="menuitem-iconic r-active-df-icon"/>
+				<menuitem id="r_activelm" observes="cmd_svRActiveLM"
+					class="menuitem-iconic r-active-lm-icon"/>
+				<menuitem id="r_objexplorer" observes="cmd_svRObjRefreshDisplay"
+					class="menuitem-iconic"/>
+				<!--<menuitem id="r_objstructure" observes="cmd_svRObjStructure"
+					class="menuitem-iconic"/>
+				<menuitem id="r_objlist" observes="cmd_svRObjList"
+					class="menuitem-iconic"/>
+				<menuitem id="r_objremove" observes="cmd_svRObjRemove"
+					class="menuitem-iconic"/>-->
+			   <!--not finished yet!
+			  <menuitem id="r_start_pkg_manager" observes="cmd_svOpenPkgManager"
+					class="menuitem-iconic"/>--> <!-- r-pkg-manager"/>-->
 				<menuitem id="r_browse_wd" observes="cmd_svBrowseWD"
-					class="menuitem-iconic r-working-dir-icon"/>
+					class="menuitem-iconic r"/> <!--- working-dir-icon"/>-->
+				<!--<menuitem id="r_file_wd" observes="cmd_svRWDFile"
+					class="menuitem-iconic"/>
+				<menuitem id="r_session_wd" observes="cmd_svRWDSession"
+					class="menuitem-iconic"/>
+				<menuitem id="r_previous_wd" observes="cmd_svRWDPrevious"
+					class="menuitem-iconic"/>-->
 				<menuitem id="r_session_mgr" observes="cmd_svSessionMgr"
-					class="menuitem-iconic r-session-dir-icon"/>
+					class="menuitem-iconic"/> <!-- r-session-dir-icon"/>-->
+				<!--<menuitem id="r_clearsession" observes="cmd_svRClearSessionData"
+					class="menuitem-iconic"/>-->
 				<menuseparator/>
 				<menuitem id="r_send_line_sel_menu" observes="cmd_svRRunLineOrSelection"
 					class="menuitem-iconic r-run-selection-icon"/>
-				<menuitem id="r_send_all_menu" observes="cmd_svRRunAll"
-					class="menuitem-iconic r-run-all-icon"/>
-				<menuitem id="r_src_all_menu" observes="cmd_svRSourceAll"
-					class="menuitem-iconic r-source-all-icon"/>
+				<menuitem id="r_send_line_enter_menu" observes="cmd_svRRunLineEnter"
+					class="menuitem-iconic"/> <!-- r-run-selection-enter-icon"/> -->
+				<menuitem id="r_send_para_menu" observes="cmd_svRRunPara"
+					class="menuitem-iconic"/> <!-- r-run-para-icon"/> -->
+				<!--<menuitem id="r_src_para_menu" observes="cmd_svRSourcePara"
+					class="menuitem-iconic r-source-para-icon"/>-->
 				<menuitem id="r_send_block_menu" observes="cmd_svRRunBlock"
 					class="menuitem-iconic r-run-block-icon"/>
-				<menuitem id="r_src_block_menu" observes="cmd_svRSourceBlock"
-					class="menuitem-iconic r-source-block-icon"/>
-				<menuitem id="r_send_para_menu" observes="cmd_svRRunPara"
-					class="menuitem-iconic r-run-para-icon"/>
-				<menuitem id="r_src_para_menu" observes="cmd_svRSourcePara"
-					class="menuitem-iconic r-source-para-icon"/>
-				<menuitem id="r_send_function_menu" observes="cmd_svRRunFunction"
-					class="menuitem-iconic r-run-function-icon"/>
+				<!--<menuitem id="r_src_block_menu" observes="cmd_svRSourceBlock"
+					class="menuitem-iconic r-source-block-icon"/>-->
+				<!--<menuitem id="r_send_function_menu" observes="cmd_svRRunFunction"
+					class="menuitem-iconic r-run-function-icon"/>-->
 				<menuitem id="r_src_function_menu" observes="cmd_svRSourceFunction"
 					class="menuitem-iconic r-source-function-icon"/>
+				<!--<menuitem id="r_send_all_menu" observes="cmd_svRRunAll"
+					class="menuitem-iconic r-run-all-icon"/>-->
+				<menuitem id="r_src_all_menu" observes="cmd_svRSourceAll"
+					class="menuitem-iconic r-source-all-icon"/>
 				<menuitem id="r_src_escape" observes="cmd_svREscape"
 					class="menuitem-iconic stop-icon"/>
 				<menuseparator/>
-				<menuitem id="r_uilevel" class="menuitem-iconic-wide"
-                    oncommand="sv.askUI(true);" label="User Interface level" />
-				<menuitem id="r_install_toolboxes" class="menuitem-iconic-wide"
-                    oncommand="sv.checkToolbox();" label="(Re)install R toolboxes" />
+				<menuitem id="r_workspaceload" observes="cmd_svRWorkspaceLoad"
+					class="menuitem-iconic"/>
+				<menuitem id="r_workspacesave" observes="cmd_svRWorkspaceSave"
+					class="menuitem-iconic"/>
+				<menuitem id="r_historyload" observes="cmd_svRHistoryLoad"
+					class="menuitem-iconic"/>
+				<menuitem id="r_historysave" observes="cmd_svRHistorySave"
+					class="menuitem-iconic"/>
+				<menuseparator/>
+				<menuitem id="r_configure" observes="cmd_svConfigureR"
+					class="menuitem-iconic"/>
+				<menuitem id="r_install_toolbox" observes="cmd_svInstallRtoolbox"
+					class="menuitem-iconic"/>
+				<menuitem id="r_uilevel" observes="cmd_svUIlevel"
+					class="menuitem-iconic"/>
+			</menupopup>
+		</menu>
+
+		<menu id="sciviews_graph_menu" label="Graph" accesskey="G"
+			insertbefore="menu_window,help_menu">
+			<menupopup id="popup_sciviews_graph">
+				<menuitem id="r_new_graph" observes="cmd_svRNewGraph"
+					class="menuitem-iconic"/>
+				<menuitem id="r_next_graph" observes="cmd_svRNextGraph"
+					class="menuitem-iconic"/>
+				<menuseparator/>
+				<menuitem id="r_save_graph_pdf" observes="cmd_svRSaveGraphPDF"
+					class="menuitem-iconic"/>
+				<menuitem id="r_save_graph_png" observes="cmd_svRSaveGraphPNG"
+					class="menuitem-iconic"/>
+				<menuseparator/>
+				<menuitem id="r_close_graph" observes="cmd_svRCloseGraph"
+					class="menuitem-iconic"/>
+				<menuitem id="r_close_all_graphs" observes="cmd_svRCloseAllGraphs"
+					class="menuitem-iconic"/>
 			</menupopup>
 		</menu>
 	</menubar>
-
+	
+	<menupopup id="popup_help">
+				<menuitem id="r_start_help" observes="cmd_svOpenHelp"
+						  class="menuitem-iconic" insertbefore="helpLanguagesMenu"/>
+				<menuitem id="r_listdemos" observes="cmd_svRListDemos"
+					class="menuitem-iconic" insertbefore="helpLanguagesMenu"/>
+				<menuitem id="r_browsevignettes" observes="cmd_svRBrowseVignettes"
+					class="menuitem-iconic" insertbefore="helpLanguagesMenu"/>
+				<menuseparator  insertbefore="helpLanguagesMenu"/>
+				<menuitem id="r_help_context" observes="cmd_svRHelpContext"
+					class="menuitem-iconic r-help-context-icon"
+					insertbefore="helpLanguagesMenu"/>
+				<menuitem id="r_help_search" observes="cmd_svRHelpSearch"
+					class="menuitem-iconic r-help-search-icon"
+					 insertbefore="helpLanguagesMenu"/>
+				<menuitem id="r_sitesearch" observes="cmd_svRSiteSearch"
+					class="menuitem-iconic" insertbefore="helpLanguagesMenu"/>
+				<menuitem id="r_runexample" observes="cmd_svRRunExample"
+					class="menuitem-iconic" insertbefore="helpLanguagesMenu"/>
+				<menuseparator  insertbefore="helpLanguagesMenu"/>
+	</menupopup>
 
 	<toolbar id="main-toolboxrow">
 		<toolbaritem class="chromeclass-toolbar"
@@ -234,7 +394,10 @@
 			grippyhidden="true"
 			align="center"
 			persist="hidden collapsed buttonstyle"
-			buttonstyle="pictures">
+			buttonstyle="pictures"
+			tooltiptext="R Toolbar"
+			mode="icons"
+			insertbefore="toolsToolbar">
 			<toolbarbutton buttonstyle="pictures"
 						   id="r_send_line_sel_tool"
 							 tooltiptext="&rSendLineOrSelection;"
@@ -243,27 +406,13 @@
 						   observes="cmd_svRRunLineOrSelection"
 						   label="&rSendLineOrSelection;" />
 			<toolbarbutton buttonstyle="pictures"
-						   id="r_send_all_tool"
-							 tooltiptext="&rSendFile;"
-						   persist="buttonstyle"
-						   class="r-run-all-icon"
-						   observes="cmd_svRRunAll"
-						   label="&rSendFile;" />
-			<toolbarbutton buttonstyle="pictures"
-						   id="r_src_all_tool"
-							 tooltiptext="&rSrcFile;"
-						   persist="buttonstyle"
-						   class="r-source-all-icon"
-						   observes="cmd_svRSourceAll"
-						   label="&rSrcFile;" />
-			<toolbarbutton buttonstyle="pictures"
 						   id="r_send_block_tool"
 							 tooltiptext="&rSendBlock;"
 						   persist="buttonstyle"
 						   class="r-run-block-icon"
 						   observes="cmd_svRRunBlock"
 						   label="&rSendBlock;" />
-			<toolbarbutton buttonstyle="pictures"
+			<!--<toolbarbutton buttonstyle="pictures"
 						   id="r_src_block_tool"
 							 tooltiptext="&rSrcBlock;"
 						   persist="buttonstyle"
@@ -290,7 +439,7 @@
 						   persist="buttonstyle"
 						   class="r-run-function-icon"
 						   observes="cmd_svRRunFunction"
-						   label="&rSendFun;" />
+						   label="&rSendFun;" /> -->
 			<toolbarbutton buttonstyle="pictures"
 						   id="r_src_function_tool"
 							 tooltiptext="&rSrcFun;"
@@ -298,6 +447,20 @@
 						   class="r-source-function-icon"
 						   observes="cmd_svRSourceFunction"
 						   label="rSrcFun;" />
+			<!--<toolbarbutton buttonstyle="pictures"
+						   id="r_send_all_tool"
+							 tooltiptext="&rSendFile;"
+						   persist="buttonstyle"
+						   class="r-run-all-icon"
+						   observes="cmd_svRRunAll"
+						   label="&rSendFile;" /> -->
+			<toolbarbutton buttonstyle="pictures"
+						   id="r_src_all_tool"
+							 tooltiptext="&rSrcFile;"
+						   persist="buttonstyle"
+						   class="r-source-all-icon"
+						   observes="cmd_svRSourceAll"
+						   label="&rSrcFile;" />
 			 <toolbarbutton buttonstyle="pictures"
 						   id="r_src_escape_tool"
 							 tooltiptext="&rEscape;"
@@ -305,6 +468,43 @@
 						   class="stop-icon"
 						   observes="cmd_svREscape"
 						   label="&rEscape;" />
+			 <toolbarseparator/>
+			 <toolbarbutton buttonstyle="pictures"
+						   id="r_load_df_tool"
+							 tooltiptext="&rLoadDF;"
+						   persist="buttonstyle"
+						   class="r-load-df-icon"
+						   observes="cmd_svRLoadDF"
+						   label="&rLoadDF;" />
+			 <toolbarbutton buttonstyle="pictures"
+						   id="r_active_df_tool"
+							 tooltiptext="&rActiveDF;"
+						   persist="buttonstyle"
+						   class="r-active-df-icon"
+						   observes="cmd_svRActiveDF"
+						   label="&rActiveDF;" />
+			 <toolbarbutton buttonstyle="pictures"
+						   id="r_active_lm_tool"
+							 tooltiptext="&rActiveLM;"
+						   persist="buttonstyle"
+						   class="r-active-lm-icon"
+						   observes="cmd_svRActiveLM"
+						   label="&rActiveLM;" />
+			 <toolbarseparator/>
+			 <toolbarbutton buttonstyle="pictures"
+						   id="r_help_context_tool"
+							 tooltiptext="&rHelpContext;"
+						   persist="buttonstyle"
+						   class="r-help-context-icon"
+						   observes="cmd_svRHelpContext"
+						   label="&rHelpContext;" />
+			 <toolbarbutton buttonstyle="pictures"
+						   id="r_help_search_tool"
+							 tooltiptext="&rHelpSearch;"
+						   persist="buttonstyle"
+						   class="r-help-search-icon"
+						   observes="cmd_svRHelpSearch"
+						   label="&rHelpSearch;" />
 		</toolbaritem>
 	</toolbar>
 
@@ -313,57 +513,51 @@
 			label="&RToolbar.label;"
 			type="checkbox"
 			observes="cmd_viewrtoolbar"
-			key="key_viewRToolbar"/>
+			key="key_viewRToolbar"
+			insertbefore="context_viewtoolstoolbar"/>
 	</menupopup>
 
 	<menupopup id="popup_toolbars">
 			<menuitem id="menu_viewrtoolbar"
-			label="&RToolbar.label;"
+			label="&RToolbar.shortlabel;"
 			observes="cmd_viewrtoolbar"
 			persist="checked"
 			checked="true"
 			type="checkbox"
-			/>
+			insertbefore="menu_viewtoolstoolbar"/>
 	</menupopup>
 
-<menupopup id="places-files-popup">
-	<menuseparator id="placesContextMenu_separatorR"
-		testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"
-	/>
-<menuitem desc="General: Edit Properties"
+	<menupopup id="places-files-popup">
+		<menuseparator id="placesContextMenu_separatorR"
+			testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"/>
+		<menuitem desc="General: Edit Properties"
 		  oncommand="sv.command.sourcePlacesSelection()"
 		  disableIf="folder"
 		  class="menuitem-iconic"
 		  id="placesContextMenu_Rsource"
 		  label="Source into R"
-		  testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"
-/>
-</menupopup>
+		  testEval_HideIf="ko.places.manager.getSelectedItems().some(function(x) /\.[Rr]$/.test(x.name))"/>
+	</menupopup>
 
 	<tabbox id="rightTabBox">
 		<tabs id="right_toolbox_tabs">
 			<tab id="rhelp_tab"
-				 label="R Help tabbed"
-				 accesskey="r"
-				 insertafter="toolbox_tab"
-				 oncommand="ko.toolboxes.user.viewMgr.tree.focus();"
-				 onfocus="ko.toolboxes.user.viewMgr.focus();"
-				 hidden="true"
-				 persist="hidden"
-				 />
+				label="R Help tabbed"
+				accesskey="r"
+				insertafter="toolbox_tab"
+				oncommand="ko.toolboxes.user.viewMgr.tree.focus();"
+				onfocus="ko.toolboxes.user.viewMgr.focus();"
+				hidden="true"
+				persist="hidden"/>
 		</tabs>
 		<tabpanels id="right_toolbox_tabpanels">
 			<tabpanel id="rhelpviewbox"
-					  flex="1"
-					  insertafter="toolboxviewbox"
-					  hidden="true"
-					  persist="hidden"
-					  >
+				flex="1"
+				insertafter="toolboxviewbox"
+				hidden="true"
+				persist="hidden">
 				<vbox id="rhelpviewbox-vbox" flex="1">
-				<iframe id="rhelpview-frame"
-						src="about:blank"
-						flex="1"
-						/>
+					<iframe id="rhelpview-frame" src="about:blank" flex="1"/>
 				</vbox>
 			</tabpanel>
 		</tabpanels>

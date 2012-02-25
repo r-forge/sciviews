@@ -63,8 +63,8 @@ class KoRLanguage(KoUDLLanguage):
         "line": [ "#", ],
     }
 
-    #downloadURL = "http://cran.r-project.org"
-    #searchURL = "http://www.rseek.org/"
+    downloadURL = "http://cran.r-project.org"
+    searchURL = "http://www.rseek.org/"
 
     variableIndicators = '$'
     _dedenting_statements = [u'return', u'break', u'else', u'next']

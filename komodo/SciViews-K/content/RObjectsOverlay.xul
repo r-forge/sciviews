@@ -202,6 +202,9 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 								<menuitem id="r_objects_pkg_load" label="Load packages..."
 								accesskey="l" class="menuitem-iconic r-pkg-load-icon"
 								oncommand="sv.r.pkg.load();"/>
+								<menuitem id="r_objects_pkg_unload" label="Unload..."
+								accesskey="l" class="menuitem-iconic r-pkg-unload-icon"
+								oncommand="sv.r.pkg.unload();"/>
 								<menuitem id="r_objects_pkg_load" label="Attach workspace..."
 								accesskey="a" class="menuitem-iconic r-data-attach"
 								oncommand="sv.r.loadWorkspace(null, true);"/>
@@ -217,6 +220,13 @@ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 								<menuitem id="r_objects_pkg_remove" label="Remove..."
 								accesskey="r" class="menuitem-iconic r-pkg-remove-icon"
 								oncommand="sv.r.pkg.remove();"/>
+								<menuseparator/>
+								<menuitem id="r_cran_mirror" label="Select CRAN mirror"
+								accesskey="S" class="menuitem-iconic r-cran-mirror-icon"
+								oncommand="sv.r.pkg.chooseCRANMirror();"/>
+								<menuitem id="r_repositories" label="Select R repositories"
+								accesskey="r" class="menuitem-iconic r-repositories-icon"
+								oncommand="sv.r.pkg.repositories();"/>
 							</menupopup>
 						</toolbarbutton>
 						<toolbarseparator style="min-width:10px;" flex="1"/>

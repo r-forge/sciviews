@@ -32,7 +32,7 @@
 #
 # ***** END LICENSE BLOCK *****
 
-# Lexer description for R.
+# Lexer description for R
 family ssl # server-side language (the way Komodo sees it!)
 sublanguage R
 

@@ -1,11 +1,11 @@
 ### SciViews install begin ###
 ## SciViews-R installation and startup for running R with Komodo/SciViews-K
 ## Version 0.9.11, 2010-02-09 Ph. Grosjean (phgrosjean@sciviews.org)
-## Version 0.9.15, 2010-05-01 mod by K. Barton
-## Version 0.9.19, 2010-10-03 mod by Ph. Grosjean
-## Version 0.9.20, 2010-11-10 mod by K. Barton
-## Version 0.9.23, 2011-08-05 mod by Ph. Grosjean
-## Version 0.9.25, 2011-12-28 mod by Ph. Grosjean
+## Version 0.9.15, 2010-05-01 modified by K. Barton
+## Version 0.9.19, 2010-10-03 modified by Ph. Grosjean
+## Version 0.9.20, 2010-11-10 modified by K. Barton
+## Version 0.9.23, 2011-08-05 modified by Ph. Grosjean
+## Version 0.9.25, 2011-12-28 modified by Ph. Grosjean
 
 ## TODO: also use value in koDebug to debug server from within R!
 ## TODO: use the mechanism of startHttpServer() to retrieve default config
@@ -19,14 +19,12 @@
 ## help(package = ....) gets to the R.app help => I also need a workaround
 ## there!
 
-"svStart" <-
-function (minRVersion = "2.11.1", minVersion = NA,
+svStart <- function (minRVersion = "2.11.1", minVersion = NA,
 ## NOTE: minVersion is now also used as a list of required packages
-remote.repos = "http://R-Forge.R-project.org",
-pkg.dir = ".",
+remote.repos = "http://R-Forge.R-project.org", pkg.dir = ".",
 debug = Sys.getenv("koDebug") == "TRUE",
 pkgsLast = c("svKomodo", "SciViews"), # to be loaded at the end
-pkgsDontLoad = c("codetools", "svTools", "svUnit", "ellipse", "MASS"),
+pkgsDontLoad = c("codetools", "svTools", "ellipse", "MASS"),
 skip = NULL)
 {
 	# Note (KB): it would make life a way easier to put all (and only)
@@ -59,16 +57,10 @@ skip = NULL)
 	minVersion <- minVersion[i.skip]
 	pkgFiles <- pkgFiles[i.skip]
 
-
 	# Needed because of dependency errors during a fresh installation...
 	pkgs <- pkgs[order(match(pkgs, c("svMisc", "svSocket","svHttp", "svKomodo")))]
 
-	## TODO: if R crashes before this code is done, 00LOCK remains and it is not
-	## possible to initiate SciViews extensions any more! => use a different
-	## mechanism (perhaps, a file in /tmp and/or make sure the 00LOCK file
-	## is deleted when Komodo Edit quits)
-	## TODO: 00LOCK should be best deleted with StartR command from Komodo
-
+	# The lock file avoids starting several instances of R in a row
 	path0 <- getwd()
 	lockfile <- file.path(path0, "00LOCK")
 	if (file.exists(lockfile)) {
@@ -99,9 +91,8 @@ skip = NULL)
 
 	## Return if any of the sv* packages already loaded and Rserver running
 	if (any(c("package:svHttp", "package:svSocket", "package:svKomodo",
-			  "package:svMisc") %in% search())
-	&& existsFunction("getSocketServers")
-	&& !is.na(getSocketServers()["Rserver"])) {
+		"package:svMisc") %in% search()) && existsFunction("getSocketServers")
+		&& !is.na(getSocketServers()["Rserver"])) {
 		invisible(return(NA))
 	}
 
@@ -596,8 +587,10 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			## right place (in case of error, no change is made!)
 			try(setwd(getOption("R.initdir")), silent = TRUE)
 			## Clean up everything in Komodo
-			try(svKomodo::koCmd('window.setTimeout("sv.r.closed();", 1000);'),
-				silent = TRUE)
+			## PhG: this is problematic now, because Komodo consider R quit here!
+			## => commented out for now!
+			#try(svKomodo::koCmd('window.setTimeout("sv.r.closed();", 1000);'),
+			#	silent = TRUE)
 		})
 
 		msg <- paste("Session directory is", dQuote(getOption("R.initdir")))

@@ -1,70 +1,76 @@
 // SciViews-K R functions
 // Define functions to pilot R from Komodo Edit 'sv.r' & 'sv.r.pkg'
-// Copyright (c) 2008-2009, Ph. Grosjean (phgrosjean@sciviews.org) & K. Barton
+// Copyright (c) 2008-2012, Ph. Grosjean (phgrosjean@sciviews.org) & K. Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// To cope with versions incompatibilities, we define this:
-// sv.alert(sv.r.RMinVersion); // Display minimum R version required
-// sv.r.server; // Which kind of R server is used? Either 'http' or 'socket'
-// sv.r.sep; // Item separator that R should use returning data.
-// sv.r.running; // Is the linked R interpreter currently running?
-// sv.r.test();  // Check if an R interpreter is communicating with us
-//
+// sv.r.RMinVersion;       // Minimum R version required
+// sv.r.server;            // Kind of R server used? Either 'http' or 'socket'
+// sv.r.sep;               // Item separator that R should use returning data.
+// sv.r.running;           // Is the linked R interpreter currently running?
+// sv.r.width;             // Width of R output (-1 for no change from Komodo)
+// sv.r.application(warn); // Is the R executable there?
+// sv.r.test(showVersion, testVersion, isStarting); // Check if an R interpreter
+//                                                     is communicating with us
+// sv.r.closed();          // This is called when R quits
 // sv.r.print(text, newline, command, partial); // Print to local R console
-// sv.r.eval(cmd); // Evaluate 'cmd' in R
+// sv.r.eval(cmd);         // Evaluate 'cmd' in R
 // sv.r.evalHidden(cmd, earlyExit); // Evaluate 'cmd' in R in a hidden way
-// sv.r.evalCallback(cmd, procfun, ...); // Evaluate 'cmd' in R and call 'procfun'
-// sv.r.escape(cmd); // Escape R multiline mode, 'cmd' to run then
-// sv.r.setwd(); // Set the working dir (choose or set to current buffer)
-// sv.r.run(); // Run current selection or line in R and goto next line
+// sv.r.evalCallback(cmd, procfun, ...); // Run 'cmd' in R and call 'procfun'
+// sv.r.escape(cmd);       // Escape R current calculation or multiline mode
+// sv.r.setwd(dir, ask, type); // Set the working dir (various types allowed)
+// sv.r.run();             // Run current selection or line in R; goto next line
 // sv.r.runEnter(breakLine = false); // Run current line to pos in R
-// and add a line feed
-// sv.r.source(what); // Source various part of current buffer to R
-// sv.r.send(what); // Send various part of current buffer to R
-// sv.r.calltip(code); // Get a calltip for a piece of code (current code if "")
-// sv.r.calltip_show(tip);		// Companion functions for sv.r.calltip
-// sv.r.complete(code); // AutoComplete mechanism for R
+//                                      and add a line feed
+// sv.r.source(what);      // Source various part of current buffer to R
+// sv.r.send(what);        // Send various part of current buffer to R
+
+
+
+// TODO: recheck from here...
+// sv.r.calltip(code);     // Calltip for a piece of code (current code if "")
+// sv.r.calltip_show(tip); // Companion functions for sv.r.calltip
+// sv.r.complete(code);    // AutoComplete mechanism for R
 // sv.r.display(topic, what); // Display 'topic' according to 'what' type
-// sv.r.help(topic, package); // Get help in R for 'topic', 'package' is optional
-// sv.r.example(topic); // Run example in R for 'topic', 'topic' is optional
-// sv.r.search(topic); // Search R help for 'topic'
+// sv.r.help(topic, package); // Get help in R for 'topic'; 'package' optional
+// sv.r.example(topic);    // Run example in R for 'topic'
+// sv.r.search(topic);     // Search R help for 'topic'
 // sv.r.search_select(topics); // Callback function: display a list of
-// choices to select help page from
+//                                choices to select help page from
 // sv.r.siteSearch(topic); // Search R web sites for 'topic'
-// sv.r.dataList(loaded); // List R datasets in "loaded" or "all" packages
-// sv.r.data(); // Select one dataset to load
+// sv.r.dataList(loaded);  // List R datasets in "loaded" or "all" packages
+// sv.r.data();            // Select one dataset to load
 // sv.r.data_select(data); // Callback function for sv.r.data()
 // sv.r.browseVignettes(); // Open a web page listing all installed vignettes
 // sv.r.saveWorkspace(file, title);  // Save data in a .Rdata file
 // sv.r.loadWorkspace(file, attach); // Load the content of a .RData file into
-// the workspace, or attach it
+//                                      the workspace, or attach it
 // sv.r.saveHistory(file, title); // Save the history in a file
 // sv.r.loadHistory(file, title); // Load the history from a file
 // sv.r.saveGraph(type, file, title, height, width, method);
-//                  // Save the current R graph in different formats
-// sv.r.obj(objClass); // Set active object for objClass (data.frame if omitted)
-// sv.r.obj_select(data); // The callback for sv.r.obj() to select an object
+//                         // Save the current R graph in different formats
+// sv.r.obj(objClass);     // Set active object for objClass (data.frame by def)
+// sv.r.obj_select(data);  // The callback for sv.r.obj() to select an object
 // sv.r.obj_select_dataframe(objname); // Select one data frame to activate
-// sv.r.obj_select_lm(objname);		   // Select one lm object to activate
-// sv.r.obj_refresh_dataframe(data);   // Refresh active data frame's MRUs
-// sv.r.obj_refresh_lm(data); 		   // Refresh active 'lm' object
-// sv.r.obj_message(); // Refresh statusbar message about active df and lm
-// sv.r.refreshSession(); // Refresh MRU lists associated with current session
+// sv.r.obj_select_lm(objname); // Select one lm object to activate
+// sv.r.obj_refresh_dataframe(data); // Refresh active data frame's MRUs
+// sv.r.obj_refresh_lm(data); // Refresh active 'lm' object
+// sv.r.obj_message();     // Refresh statusbar message about active df and lm
+// sv.r.refreshSession();  // Refresh MRU lists associated with current session
 // sv.r.initSession(dir, datadir, scriptdir, reportdir);
 // sv.r.setSession(dir, datadir, scriptdir, reportdir, saveOld, loadNew);
-// Initialize R session with corresponding directories
-// setSession() also do the change in R and is to be used
-// preferably, except at Komodo startup!
-// dir: session directory, xxxdir: xxx subdirectory,
-// saveOld (default true): do we save old session data?
-// loadNew (default true): do we load data from new session?
-// sv.r.switchSession(inDoc); // Switch to another R session (possibly create it)
-// sv.r.exploreSession(); // Explore the session dirs in default file browser
-// sv.r.clearSession();   // Clear session's .RData and .Rhistory files
-// sv.r.reloadSession();  // Reload .RData nd .Rhistory files from session dir
+//                         // Initialize R session with those directories
+//                         // setSession() also do the change in R and is to
+//                         // be used preferably, except at Komodo startup!
+//                         // dir: session directory, xxxdir: xxx subdirectory,
+//                         // saveOld (true by def): save old session data?
+//                         // loadNew (true by def): load data from new session?
+// sv.r.switchSession(inDoc); // Switch to another R session;possibly create it
+// sv.r.exploreSession();  // Explore the session dirs in default file browser
+// sv.r.clearSession();    // Clear session's .RData and .Rhistory files
+// sv.r.reloadSession();   // Reload .RData nd .Rhistory files from session dir
 // sv.r.quit(save); // Quit R (ask to save in save in not defined)
-// sv.r.kpf2pot(kpfFile); // Create a translation (.pot) file for a project
-// sv.r.kpz2pot(kpzFile); // Create a translation (.pot) file for a package
+// sv.r.kpf2pot(kpfFile);  // Create a translation (.pot) file for a project
+// sv.r.kpz2pot(kpzFile);  // Create a translation (.pot) file for a package
 // sv.r.kpfTranslate(kpfFile); // Translate a project
 // sv.r.kpzTranslate(kpzFile); // Translate a package
 //
@@ -74,23 +80,22 @@
 // sv.r.pkg namespace: /////////////////////////////////////////////////////////
 // sv.r.pkg.repositories(); // Select repositories for installing R packages
 // sv.r.pkg.chooseCRANMirror(andInstall); // replacement for .CRANmirror,
-// optionally calls .install after execution
-// sv.r.pkg.available();    // List available R packages on selected repository
-// sv.r.pkg.installed();    // List installed R packages
-// sv.r.pkg.new(); // List new R packages available on CRAN
-// sv.r.pkg.old(); // List older installed R packages than distributed versions
-// sv.r.pkg.update(); // Update installed R packages from the repositories
-// sv.r.pkg.status(); // Show status of installed R packages
-// sv.r.pkg.loaded(); // Show which R packages are loaded
-// sv.r.pkg.load(); // Load one R package
-// sv.r.pkg.unload(); // Unload one R package
+//                                           optionally calls .install after it
+// sv.r.pkg.available();   // List available R packages on selected repository
+// sv.r.pkg.installed();   // List installed R packages
+// sv.r.pkg.new();         // List new R packages available on CRAN
+// sv.r.pkg.old();         // List older installed R packages than on CRAN
+// sv.r.pkg.update();      // Update installed R packages from the repositories
+// sv.r.pkg.status();      // Show status of installed R packages
+// sv.r.pkg.loaded();      // Show which R packages are loaded
+// sv.r.pkg.load();        // Load one R package
+// sv.r.pkg.unload();      // Unload one R package
 // sv.r.pkg.unload_select(pkgs); // Callback function for sv.r.pkg.unload()
-// sv.r.pkg.remove(); // Remove one R package
+// sv.r.pkg.remove();      // Remove one R package
 // sv.r.pkg.remove_select(pkgs); // Callback function for sv.r.pkg.remove()
-// sv.r.pkg.install(pkgs, repos); // Install R package(s) from local files or repositories
-
-
-/// REMOVED! replaced by sv.r.pkg.install
+// sv.r.pkg.install(pkgs, repos); // Install R package(s) from local files or
+//                                   repositories
+// REMOVED! replaced by sv.r.pkg.install
 // sv.r.pkg.installLocal(); // Install one or more R packages from local files
 // sv.r.pkg.installSV(); // Install the SciViews-R packages from CRAN
 // sv.r.pkg.installSVrforge(); // Install development versions of SciViews-R
@@ -112,7 +117,6 @@ sv.r = {
 	server: "socket", 		// Default server, defined as socket
 	sep: ";;",				// Separator used for items
 	running: true,			// Indicate if R is currently running
-	// FIXME: before we solve the issue of updating R status
 	width: -1 				// The R output width (set to -1 for no change)
 };
 
@@ -121,12 +125,14 @@ sv.r.application = function (warn) {
 	if (warn === undefined) warn = false;
 
 	// Look for R executable for batch processes
-	var R = sv.tools.file.whereIs("R")
-	if (R == null & warn)
-	sv.alert("R is not found", "You should install or reinstall R" +
-	" on this machine (see http://cran.r-project.org). Under Windows" +
-	" you could also run RSetReg.exe from the /bin subdirectory of R" +
-	" install in case R is installed, but not recognized by SciViews).");
+	var R = sv.tools.file.whereIs("R", true)
+	if (R == null & warn) {
+		sv.alert("R is not found", "You should install or reinstall R " +
+			"on this machine (see http://cran.r-project.org). Under Windows " +
+			"you could also run RSetReg.exe from the /bin subdirectory of R " +
+			"install in case R is installed, but not recognized by SciViews).");
+	}
+	
 	// Save the path in r.application prefs
 	if (R == null) R = "";
 	sv.prefs.setString("r.application", R, true);
@@ -191,9 +197,8 @@ sv.r.test = function sv_RTest (showVersion /*= false*/, testVersion /*= false*/,
 
 // Function called when R is closed
 sv.r.closed = function () {
-	// Blank R output
 	sv.r.running = false;
-	
+	// Blank R output
 	sv.cmdout.message("R has quit!", 0, false);
 	// Reset statusbar
 	sv.prefs.setString("sciviews.session.dir", "~", true);
@@ -206,7 +211,7 @@ sv.r.closed = function () {
 	//sv.r.objects.clearPackageList();
 }
 
-//// Print some text (command or results) in the local R console
+// Print some text (command or results) in the local R console
 sv.r.print = function (text, newline /* =true*/, command /* =false*/,
 partial /* =false*/) {
 	// Default values for optional arguments
@@ -244,14 +249,20 @@ partial /* =false*/) {
 sv.r.eval = function (cmd) {
 	// If we thing R is not running, we are better to retest here
 	if (!sv.r.running) {
-		if (!sv.r.test())
-			return;
+// TODO: propose to start R here!
+		if (!sv.r.test()) {
+			// Indicate R should be started
+			ko.statusBar.AddMessage(
+			sv.translate("R must be started for this command (R -> Start R)"),
+				"SciViews-K", 5000, true);
+			return(null);
+		}
 	}
 	
 	cmd = cmd.rtrim();
 	// Special case for q() and quit() => use sv.r.quit() instead
 	if (cmd.search(/^(?:base::)?q(?:uit)?\s*\(\s*\)$/) > -1)
-	return(sv.r.quit());
+		return(sv.r.quit());
 	
 	var res = "";
 	sv.r.print(cmd, true, true, sv.socket.partial);
@@ -285,22 +296,26 @@ sv.r.evalHidden = function (cmd, earlyExit) {
 //   " koCmd('alert(\"koCmd is back\");')", earlyExit = true);
 
 // Evaluate R expression and call procfun in Komodo with the result as argument
-// all additional arguments will be passed to procfun,
-// result will be stored in procfun.value
+// - All additional arguments will be passed to procfun,
+// - Result will be stored in procfun.value
 sv.r.evalCallback = function (cmd, procfun) {
-	// If R is not running, do nothing
+	// If we thing R is not running, we are better to retest here
 	if (!sv.r.running) {
-		// Indicate R should be started
-		ko.statusBar.AddMessage(
-		sv.translate("R must be started for this command (R -> Start R)"),
-		"SciViews-K", 5000, true);
-		return(null);
+// TODO: propose to start R here!
+		if (!sv.r.test()) {
+			// Indicate R should be started
+			ko.statusBar.AddMessage(
+			sv.translate("R must be started for this command (R -> Start R)"),
+				"SciViews-K", 5000, true);
+			return(null);
+		}
 	}
+	
 	var res = "";
 	// Evaluate a command in hidden mode (contextual help, calltip, etc.)
 	// and call 'procfun' at the end of the evaluation
 	// Note: with http using RJSONp protocol, this is done automatically!
-	// Note2: sv.r.evalCallback now needs a named function for the http
+	// Note2: sv.r.evalCallback() now needs a named function for the http
 	// version to work!
 	// Treatment is different if we use http or socket
 	var args = Array.apply(null, arguments);
@@ -314,10 +329,8 @@ sv.r.escape = function (cmd) {
 	if (cmd === undefined) cmd = "";
 
 	// Since this command is not used very often, one can check R everytime
+	// instead of relying on sv.r.running, which could be outdated
 	if (!sv.r.test()) return(null);
-
-	// If R is not running, do nothing
-//	if (!sv.r.running) return(null);
 
 	// Send an <<<esc>>> sequence that breaks multiline mode
 	// Exit partial mode and go back to normal prompt
@@ -331,43 +344,42 @@ sv.r.escape = function (cmd) {
 
 // Set the current working directory (to current buffer dir, or ask for it)
 sv.r.setwd = function (dir, ask, type) {
-	// TODO: simplify this:
-	// for compatibility with previous versions
+	// For compatibility with previous versions
 	switch (arguments.length) {
-		case 1:
+	 case 1:
 		type = dir;
 		dir = null;
 		ask = false;
 		break;
-		case 2:
+	 case 2:
 		type = dir;
 		dir = null;
 		break;
-		default:
+	 default:
 	}
-
 	var getDirFromR = "";
 
 	if (!dir || (sv.tools.file.exists(dir) == 2)) { // Not there or unspecified
-		//sv.log.debug(dir + ":" + type)
+		sv.log.debug(dir + ":" + type)
+		
 		checkType:
 		switch (type) {
-			case "this":
+		 case "this":
 			break;
-			case "session":
+		 case "session":
 			getDirFromR = "getOption(\"R.initdir\")";
 			break;
-			case "previous":
+		 case "previous":
 			getDirFromR = "if (exists(\".odir\")) .odir else getwd()";
 			break;
-			case "init":
+		 case "init":
 			getDirFromR = "getOption(\"R.initdir\")";
 			break;
-			case "current":
+		 case "current":
 			getDirFromR = "getwd()";
 			ask = true;	// Assume ask is always true in this case
 			break;
-			case "file":
+		 case "file":
 			var kv = ko.views.manager.currentView;
 			if (kv) {
 				kv.setFocus();
@@ -377,8 +389,8 @@ sv.r.setwd = function (dir, ask, type) {
 				}
 				break;
 			}
-			case "project":
-			default:
+		 case "project":
+		 default:
 			dir = "";
 			// try to set current project dir ar default directory
 			var ap = ko.projects.manager.getCurrentProject();
@@ -397,13 +409,13 @@ sv.r.setwd = function (dir, ask, type) {
 	if (getDirFromR) {
 		var cmd = "cat(path.expand(" + getDirFromR + "))";
 		ko.statusBar.AddMessage(sv.translate("Asking R for directory..."),
-		"SciViews-K");
+			"SciViews-K");
 
 		res = sv.r.evalCallback(cmd, function(curDir) {
 			ko.statusBar.AddMessage("", "SciViews-K");
 			if (!curDir) {
 				sv.alert(sv.translate("Cannot retrieve directory from R." +
-				" Make sure R is running."));
+					" Make sure R is running."));
 				return(null);
 			}
 			if (navigator.platform.search(/^Win/) == 0) {
@@ -413,12 +425,10 @@ sv.r.setwd = function (dir, ask, type) {
 		});
 		return(res);
 	}
-	if (ask || !dir)
-	dir = ko.filepicker.getFolder(dir,
+	if (ask || !dir) dir = ko.filepicker.getFolder(dir,
 	sv.translate("Choose working directory"));
 
-	if (dir != null)
-	sv.r.eval(".odir <- setwd(\"" + dir.addslashes() + "\")");
+	if (dir != null) sv.r.eval(".odir <- setwd(\"" + dir.addslashes() + "\")");
     return(res);
 }
 
@@ -430,18 +440,18 @@ sv.r.run = function () {
 		view.setFocus();
 
 		var text = sv.getTextRange("sel", true);
-		if(!text) { // No selection
+		if (!text) { // No selection
 			var scimoz = view.scimoz;
 			var currentLine = scimoz.lineFromPosition(scimoz.currentPos);
 			var oText = { value: ''};
 			var lineCount =	scimoz.lineCount;
-			while(currentLine < lineCount && !(text = oText.value.trim()))
+			while (currentLine < lineCount && !(text = oText.value.trim()))
 				scimoz.getLine(currentLine++, oText);
 			scimoz.gotoLine(currentLine);
 			text = oText.value.trim();
 		}
 		
-		if(text) return(sv.r.eval(text));
+		if (text) return(sv.r.eval(text));
 		return(false);
 	} catch(e) { return(e); }
 }
@@ -488,9 +498,9 @@ sv.r.source = function (what) {
 		// Special case: if "all" and local document is saved,
 		// source as the original file
 		if (what == "all" && doc.file && doc.file.isLocal &&
-		!doc.isUntitled && !doc.isDirty) {
+			!doc.isUntitled && !doc.isDirty) {
 			res = sv.r.eval('source("' + file +  '", encoding = "' +
-			view.encoding + '")');
+				view.encoding + '")');
 		} else {
 			// Save all or part in the temporary file and source that file.
 			// After executing, tell R to delete it.
@@ -499,7 +509,11 @@ sv.r.source = function (what) {
 				what += " \"" +
 				code.match("^.*\\S(?=\\s*(?:=|<-)\\s*function)") + "\"";
 			}
-			//sv.cmdout.clear(false);
+			// Starting from R 2.14, there is a warning if the file does not
+			// end with an empty line => add one now!
+			code = code + "\n";
+			
+			// Indicate what is done here
 			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' + what);
 
 			var tempFile = sv.tools.file.temp();
@@ -514,33 +528,32 @@ sv.r.source = function (what) {
 			});
 		}
 	} catch(e) {
-		sv.log.exception(e, "Unknown error while sourcing R code in"
-		+ " sv.r.source():\n\n (" + e + ")", true);
+		sv.log.exception(e, "Unknown error while sourcing R code in " +
+			"sv.r.source():\n\n (" + e + ")", true);
 	}
 	return(res);
 }
 
 // Send whole or a part of the current buffer to R and place cursor at next line
 sv.r.send = function (what) {
-	//sv.log.debug("sv.r.send " + what);
+	sv.log.debug("sv.r.send " + what);
 	var res = false;
 	var view = ko.views.manager.currentView;
 	if (!view) return(false); // No current view, do nothing!
 	view.setFocus();
 	var ke = view.scimoz;
-
+	
 	try {
 		if (!what) what = "all"; // Default value
 
 		var cmd = sv.getTextRange(what, what.indexOf("sel") == -1).rtrim();
 		if (cmd) {
-			// indent multiline commands
+			// Indent multiline commands
 			cmd = cmd.replace(/\r?\n/g, "\n   ")
 			res = sv.r.eval(cmd);
 		}
-		if (what == "line" || what == "linetoend") // || what == "para"
-		ke.charRight();
-
+		if (what == "line" || what == "linetoend")
+			ke.charRight();
 	} catch(e) { return(e); }
 	return(res);
 }
@@ -583,6 +596,7 @@ sv.r.complete = function (code) {
 }
 
 // The callback for sv.r.complete
+// TODO: make private
 sv.r.complete_show = function (autoCstring) {
 	// In the case of http server, we got a more complex object!
 	if (autoCstring.result !== undefined) autoCstring = autoCstring.result;
@@ -1470,14 +1484,14 @@ sv.r.clearSession = function () {
 	}
 }
 
-// Quit R (ask to save in save in not defined)
+// Quit R
 sv.r.quit = function (save) {
 	if (typeof(save) == "undefined") {
 		// Ask for saving or not
 		var response = ko.dialogs.customButtons("Do you want to save the" +
-		" workspace (.RData) and the command history (.Rhistory) in" +
-		" the session directory first?", ["Yes", "No", "Cancel"], "No",
-		null, "Exiting R");
+			" workspace (.RData) and the command history (.Rhistory) in" +
+			" the session directory first?", ["Yes", "No", "Cancel"], "No",
+			null, "Exiting R");
 		if (response == "Cancel") return;
 	} else response = save ? "yes" : "no";
 	// Quit R
@@ -1612,7 +1626,7 @@ sv.r.pkg.chooseCRANMirror = function (callback) {
 
 			sv.r.eval('with(TempEnv(), {repos <- getOption("repos");' +
 			'repos["CRAN"] <- "' + repos + '"; ' + 'options(repos = repos)})');
-			cran = sv.prefs.setString("CRANMirror", repos);
+			cran = sv.prefs.setString("r.cran.mirror", repos);
 			if (callback) callback(repos);
 		}
 		return(res);
@@ -1807,7 +1821,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 	var res = false;
 	var reset = (repos === true);
 
-	var defaultRepos = sv.prefs.getString("CRANMirror");
+	var defaultRepos = sv.prefs.getString("r.cran.mirror");
 	if (defaultRepos == "None") defaultRepos = "";
 	//defaultRepos = "http://cran.r-project.org/";
 
@@ -1828,7 +1842,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 			if (cran == "@CRAN@") {
 				res = sv.r.pkg.chooseCRANMirror(_installCallback);
 			} else {
-				sv.prefs.setString("CRANMirror", cran);
+				sv.prefs.setString("r.cran.mirror", cran);
 				res = sv.r.pkg.install(pkgs, cran, true);
 			}
 			return;
