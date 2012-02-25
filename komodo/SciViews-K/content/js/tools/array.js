@@ -3,11 +3,12 @@
 // Copyright (c) 2008-2010, Romain Francois and Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.tools.array.remove(a, s);     // Eliminate 's' from 'a'
 // sv.tools.array.contains(a, s);   // Does array 'a' contain 's'
+// sv.tools.array.unique(a);        // Keep unique items in array 'a'
+// sv.tools.array.duplicates(a);    // Which items are duplicated in array 'a'
+// sv.tools.array.remove(a, s);     // Eliminate 's' from 'a'
 // sv.tools.array.removeItem(a, s); // Return an array with 's' removed from 'a'
-//
-// Warning: adding to Array.prototype has REALLY strange side effects. No idea why.
+// sv.tools.array.CSVToArray(data, sep); // Convert CSV data to an array
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.tools.array' namespace
@@ -15,23 +16,26 @@ if (typeof(sv) == 'undefined') sv = {};
 if (typeof(sv.tools) == 'undefined') sv.tools = {};
 if (typeof(sv.tools.array) == 'undefined') sv.tools.array = {};
 
-sv.tools.array.contains = function array_contains (arr, s) (arr.indexOf(s) !== -1);
+sv.tools.array.contains = function array_contains (a, s)
+	(a.indexOf(s) !== -1);
 
-sv.tools.array.unique = function array_unique(arr)
-	arr.reduce(function(a, j) {
-		if(a.indexOf(j)==-1) a.push(j);
-		return(a)}, []);
+sv.tools.array.unique = function array_unique (a)
+	a.reduce(function (x, j) {
+		if (x.indexOf(j) == -1) x.push(j);
+		return(x)
+	}, []);
 
-sv.tools.array.remove = function array_remove(arr, item) arr.filter(function(x) x !== item);
-
-sv.tools.array.duplicates = function array_duplicates(arr) {
+sv.tools.array.duplicates = function array_duplicates (a) {
 	var dup = [];
-	arr.forEach(function(el, i, a) {
-		if(i > 0 && a.lastIndexOf(el, i - 1) != -1) dup.push(el) });
-	return dup;
+	a.forEach(function (el, i, x) {
+		if (i > 0 && x.lastIndexOf(el, i - 1) != -1) dup.push(el)
+	});
+	return(dup);
 }
 
-// Return an array from which 's' item is eliminated from the array 'a'
+sv.tools.array.remove = function array_remove (a, s)
+	a.filter(function(x) x !== s);
+
 sv.tools.array.removeItem = function (a, s) {
 	var b = [];
 	for (i in a)
@@ -39,45 +43,33 @@ sv.tools.array.removeItem = function (a, s) {
 	return(b);
 }
 
-
-//// Additional methods to Array objects ///////////////////////////////////////
-//// Compute the intersection of n arrays
-//Array.prototype.getintersect = function () {
-//	if (!arguments.length)
-//		return [];
-//    var a1 = this;
-//    var a = a2 = null;
-//    var n = 0;
-//    while(n < arguments.length) {
-//		a = [];
-//		a2 = arguments[n];
-//		var l = a1.length;
-//		var l2 = a2.length;
-//		for (var i=0; i<l; i++) {
-//			for (var j=0; j<l2; j++) {
-//				if (a1[i] === a2[j])
-//					a.push(a1[i]);
-//			}
-//		}
-//		a1 = a;
-//		n++;
-//    }
-//    return a.makeunique();
-//};
-//
-//// Get the union of n arrays
-//Array.prototype.rassemble =  function () {
-//	var a = [].concat(this);
-//	var l = arguments.length;
-//	for (var i=0; i<l; i++) {
-//		a = a.concat(arguments[i]);
-//    }
-//    return a.makeunique();
-//};
-
-// Test
-// var a = [1, 3, 2, 4, 2, 4, 5];
-// var b = [1, 5, 6, 7, 8];
-// alert(a.makeunique().sort());
-// alert(a.getintersect(b).sort());
-// alert(a.rassemble(b).sort());
+// From http://www.bennadel.com/index.cfm?dax=blog:1504.view
+sv.tools.array.CSVToArray = function csv_to_array (data, sep) {
+	sep = (sep || ",");
+	var objPattern = new RegExp((
+		// Delimiters
+		"(\\" + sep + "|\\r?\\n|\\r|^)" +
+		// Quoted fields
+		"(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+		// Standard fields
+		"([^\"\\" + sep + "\\r\\n]*))"
+    ), "gi");
+	var arrData = [[]];
+	var arrMatches = objPattern.exec(data);
+	while (arrMatches) {
+		var strMatchedDelimiter = arrMatches[1];
+		if (strMatchedDelimiter.length &&
+			(strMatchedDelimiter != sep)) {
+			arrData.push([]);
+        }
+		if (arrMatches[2]) {
+			var strMatchedValue = arrMatches[2]
+				.replace(new RegExp( "\"\"", "g" ),	"\"");
+		} else {
+			var strMatchedValue = arrMatches[3];
+		}
+		arrData[arrData.length - 1].push(strMatchedValue);
+		arrMatches = objPattern.exec(data);
+	}
+	return(arrData);
+}

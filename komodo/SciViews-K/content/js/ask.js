@@ -8,6 +8,7 @@
 // sv.ask.factors(object, restrict);   // List all factor variables for object
 //
 ////////////////////////////////////////////////////////////////////////////////
+// TODO: finalize and make use of this!
 // TODO: list files in a directory and a given extension
 //       implement sv.ask.vars and sv.ask.factors
 

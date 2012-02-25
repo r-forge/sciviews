@@ -7,12 +7,15 @@
 // sv.tools.strings.removeLastCRLF(str);    // Remove last CR and/or LF
 // sv.tools.strings.toRegex(str);			// Changes a string to a regex
 // sv.tools.strings.filename(str);			// Get filename/last dir from path
+// sv.tools.strings.addslashes(str);        // Add slashes to file path
+// sv.tools.strings.trim(str, which);       // Trim leading and/or trailing sp
 //
 // Additional methods to String objects ////////////////////////////////////////
 // String.prototype.trim();					// Trim function for String
 // String.prototype.rtrim();				// Right trim
 // String.prototype.ltrim();				// Left trim
 // String.prototype.addslashes();			// Add slashes
+// String.prototype.regExpEscape();         // Transfor regular expression
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.tools.strings' namespace
@@ -33,7 +36,6 @@ sv.tools.strings.removeLastCRLF = function (str) {
 
 // changes a string to a regular expression
 sv.tools.strings.toRegex = function (str) {
-	// brackets
 	str = str.replace(/([\]\(\\\*\+\?\|\{\[\(\)\^\$\.\#])/g, "\\$1")
 		.replace(/\t/g, "\\t")	//.replace(/ /, "\\s")
 		.replace(/\n/g, "\\n")	.replace(/\r/g, "\\r")
@@ -54,8 +56,8 @@ sv.tools.strings.filename = function (str) {
 	return(items[items.length - 1]);
 }
 
-sv.tools.strings.addslashes = function(str) {
-	// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+sv.tools.strings.addslashes = function (str) {
+	// Original by Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 	return(str.replace(/([\\"'])/g, "\\$1")
 		.replace(/\x00/g, "\\0").replace(/\u0000/g, "\\0"));
 }
@@ -80,16 +82,21 @@ sv.tools.strings.trim = function (str, which) {
 
 //// Additional methods to String objects //////////////////////////////////////
 // Trim function for String
-String.prototype.trim = function() sv.tools.strings.trim(this);
+String.prototype.trim = function()
+	sv.tools.strings.trim(this);
 
 // Right trim
-String.prototype.rtrim = function() sv.tools.strings.trim(this, "right");
+String.prototype.rtrim = function()
+	sv.tools.strings.trim(this, "right");
 
 // Left trim
-String.prototype.ltrim = function() sv.tools.strings.trim(this, "left");
+String.prototype.ltrim = function()
+	sv.tools.strings.trim(this, "left");
 
 // Add slashes
-String.prototype.addslashes = function () sv.tools.strings.addslashes(this);
+String.prototype.addslashes = function ()
+	sv.tools.strings.addslashes(this);
 
 // Escape string for regular expression
-String.prototype.regExpEscape = function() sv.tools.strings.toRegex(this);
+String.prototype.regExpEscape = function()
+	sv.tools.strings.toRegex(this);

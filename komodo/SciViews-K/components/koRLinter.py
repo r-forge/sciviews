@@ -94,7 +94,6 @@ class KoRCompileLinter:
         if R == "":
             errmsg = "Could not find a suitable R interpreter for linting."
             raise COMException(nsError.NS_ERROR_NOT_AVAILABLE, errmsg)
-        R = "R"
         #self.checkValidVersion()
 
         # Save R buffer to a temporary file
@@ -105,7 +104,7 @@ class KoRCompileLinter:
 
         p = None
         try:
-            argv = [R] + ["--slave"] + ["-e", "if(isTRUE(require('svTools',quietly=TRUE)))lint('" + os.path.basename(Rfilename) + "',type='flat')"]
+            argv = [R] + ["--slave"] + ["-e", "if(isTRUE(require('svTools',quietly=TRUE)))lint('" + os.path.basename(Rfilename) + "',type='flat',encoding='utf8')"]
             env = koprocessutils.getUserEnv()
             cwd = os.path.dirname(Rfilename)
             p = process.ProcessOpen(argv, cwd=cwd, env=env)

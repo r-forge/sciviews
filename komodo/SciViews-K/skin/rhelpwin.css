@@ -49,11 +49,11 @@ toolbarbutton.toolbar-landscape-page .toolbarbutton-text {
     display: none;
 }
 
-
 .history-back-icon {
   list-style-image: url("chrome://komodo/skin/images/browser_buttons.png");
   -moz-image-region: rect(0px 16px 16px 0px);
 }
+
 /* rect(top,right,bottom,left) */
 .history-back-icon:not([disabled="true"]):hover {
   -moz-image-region: rect(0px 16px 16px 0px);
@@ -66,8 +66,6 @@ toolbarbutton.toolbar-landscape-page .toolbarbutton-text {
   -moz-image-region: rect(16px 16px 32px 0px);
 }
 
-
-
 .history-forward-icon {
   list-style-image: url("chrome://komodo/skin/images/browser_buttons.png");
   -moz-image-region: rect(0px 32px 16px 16px);
@@ -77,10 +75,10 @@ toolbarbutton.toolbar-landscape-page .toolbarbutton-text {
 .history-forward-icon:not([disabled="true"]):hover:active {
   -moz-image-region: rect(16px 32px 32px 16px);
 }
+
 .history-forward-icon[disabled="true"] {
   -moz-image-region: rect(32px 32px 48px 16px) !important;
 }
-
 
 .print-icon {
   list-style-image : url("chrome://komodo/skin/images/print_button.png");

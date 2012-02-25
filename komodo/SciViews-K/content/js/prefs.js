@@ -1,48 +1,80 @@
 // SciViews-K preference code
 // SciViews-K preferences management ('sv.prefs' namespace)
 // Define default preferences values for SciViews-K and MRU lists
-// Copyright (c) 2008-2010, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2008-2012, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
+// sv.prefs.defaults;             // Default preference values
+// sv.prefs.checkAll();           // Check all preferences
 // sv.prefs.getString(pref, def); // Get a preference, use 'def' is not found
 // sv.prefs.setString(pref, value, overwrite); // Set a preference string
 // sv.prefs.askString(pref, defvalue); // Ask for the value of a preference
 // sv.prefs.mru(mru, reset, items, sep); //Simplify update of MRU lists
+//                                         history a text entries in dialog box
+// sv.prefs.tip(arg, tip);        // Default tooltips for interpolation queries
 //
+// Definition of various preferences for SciViews-K
 ////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv.prefs) == "undefined") sv.prefs = {};
 
-//This can be used in the Preferences page to set/restore missing values:
-//sv.prefs.checkAll()
-
 // sv.prefs.defaults[preferenceName] = preferenceValue
 sv.prefs.defaults = {
 	"sciviews.server.socket": "7052",
-	"sciviews.server.type": "file",
-	"sciviews.client.type": "socket",
+	"sciviews.server.type": "socket",
+	"sciviews.client.type": "http",
 	"sciviews.client.socket": "8888",
 	"sciviews.client.id": "SciViewsK",
 	"sciviews.server.host": "127.0.0.1",
-	svRDefaultInterpreter: "", //????
-	svRApplication: "", //????
-	//svRApplicationId: "", //????
-	//svRQuiet: "", // Must be string, otherwise sv.prefs.getString will fail
-	svRArgs: "--quiet", // For future use, replaces svRQuiet
+	"svRDefaultInterpreter": "",
+	"svRApplication": "",
     "r.csv.dec": ".",
 	"r.csv.sep": ",",
 	"r.application": "",
-	CRANMirror: "http://cran.r-project.org/",
-	RHelpCommand: "javascript:sv.r.help(\"%w\")",
-    "sciviews.pkgs.sciviews" : "false"
-
+	"r.cran.mirror": "http://cran.r-project.org/"
 	//*Future preferences:*
-	//sciviews.rhelp.open_in = [tab, window]
-	//sciviews.r.auto-start
-};
+	//"svRArgs": "--quiet",
+	//"RHelpCommand": "javascript:sv.r.help(\"%w\")",
+	//"sciviews.rhelp.open_in": [tab, window]
+	//"sciviews.r.auto-start": false
+}
+
+// Get a string preference, or default value
+sv.prefs.getString = function (pref, def) {
+	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
+		.getService(Components.interfaces.koIPrefService);
+	var prefs = prefsSvc.prefs;
+	if (prefs.hasStringPref(pref)) {
+		return(prefs.getStringPref(pref));
+	} else return(def);
+}
+
+// Set a string preference
+sv.prefs.setString = function (pref, value, overwrite) {
+	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
+		.getService(Components.interfaces.koIPrefService);
+	var prefs = prefsSvc.prefs;
+	if (overwrite == false & prefs.hasStringPref(pref)) return;
+	prefs.setStringPref(pref, value);
+}
+
+// Display a dialog box to change a preference string
+sv.prefs.askString = function (pref, defvalue) {
+	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
+		.getService(Components.interfaces.koIPrefService);
+	var prefs = prefsSvc.prefs;
+	// If defvalue is defined, use it, otherwise, use current pref value
+	if (defvalue == null & prefs.hasStringPref(pref))
+		defvalue = prefs.getStringPref(pref);
+	if (defvalue == null) defvalue == "";
+	// Display a dialog box to change the preference value
+	newvalue = ko.dialogs.prompt("Change preference value for:", pref,
+		defvalue, "SciViews-K preference", "svPref" + pref)
+	if (newvalue != null) prefs.setStringPref(pref, newvalue);
+}
 
 // Set default preferences
-sv.prefs.checkAll = function(revert) {
+sv.prefs.checkAll = function (revert) {
 	var prefset = Components.classes['@activestate.com/koPrefService;1']
 		.getService(Components.interfaces.koIPrefService).prefs;
 	for (var i in sv.prefs.defaults) {
@@ -62,46 +94,55 @@ sv.prefs.checkAll = function(revert) {
 		}
 		if (revert // take all
 			|| !prefset.hasPref(i) // if missing at all
-			|| (prefset["has" + el + "Pref"](i)    // has one of right type, but empty
+			|| (prefset["has" + el + "Pref"](i) // has right type, but empty
 			&& !prefset["get" + el + "Pref"](i))) {
 			prefset.deletePref(i); // To avoid _checkPrefType error
 			prefset["set" + el + "Pref"](i, p);
 		};
 	}
 }
-
-// Get a string preference, or default value
-sv.prefs.getString = function (pref, def) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
-		getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	if (prefs.hasStringPref(pref)) {
-		return(prefs.getStringPref(pref));
-	} else return(def);
+// Preferences (default values, or values reset on each start)
+sv.prefs.checkAll(false);
+// Try getting a reasonable default R interpreter, if none is defined
+var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
+// Is this R interpreter still there?
+if (svRDefaultInterpreter != "" &&
+	sv.tools.file.exists(svRDefaultInterpreter) == sv.tools.file.TYPE_NONE) {
+	// We don't warn the user that current R is not found here because Komodo
+	// is still loading. Will be rechecked on time in sv.command.startR()
+	sv.prefs.setString("svRDefaultInterpreter", "", true);
+	svRDefaultInterpreter = "";
 }
-
-// Set a string preference
-sv.prefs.setString = function (pref, value, overwrite) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"].
-		getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	if (overwrite == false & prefs.hasStringPref(pref)) return;
-	prefs.setStringPref(pref, value);
-}
-
-// Display a dialog box to change a preference string
-sv.prefs.askString = function (pref, defvalue) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
-		.getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	// If defvalue is defined, use it, otherwise, use current pref value
-	if (defvalue == null & prefs.hasStringPref(pref))
-		defvalue = prefs.getStringPref(pref);
-	if (defvalue == null) defvalue == "";
-	// Display a dialog box to change the preference value
-	newvalue = ko.dialogs.prompt("Change preference value for:", pref,
-		defvalue, "SciViews-K preference", "svPref" + pref)
-	if (newvalue != null) prefs.setStringPref(pref, newvalue);
+// If no default R interpreter defined, try to get reasonable default one
+if (svRDefaultInterpreter == "") {
+	// This is platform-dependent...
+	if (navigator.platform.indexOf("Win") === 0) {
+		svRDefaultInterpreter = sv.tools.file.whereIs("Rgui");
+		if (svRDefaultInterpreter) {
+			sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter,
+				true);
+			sv.prefs.setString("svRApplication", "r-gui", true);		
+		}
+	} else { // Linux or Mac OS X
+		svRDefaultInterpreter = sv.tools.file.whereIs("R");
+		if (svRDefaultInterpreter) {
+			// Check if GnomeTerm Konsole or xfce4term are there, use them
+			if (sv.tools.file.exists("gnome-terminal") !=
+				sv.tools.file.TYPE_NONE) {
+				sv.prefs.setString("svRApplication", "r-gnome-term", true);
+			} else if (sv.tools.file.exists("konsole") !=
+				sv.tools.file.TYPE_NONE) {
+				sv.prefs.setString("svRApplication", "r-kde-term", true);
+			} else if (sv.tools.file.exists("xfce4-terminal") !=
+				sv.tools.file.TYPE_NONE) {
+				sv.prefs.setString("svRApplication", "r-xfce4-term", true);
+			} else { // Use default terminal
+				sv.prefs.setString("svRApplication", "r-terminal", true);
+			}
+			sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter,
+				true);
+		}
+	}
 }
 
 // Simplify update of MRU lists
@@ -126,38 +167,12 @@ sv.prefs.tip = function (arg, tip) {
 	sv.prefs.setString("dialog-tip-" + arg, tip, true);
 }
 
-//// Preferences (default values, or values reset on each start) ///////////////
-
-// Define default socket ports for the client and server, and other parameters
-// R interpreter
-sv.prefs.checkAll(false);
-
-var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
-//TODO: Rework this with respect to Mac and R.app
-// Default R interpreter Id: use a reasonable default, given the platform
-if (navigator.platform.indexOf("Win") === 0) {
-	sv.prefs.setString("svRApplication", "r-gui", false);
-	if (!svRDefaultInterpreter)
-		svRDefaultInterpreter = sv.tools.file.whereIs("Rgui");
-} else {
-	sv.prefs.setString("svRApplication", "r-terminal", false);
-	if (!svRDefaultInterpreter)
-		svRDefaultInterpreter = sv.tools.file.whereIs("R");
-}
-// PhG: this must disappear: it causes trouble on Mac and with HTTP server!!!
-//sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter, 
-//	!sv.prefs.getString("svRDefaultInterpreter", "r-gui"));
-//sv.prefs.setString("sciviews.client.type", "socket", true); // DEBUG: Force "socket"
-
-
-// This is required by sv.helpContext() for attaching help to snippets (hack!)
+// This is required by sv.helpContext() for attaching help to snippets
 // Create empty preference sets to be used with snippet help system hack
 // [[%pref:R-help:value]] which displays nothing when the snippet is used
-// but can be used to retrieve value to display a particular help page
-// for this snippet
+// but can be used to retrieve value to display a particular snippet help page
 // Help page triggered by a given URL
 sv.prefs.setString("URL-help", "", true);
-
 // R HTML help pages triggered with '?topic'
 sv.prefs.setString("R-help", "", true);
 // Help page on the R Wiki
@@ -189,10 +204,7 @@ sv.prefs.mru("factor", true, "");
 sv.prefs.mru("factor2", true, "");
 sv.prefs.mru("blockFactor", true, "");
 
-
 //// (re)initialize a series of MRU for snippets' %ask constructs //////////////
-// TODO: defaultMRU for ts, data, table, ...
-
 // dec argument, like in read.table()
 sv.prefs.mru("dec", true, '"."|","', "|");
 
@@ -210,9 +222,6 @@ sv.prefs.mru("pkgdata", false,
 	'morley|mtcars|Orange|OrchardSprays|PlantGrowth|pressure|Puromycin|' +
 	'quakes|randu|rock|sleep|stackloss|swiss|Theoph|ToothGrowth|trees|' +
 	'USArrests|USJudgeRatings|warpbreaks|women', "|");
-
-// TODO... Various examples of itemIndex, subset and expression
-// TODO... List of function, descfun and transfun
 
 //// Various examples of formulas //////////////////////////////////////////////
 sv.prefs.mru("formula", false,
@@ -279,10 +288,9 @@ sv.prefs.mru("lwd", true, '1|2|3', "|");
 // Notch (for boxplot)
 sv.prefs.mru("notch", true, 'TRUE|FALSE', "|");
 
-
 //// various mrus for 'car' graphs /////////////////////////////////////////////
 sv.prefs.mru("reg.line", true, 'FALSE|lm', "|");
 sv.prefs.mru("smooth", true, 'TRUE|FALSE', "|");
 sv.prefs.mru("diagonal", true,
-    '"density"|"histogram"|"boxplot"|"qqplot"|"none"', "|");
+	'"density"|"histogram"|"boxplot"|"qqplot"|"none"', "|");
 sv.prefs.mru("envelope", true, '0.90|0.95|0.99|0.999', "|");

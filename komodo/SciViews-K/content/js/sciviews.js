@@ -1020,7 +1020,7 @@ if (typeof(sv.log) == 'undefined') sv.log = {};
 //// Show Komodo log
 //sv.log.show();
 
-// Installs toolboxes
+// Installs R reference toolbox
 sv.checkToolbox = function () {
 	var svFile = sv.tools.file;
 
@@ -1032,9 +1032,15 @@ sv.checkToolbox = function () {
 		return;
 	}
 
+	// Ask for confirmation first
+	if (ko.dialogs.okCancel("(Re)install the R reference toolbox...", "OK",
+		"This will possibly overwrite existing R reference " +
+		"toolbox. Note that this may take some time. Proceed?",
+		"R reference installation") != "OK") return;
+
 	// otherwise, look for version 5 (kpf) toolboxes (DEPRECATED)
 	ko.statusBar.AddMessage(
-		sv.translate("(Re-)installing SciViews-K toolboxes..."), "SciViews",
+		sv.translate("(Re-)installing R reference toolbox..."), "SciViews",
 		3000, true);
     try {
 		var path, tbxs;
@@ -1078,13 +1084,13 @@ sv.checkToolbox = function () {
 		if (tbxMgr) tbxMgr.view.reloadToolsDirectoryView(-1);
 		
 		//Message prompting for removing old or duplicated toolboxes
-		sv.alert(sv.translate("Toolboxes %S have been added. " +
+		sv.alert(sv.translate("Toolbox %S is added. " +
 			"To avoid conflicts, you should remove any previous or duplicated " +
-			"versions. To update the toolbars, restart Komodo.", "\"" +
+			"versions.", "\"" +
 			tbxs.join("\" and \"") + "\""));
 	} catch(e) {
 		sv.log.exception(e,
-			"Error while installing the SciViews-K & R reference toolboxes");
+			"Error while installing the R reference toolbox");
     }
 	finally {
 		sv.showVersion = true;
@@ -1094,11 +1100,15 @@ sv.checkToolbox = function () {
 // Use toolbox.zip file in 'defaults', unpack to toolbox directory
 // appending version string in root folders names
 sv.checkToolbox2 = function (path) {
+	// Ask for confirmation first
+	if (ko.dialogs.okCancel("(Re)install the R reference toolbox...", "OK",
+		"This will possibly overwrite existing R reference " +
+		"toolbox. Note that this may take some time. Proceed?",
+		"R reference installation") != "OK") return;
+	
 	ko.statusBar.AddMessage(
-		sv.translate("(Re-)installing SciViews-K toolboxes..."),
+		sv.translate("(Re-)installing R reference toolbox..."),
 		"SciViews", 3000, true);
-	ko.dialogs.alert("SciViews-K toolboxes will be installed now." +
-		" This may take some time.");
 
 	var svFile = sv.tools.file;
 	if(!path) path = svFile.path("ProfD", "extensions",
@@ -1119,9 +1129,11 @@ sv.checkToolbox2 = function (path) {
 
 	// Need to replace name of top directories anyway, to avoid overwriting ones
 	// from previous version, append a short random string to make it unique
-	var pathRx = /^([^\/]+)/;
-	var pathReplacePat =  "$1_" + sv.version + "_" +
-		Math.floor(Math.random() * 65536).toString(36);
+//	var pathRx = /^([^\/]+)/;
+	//var pathReplacePat =  "$1_" + sv.version + "_" +
+	//	Math.floor(Math.random() * 65536).toString(36);
+		
+//	var pathReplacePat =  "$1 ";
 
 	var fTargetDir = svFile.getfile("TmpD", "svtoolbox");
 	if (fTargetDir.exists()) fTargetDir.remove(true);
@@ -1135,12 +1147,13 @@ sv.checkToolbox2 = function (path) {
 	while (entries.hasMore()) {
 		entryName = entries.getNext();
 		//Note, renaming directory works only if there is no .folderdata:
-		outFile = svFile.getfile(targetDir, entryName.replace(pathRx,
-			pathReplacePat));
+//		outFile = svFile.getfile(targetDir, entryName.replace(pathRx,
+//			pathReplacePat));
+		outFile = svFile.getfile(targetDir, entryName);
 		isFile = !(zipReader.getEntry(entryName).isDirectory);
 		svFile.getDir(outFile, isFile, false);
 		// Careful! This replaces current folders in 'tools' directory
-		if(isFile) zipReader.extract(entryName, outFile);
+		if (isFile) zipReader.extract(entryName, outFile);
 	}
 	zipReader.close();
 
@@ -1160,7 +1173,7 @@ sv.checkToolbox2 = function (path) {
 		toolPath = os.path.relpath(tbxMgr.view.getPathFromIndex(i),
 			toolsDirectory);
 		if (tbxs.indexOf(toolPath) != -1) {
-			toolName = tbxMgr.view.getCellText(i, {}) + " (" + sv.version + ")";
+			toolName = tbxMgr.view.getCellText(i, {}); // + " (" + sv.version + ")";
 			tbxNames.push(toolName);
 			try { tbxMgr.view.renameTool(i, toolName) } catch(e) {
 				// This gives error on Linux. Bug in ko.toolbox2?
@@ -1173,9 +1186,9 @@ sv.checkToolbox2 = function (path) {
 		}
 	}
 
-	sv.alert(sv.translate("Toolboxes %S have been added. " +
+	sv.alert(sv.translate("Toolbox %S is added. " +
 		"To avoid conflicts, you should remove any previous or duplicated " +
-		"versions. To update the toolbars, restart Komodo.", "\"" +
+		"versions.", "\"" +
 		tbxNames.join("\" and \"") + "\""));
 }
 
@@ -1238,10 +1251,30 @@ sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 	if ((ko.toolbox2 === undefined)) {
 		try {
 			sv.toggleById("r_uilevel", true);
+			// The toolbar is wrong because it is a toolbar in Komodo 5,
+			// but a toolbaritem in Komodo 6... Fix this now!
+			var Rtoolbaritem = document.getElementById("RToolbar");
+			var Rtoolbar = document.createElement("toolbar");
+			Rtoolbar.setAttribute("class", "chromeclass-toolbar");
+			Rtoolbaritem.setAttribute("id", "OldRToolbar");
+			Rtoolbar.setAttribute("id", "RToolbar");
+			Rtoolbar.setAttribute("broadcaster", "cmd_viewrtoolbar");
+			Rtoolbar.setAttribute("grippyhidden", "true");
+			Rtoolbar.setAttribute("align", "center");
+			Rtoolbar.setAttribute("persist", "hidden collapsed buttonstyle");
+			Rtoolbar.setAttribute("buttonstyle", "pictures");
+			Rtoolbar.setAttribute("tooltiptext", "R Toolbar");
+			Rtoolbar.setAttribute("mode", "icons");
+			Rtoolbar.setAttribute("insertbefore", "toolsToolbar");
+			var tb = Rtoolbaritem.firstChild;
+			while (tb) {
+				Rtoolbar.appendChild(tb);
+				tb = Rtoolbaritem.firstChild;
+			}
+			Rtoolbaritem.parentNode.replaceChild(Rtoolbar, Rtoolbaritem);
 		} catch (e) { }
 		return;
 	}
-	
 	
 	// Retrieve or ask the desired uilevel
 	if (level === undefined || level == null) {
@@ -1365,9 +1398,7 @@ sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 	sv.toggleById("cmd_transientMarkExchangeWithPoint", level<3);
 	sv.toggleById("cmd_transientMarkMoveBack", level<3);
 	//sv.toggleById("Tasks:svUnitAbout", level<3);
-	
 	//sv.toggleById("toolboxView_AddItem", level<3);
-	
 	sv.toggleById("helpLanguagesMenu", level<4);
 	sv.toggleById("menu_tryKomodoIDE", level<4);
 	sv.toggleById("menu_helpCommunity", level<4);

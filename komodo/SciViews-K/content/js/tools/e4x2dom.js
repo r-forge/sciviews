@@ -14,6 +14,13 @@
 // Define the 'sv.tools.e4x2dom' namespace
 if (typeof(sv.tools.e4x2dom) == 'undefined') sv.tools.e4x2dom = {};
 
+var HTML = "http://www.w3.org/1999/xhtml";
+var XUL  = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+var SVG  = "http://www.w3.org/2000/svg";
+var RDF  = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+
+default xml namespace = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+
 // Translate e4x (JavaScript) node into a DOM node
 sv.tools.e4x2dom.importNode = function (e4x, doc) {
 	var me = this.importNode, xhtml, domTree, importMe;
@@ -66,10 +73,3 @@ sv.tools.e4x2dom.d4e = function (domNode) {
 	var xmls = new XMLSerializer();
 	return(new XML(xmls.serializeToString(domNode)));
 }
-
-var HTML = "http://www.w3.org/1999/xhtml";
-var XUL  = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-var SVG  = "http://www.w3.org/2000/svg";
-var RDF  = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-
-default xml namespace = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";

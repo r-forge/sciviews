@@ -38,12 +38,13 @@ the terms of any one of the MPL, the GPL or the LGPL.
 <?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
 
 <overlay id="SciViewsPrefOverlay"
-xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <treechildren container="false" id="languagesChildren">
     <treeitem container="false" id="svPrefRItem">
       <treerow>
-	<treecell class="treecell-indent" url="chrome://sciviewsk/content/pref-R.xul"
-		  id="" label="R"/>
+				<treecell class="treecell-indent"
+					url="chrome://sciviewsk/content/pref-R.xul"
+					id="" label="R"/>
 <!--
 	TODO: Help could be added here with helptag="r_configuration",
 	but will probably need to manipulate RDF data in
