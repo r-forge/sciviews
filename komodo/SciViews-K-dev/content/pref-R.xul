@@ -151,6 +151,12 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 						oncommand="PrefR_UpdateCranMirrors(false);" />
 			</hbox>
 		</vbox>
+		<vbox>
+			<hbox align="center">
+				<label value="Remote help url:" control="r.remote.help" />
+				<textbox id="r.remote.help" pref="true" width="222" />
+			</hbox>
+		</vbox>
 	</groupbox>
 
 	<hbox>

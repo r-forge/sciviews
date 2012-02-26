@@ -235,43 +235,26 @@ this.openHelp = function (uri) {
 			if (!isUri) uri = "file://" + uri;
 		}
 	} else {
-		uri = ""; // home page will be shown
+		try {
+			uri = sv.rconn.evalAtOnce("cat(getHelpURL())");
+		} catch(e) {
+			uri = sv.pref.getPref('r.remote.help') + 'doc/index.html';
+		}
 	}
 
-	var rhelpTabbed = sv.pref.getPref("rhelp.tabbed", false) == "true";
 	var rHelpXulUri = "chrome://sciviewsk/content/RHelpWindow.xul";
 
-	// Open R-help in a right tab
-	if (rhelpTabbed) {
-		// Make sure tab is visible and select it
-		var tabPanel = document.getElementById("rhelpviewbox");
-		var tab = document.getElementById("rhelp_tab");
-		var tabBox = tabPanel.parentNode.parentNode;
-		tabPanel.hidden = false;
-		tab.hidden = false;
-		tabBox.selectedIndex = tabBox.tabs.getIndexOfItem(tab);
+	_this.RHelpWin = _getWindowByURI(rHelpXulUri);
+	if (!RHelpWin || RHelpWin.closed) {
+		sv.log.debug("Starting R help with page " + uri);
 
-		var RHelpFrame = document.getElementById("rhelpview-frame");
-
-		RHelpFrame.webNavigation.loadURI(rHelpXulUri, null, null, null, null);
-
-		//RHelpFrame.setAttribute("src", rHelpXulUri);
-		RHelpWin = RHelpFrame.contentWindow;
-		RHelpWin.go(uri);
-
+		// try/catch here somehow prevented from storing window
+		// reference in RHelpWin. No idea why...
+		RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
+			"chrome=yes,dependent,resizable=yes," +
+			"scrollbars=yes,status=no,close,dialog=no", sv, uri);
 	} else {
-		_this.RHelpWin = _getWindowByURI(rHelpXulUri);
-		if (!RHelpWin || RHelpWin.closed) {
-			sv.log.debug("Starting R help with page " + uri);
-
-			// try/catch here somehow prevented from storing window
-			// reference in RHelpWin. No idea why...
-			RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
-				"chrome=yes,dependent,resizable=yes," +
-				"scrollbars=yes,status=no,close,dialog=no", sv, uri);
-		} else {
-			RHelpWin.go(uri);
-		}
+		RHelpWin.go(uri);
 	}
 
 	RHelpWin.focus();
