@@ -8,6 +8,8 @@ attach(new.env(), name = "komodoConnection")
 
 with(as.environment("komodoConnection"), {
 
+
+
 	`svPager` <- function (files, header, title, delete.file) {
 		files <- gsub("\\", "\\\\", files[1L], fixed = TRUE)
 		tryCatch(koCmd(sprintf('sv.r.pager("%1$s", "%2$s", %3$s)',
@@ -39,6 +41,7 @@ with(as.environment("komodoConnection"), {
 
 	options(browser = svBrowser, pager = svPager)
 
+
 	# a way round to get the url:
 	#getHelpURL(help("anova")) <- old syntax
 	#getHelpURL("anova") <- new syntax
@@ -46,9 +49,15 @@ with(as.environment("komodoConnection"), {
 		if(tools:::httpdPort == 0L) suppressMessages(tools:::startDynamicHelp(TRUE))
 		help_type <- "html"
 		ret <- NULL
-		oBrowser <- options(browser = function(url) ret <<- url)
+		oBrowser <- options(browser = function(uri) ret <<- uri)
 		on.exit(options(oBrowser))
-		if(mode((cl <- match.call())[[2L]][[1L]]) == "name") { # handle old syntax
+		if(tools:::httpdPort == 0L) return("")
+		if(!length(list(...))) {
+			return(paste("http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html",
+				  sep = ""))
+		}
+		cl <- match.call()
+		if(length(cl) > 1L && mode(cl[[2L]][[1L]]) == "name") { # handle old syntax
 			cl <- cl[[2L]]
 			cl$help_type <- help_type
 			print(eval(cl, .GlobalEnv))
@@ -66,10 +75,6 @@ with(as.environment("komodoConnection"), {
 	src <- dir(pattern = "^[^_].*\\.R$")
 	Rdata <- "startup.RData"
 
-	#lapply(src, function(x) {
-	#	compiler::cmpfile(x, paste(x, "comp", sep = ""))
-	#}
-	#)
 
 	if(file.exists(Rdata) && {
 		mtime <- file.info(c(Rdata, src))[, "mtime"]

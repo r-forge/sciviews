@@ -33,7 +33,11 @@
  ***** END LICENSE BLOCK ***** -->
 
 <!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
-"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+	<!ENTITY % textcontext SYSTEM "chrome://global/locale/textcontext.dtd">
+	%textcontext;
+]>
+
 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
@@ -53,7 +57,8 @@
     width="700" height="500" screenX="20" screenY="20"
     persist="screenX screenY width height"
     style="min-height: 400px; min-width: 300px;">
-<script type="text/javascript">
+<script type="application/javascript" src="chrome://global/content/globalOverlay.js"/>
+<script type="application/javascript">
 <![CDATA[
 
 var sv;
@@ -120,7 +125,7 @@ function search(topic) {
 	sv.r.search(topic);
 }
 
-function onFindCommand (event) {
+function onFindCommand(event) {
 	var button = event.target;
 	if (!button.checked) {
 		find();
@@ -228,6 +233,8 @@ function rHelpBrowserContextOnShow(event) {
 	el.setAttribute("disabled", nothingSelected);
 	document.getElementById("cmd_run_r_code").setAttribute("disabled", nothingSelected);
 
+	goUpdateCommand("cmd_copy");
+
 }
 
 function runSelAsRCode() {
@@ -294,33 +301,30 @@ function _getHomePage(browser, goTo) {
 	var cmd = "";
 	// Use only one type of connection for both client and server!
 	//if (sv.r.server == "http") {
-	if (sv.pref.getPref("sciviews.client.type", "socket") == "http") {
+	/*if (sv.pref.getPref("sciviews.client.type", "socket") == "http") {
         var port = sv.pref.getPref("sciviews.r.port", 8888);
 		var path = "http://127.0.0.1:" + port + "/doc/html/index.html";
 		browser.homePage = sv.helpStartURI = path;
 		//alert(browser.homePage);
 		if (goTo) go(path);
-	} else { // socket, we must start the help server and ask for its port
-	    // Make sure that help is started, but do not open a browser
-	    cmd = 'invisible(capture.output(suppressMessages(help.start(browser = function(...) return())))); ';
+	} else {*/ // socket, we must start the help server and ask for its port
 	    // return the home page of R >= 2.10 help system
-	    cmd += 'cat(paste("\n", "http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = ""))';
+	cmd = 'cat(getHelpURL())';
 
-	    res = sv.r.evalCallback(cmd, function (path) {
-			path = sv.string.removeLastCRLF(path);
-			// Old treatment for R < 2.10
-			//path = sv.file.getfile(path,
-			//	[(isWin ? null : ".R"), "doc", "html", "index.html"]);
-			//path = sv.file.getURI(path);
+	res = sv.r.evalCallback(cmd, function (path) {
+		path = sv.string.removeLastCRLF(path);
+		// Old treatment for R < 2.10
+		//path = sv.file.getfile(path,
+		//	[(isWin ? null : ".R"), "doc", "html", "index.html"]);
+		//path = sv.file.getURI(path);
 
-			// Get just the last line, get rid of the help.start's message
-			path = path.substring(path.lastIndexOf("\n") + 1);
+		// Get just the last line, get rid of the help.start's message
+		path = path.substring(path.lastIndexOf("\n") + 1);
 
-			browser.homePage = sv.helpStartURI = path;
-			//alert(browser.homePage);
-			if (goTo) go(path);
+		browser.homePage = sv.helpStartURI = path;
+		if (goTo) go(path);
 		});
-	}
+	//}
 }
 
 var browserUtils = {};
@@ -472,6 +476,11 @@ function getPPBrowser() rHelpBrowser;
 		   label="Run as R code" desc="Execute selected text in R" accesskey="r" />
   <command id="cmd_rsearch_for" oncommand="rHelpSearch(sv.string.trim(window._content.getSelection().toString()));"
 		   label="Search R for selection" desc="Search R for selected text" accesskey="S" />
+
+  <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
+  <command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')"/>
+
+
 </commandset>
 
 <popupset>
@@ -484,6 +493,17 @@ function getPPBrowser() rHelpBrowser;
 		<menuitem id="menu_cmd_rsearch_for"
 				  command="cmd_rsearch_for"
 				  />
+		<menuseparator />
+		<menuitem id="context-copy"
+				label="&copyCmd.label;"
+				accesskey="&copyCmd.accesskey;"
+				command="cmd_copy"
+				disabled="true"/>
+		<menuitem id="context-selectall"
+				label="&selectAllCmd.label;"
+				accesskey="&selectAllCmd.accesskey;"
+				command="cmd_selectAll"/>
+
 	</menupopup>
 </popupset>
 

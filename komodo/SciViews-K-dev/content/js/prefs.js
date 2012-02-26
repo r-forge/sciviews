@@ -32,10 +32,8 @@ sv.defaultPrefs = {
 	'r.application': '', // XXX this one is of questionable usefulness
 	CRANMirror: 'http://cran.r-project.org/',
 	RHelpCommand: 'javascript:sv.r.help(\"%w\")',
-    'sciviews.pkgs.sciviews' : 'false'
-	//*Future preferences:*
-	//sciviews.rhelp.open_in = [tab, window]
-	//sciviews.r.auto-start
+    'sciviews.pkgs.sciviews' : 'false',
+	'r.remote.help': 'http://finzi.psych.upenn.edu/R/'
 };
 
 //// Set default preferences
