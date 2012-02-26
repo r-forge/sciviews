@@ -207,7 +207,7 @@ sv.misc.closeAllOthers = function () {
  */
 sv.misc.colorPicker = {};
 
-(function() {
+(function () {
 
 var os_prefix = window.navigator.platform.substring(0, 3).toLowerCase();
 
@@ -416,7 +416,8 @@ sv.misc.pathToClipboard = function (unix) {
 }
 
 // Copy UNIX version (using '/' as sep) path of current file to the clipboard
-sv.misc.unixPathToClipboard = function () sv.misc.pathToClipboard(true);
+sv.misc.unixPathToClipboard = function ()
+	sv.misc.pathToClipboard(true);
 
 // Stamp the current text with date - time
 sv.misc.timeStamp = function (format) {

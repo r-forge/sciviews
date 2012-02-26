@@ -6,10 +6,13 @@
 // sv.command.RHelpWin;         // Reference to the R Help window
 // sv.command.configureR();     // Configure the R interpreter
 // sv.command.startR();			// Start the preferred R app and connect to it
+// sv.command.updateRStatus(running); // Update window status about R running
 // sv.command.openPkgManager(); // Open the package manager window
-// sv.command.openHelp(webpage);// Open the R Help window at this web page
-// sv.command.setControllers(); // Set controllers for R related commands
-// sv.command.setKeybindings(clearOnly); // Set SciViews-K default keybindings
+// sv.command.openSessionMgr(); // Open the session manager window
+// sv.command.openHelp(uri);    // Open the R Help window at this web page
+// sv.command.closeHelp();      // Close -help tab
+// sv.command.svController();   // Controller for R related commands
+// sv.command.sourcePlacesSelection()); // Source a R file selected in 'places'
 ///////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') sv = {};
@@ -19,8 +22,10 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 (function () {
 	this.RHelpWin = null;  // A reference to the R Help Window
 	var _this = this;
+	// TODO: code from SciViews-K-dev to integrate
+	//this.RProcess = null;
 
-	// Private methods
+//// Private methods ///////////////////////////////////////////////////////////
 	// Get a window, knowing its URI
 	function _getWindowByURI(uri) {
 		var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']
@@ -54,46 +59,97 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		return(win);
 	}
 
-	// Continuous checking is now disabled - R often hanged
-	function _keepCheckingR (stopMe) {
-		/*
-		//clearInterval(sv.r.testInterval);
-		if (!stopMe) {
-			// checking every second may cause problems when R is busy, changed to 5000
-			//sv.r.testInterval = window.setInterval(sv.r.test, 5000);
-		}
-		//sv.r.running = true;
-		//setTimeout(window.updateCommands, 1000, 'r_app_started_closed');
-		//xtk.domutils.fireEvent(window, 'r_app_started_closed');
-		*/
-	}
-
 	function _isRRunning () {
-		//TODO: temporary solution
-		return(true);
-		//return(sv.r.running);
+		return(sv.r.running);
 	}
 
-	function _RControl_supported () {
-		var currentView = ko.views.manager.currentView;
-		if (!currentView || !currentView.koDoc) return(false);
-		return(_isRRunning() && currentView.koDoc.language == "R");
-	}
+	// TODO: code from SciViews-K-dev to integrate...
+	//function _RControl_supported () {
+	//	var currentView = ko.views.manager.currentView;
+	//	if (!currentView || !currentView.koDoc) return(false);
+	//	//return(_isRRunning() && currentView.koDoc.language == "R");
+	//	return(currentView.koDoc.language == "R");
+	//}
+	//
+	//function _RControlSelection_supported () {
+	//	var currentView = ko.views.manager.currentView;
+	//	if (!currentView || !currentView.scimoz) return(false);
+	//	return (_RControl_supported() &&
+	//		((currentView.scimoz.selectionEnd -
+	//		currentView.scimoz.selectionStart) != 0));
+	//}
+	//
+	//var _observerSvc = Components.classes['@mozilla.org/observer-service;1']
+	//	.getService(Components.interfaces.nsIObserverService);
+	//
+	//function _ProcessObserver (command, process, callback) {
+	//	this._command = command;
+	//	this._process = process;
+	//	this._callback = (callback || function() {});
+	//
+	//	_observerSvc.addObserver(this, 'run_terminated', false);
+	//	try {
+	//		this._process.wait(0);
+	//		this.cleanUp();
+	//	} catch (e) {};
+	//};
+	//_ProcessObserver.prototype = {
+	//	observe: function (child, topic, command) {
+	//		if ('run_terminated' === topic && this._command === command) {
+	//			this.cleanUp();
+	//			this._process = null;
+	//		}
+	//		//else if (topic === 'status_message' && (subject.category == "run_command")
+	//		//	&& ((matches = subject.msg.match(/^(['`"])(.+)\1 returned ([0-9]+).$/)) != null
+	//		//		&& matches[2] == this.command)) {
+	//		//	/*...
+	//		//	TODO: cleanUp - observer status_message
+	//		//	....*/
+	//		//}
+	//	},
+	//	
+	//	cleanUp: function () {
+	//		if (this._command) {
+	//			_observerSvc.removeObserver(this, 'run_terminated');
+	//			this._command = null;
+	//		}
+	//		if (this._process) {
+	//			var processExitCode = this._process.wait(-1),
+	//			processOutput = (this._process.getStdout() ||
+	//				this._process.getStderr());
+	//			this._callback(processExitCode, processOutput, this._process);
+	//			this._process = null;
+	//		}
+	//	},
+	//	
+	//	kill: function () {
+	//		if (this._command) {
+	//			_observerSvc.removeObserver(this, 'run_terminated');
+	//			this._command = null;
+	//		}
+	//		if (this._process) {
+	//			this._process.kill(-1);
+	//			this._process = null;
+	//		}
+	//	}
+	//}
+	//
+	//_RterminationCallback = function (exitCode) {
+	//	// Do something here...
+	//	sv.addNotification("SciViews-R is closed with code " + exitCode,
+	//		2000, true);
+	//	_this.updateRStatus(false);
+	//}
 
-	function _RControlSelection_supported () {
-		var currentView = ko.views.manager.currentView;
-		if (!currentView || !currentView.scimoz) return(false);
-		return (_RControl_supported() &&
-			((currentView.scimoz.selectionEnd -
-			currentView.scimoz.selectionStart) != 0));
-	}
 
+//// Public methods ////////////////////////////////////////////////////////////
 	// Display R interpreter configuration panel
-	this.configure = function () {
+	this.configureR = function () {
 		prefs_doGlobalPrefs("svPrefRItem", true);
 	}
 
 	// Start R
+	// TODO: startR() is different in SciViews-K-dev => look how to rework!
 	this.startR = function () {
 		// Check if R is not already running and servicing on server port
 		if (sv.r.test(false, false, true)) {
@@ -192,15 +248,15 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	function AppTerminateObserver (command) {
 		this.register(command);
 	};
-
+	
 	AppTerminateObserver.prototype = {
 		command: "",
-
+	
 		// This is launched when status message is set, we then check if it was
 		// about terminated application
 		observe: function (subject, topic, data) {
 			var matches;
-
+	
 			if ((subject.category == "run_command") && (matches =
 				subject.msg.match(/^(['`"])(.+)\1 returned ([0-9]+).$/))
 				!= null && matches[2] == this.command) {
@@ -209,7 +265,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				// Do something here like activate/deactivate commands...
 			}
 		},
-
+	
 		register: function (command) {
 			var observerSvc = Components.
 				classes["@mozilla.org/observer-service;1"].
@@ -222,11 +278,11 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			// Possibly refresh the GUI by running SciViews-specific
 			// R task callbacks and make sure R Objects pane is updated
 			//sv.r.evalHidden("try(koRefresh(force = TRUE), silent = TRUE)");
-
+	
 			// This hopefully will be called from R, when it starts:
 			_this.updateRStatus(true);
 		},
-
+	
 		unregister: function () {
 			var observerSvc = Components.
 				classes["@mozilla.org/observer-service;1"].
@@ -238,22 +294,20 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	};
 
 	this.updateRStatus = function (running) {
-		running = !!running;
         // Toggle status if no argument
 		if (running === undefined) {
-            running = !sv.r.running;
+            running = !sv.r.running; // toggle
 		} else {
-			running = true;
+			//running =  new Boolean(running); // does not work. why??
+			running =  !!running; // convert to boolean
 		}
-       // if (running != sv.r.running) {
-			//sv.r.running = running;
-			//sv.r.running = running;
-			//xtk.domutils.fireEvent(window, 'r_app_started_closed');
-			// PhG: these events are disabled for now, because menus are
-			//      sometimes disabled when they shouldn't be!!! Very ennoying!
-			//window.updateCommands('r_app_started_closed');
-			//sv.cmdout.message("R status: " + (running? "" : "not ") + "running" );
-		//}
+		if (running != sv.r.running) {
+			sv.r.running = running;
+			xtk.domutils.fireEvent(window, 'r_app_started_closed');
+			window.updateCommands('r_app_started_closed');
+			sv.addNotification("R is " + (running? "" : "not ") + "running",
+				0, 2000);
+		}
 	}
 
 	this.openPkgManager = function () {
@@ -263,14 +317,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		return(win);
 	}
 
-	this.openSessionMgr = function() {
+	this.openSessionMgr = function () {
 		var win = _getWindowRef("chrome://sciviewsk/content/sessions.xul",
 			"RSessionMgr", "chrome,modal,titlebar,close,centerscreen", true);
 		return(win);
 	}
 
-// sv.command.openHelp - returns reference to the RHelpWindow
-//FIXME: help in tab still buggy
+	//FIXME: help in tab still buggy
 	this.openHelp = function (uri) {
 		var RHelpWin = _this.RHelpWin;
 
@@ -278,23 +331,21 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	    var isWin = navigator.platform.search(/Win\d+$/) === 0;
 
 		if (uri) {
-			// local paths should be of the form: file:///
-			// Philippe, any ideas why sv.tools.file.getfile() returns null on Mac OS X?
-
-			// This should hopefully work on all platforms (it does on Win and Linux)
+			// This should hopefully work on all platforms
 			// First, check if "uri" is an URI already:
-			var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
+			var isUri = uri
+				.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
 			try {
 				if (!isUri) {
 					if (isWin) uri = uri.replace(/\//g, "\\");
 					uri = sv.tools.file.getURI(uri);
 				}
 			} catch (e) {
-				// fallback
+				// Fallback
 				if (!isUri) uri = "file://" + uri;
 			}
 		} else {
-			uri = ""; // home page will be shown
+			uri = ""; // Home page will be shown
 		}
 
 		var rhelpTabbed = sv.prefs.getString("rhelp.tabbed", false) == "true";
@@ -312,12 +363,12 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 			var RHelpFrame = document.getElementById("rhelpview-frame");
 
-			RHelpFrame.webNavigation.loadURI(rHelpXulUri, null, null, null, null);
+			RHelpFrame.webNavigation
+				.loadURI(rHelpXulUri, null, null, null, null);
 
 			//RHelpFrame.setAttribute("src", rHelpXulUri);
 			RHelpWin = RHelpFrame.contentWindow;
-			//RHelpWin.go(uri);
-			// PhG: it seems we could enter in a deadlock situation here
+			// It seems we could enter in a deadlock situation here
 			// => defer display of the page
 			window.setTimeout(sv.command.RHelpWin.go, 10, uri);
 		} else {
@@ -331,8 +382,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 					"chrome=yes,dependent,resizable=yes," +
 					"scrollbars=yes,status=no,close,dialog=no", sv, uri);
 			} else {
-				//RHelpWin.go(uri);
-				// PhG: it seems we could enter in a deadlock situation here
+				// It seems we could enter in a deadlock situation here
 				// => defer display of the page
 				window.setTimeout(sv.command.RHelpWin.go, 10, uri);
 			}
@@ -346,7 +396,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	}
 
 	// Close r-help tab
-	this.closeHelp = function() {
+	this.closeHelp = function () {
 		var tabPanel = document.getElementById("rhelpviewbox");
 		var tab = document.getElementById("rhelp_tab");
 		var tabBox = tabPanel.parentNode.parentNode;
@@ -370,18 +420,16 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
         const XRRunning = 1, XRStopped = 2, XisRDoc = 4, XHasSelection = 8;
         var handlers = {
-                'cmd_svConfigureR': ['sv.command.configure();', 0],
+                'cmd_svConfigureR': ['sv.command.configureR();', 0],
 				'cmd_svInstallRtoolbox': ['sv.checkToolbox();', 0],
 				'cmd_svUIlevel': ['sv.askUI(true);', 0],
-				'cmd_svStartR': ['sv.command.startR();', 0], // XRStopped],
+				'cmd_svStartR': ['sv.command.startR();', XRStopped],
 				'cmd_svQuitR': ['sv.r.quit();', XRRunning],
 				'cmd_svOpenPkgManager': ['sv.command.openPkgManager();', XRRunning],
                 'cmd_svBrowseWD': ['sv.r.setwd("current", true);', XRRunning],
                 'cmd_svOpenHelp': ['sv.command.openHelp();', XRRunning],
-				// Still incomplete! 'cmd_svSessionMgr': ['sv.command.openSessionMgr();', XRRunning],
-				'cmd_svSessionMgr': ['sv.r.switchSession(true);', XRRunning],
+				'cmd_svSessionMgr': ['sv.command.openSessionMgr();', XRRunning],
                 'cmd_svREscape': ['sv.r.escape();', XRRunning],
-                // 'cmd_svUpdateRInfo': ['sv.socket.rUpdate();', XRRunning],
                 'cmd_svRRunAll': ['sv.r.send("all");', XisRDoc | XRRunning],
                 'cmd_svRSourceAll': ['sv.r.source("all");', XisRDoc | XRRunning],
                 'cmd_svRRunBlock': ['sv.r.send("block");', XisRDoc | XRRunning],
@@ -426,11 +474,6 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				'cmd_svRSaveGraphPNG': ['sv.r.saveGraph("png16m");', XRRunning]
         }
 
-        // Temporary
-        function _isRRunning () {
-            return(true);
-        }
-
         function _isRCurLanguage () {
             var view = ko.views.manager.currentView;
             if (!view || !view.document) return(false);
@@ -440,50 +483,30 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
         function _hasSelection () {
             var view = ko.views.manager.currentView;
             if (!view || !view.scimoz) return(false);
-            return ((view.scimoz.selectionEnd - view.scimoz.selectionStart) != 0);
+            return(
+				(view.scimoz.selectionEnd - view.scimoz.selectionStart) != 0);
         }
 
         function svController () {}
-
 		svController.prototype = new Controller();
-
 		svController.prototype.constructor = svController;
-
 		svController.prototype.destructor = function () { }
-
         svController.prototype.isCommandEnabled = function (command) {
-            if(!(command in handlers)) return(false);
-			return(true);
+            if (!(command in handlers)) return(false);
+			var test = handlers[command][1];
+			return(
+				(((test & XRRunning) != XRRunning) || _isRRunning())
+				&& (((test & XRStopped) != XRStopped) || !_isRRunning()));
 		}
-            //var test = handlers[command][1];
-            // PhG: since _isRRunning() returns always true, we are currently
-			// NOT able to start R!
-			// KB: Yes, but startR is enabled by on Komodo load and event
-			// "r_app_started_closed" is never fired.
-			//return (((test & XRRunning) != XRRunning) || _isRRunning())
-			//&& (((test & XRStopped) != XRStopped) || !_isRRunning())
-				// PhG: it is NOT the program, but the user who decides when it possible
-				// to send a command to R... There are possibles situations where
-				// executable R code live somewhere else than in a .R document
-				// Let's think at examples in .Rd files, <code R> sections in a
-				// wiki page, etc.
-				// Thus, for the nth time, I don't want this restriction on commands
-				// running code to R: I want them available EVERYWHERE!
-				//&& (((test & XisRDoc) != XisRDoc) || true) //_isRCurLanguage())
-				//&& (((test & XHasSelection) != XHasSelection) || _hasSelection()));
-        //}
-
         svController.prototype.supportsCommand = svController.prototype
 			.isCommandEnabled;
-
         svController.prototype.doCommand = function (command) {
             if (command in handlers) return(eval(handlers[command][0]));
-            return (false);
+            return(false);
         }
-
         window.controllers.appendController(new svController());
         //sv.log.debug("Controllers has been set.");
-}
+	}
 
 // Code below is for extra items in editor context menu (eg. "run selection"),
 // Commented out because it is still buggy
@@ -509,27 +532,29 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	// preserving user modified ones and avoiding key conflicts
 	// Note: we change only the current scheme at startup
     //       if it is not writable it is copied with a suffix
-
 	function _setKeybindings (clearOnly) {
-		var bindingFile;
-		// On Mac OS X, binding is slightly different (e.g., Ctrl replaced by Meta)
-		if (navigator.platform.substr(0, 3) == "Mac") {
-			bindingFile = "chrome://sciviewsk/content/default-keybindings-mac.kkf";
-		} else {
-			bindingFile = "chrome://sciviewsk/content/default-keybindings.kkf";
-		}
 		var kbMgr = ko.keybindings.manager;
+		var svSchemeDefault;
 		try {
-			var svSchemeDefault = sv.tools.file.readURI(bindingFile);
+			// On Mac OS X, binding is different (e.g., Ctrl replaced by Meta)
+			if (navigator.platform.substr(0, 3) == "Mac") {
+				svSchemeDefault = sv.tools.file
+					.readURI("chrome://sciviewsk/content/keybindings-mac.kkf");
+			} else {
+				svSchemeDefault = sv.tools.file
+					.readURI("chrome://sciviewsk/content/keybindings.kkf");
+			}
 		} catch(e) {
-			return false;
+			return(false);
 		}
+		if (!svSchemeDefault) return(false);
 
 		// If current config is not writable, clone it (with a suffix)
 		var currentConfiguration = kbMgr.currentConfiguration;
 		if (!kbMgr.configurationWriteable(currentConfiguration)) {
 			currentConfiguration =
-				kbMgr.makeNewConfiguration(currentConfiguration + " (SciViews-K)");
+				kbMgr.makeNewConfiguration(currentConfiguration +
+				" (SciViews-K)");
 		}
 
 		//from: gKeybindingMgr.parseConfiguration
@@ -549,12 +574,11 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		}
 
 		var svKeysDefault = _getSvKeys (svSchemeDefault, "cmd_sv");
-
-		if(clearOnly) {
-			for(var i in svKeysDefault) kbMgr.clearBinding(i, "", false);
+		if (clearOnly) {
+			for (var i in svKeysDefault) kbMgr.clearBinding(i, "", false);
 		} else {
 			var keysequence;
-			for(var i in svKeysDefault) {
+			for (var i in svKeysDefault) {
 				keysequence = svKeysDefault[i].split(/, /);
 				if (!kbMgr.usedBy(keysequence).length) {
 					kbMgr.assignKey(i, keysequence, '');
@@ -562,22 +586,114 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				}
 			}
 		}
+		//kbMgr.saveAndApply(ko.prefs);
 		kbMgr.saveCurrentConfiguration();
 		kbMgr.loadConfiguration(kbMgr.currentConfiguration, true);
-		return true;
+		return(true);
 	}
 
-    this.sourcePlacesSelection = function sv_sourcePlacesSelection() {
+    this.sourcePlacesSelection = function sv_sourcePlacesSelection () {
         var files = ko.places.manager.getSelectedItems()
             .filter(function(x)(x.name.search(/\.[Rr]$/) != -1))
             .map(function(x) x.file.path);
         if (!files.length) return;
-        var cmd = files.map(function(x) "source('" + sv.tools.string.addslashes(x) +"')" )
-            .join("\n");
+        var cmd = files.map(function(x) "source('" +
+			sv.tools.string.addslashes(x) +"')" ).join("\n");
         sv.r.eval(cmd);
     }
+	
+	// TODO: code from SciViews-K-dev to be integrated!
+	//function _str(sString) sString.QueryInterface(Components.interfaces
+	//	.nsISupportsString).data;
+	//
+	//this.getRProc = function(property) {
+	//	if (!property) property = "CommandLine";
+	//
+	//	var svUtils = Components.classes["@sciviews.org/svUtils;1"]
+	//		.createInstance(Components.interfaces.svIUtils);
+	//	var procList = svUtils.getproc(property);
+	//
+	//	proc = [];
+	//	while(procList.hasMoreElements()) proc.push(_str(procList.getNext()));
+	//	return proc;
+	//}
+	//
+	//this.places = {
+	//	sourceSelection: function sv_sourcePlacesSelection() {
+	//		if(!sv.r.running) return;
+	//		var files = ko.places.manager.getSelectedItems()
+	//			.filter(function(x) (x.file.isLocal && x.file.ext.toLowerCase() == ".r"))
+	//			.map(function(x) x.file.path);
+	//		if (!files.length) return;
+	//		var cmd = files.map(function(x) "source('" +
+	//			sv.string.addslashes(x) +"')" ).join("\n");
+	//		sv.rconn.eval(cmd, function(z) {
+	//			sv.rbrowser.smartRefresh(true);
+	//			}, false);
+	//	},
+	//
+	//	get anyRFilesSelected()
+	//		sv.r.running &&
+	//		ko.places.manager.getSelectedItems().some(function(x)
+	//			x.file.isLocal &&
+	//			x.file.ext.toLowerCase() == ".r"),
+	//
+	//	loadSelection: function sv_loadPlacesSelection() {
+	//		if(!sv.r.running) return;
+	//		var files = ko.places.manager.getSelectedItems()
+	//			.filter(function(x) (x.file.isLocal &&
+	//				// for '.RData', .ext is ''
+	//				(x.file.ext || x.file.leafName).toLowerCase() == ".rdata"))
+	//			.map(function(x) x.file.path);
+	//		if (!files.length) return;
+	//		var cmd = files.map(function(x) "load('" +
+	//			sv.string.addslashes(x) +"')" ).join("\n");
+	//		sv.rconn.eval(cmd, function(z) {
+	//			sv.rbrowser.smartRefresh(true);
+	//			}, false);
+	//	},
+	//
+	//	get anyRDataFilesSelected()
+	//		sv.r.running &&
+	//		ko.places.manager.getSelectedItems().some(
+	//			function(x) x.file.isLocal &&
+	//			(x.file.ext || x.file.leafName).toLowerCase() == ".rdata")
+	//
+	//}
+	//
+	////}
+	//// TODO: move this to sv.onLoad:
+	//this.onLoad = function(event) {
+	//	setTimeout(function() {
+	//		_setControllers();
+	//		_this.updateRStatus(false); // XXX: workaround for some items in
+	//									//'cmdset_rApp' commandset being grayed out
+	//									//at startup...
+	//		_this.updateRStatus(sv.rconn.testRAvailability(false));
+	//		if(sv.r.running) sv.rbrowser.smartRefresh(true);
+	//
+	//		// For completions
+	//		var cuih = ko.codeintel.CompletionUIHandler;
+	//		cuih.prototype.types.argument = cuih.prototype.types.interface;
+	//		cuih.prototype.types.environment = cuih.prototype.types.namespace;
+	//		cuih.prototype.types.file = "chrome://sciviewsk/skin/images/cb_file.png";
+	//	}, 600);
+	//
+	//
+	//	var osName = Components.classes['@activestate.com/koOs;1']
+	//		.getService(Components.interfaces.koIOs).name;
+	//
+	//	if(!_setKeybindings(false, osName)) // use system specific keybindings
+	//		_setKeybindings(false, '') // fallback - use default
+	//
+	//	sv.rconn.startSocketServer();	
 
 	addEventListener("load", _setKeybindings, false);
-	addEventListener("load", function() setTimeout(_setControllers, 600), false);
+	addEventListener("load", function ()
+		setTimeout(_setControllers, 600), false);
 
 }).apply(sv.command);
+
+// XXX: for DEBUG only
+//sv.getScimoz = function sv_getScimoz ()
+//ko.views.manager.currentView? ko.views.manager.currentView.scimoz : null;

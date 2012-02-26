@@ -22,6 +22,7 @@ var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
 	.getService(Components.interfaces.nsIWindowMediator);
 
 // This function patches targetted Komodo windows after they load
+// TODO: consider nex icons introduced in Komodo 6 and 7!
 function svWindowPatcher () {
 	var win = wm.getMostRecentWindow(null);
 	var XUL = win.location.href;

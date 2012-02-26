@@ -42,6 +42,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 (function () {
 	// Default file encoding to use
+	var _this = this;
 	this.defaultEncoding = "utf8";
 	this.TYPE_DIRECTORY = 2;
 	this.TYPE_FILE = 1;
@@ -49,7 +50,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 	// Read a file with encoding
 	this.read = function (filename, encoding) {
-		if (!encoding) encoding = this.defaultEncoding;
+		if (!encoding) encoding = _this.defaultEncoding;
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
 		var fis = Components.classes["@mozilla.org/network/file-input-stream;1"]
@@ -81,7 +82,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 	// Write in a file with encoding
 	this.write = function (filename, content, encoding, append) {
-		if (!encoding) encoding = this.defaultEncoding;
+		if (!encoding) encoding = _this.defaultEncoding;
 		append = append? 0x10 : 0x20;
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
@@ -106,22 +107,22 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		}
 	}
 
-	// Checks for file existence, returns 2 for dir, 1 for file, otherwise 0
+	// Check for file existence, returns 2 for dir, 1 for file, otherwise 0
 	this.exists = function (path) {
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
 		try {
 			file.initWithPath(path);
-		} catch(e) { return(this.TYPE_NONE); }
+		} catch(e) { return(_this.TYPE_NONE); }
 
 		if (file.exists()) {
 			if (file.isDirectory()) {
-				return(this.TYPE_DIRECTORY);
+				return(_this.TYPE_DIRECTORY);
 			} else if (file.isFile()) {
-				return(this.TYPE_FILE);
+				return(_this.TYPE_FILE);
 			}
 		}
-		return(0);
+		return(_this.TYPE_NONE);
 	}
 
 	// Create unique temporary file, accessible by all users; returns its name
@@ -148,25 +149,27 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		if (dirName == "~")
 			dirName = (navigator.platform.indexOf("Win") == 0)? "Pers" : "Home";
 		try {
-			file = Components
-				.classes["@mozilla.org/file/directory_service;1"]
-				.getService(Components.interfaces.nsIProperties)
-				.get(dirName, Components.interfaces.nsILocalFile)
-				.path;
-		} catch(e) {
-			// If above fails, try Komodo directories too:
-			var dirs = Components.classes['@activestate.com/koDirs;1']
-				.getService(Components.interfaces.koIDirs);
-			if (dirs.propertyIsEnumerable(dirName))
-			file = dirs[dirName];
-		}
+			try {
+				file = Components
+					.classes["@mozilla.org/file/directory_service;1"]
+					.getService(Components.interfaces.nsIProperties)
+					.get(dirName, Components.interfaces.nsILocalFile)
+					.path;
+			} catch(e) {
+				// If above fails, try Komodo directories too:
+				var dirs = Components.classes['@activestate.com/koDirs;1']
+					.getService(Components.interfaces.koIDirs);
+				if (dirs.propertyIsEnumerable(dirName))
+				file = dirs[dirName];
+			}
+		} catch(e) {}
 		return(file ? file : dirName);
 	}
 
 	// Create nsILocalFile object from path
 	// concatenates arguments if needed
 	this.getfile = function (path) {
-		path = this.path.apply(this, Array.apply(null, arguments));
+		path = _this.path.apply(_this, Array.apply(null, arguments));
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
 		file.initWithPath(path);
@@ -256,9 +259,10 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 				}
 				return(selfiles);
 			} else {
-				if (noext)
+				if (noext) {
 					for (i in files)
 						files[i] = ospath.withoutExtension(files[i]);
+				}
 				return(files);
 			}
 		} else {
@@ -267,20 +271,14 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		return(null);
 	}
 
+	function _WhichAll (file) {
+		var sysutils = Components.classes['@activestate.com/koSysUtils;1']
+			.getService(Components.interfaces.koISysUtils);
+		return(sysutils.WhichAll(file, {}));
+	}
+
 	// WhereIs is platform-dependent
 	if (navigator.platform.indexOf("Win") == 0) {
-		
-		function _findFileInPath (file) {
-			var os = Components.classes['@activestate.com/koOs;1']
-				.getService(Components.interfaces.koIOs);
-			var dirs = os.getenv("PATH").split(os.pathsep);
-			var res = [];
-			for (var i in dirs)
-				if (os.path.exists(os.path.join(dirs[i], file)))
-					res.push(dirs[i]);
-			return(res.length ? res : null);
-		}
-
 		this.whereIs = function (appName, firstOne) {
 			if (firstOne === undefined) firstOne = false;
 			
@@ -327,7 +325,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 				for (var i in ret) {
 					for (var j in binDir) {
 						app = ret[i] + binDir[j] + appName;
-						if (this.exists(app)) {
+						if (_this.exists(app)) {
 							if (firstOne) {
 								return(app);
 							} else {
@@ -354,7 +352,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 					return(path);
 				} catch(e) {
 					// Fallback: look for app in PATH
-					return(_findFileInPath(appName));
+					return(_WhichAll(appName));
 				}
 			}
 			return (null);
@@ -363,15 +361,8 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	} else { // Not Windows
 		this.whereIs = function (appName, firstOne) {
 			if (firstOne === undefined) firstOne = false;
-			var runSvc = Components.classes["@activestate.com/koRunService;1"]
-				.getService(Components.interfaces.koIRunService);
-			var err = {}, out = {};
-			var res = runSvc.RunAndCaptureOutput("which " + appName,
-				null, null, null, out, err);
-
-			var path = sv.tools.strings.trim(out.value);
-			if (!path) return (null);
-			var res = path.split(" ");
+			res = _WhichAll(appName);
+			if (!res) return (null);
 			if (firstOne) {
 				return(res[0]);
 			} else {
@@ -397,7 +388,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 			if (createFile && !key.exists())
 				key.create(key.NORMAL_FILE_TYPE, 0777);
 		}
-		return key;
+		return(key);
 	}
 
 	// Unzip files

@@ -18,6 +18,13 @@
 
 if (typeof(sv.prefs) == "undefined") sv.prefs = {};
 
+(function () {
+	
+	var prefset = Components.classes["@activestate.com/koPrefService;1"]
+	.getService(Components.interfaces.koIPrefService).prefs;
+
+this.prefset = prefset;
+
 // sv.prefs.defaults[preferenceName] = preferenceValue
 sv.prefs.defaults = {
 	"sciviews.server.socket": "7052",
@@ -74,7 +81,7 @@ sv.prefs.askString = function (pref, defvalue) {
 }
 
 // Set default preferences
-sv.prefs.checkAll = function (revert) {
+sv.prefs.checkAll = function sv_checkAllPref (revert) {
 	var prefset = Components.classes['@activestate.com/koPrefService;1']
 		.getService(Components.interfaces.koIPrefService).prefs;
 	for (var i in sv.prefs.defaults) {
@@ -166,6 +173,8 @@ sv.prefs.mru = function (mru, reset, items, sep) {
 sv.prefs.tip = function (arg, tip) {
 	sv.prefs.setString("dialog-tip-" + arg, tip, true);
 }
+
+}).apply(sv.prefs);
 
 // This is required by sv.helpContext() for attaching help to snippets
 // Create empty preference sets to be used with snippet help system hack

@@ -138,9 +138,9 @@
 	list-style-image: url("chrome://komodo/skin/images/bulletlist.png");
 }
 
-.searchPath-icon:hover{
+/*.searchPath-icon:hover{
 	list-style-image : url("chrome://komodo/skin/images/bulletlist_hover.png");
-}
+}*/
 
 .refresh-icon{
 	list-style-image: url("chrome://komodo/skin/global/images/refresh.png");
@@ -326,3 +326,9 @@
 #sciviews_robjects_filterbox.badRegEx {
 	color: #ea0000;
 }
+
+.languageicon[language="R"],
+treechildren::-moz-tree-image(LanguageR) {
+  list-style-image: url("chrome://sciviewsk/skin/images/R.png");
+}
+

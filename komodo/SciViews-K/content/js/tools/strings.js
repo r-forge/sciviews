@@ -19,24 +19,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define the 'sv.tools.strings' namespace
+if (typeof(sv) == 'undefined') sv = {};
+if (typeof(sv.tools) == 'undefined') sv.tools = {};
 if (typeof(sv.tools.strings) == 'undefined') sv.tools.strings = {};
 
 // Replace line feed and carriage return by 'code'
 sv.tools.strings.replaceCRLF = function (str, code) {
 	// Replace all \r\n by 'code' in cmd
-	str = str.replace(/(\r?\n|\r)/g, code);
+	if (str) str = str.replace(/(\r?\n|\r)/g, code);
 	return(str);
 }
 
 // Remove the last line feed and or carriage return in the text
 sv.tools.strings.removeLastCRLF = function (str) {
-	str = str.replace(/[\n\r]{1,2}$/, "");
+	if (str) str = str.replace(/[\n\r]{1,2}$/, "");
     return(str);
 }
 
 // changes a string to a regular expression
 sv.tools.strings.toRegex = function (str) {
-	str = str.replace(/([\]\(\\\*\+\?\|\{\[\(\)\^\$\.\#])/g, "\\$1")
+	if (str) str = str
+		.replace(/([\]\(\\\*\+\?\|\{\[\(\)\^\$\.\#])/g, "\\$1")
 		.replace(/\t/g, "\\t")	//.replace(/ /, "\\s")
 		.replace(/\n/g, "\\n")	.replace(/\r/g, "\\r")
 		.replace(/\f/g, "\\f");
@@ -58,13 +61,14 @@ sv.tools.strings.filename = function (str) {
 
 sv.tools.strings.addslashes = function (str) {
 	// Original by Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	return(str.replace(/([\\"'])/g, "\\$1")
-		.replace(/\x00/g, "\\0").replace(/\u0000/g, "\\0"));
+	if (str) str.replace(/([\\"'])/g, "\\$1")
+		.replace(/\x00/g, "\\0").replace(/\u0000/g, "\\0");
+	return(str);
 }
-
 
 sv.tools.strings.trim = function (str, which) {
 	if (which === undefined) which == "both";
+	if (!str) return(str)
 	var rx;
 	switch(which) {
 	 case "left":
@@ -73,6 +77,7 @@ sv.tools.strings.trim = function (str, which) {
 	 case "right":
 		rx = /\s+$/g;
 		break;
+	 case "both":
 	 default:
 		rx = /^\s+|\s+$/g;
 		break;

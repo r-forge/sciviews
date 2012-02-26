@@ -194,7 +194,6 @@ sv.r.console.parse_cb = function (data) {
     } 
 }
 
-// TODO: use something else for the history, the R history, a file, mozStorage?
 // TODO: make the history persistant
 sv.r.console.history = [];
 sv.r.console.historyIndex = 0;
