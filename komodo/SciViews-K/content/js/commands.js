@@ -92,7 +92,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	this.configure = function () {
 		prefs_doGlobalPrefs("svPrefRItem", true);
 	}
-	
+
 	// Start R
 	this.startR = function () {
 		// Check if R is not already running and servicing on server port
@@ -101,17 +101,17 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				3000, true);
 			return;
 		}
-		
+
 		var cwd = sv.tools.file.path("ProfD", "extensions",
 			"sciviewsk@sciviews.org", "defaults");
 		var cmd = sv.prefs.getString("svRCommand");
-	
+
 		// Remove /defaults/00LOCK if remained after a fail-start
 		try {
 			var lockFile = sv.tools.file.getfile(cwd, "00LOCK");
 			if (lockFile.exists()) lockFile.remove(true);
 		} catch(e) { }
-	
+
 		// On Mac OS X, R.app is not a file, but a dir!
 		if (!cmd || (sv.tools.file.exists(sv.tools.strings.trim(
 			sv.prefs.getString("svRDefaultInterpreter"))) ==
@@ -128,14 +128,14 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		var isWin = navigator.platform.indexOf("Win") === 0;
 		var id = sv.prefs.getString("svRApplication",
 			isWin? "r-gui" : "r-terminal");
-		
+
 		// Width of R output defined to fit R output panel (min = 66, max = 200)
 		var scimoz = document.getElementById("rconsole-scintilla2").scimoz;
 		var width = (Math.floor(window.innerWidth /
 			scimoz.textWidth(0, "0")) - 7)
 		if (width < 66) width = 66;
 		if (width > 200) width = 200;
-		
+
 		var clientType = sv.prefs.getString("sciviews.client.type", "http");
 		var env = [
 			"koId=" + sv.prefs.getString("sciviews.client.id", "SciViewsK"),
@@ -155,7 +155,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		];
 		var runIn = "no-console";
 		env.push("Rid=" + id);
-	
+
 		switch (id) {
 			case "r-tk":
 				env.push("Rid=R-tk");
@@ -165,22 +165,22 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				if (!XEnv.has("DISPLAY")) env.push("DISPLAY=:0");
 				delete(XEnv);
 				break;
-			
+
 			case "r-terminal":
 				runIn = "new-console";
 				break;
 			default:
 		}
-	
+
 		ko.run.runCommand(window, cmd, cwd, env.join("\n"), false,
 			false, false, runIn, false, false, false);
-	
+
 		// Register observer of application termination
 		this.rObserver = new AppTerminateObserver(cmd);
-		
+
 		// Ensure the client type is correct for everyone
 		sv.socket.setSocketType(clientType);
-		
+
 		// ... make sure to start with a clear R Output window
 		sv.cmdout.clear(false);
 	}
@@ -192,10 +192,10 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	function AppTerminateObserver (command) {
 		this.register(command);
 	};
-	
+
 	AppTerminateObserver.prototype = {
 		command: "",
-		
+
 		// This is launched when status message is set, we then check if it was
 		// about terminated application
 		observe: function (subject, topic, data) {
@@ -209,7 +209,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				// Do something here like activate/deactivate commands...
 			}
 		},
-		
+
 		register: function (command) {
 			var observerSvc = Components.
 				classes["@mozilla.org/observer-service;1"].
@@ -226,7 +226,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			// This hopefully will be called from R, when it starts:
 			_this.updateRStatus(true);
 		},
-		
+
 		unregister: function () {
 			var observerSvc = Components.
 				classes["@mozilla.org/observer-service;1"].
@@ -376,7 +376,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				'cmd_svStartR': ['sv.command.startR();', 0], // XRStopped],
 				'cmd_svQuitR': ['sv.r.quit();', XRRunning],
 				'cmd_svOpenPkgManager': ['sv.command.openPkgManager();', XRRunning],
-                'cmd_svBrowseWD': ['sv.r.setwd("current", true);', XRRunning],  
+                'cmd_svBrowseWD': ['sv.r.setwd("current", true);', XRRunning],
                 'cmd_svOpenHelp': ['sv.command.openHelp();', XRRunning],
 				// Still incomplete! 'cmd_svSessionMgr': ['sv.command.openSessionMgr();', XRRunning],
 				'cmd_svSessionMgr': ['sv.r.switchSession(true);', XRRunning],
@@ -446,11 +446,11 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
         function svController () {}
 
 		svController.prototype = new Controller();
-        
+
 		svController.prototype.constructor = svController;
-        
+
 		svController.prototype.destructor = function () { }
-        
+
         svController.prototype.isCommandEnabled = function (command) {
             if(!(command in handlers)) return(false);
 			return(true);
@@ -507,14 +507,10 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	// Set default keybindings from file
 	// chrome://sciviewsk/content/default-keybindings.kkf
 	// preserving user modified ones and avoiding key conflicts
-	// TODO: we need to change all schemes!!!
-	// TODO: use of gKeybindingMgr could simplify this code
-	function _setKeybindings (clearOnly) {
-		var keybindingSvc = Components
-			.classes["@activestate.com/koKeybindingSchemeService;1"]
-			.getService(Components.interfaces.koIKeybindingSchemeService);
-		//gKeybindingMgr.keybindingSchemeService
+	// Note: we change only the current scheme at startup
+    //       if it is not writable it is copied with a suffix
 
+	function _setKeybindings (clearOnly) {
 		var bindingFile;
 		// On Mac OS X, binding is slightly different (e.g., Ctrl replaced by Meta)
 		if (navigator.platform.substr(0, 3) == "Mac") {
@@ -522,71 +518,53 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		} else {
 			bindingFile = "chrome://sciviewsk/content/default-keybindings.kkf";
 		}
-		var svSchemeDefault = sv.tools.file.readURI(bindingFile);
+		var kbMgr = ko.keybindings.manager;
+		try {
+			var svSchemeDefault = sv.tools.file.readURI(bindingFile);
+		} catch(e) {
+			return false;
+		}
 
-		//gKeybindingMgr.currentScheme.name
-		var currentSchemeName = sv.prefs.getString("keybinding-scheme");
-		var sch = keybindingSvc.getScheme(currentSchemeName);
+		// If current config is not writable, clone it (with a suffix)
+		var currentConfiguration = kbMgr.currentConfiguration;
+		if (!kbMgr.configurationWriteable(currentConfiguration)) {
+			currentConfiguration =
+				kbMgr.makeNewConfiguration(currentConfiguration + " (SciViews-K)");
+		}
 
+		//from: gKeybindingMgr.parseConfiguration
 		var bindingRx = /[\r\n]+(# *SciViews|binding cmd_sv.*)/g;
-
-		//gKeybindingMgr.parseConfiguration
-		if (clearOnly == true) {
-			//gKeybindingMgr.removeCommandsWithPrefix("cmd_sv");
-			sch.data = sch.data.replace(bindingRx, "");
-			sv.log.debug("SciViews keybindings (" + updatedKeys.length +
-				") have been cleared in \"" + currentSchemeName + "\" scheme.");
-		} else {
-			function _getSvKeys (data, pattern) {
-				if (!pattern) pattern = "";
-				var keys = data.match(new RegExp("^binding " + pattern +
-					".*$", "gm"));
-				var res = {};
-				for (var j in keys) {
+		function _getSvKeys (data, pattern) {
+			if (!pattern) pattern = "";
+			var keys = data.match(new RegExp("^binding " + pattern +
+				".*$", "gm"));
+			var res = {};
+			for (var j in keys) {
+				try {
 					keys[j].search(/^binding\s+(\S+)\s+(\S+)$/);
 					res[RegExp.$1] = RegExp.$2;
-				}
-				return(res);
+				} catch(e) { }
 			}
-
-			var svCmdPattern = "cmd_sv";
-			var svKeysDefault = _getSvKeys(svSchemeDefault, svCmdPattern);
-			var svKeysCurrent = _getSvKeys(sch.data, svCmdPattern);
-
-			// Temporarily delete SciViews keybindings
-			sch.data = sch.data.replace(bindingRx, "");
-
-			// Check for key conflicts
-		//	var svKeysCurrentOther = _getSvKeys(sch.data, "");
-		//	var currKeyArr = [];
-		//	for (var k in svKeysCurrentOther)
-		//		currKeyArr.push(svKeysCurrentOther[k]);
-		//	for (var k in svKeysDefault) {
-		//		if (currKeyArr.indexOf(svKeysDefault[k]) != -1)
-		//			delete svKeysDefault[k];
-		//	}
-
-			var newSchemeData = "";
-			var key, updatedKeys = [];
-			for (var k in svKeysDefault) {
-				sv.log.debug(k);
-		// PhG: with these lines, it is impossible to change existing default keys from here!
-		//		if (svKeysCurrent[k]) {
-		//			key = svKeysCurrent[k];
-		//		} else {
-					key = svKeysDefault[k];
-					updatedKeys.push(k);
-		//		}
-				newSchemeData += "binding " + k + " " + key + "\n";
-			}
-			sch.data += "\n\n# SciViews\n" + newSchemeData;
-			sv.log.debug(" SciViews keybindings (" + updatedKeys.length +
-				") have been updated in \"" +
-				currentSchemeName + "\" scheme.");
+			return(res);
 		}
-		sch.save();
-		//gKeybindingMgr.saveAndApply();
-		//gKeybindingMgr.saveCurrentConfiguration();
+
+		var svKeysDefault = _getSvKeys (svSchemeDefault, "cmd_sv");
+
+		if(clearOnly) {
+			for(var i in svKeysDefault) kbMgr.clearBinding(i, "", false);
+		} else {
+			var keysequence;
+			for(var i in svKeysDefault) {
+				keysequence = svKeysDefault[i].split(/, /);
+				if (!kbMgr.usedBy(keysequence).length) {
+					kbMgr.assignKey(i, keysequence, '');
+					kbMgr.makeKeyActive(i, keysequence);
+				}
+			}
+		}
+		kbMgr.saveCurrentConfiguration();
+		kbMgr.loadConfiguration(kbMgr.currentConfiguration, true);
+		return true;
 	}
 
     this.sourcePlacesSelection = function sv_sourcePlacesSelection() {
