@@ -126,39 +126,35 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 	_RterminationCallback = function(exitCode) {
 		// do something here...
-		sv.addNotification("SciViews-R is closed with code" + exitCode, 2000, true);
+		sv.addNotification("SciViews-R is closed with code " + exitCode, 2000, true);
 		_this.updateRStatus(false);
-		//alert("R is closed with code " + exitCode);
 	}
 
 	this.startR = function () {
-		var svfile = sv.tools.file;
-		var svstr = sv.tools.string;
-		
-	
+		var svfile = sv.file;
+		var svstr = sv.string;
+
+
 		if (!sv.pref.getPref("svRCommand")) {
 		    if(ko.dialogs.okCancel(
-			sv.translate("R interpreter is not set in " +
-				     "Preferences. Would you like to do it now?"),
-				"OK", null, "SciViews-K") == "OK") {
-			prefs_doGlobalPrefs("svPrefRItem", true);
+				sv.translate("R interpreter is not set in " +
+						"Preferences. Would you like to do it now?"),
+				   "OK", null, "SciViews-K") == "OK") {
+				prefs_doGlobalPrefs("svPrefRItem", true);
 		    }
 		    return;
-		}		
-		
+		}
+
 		var rDir = svfile.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R");
 
-		svfile.write(svfile.path(rDir, "init.R"),
-			"setwd('"+ svstr.addslashes(sv.pref.getPref("sciviews.session.dir")) + "')\n" +
-			"options(ko.port=" + sv.pref.getPref("sciviews.ko.port", 7052) +
+		svfile.write(svfile.path(rDir, "_init.R"),
+			"setwd('"+ svstr.addslashes(sv.pref.getPref("sciviews.session.dir"))
+				+ "')\n" + "options(ko.port=" +
+				sv.pref.getPref("sciviews.ko.port", 7052) +
 			", ko.host=\"localhost\")\n"
 			);
 
 		var cmd = sv.pref.getPref("svRCommand");
-		var runInConsole = false;
-
-		// sv.tools.file.whereIs("x-terminal-emulator")
-
 		var isWin = navigator.platform.indexOf("Win") === 0;
 		var id = sv.pref.getPref("svRApplication",
 			isWin? "r-gui" : "r-terminal");
@@ -172,32 +168,17 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				if (!XEnv.has("DISPLAY"))	env.push("DISPLAY=:0");
 				XEnv = null;
 			break;
-			//case "r-terminal":
-				//runIn = "new-console";
-				//runInConsole = true;
-			break;
 			default:
 		}
-		//alert(cmd);
 
 		var runSvc = Components.classes['@activestate.com/koRunService;1']
 			.getService(Components.interfaces.koIRunService);
 
-		var process;
-		if(runInConsole) {
-			// XXX: This does not return a process!
-			runSvc.Run(cmd, rDir, env.join("\n"), runInConsole, null);
-			process = null;
-			// Observe = 'status_message'
-			// subject.category = "run_command"
-			// subject.msg = "'%s' returned %s." % (command, retval)
-		} else {
-			process = runSvc.RunAndNotify(cmd, rDir, env.join("\n"), null);
+		var process = runSvc.RunAndNotify(cmd, rDir, env.join("\n"), null);
 			// Observe = 'run_terminated'
 			// subject = child
 			// data = command
-			RProcessObserver = new _ProcessObserver(cmd, process, _RterminationCallback);
-		}
+		RProcessObserver = new _ProcessObserver(cmd, process, _RterminationCallback);
 		this.RProcess = process;
 		_this.updateRStatus(true);
 	}
@@ -207,8 +188,8 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		if (running === undefined) {
             running = !sv.r.running; // toggle
 		} else {
-			running = !!running; // convert to boolean
-			//running = true;
+			//running =  new Boolean(running); // does not work. why??
+			running =  !!running; // convert to boolean
 		}
 		if (running != sv.r.running) {
 			sv.r.running = running;
@@ -241,16 +222,13 @@ this.openHelp = function (uri) {
 	var isWin = navigator.platform.search(/Win\d+$/) === 0;
 
 	if (uri) {
-		// local paths should be of the form: file:///
-		// Philippe, any ideas why sv.tools.file.getfile() returns null on Mac OS X?
-
 		// This should hopefully work on all platforms (it does on Win and Linux)
 		// First, check if "uri" is an URI already:
 		var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
 		try {
 			if (!isUri) {
 				if (isWin) uri = uri.replace(/\//g, "\\");
-				uri = sv.tools.file.getURI(uri);
+				uri = sv.file.getURI(uri);
 			}
 		} catch (e) {
 			// fallback
@@ -400,118 +378,63 @@ window.controllers.appendController(new svController());
 //sv.log.debug("Controllers has been set.");
 }
 
-// Code below is for extra items in editor context menu (eg. "run selection"),
-// Commented out because it is still buggy
-//	function editorContextMenuOnShowing (event) {
-//		//try{
-//
-//		var ids = ["editor-context-sep-sv", "editor-context-sv-r-send-line-sel"];
-//
-//		var langNotR = ko.views.manager.currentView.koDoc.language != "R";
-//		var visibility = langNotR? "collapse" : "visible";
-// /*
-//		for (i in ids)
-//			document.getElementById(ids[i]).style.visibility = visibility;
-//*/
-//		//} catch(e) {}
-//
-//	}
-//var editorContextMenu = document.getElementById("editorContextMenu");
-//editorContextMenu.addEventListener("popupshowing", editorContextMenuOnShowing, false);
 // Set default keybindings from file
 // chrome://sciviewsk/content/default-keybindings.kkf
 // preserving user modified ones and avoiding key conflicts
+// sfx is for platform specific keybindings
+function _setKeybindings (clearOnly, sfx) {
+	if (!sfx) sfx = "";
+	var kbMgr = ko.keybindings.manager;
+	try {
+		var svSchemeDefault = sv.file
+			.readURI("chrome://sciviewsk/content/keybindings" + sfx + ".kkf");
+	} catch(e) {
+		return false;
+	}
+	if (!svSchemeDefault) return false;
 
-function _setKeybindings (clearOnly) {
-	var keybindingSvc = Components
-		.classes["@activestate.com/koKeybindingSchemeService;1"]
-		.getService(Components.interfaces.koIKeybindingSchemeService);
+	var currentConfiguration = kbMgr.currentConfiguration;
+	if (!kbMgr.configurationWriteable(currentConfiguration)) {
+		currentConfiguration =
+			kbMgr.makeNewConfiguration(currentConfiguration + " (R)");
+	}
 
-	//TODO: use of gKeybindingMgr could simplify this code
-	//gKeybindingMgr.keybindingSchemeService
-
-	var svSchemeDefault = sv.tools.file
-		.readURI("chrome://sciviewsk/content/default-keybindings.kkf");
-
-	//gKeybindingMgr.currentScheme.name
-	var currentSchemeName = sv.pref.getPref("keybinding-scheme");
-
-	var sch = keybindingSvc.getScheme(currentSchemeName);
-
-	//gKeybindingMgr.parseConfiguration
+	//from: gKeybindingMgr.parseConfiguration
 	var bindingRx = /[\r\n]+(# *SciViews|binding cmd_sv.*)/g;
-	if (clearOnly != true) {
-		function _getSvKeys (data, pattern) {
-			if (!pattern) pattern = "";
-			var keys = data.match(new RegExp("^binding " + pattern +
-				".*$", "gm"));
-			var res = {};
-			for (var j in keys) {
+	function _getSvKeys (data, pattern) {
+		if (!pattern) pattern = "";
+		var keys = data.match(new RegExp("^binding " + pattern +
+			".*$", "gm"));
+		var res = {};
+		for (var j in keys) {
 			try {
 				keys[j].search(/^binding\s+(\S+)\s+(\S+)$/);
 				res[RegExp.$1] = RegExp.$2;
-			} catch(e) {  // XXX _setKeybindings
-				sv.log.warn("_setKeybindings" + e + "\n*keys[j]=" + keys[j] + "*");
-			}
-			}
-			return(res);
+			} catch(e) { }
 		}
-
-		var svCmdPattern = "cmd_sv";
-		var svKeysDefault = _getSvKeys (svSchemeDefault, svCmdPattern);
-		var svKeysCurrent = _getSvKeys (sch.data, svCmdPattern);
-
-		// Temporarily delete SciViews keybindings
-		sch.data = sch.data.replace(bindingRx, "");
-
-		// Check for key conflicts
-		//var usedbys = this.usedBy([keysequence]);
-		var svKeysCurrentOther = _getSvKeys (sch.data, "");
-		var currKeyArr = [];
-		for (var k in svKeysCurrentOther)
-		currKeyArr.push(svKeysCurrentOther[k]);
-		for (var k in svKeysDefault) {
-			if (currKeyArr.indexOf(svKeysDefault[k]) != -1)
-			delete svKeysDefault[k];
-		}
-
-		var newSchemeData = "";
-		var key, updatedKeys = [];
-		for (var k in svKeysDefault) {
-			//sv.log.debug(k);
-			if (svKeysCurrent[k]) {
-				key = svKeysCurrent[k];
-			} else {
-				key = svKeysDefault[k];
-				updatedKeys.push(k);
-			}
-			newSchemeData += "binding " + k + " " + key + "\n";
-		}
-		sch.data += "\n\n# SciViews\n" + newSchemeData;
-		sv.log.debug(" SciViews keybindings (" + updatedKeys.length +
-			") have been updated in \"" +
-		currentSchemeName + "\" scheme.");
-	} else {
-		//gKeybindingMgr.removeCommandsWithPrefix("cmd_sv");
-		sch.data = sch.data.replace(bindingRx, "");
-		sv.log.debug("SciViews keybindings (" + updatedKeys.length +
-			") have been cleared in \"" + currentSchemeName + "\" scheme.");
+		return(res);
 	}
-	sch.save();
-	//gKeybindingMgr.saveAndApply();
-	//gKeybindingMgr.saveCurrentConfiguration();
 
-	//sv.log.debug("You may need to restart Komodo.");
+	var svKeysDefault = _getSvKeys (svSchemeDefault, "cmd_sv");
 
-	// A (temporary) hack to allow for R autocompletion/calltips to be
-	// triggered with the same key-shortcut as for other languages.
-	// cmd_svRTriggerCompletion will exit for files other than R
-	//var tpc_cmd = document.getElementById("cmd_triggerPrecedingCompletion");
-	//tpc_cmd.setAttribute("oncommand", [tpc_cmd.getAttribute("oncommand"),
-	//	"ko.commands.doCommandAsync('cmd_svRTriggerCompletion',
-	//  event);"].join(";"));
-	//sv.log.debug("Keybindings has been applied.");
+	if(clearOnly) {
+		for(var i in svKeysDefault) kbMgr.clearBinding(i, "", false);
+	} else {
+		var keysequence;
+		for(var i in svKeysDefault) {
+			keysequence = svKeysDefault[i].split(/, /);
+			if (!kbMgr.usedBy(keysequence).length) {
+				kbMgr.assignKey(i, keysequence, '');
+				kbMgr.makeKeyActive(i, keysequence);
+			}
+		}
+	}
+	//kbMgr.saveAndApply(ko.prefs);
+	kbMgr.saveCurrentConfiguration();
+	kbMgr.loadConfiguration(kbMgr.currentConfiguration, true);
+	return true;
 }
+
 
 function _str(sString) sString.QueryInterface(Components.interfaces
 	.nsISupportsString).data;
@@ -536,7 +459,7 @@ this.places = {
 			.map(function(x) x.file.path);
 		if (!files.length) return;
 		var cmd = files.map(function(x) "source('" +
-			sv.tools.string.addslashes(x) +"')" ).join("\n");
+			sv.string.addslashes(x) +"')" ).join("\n");
 		sv.rconn.eval(cmd, function(z) {
 			sv.rbrowser.smartRefresh(true);
 			}, false);
@@ -557,7 +480,7 @@ this.places = {
 			.map(function(x) x.file.path);
 		if (!files.length) return;
 		var cmd = files.map(function(x) "load('" +
-			sv.tools.string.addslashes(x) +"')" ).join("\n");
+			sv.string.addslashes(x) +"')" ).join("\n");
 		sv.rconn.eval(cmd, function(z) {
 			sv.rbrowser.smartRefresh(true);
 			}, false);
@@ -572,8 +495,6 @@ this.places = {
 }
 
 //}
-
-
 // TODO: move this to sv.onLoad:
 this.onLoad = function(event) {
 	setTimeout(function() {
@@ -583,45 +504,44 @@ this.onLoad = function(event) {
 									//at startup...
 		_this.updateRStatus(sv.rconn.testRAvailability(false));
 		if(sv.r.running) sv.rbrowser.smartRefresh(true);
-		
-		
+
 		// For completions
 		var cuih = ko.codeintel.CompletionUIHandler;
 		cuih.prototype.types.argument = cuih.prototype.types.interface;
 		cuih.prototype.types.environment = cuih.prototype.types.namespace;
 		cuih.prototype.types.file = "chrome://sciviewsk/skin/images/cb_file.png";
-		//alert(cuih.prototype.types)		
-		
-		
-
 	}, 600);
-	 _setKeybindings();
+
+
+	var osName = Components.classes['@activestate.com/koOs;1']
+		.getService(Components.interfaces.koIOs).name;
+
+	if(!_setKeybindings(false, osName)) // use system specific keybindings
+		_setKeybindings(false, '') // fallback - use default
 
 	sv.rconn.startSocketServer();
-
-
-
 }
+addEventListener("load", _this.onLoad, false);
+
 
 // Just in case, run a clean-up before quitting Komodo:
-function svCleanup() {
-    sv.rconn.stopSocketServer();
-	// ...
-}
+function svCleanup() sv.rconn.stopSocketServer();
 ko.main.addWillCloseHandler(svCleanup);
 
-addEventListener("load", _this.onLoad, false);
 
 function ObserveR () {
 	var el = document.getElementById('cmd_svRStarted');
 	el.setAttribute("checked", _isRRunning());
 }
-
 addEventListener("r_app_started_closed", ObserveR, false);
-
 
 }).apply(sv.command);
 
+
+
+
+
+
 // XXX: for DEBUG only
-sv.getScimoz = function sv_getScimoz ()
-ko.views.manager.currentView? ko.views.manager.currentView.scimoz : null;
+//sv.getScimoz = function sv_getScimoz ()
+//ko.views.manager.currentView? ko.views.manager.currentView.scimoz : null;

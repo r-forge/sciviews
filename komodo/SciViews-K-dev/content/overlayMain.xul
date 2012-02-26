@@ -56,7 +56,6 @@
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/file.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/sciviews.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/rjson.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/prefs.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/rconnection.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/r.js"/>
@@ -64,9 +63,6 @@
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
 
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/ask.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/interpolate.js"/>
-
 
 
 	<broadcasterset id="broadcasterset_global">
@@ -363,7 +359,7 @@
 			/>
 	</menupopup>
 
-	
+
 <!-- Ko7 -->
 <ko-pane id="workspace_left_area">
 <browser type="ko-widget"
@@ -383,7 +379,14 @@
 	/>
 </ko-pane>
 
-<!--
+<!--<ko-pane id="workspace_right_area">
+<browser type="ko-widget"
+	id="rhelp_tabpanel"
+	label="R Help"
+	src="chrome://sciviewsk/content/RHelpWindow.xul"
+	/>
+</ko-pane>-->
+
 <ko-pane id="workspace_bottom_area">
 <browser type="ko-widget"
 	id="pyshell_tabpanel"
@@ -391,6 +394,5 @@
 	src="chrome://extensiondev/content/pyshell.xul"
 	/>
 </ko-pane>
--->
 
 </overlay>

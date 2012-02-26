@@ -2,7 +2,7 @@
 # Simple communication between R and a client through a socket connection
 # (c) 2011 Kamil Barton
 #
-# Files: 'rserver.R' 'rserver.tcl' 'captureAll.R' (or package svMisc)
+# Files: 'rserver.R' 'rserver.tcl' 'sv_captureAll.R' (or package svMisc)
 # Result is evaluated in R and sent back in JSON format
 # Client should format the data in a following way:
 # - escape newline, carriage returns, formfeeds and backslashes with a backslash
@@ -142,9 +142,9 @@ tcl <- tcltk::tcl
 				ret <- c('\x03', c(expr), '\x02')
 				msg <- 'Parse error'
 			} else {
-				ret <- captureAll(expr, markStdErr = TRUE)
+				ret <- sv_captureAll(expr, markStdErr = TRUE)
 				#browser()
-				#ret <- eval(call("captureAll", expr, markStdErr=TRUE), envir=.GlobalEnv)
+				#ret <- eval(call("sv_captureAll", expr, markStdErr=TRUE), envir=.GlobalEnv)
 				msg <- 'Done'
 				# TODO: later
 				#lapply(unlist(strsplit(c(prevcode, x), "(\r?\n|\r)")), function(entry)
@@ -188,7 +188,7 @@ function() as.character(.Tcl("array names Rserver::Server"))
 }
 #-------------------------------------------------------------------------------
 
-`startServer` <-
+`sv_startServer` <-
 function(port) tcl("Rserver::Start", port)
 
 `listServers` <-
@@ -277,15 +277,15 @@ simpsON <- function(x) {
 	x
 }
 
-# tcl-based JSON - not working properly so far.
-tcJSON <- function(x, msg = "Done") {
-	.Tcl("set result {}")
-	tcl(if(length(x) == 1) "lappend" else "set", "result", x)
-	.Tcl("set retval [dict create]")
-	.Tcl("dict set retval result $result")
-	tcl("dict", "set", "retval", "message", msg)
-	.Tcl("set retval [compile_json {dict result list message string} $retval]")
-}
+## tcl-based JSON - not working properly so far.
+#tcJSON <- function(x, msg = "Done") {
+#	.Tcl("set result {}")
+#	tcl(if(length(x) == 1) "lappend" else "set", "result", x)
+#	.Tcl("set retval [dict create]")
+#	.Tcl("dict set retval result $result")
+#	tcl("dict", "set", "retval", "message", msg)
+#	.Tcl("set retval [compile_json {dict result list message string} $retval]")
+#}
 
 init.Rserver <- function() {
 	if(!file.exists("rserver.tcl")) stop("Cannot find file 'rserver.tcl'")
@@ -293,8 +293,8 @@ init.Rserver <- function() {
 	tcl('source', "compile_json.tcl")
 	tclfun(TclReval, "Rserver::Reval", retval = "retval")
 	tclfun(TclRprint, 'Rserver::Rprint')
-	tclfun(tcJSON, "TestJSON", retval = "retval")
-	cat("tcl functions defined")
+	#tclfun(tcJSON, "TestJSON", retval = "retval")
+	cat("R server (tcl) functions defined \n")
 
 }
 
@@ -303,7 +303,7 @@ init.Rserver <- function() {
 #.init.Rserver()
 
 #===============================================================================
-#startServer(11111)
+#sv_startServer(11111)
 #listConnections()
 #listServers()
 #stopAllServers()

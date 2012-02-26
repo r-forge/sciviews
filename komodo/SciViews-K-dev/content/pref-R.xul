@@ -94,7 +94,7 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 						oninput="PrefR_updateCommandLine(event);"
 					/>
 					<toolbarbutton
-						oncommand="sv.r.help(&quot;Startup&quot;)"
+						oncommand="sv.r.help('Startup')"
 						buttonstyle="pictures" class="help-icon"
 						tooltiptext="Show R Help about the command line" />
 				</hbox>
@@ -144,48 +144,14 @@ class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
 			<hbox align="center">
 				<label value="Default CRAN mirror:" control="CRANMirror" />
 					<menulist id="CRANMirror" sizetopopup="none" width="200"
-					pref="true" prefattribute="value">
+							  pref="true" prefattribute="value">
 					<menupopup maxheight="200" />
 				</menulist>
-				<button label="Refresh list" oncommand="PrefR_UpdateCranMirrors(false);" />
+				<button label="Refresh list"
+						oncommand="PrefR_UpdateCranMirrors(false);" />
 			</hbox>
 		</vbox>
 	</groupbox>
-
-	<groupbox orient="vertical"  align="left" hidden="true">
-		<caption label="Miscellanous"/>
-
-<label value="Startup packages"/>
- <!--KB: Some users (including me) might not want having lots of unnecessary packages loaded at startup -->
-<vbox align="left">
-<description>
-&quot;SciViews-K&quot; needs packages &quot;svGUI&quot;, &quot;svSocket&quot;
-and &quot;svMisc&quot; to be loaded in order for communication with Komodo to be
-possible. The required packages are installed/updated automatically when R is
-started from within Komodo.</description>
-<hbox>
-<checkbox id="sciviews.pkgs.sciviews"
-			label="Load also package &quot;SciViews&quot; at R
-startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
-		   oncommand="PrefR_updateCommandLine(true);"/>
-</hbox>
-</vbox>
-	<separator class="thin"/>
-		<hbox align="center" hidden="true">
-			<label value="Show R help in:" />
-				<radiogroup id="sciviews.rhelp.open_in" disabled="true"
-				pref="false" orient="horizontal">
-					<radio value="window" label="new window" accesskey="E"
-					selected="true" />
-				<radio value="pane" label="right pane" accesskey="P" />
-			</radiogroup>
-		</hbox>
-		<separator class="thin"/>
-		<hbox align="center"  hidden="true">
-			<checkbox id="sciviews.r.auto-start" disabled="true" label="Start R automatically"
-				pref="false" />
-	</hbox>
-</groupbox>
 
 	<hbox>
 		<button label="Show advanced settings (rarely need to be changed)"
@@ -196,7 +162,8 @@ startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
 		<hbox align="center">
 		  <label value="Connection type:" control="sciviews.conn.type" />
 		  <menulist pref="true" id="sciviews.conn.type"
-		   values="socket http" persist="" editable="false" disabled="true">
+		   values="socket http" persist="" editable="false" disabled="true"
+			tooltiptext="Currently only socket connection is supported">
 		   <menupopup />
 		  </menulist>
 		</hbox>
@@ -211,13 +178,14 @@ startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
 					<textbox id="sciviews.r.port" pref="true" width="50" />
 					<label value="Host to connect to:" control="sciviews.r.host" />
 						<textbox id="sciviews.r.host" pref="true" width="150"
-						disabled="true"/>
+								tooltip="Currently only local connection is allowed"
+								disabled="true"/>
 				</row>
 				<row align="center">
 					<label value="Client port #:" control="sciviews.ko.port" />
 					<textbox id="sciviews.ko.port" pref="true" width="50" />
-					<label value="Client Id:" control="sciviews.client.id" />
-					<textbox id="sciviews.client.id" pref="true" width="150" />
+<!--					<label value="Client Id:" control="sciviews.client.id" />
+					<textbox id="sciviews.client.id" pref="true" width="150" />-->
 				</row>
 		  </rows>
 		</grid>
@@ -227,7 +195,8 @@ startup (requires &quot;MASS&quot; and &quot;ellipse&quot;)" pref="true"
 		<caption label="About"/>
 		<separator class="thin"/>
 <description>
-SciViews-K allows to use Komodo-Edit as a GUI and editor for R.
+SciViews-K provides support for R language in Komodo and extends its interface
+into a fontend for R.
 </description>
 			<button label="Visit the SciViews web site" class="button-link"
 			style="margin-top: -10px; color: rgb(184, 38, 25);"

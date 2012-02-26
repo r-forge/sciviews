@@ -1,11 +1,40 @@
 #!/usr/bin/env python
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1/GPL 2.0/LGPL 2.1
+#
+# The contents of this file are subject to the Mozilla Public License
+# Version 1.1 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+# License for the specific language governing rights and limitations
+# under the License.
+#
+# Contributor(s):
+#   Kamil Barton
+#   ActiveState Software Inc (based on Komodo code)
+#
+# Alternatively, the contents of this file may be used under the terms of
+# either the GNU General Public License Version 2 or later (the "GPL"), or
+# the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+# in which case the provisions of the GPL or the LGPL are applicable instead
+# of those above. If you wish to allow use of your version of this file only
+# under the terms of either the GPL or the LGPL, and not to allow others to
+# use your version of this file under the terms of the MPL, indicate your
+# decision by deleting the provisions above and replace them with the notice
+# and other provisions required by the GPL or the LGPL. If you do not delete
+# the provisions above, a recipient may use your version of this file under
+# the terms of any one of the MPL, the GPL or the LGPL.
+#
+# ***** END LICENSE BLOCK *****
+
 """R support for codeintel.
 
-This file will be imported by the codeintel system on startup and the
-register() function called to register this language with the system. All
-Code Intelligence for this language is controlled through this module.
 """
-import os, sys
+import os
+import sys
 import logging
 import operator
 
@@ -37,9 +66,12 @@ R = components.classes["@sciviews.org/svUtils;1"].\
 
 #---- Globals
 lang = "R"
+
+# DEBUG ONLY - REMOVE LATER!
 log = logging.getLogger("R-codeintel")
 log.setLevel(logging.WARNING)
 log.setLevel(logging.DEBUG)
+# ##
 
 # These keywords and builtin functions are copied from "Rlex.udl".
 # Reserved keywords
@@ -63,8 +95,6 @@ class RLexer(UDLLexer):
     #]
     #SilverCity.WordList("fsfsd fsfsdf")
 
-
-
 # possible R triggers:
 # library|require(<|>     available packages
 # detach(<|>      loaded namespaces
@@ -81,24 +111,9 @@ class RLexer(UDLLexer):
 # "<|>            file paths
 # Note that each name may be single, double or backtick quoted, or in multiple
 # lines
-## completion for 'library(' or 'require(' R command :
-## 'unique(unlist(lapply(.libPaths(), dir)))'
+
 
 #---- LangIntel class
-# Dev Notes:
-# All language should define a LangIntel class. (In some rare cases it
-# isn't needed but there is little reason not to have the empty subclass.)
-#
-# One instance of the LangIntel class will be created for each codeintel
-# language. Code browser functionality and some buffer functionality
-# often defers to the LangIntel singleton.
-#
-# This is especially important for multi-lang files. For example, an
-# HTML buffer uses the JavaScriptLangIntel and the CSSLangIntel for
-# handling codeintel functionality in <script> and <style> tags.
-#
-# See other lang_*.py files in your Komodo installation for examples of
-# usage.
 class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
                    ProgLangTriggerIntelMixin):
     lang = lang
@@ -135,7 +150,6 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     ##
     # Implicit triggering event, i.e. when typing in the editor.
     #
-    # TODO: trigger positions
     def trg_from_pos(self, buf, pos, implicit=True, DEBUG=False, ac=None):
         """If the given position is a _likely_ trigger point, return a
         relevant Trigger instance. Otherwise return the None.
@@ -189,6 +203,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     #
     def preceding_trg_from_pos(self, buf, pos, curr_pos,
                                preceding_trg_terminators=None, DEBUG=False):
+
         if pos < 3:
             return None
 
@@ -344,20 +359,20 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
 
         if fname in ('library', 'require', 'base::library', 'base::require') \
             and nargs == 1:
-            cmd = 'completeSpecial("library")'
+            cmd = 'sv_completeSpecial("library")'
         elif fname in ('detach', 'base::detach') and nargs == 1:
-            cmd = 'completeSpecial("search")'
+            cmd = 'sv_completeSpecial("search")'
         elif fname == 'par':
-            cmd = 'completeSpecial("par"); completeArgs("par")'
+            cmd = 'sv_completeSpecial("par"); sv_completeArgs("par")'
         elif fname in ('options', 'getOption'):
-            cmd = 'completeSpecial("options"); completeArgs("%s")'
+            cmd = 'sv_completeSpecial("options"); sv_completeArgs("%s")'
         elif fname in ('[', '[['):
-            cmd = 'completeArgs("%s", %s)' % (fname, frstarg, )
+            cmd = 'sv_completeArgs("%s", %s)' % (fname, frstarg, )
             if fname == '[[' or nargs == 2:
-                cmd += 'completeSpecial("[", %s)' % (frstarg, )
+                cmd += 'sv_completeSpecial("[", %s)' % (frstarg, )
         else:
-            cmd = ('completeArgs("%s", %s);' % (fname, frstarg, )) \
-                + ('completion("%s")' % (text, ) if text else '')
+            cmd = ('sv_completeArgs("%s", %s);' % (fname, frstarg, )) \
+                + ('sv_completion("%s")' % (text, ) if text else '')
         #ret = []
         res = R.execInR(cmd, "json h", .5).rstrip()
         if len(res) == 0:
@@ -388,7 +403,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
 
     def _get_completions_default(self, text, cutoff):
         if not text.strip(): return None
-        cmd = 'completion("%s")' % text.replace('"', '\\"')
+        cmd = 'sv_completion("%s")' % text.replace('"', '\\"')
         res = R.execInR(cmd, "json h", 2)
         #TODO: on timeout an empty string is returned
         #u'\x03Error: could not find function "completion"\r\n\x02'
@@ -537,12 +552,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
         return None
 
 
-#u"\x03Error in formals(bb) : object 'bb' not found\r\n\x02"
-#u'\x03Error in loadNamespace(name) : there is no package called \u2018pkg\u2019\r\n\x02'
-
-
 #---- Buffer class
-
 class RBuffer(UDLBuffer):
     lang = lang
     cb_show_if_empty = True

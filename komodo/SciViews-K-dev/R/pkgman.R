@@ -8,7 +8,7 @@ packageDescription <- utils::packageDescription
 getCRANmirrors <- utils::getCRANmirrors
 write.table <- utils::write.table
 
-pkgManGetDescription <- function(pkg, print=TRUE) {
+sv_pkgManGetDescription <- function(pkg, print=TRUE) {
 	if (pkg %in% rownames(installed.packages())) {
 		desc <- packageDescription(pkg)
 	} else {
@@ -33,7 +33,7 @@ pkgManGetDescription <- function(pkg, print=TRUE) {
 	}
 }
 
-pkgManGetMirrors <- function() {
+sv_pkgManGetMirrors <- function() {
 	tmpVar <- "pkgMan.CRANmirrors"
 	if(existsTemp(tmpVar)) {
 		mirrors <- getTemp(tmpVar)
@@ -46,7 +46,7 @@ pkgManGetMirrors <- function() {
 }
 
 
-pkgManGetAvailable <- function(page = "next", pattern = "", ilen=50,
+sv_pkgManGetAvailable <- function(page = "next", pattern = "", ilen=50,
 	col=c("Package", "Version", "InstalledVersion", "Status"),
 	reload=FALSE, sep=';', eol="\t\n") {
 	if (!existsTemp('avpkg.list') || reload) {
@@ -113,7 +113,7 @@ availablePkgs <- function(avpkg=available.packages(), installed=TRUE) {
 	avpkg
 }
 
-pkgManGetInstalled <- function(sep=';', eol="\t\n") {
+sv_pkgManGetInstalled <- function(sep=';', eol="\t\n") {
 	inspkg <- installed.packages(fields="Description")
 	inspkg <- inspkg[order(toupper(inspkg[, "Package"])),
 		c("Package","Version","Description")]
@@ -123,18 +123,18 @@ pkgManGetInstalled <- function(sep=';', eol="\t\n") {
 	write.table(inspkg, row.names = FALSE, col.names = F, sep=sep, quote = F, eol=eol, na='')
 }
 
-pkgManSetCRANMirror <- function(url) {
+sv_pkgManSetCRANMirror <- function(url) {
 	repos <- getOption("repos")
 	repos['CRAN'] <- url
 	options(repos = repos)
 }
 
 
-pkgManInstallPackages <- function(upkgs, installDeps=FALSE, ask=TRUE) {
+sv_pkgManInstallPackages <- function(upkgs, installDeps=FALSE, ask=TRUE) {
 	dep <- suppressMessages(utils:::getDependencies(upkgs, available = getTemp('avpkg.list')))
 	msg <- status <- ""
 	if (!ask && (installDeps || all(dep %in% upkgs))) {
-		msg <- captureAll(install.packages(dep))
+		msg <- sv_captureAll(install.packages(dep))
 		status <- "done"
 	} else {
 		l <- length(dep)
@@ -149,7 +149,7 @@ pkgManInstallPackages <- function(upkgs, installDeps=FALSE, ask=TRUE) {
 	#invisible(dep)
 }
 
-pkgManRemovePackage <- function(pkgName) {
+sv_pkgManRemovePackage <- function(pkgName) {
 	sapply(pkgName, function(pkgName) {
 		if(pkgName %in% loadedNamespaces()) unloadNamespace(pkgName)
 		pack <- paste("package", pkgName, sep=":")
@@ -172,11 +172,11 @@ pkgManRemovePackage <- function(pkgName) {
 	}, simplify=FALSE)
 }
 
-pkgManLoadPackage  <- function(pkgName) {
+sv_pkgManLoadPackage  <- function(pkgName) {
 	sapply(pkgName, library, character.only = TRUE, logical.return = TRUE, simplify = FALSE)
 }
 
-pkgManDetachPackage <- function(pkgName) {
+sv_pkgManDetachPackage <- function(pkgName) {
 	sapply(pkgName, function(pkgName) {
 		tryCatch({
 			if(pkgName %in% loadedNamespaces()) unloadNamespace(pkgName)

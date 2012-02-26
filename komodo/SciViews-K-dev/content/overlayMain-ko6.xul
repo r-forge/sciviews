@@ -64,10 +64,6 @@
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/commands.js"/>
 
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/misc.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/ask.js"/>
-	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/interpolate.js"/>
-
-
 
 	<broadcasterset id="broadcasterset_global">
 		<broadcaster id="sv_r_is_running" disabled="false"/>

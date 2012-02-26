@@ -158,14 +158,14 @@ sv.r.console.run_cb  = function (data) {
   
     var div =
         <html:pre class="consoleInput" xmlns:html="http://www.w3.org/1999/xhtml">{ "R> " + cmd }</html:pre>;
-    sv.tools.e4x2dom.appendTo(div, output);
+    sv.e4x2dom.appendTo(div, output);
   
     // FIXME: replace the dot with something invisible (space gets swallowed by the <pre>)
     //        or use something else than a <pre>
     data = data.replace(/^ /, ".");
     var div =
         <html:pre class="consoleOutput" xmlns:html="http://www.w3.org/1999/xhtml">{data}</html:pre>;
-    sv.tools.e4x2dom.appendTo(div, output);
+    sv.e4x2dom.appendTo(div, output);
   
     // add the current command to the history and refresh the history
     sv.r.console.addCommandToHistory(cmd);
@@ -224,7 +224,7 @@ sv.r.console.refreshHistory = function () {
     var item ;
     var filter = new RegExp(document
         .getElementById("sciviews_rconsole_history_filter").value);
-    sv.tools.e4x2dom.clear(his);
+    sv.e4x2dom.clear(his);
     for (i = sv.r.console.history.length - 1; i >= 0; i--) {
         cmd = sv.r.console.history[i];
         if (filter.test(cmd)) {
@@ -233,7 +233,7 @@ sv.r.console.refreshHistory = function () {
                     {cmd}
                 </html:pre>
             </richlistitem>;
-            sv.tools.e4x2dom.appendTo(item, his);
+            sv.e4x2dom.appendTo(item, his);
         }
     } 
 }
@@ -302,7 +302,7 @@ sv.r.console.completeExplicit_cb = function (data) {
 sv.r.console.clearCompletionTab = function () {
     var compTree = document
         .getElementById("sciviews_rconsole_completion_tree_main");
-    sv.tools.e4x2dom.clear(compTree);
+    sv.e4x2dom.clear(compTree);
 }
 
 // Update completion list
@@ -311,7 +311,7 @@ sv.r.console.updateCompletionTab = function (completions) {
     var histCompletions = [];
     // TODO: consider using some sort of grep for this instead
     try {
-        var cmdRx = new RegExp(sv.tools.strings.toRegex(cmd));
+        var cmdRx = new RegExp(sv.strings.toRegex(cmd));
         var currentCmd;
         for (var i = sv.r.console.history.length - 1; i >= 0; i--) {
             currentCmd = sv.r.console.history[i];
@@ -374,7 +374,7 @@ sv.r.console.updateCompletionTab = function (completions) {
                         </treerow>
                     </treeitem>
             }
-            sv.tools.e4x2dom.appendTo(newItem, root);
+            sv.e4x2dom.appendTo(newItem, root);
         }
     }
     var compTree = document

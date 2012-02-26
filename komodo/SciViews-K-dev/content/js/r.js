@@ -21,9 +21,6 @@
 // and add a line feed
 // sv.r.source(what); // Source various part of current buffer to R
 // sv.r.send(what); // Send various part of current buffer to R
-// sv.r.calltip(code); // Get a calltip for a piece of code (current code if "")
-// sv.r.calltip_show(tip);		// Companion functions for sv.r.calltip
-// sv.r.complete(code); // AutoComplete mechanism for R
 // sv.r.display(topic, what); // Display 'topic' according to 'what' type
 // sv.r.help(topic, package); // Get help in R for 'topic', 'package' is optional
 // sv.r.example(topic); // Run example in R for 'topic', 'topic' is optional
@@ -53,11 +50,6 @@
 // sv.r.reloadSession();  // Reload .RData nd .Rhistory files from session dir
 // sv.r.quit(save); // Quit R (ask to save in save in not defined)
 
-// sv.r.kpf2pot(kpfFile); // Create a translation (.pot) file for a project
-// sv.r.kpz2pot(kpzFile); // Create a translation (.pot) file for a package
-// sv.r.kpfTranslate(kpfFile); // Translate a project
-// sv.r.kpzTranslate(kpzFile); // Translate a package
-//
 // Note: sv.rbrowser is implemented in robjects.js
 //       sv.r.console functions are implemented in rconsole.js
 //
@@ -116,7 +108,7 @@ sv.r.setwd = function (dir, ask, type) {
 	}
 	var getDirFromR = "";
 
-	if (!dir || (sv.tools.file.exists(dir) == 2)) { // Not there or unspecified
+	if (!dir || (sv.file.exists(dir) == 2)) { // Not there or unspecified
 		switch (type) {
 			case "this":
 				break;
@@ -145,13 +137,17 @@ sv.r.setwd = function (dir, ask, type) {
 					var file = ko.places.manager.getSelectedItem().file;
 					dir = file.isDirectory? file.path : file.dirName;
 				} catch(e) {
-					dir = sv.tools.file.pathFromURI(ko.places.manager.currentPlace);
+					dir = sv.file.pathFromURI(ko.places.manager.currentPlace);
 				}
 			default:
 		}
 	}
 	if (getDirFromR) {
-		dir = sv.rconn.evalAtOnce("cat(path.expand(" + getDirFromR + "))");
+		try {
+			dir = sv.rconn.evalAtOnce("cat(path.expand(" + getDirFromR + "))");
+		} catch(e) {
+			dir = "";
+		}
 		if (!dir) {
 			sv.alert(sv.translate("Cannot retrieve directory from R." +
 				" Make sure R is running."));
@@ -252,8 +248,8 @@ sv.r.source = function (what) {
 			sv.cmdout.clear();
 			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' + what);
 
-			var tempFile = sv.tools.file.temp();
-			sv.tools.file.write(tempFile, code + "\n", 'utf-8', false);
+			var tempFile = sv.file.temp();
+			sv.file.write(tempFile, code + "\n", 'utf-8', false);
 			tempFile = tempFile.addslashes();
 
 			var cmd = 'tryCatch(source("' + tempFile + '", encoding =' +
@@ -292,31 +288,6 @@ sv.r.send = function (what) {
 	return(res);
 }
 
-//// Get a calltip for a R function
-//sv.r.calltip = function (code) {
-//	// If code is not defined, get currently edited code
-//	if (typeof(code) == "undefined" | code == "")
-//	code = sv.getTextRange("codefrag");
-//	var cmd = 'cat(callTip("' + code.replace(/(")/g, "\\$1") +
-//	'", location = TRUE, description = TRUE, methods = TRUE, width = 80))';
-//	var res = "";
-//	res = sv.r.evalCallback(cmd, sv.r.calltip_show);
-//	return(res);
-//}
-//
-//// The callback for sv.r.calltip
-//// TODO: make private
-//sv.r.calltip_show = function (tip) {
-//	if (tip.result !== undefined) tip = tip.result;
-//	if (tip != "") {
-//		//ko.statusBar.AddMessage(tip, "SciViews-K", 2000, true);
-//		var ke = ko.views.manager.currentView.scimoz;
-//		ke.callTipCancel();
-//		ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
-//	}
-//}
-
-
 // Get help in R (HTML format)
 sv.r.help = function (topic, pkg) {
 	var res = false;
@@ -335,12 +306,16 @@ sv.r.help = function (topic, pkg) {
 		// cmd = 'cat(unclass(help(' + cmd + ' htmlhelp = TRUE)))';
 		// TODO: error handling when package does not exists
 		//res = sv.r.evalCallback(cmd, sv.command.openHelp);
-		res = sv.rconn.evalAtOnce(cmd);
+		try {
+			res = sv.rconn.evalAtOnce(cmd);
+		} catch(e) {
+			return false;
+		}
 		sv.command.openHelp(res);
 		ko.statusBar.AddMessage(sv.translate("R help asked for \"%S\"", topic),
 			"SciViews-K", 2000, false);
 	}
-	return(res);
+	return res;
 }
 
 // Run the example for selected item
@@ -356,22 +331,22 @@ sv.r.example = function (topic) {
 		ko.statusBar.AddMessage(sv.translate("R example run for \"%S\"", topic),
 		"SciViews-K", 5000, true);
 	}
-	return(res);
+	return res;
 }
 
 // Display some text from a file
 sv.r.pager = function(file, title, cleanUp) {
 	var rSearchUrl = "chrome://sciviewsk/content/rsearch.html";
-	var content = sv.tools.file.read(file);
+	var content = sv.file.read(file);
 	content = content.replace(/([\w\.\-]+)::([\w\.\-\[]+)/ig,
 		'<a href="' + rSearchUrl + '?$1::$2">$1::$2</a>');
 	content = "<pre id=\"rPagerTextContent\" title=\"" + title + "\">" +
 		content + "</div>";
 	//var charset = sv.socket.charset;
-	sv.tools.file.write(file, content, 'utf-8');
+	sv.file.write(file, content, 'utf-8');
 	sv.command.openHelp(rSearchUrl + "?file:" + file);
 	if(cleanUp || cleanUp === undefined)
-		window.setTimeout("try { sv.tools.file.getfile('"+file+"').remove(false); } catch(e) {}", 10000);
+		window.setTimeout("try { sv.file.getfile('"+file+"').remove(false); } catch(e) {}", 10000);
 }
 
 // Search R help for topic
@@ -402,20 +377,20 @@ sv.r.search_select = function (topics) {
 
 	ko.statusBar.AddMessage("", "SciViews-K");
 	var res = false;
-	if (sv.tools.string.removeLastCRLF(topics) == "") {
+	if (sv.string.removeLastCRLF(topics) == "") {
 		ko.statusBar.AddMessage(sv.translate("R help for %S not found.", topics),
 		"SciViews-K");
 	} else {	// Something is returned
 		var items = topics.split(sv.r.sep);
 		if (items.length == 1) {
 			// Only one item, show help for it
-			res = sv.r.help(sv.tools.string.removeLastCRLF(topics));
+			res = sv.r.help(sv.string.removeLastCRLF(topics));
 		} else {
 			// Select the item you want in the list
 			var topic = ko.dialogs.selectFromList("R help topics",
 			"Select a topic:", items, "one");
 			if (topic != null)
-			res = sv.r.help(sv.tools.string.removeLastCRLF(topic.join("")));
+			res = sv.r.help(sv.string.removeLastCRLF(topic.join("")));
 		}
 	}
 	return(res);
@@ -546,7 +521,7 @@ sv.r.saveGraph = function (type, file, title, height, width, method) {
 sv.r.refreshSession = function () {
 	var i;
 	//// Refresh lists of dataset
-	//var items = sv.tools.file.list(sv.pref.getPref("sciviews.data.localdir"),
+	//var items = sv.file.list(sv.pref.getPref("sciviews.data.localdir"),
 	//	/\.[cC][sS][vV]$/, true);
 	////sv.prefs.mru("datafile", true, items);
 	////ko.mru.reset("datafile_mru");
@@ -556,7 +531,7 @@ sv.r.refreshSession = function () {
 	////}
 	//
 	//// Refresh lists of scripts
-	//items = sv.tools.file.list(sv.pref.getPref("sciviews.scripts.localdir"),
+	//items = sv.file.list(sv.pref.getPref("sciviews.scripts.localdir"),
 	///\.[rR]$/, true);
 	//sv.prefs.mru("scriptfile", true, items);
 	//ko.mru.reset("scriptfile_mru");
@@ -566,7 +541,7 @@ sv.r.refreshSession = function () {
 	//}
 	//
 	//// Refresh lists of reports
-	//items = sv.tools.file.list(sv.pref.getPref("sciviews.reports.localdir"),
+	//items = sv.file.list(sv.pref.getPref("sciviews.reports.localdir"),
 	///\.[oO][dD][tT]$/, true);
 	//sv.prefs.mru("reportfile", true, items);
 	//ko.mru.reset("reportfile_mru");
@@ -581,54 +556,55 @@ sv.r.refreshSession = function () {
 sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	// Initialize the various arguments
 	if (typeof(dir) == "undefined")
-	dir = sv.pref.getPref("sciviews.session.dir", "~");
+		dir = sv.pref.getPref("sciviews.session.dir", "~");
 	if (typeof(datadir) == "undefined")
-	datadir = sv.pref.getPref("sciviews.session.data", "");
+		datadir = sv.pref.getPref("sciviews.session.data", "");
 	if (typeof(scriptdir) == "undefined")
-	scriptdir = sv.pref.getPref("sciviews.session.scripts", "");
+		scriptdir = sv.pref.getPref("sciviews.session.scripts", "");
 	if (typeof(reportdir) == "undefined")
-	reportdir = sv.pref.getPref("sciviews.session.reports", "");
+		reportdir = sv.pref.getPref("sciviews.session.reports", "");
 
-	var localdir = sv.tools.file.path(dir);
+	var localdir = sv.file.path(dir);
 	var sep = "/";
 
 	// Refresh preferences
-	sv.pref.setPref("sciviews.session.dir", dir, true);
-	sv.pref.setPref("sciviews.session.localdir", localdir, true);
+	var setPref = sv.pref.setPref;
+	setPref("sciviews.session.dir", dir, true);
+	setPref("sciviews.session.localdir", localdir, true);
 	// Subdirectories for data, reports and scripts
-	sv.pref.setPref("sciviews.session.data", datadir, true);
-	sv.pref.setPref("sciviews.session.scripts", scriptdir, true);
-	sv.pref.setPref("sciviews.session.reports", reportdir, true);
+	setPref("sciviews.session.data", datadir, true);
+	setPref("sciviews.session.scripts", scriptdir, true);
+	setPref("sciviews.session.reports", reportdir, true);
 	// Combination of these to give access to respective dirs
 	if (datadir == "") {
-		sv.pref.setPref("sciviews.data.dir", dir, true);
-		sv.pref.setPref("sciviews.data.localdir", localdir, true);
+		setPref("sciviews.data.dir", dir, true);
+		setPref("sciviews.data.localdir", localdir, true);
 	} else {
-		sv.pref.setPref("sciviews.data.dir", dir + sep + datadir, true);
-		sv.pref.setPref("sciviews.data.localdir",
-		sv.tools.file.path(localdir, datadir), true);
+		setPref("sciviews.data.dir", dir + sep + datadir, true);
+		setPref("sciviews.data.localdir",
+		sv.file.path(localdir, datadir), true);
 	}
 	if (scriptdir == "") {
-		sv.pref.setPref("sciviews.scripts.dir", dir, true);
-		sv.pref.setPref("sciviews.scripts.localdir", localdir, true);
+		setPref("sciviews.scripts.dir", dir, true);
+		setPref("sciviews.scripts.localdir", localdir, true);
 	} else {
-		sv.pref.setPref("sciviews.scripts.dir", dir + sep + scriptdir, true);
-		sv.pref.setPref("sciviews.scripts.localdir",
-		sv.tools.file.path(localdir, scriptdir), true);
+		setPref("sciviews.scripts.dir", dir + sep + scriptdir, true);
+		setPref("sciviews.scripts.localdir",
+		sv.file.path(localdir, scriptdir), true);
 	}
 	if (reportdir == "") {
-		sv.pref.setPref("sciviews.reports.dir", dir, true);
-		sv.pref.setPref("sciviews.reports.localdir", localdir, true);
+		setPref("sciviews.reports.dir", dir, true);
+		setPref("sciviews.reports.localdir", localdir, true);
 	} else {
-		sv.pref.setPref("sciviews.reports.dir", dir + sep + reportdir, true);
-		sv.pref.setPref("sciviews.reports.localdir",
-		sv.tools.file.path(localdir, reportdir), true);
+		setPref("sciviews.reports.dir", dir + sep + reportdir, true);
+		setPref("sciviews.reports.localdir",
+		sv.file.path(localdir, reportdir), true);
 	}
 
 	var DIRECTORY_TYPE = Components.interfaces.nsIFile.DIRECTORY_TYPE;
 
 	// Look if the session directory exists, or create it
-	var file = sv.tools.file.getfile(localdir);
+	var file = sv.file.getfile(localdir);
 
 	if (!file || !file.exists() || !file.isDirectory()) {
 		sv.log.debug( "Creating session directory... " );
@@ -644,7 +620,7 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	var subdirs = [datadir, scriptdir, reportdir];
     for (var i in subdirs) {
 		if (subdirs[i] != "") {
-            var file = sv.tools.file.getfile(sv.tools.file.path(dir, subdirs[i]));
+            var file = sv.file.getfile(sv.file.path(dir, subdirs[i]));
             // TODO: check for error and issue a message if the file is not a dir
 			if (!file.exists() || !file.isDirectory())
 			file.create(DIRECTORY_TYPE, 511);
@@ -667,8 +643,8 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	var cmd = [];
 
 	// If dir is the same as current session dir, do nothing
-	if (typeof(dir) != "undefined" && sv.tools.file.path(dir) ==
-		sv.tools.file.path(sv.pref.getPref("sciviews.session.dir", "")))
+	if (typeof(dir) != "undefined" && sv.file.path(dir) ==
+		sv.file.path(sv.pref.getPref("sciviews.session.dir", "")))
 		return(false);
 
 	// Before switching to the new session directory, close current one
@@ -690,7 +666,7 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 	cmd.push('setwd("' + dir.addslashes() + '")\noptions(R.initdir = "' +
 		dir.addslashes() + '")');
 
-	var svFile = sv.tools.file;
+	var svFile = sv.file;
 
 	// Do we load .RData and .Rhistory?
 	// TODO: loadhistory APPENDS a history. Make R clear the current history first.
@@ -731,7 +707,8 @@ sv.r.setSession = function (dir, datadir, scriptdir, reportdir, saveOld, loadNew
 		sv.r.evalCallback('cat("Session directory is now", dQuote("' + dir.addslashes() +
 			'"), "\\n", file = stderr())', null);
 		// Refresh object explorer, ...
-		sv.rconn.eval('koCmd("sv.rbrowser.smartRefresh()")', null, true);
+		//sv.rconn.eval('koCmd("sv.rbrowser.smartRefresh()")', null, true);
+		sv.rbrowser.smartRefresh();
 	});
 	return(true);
 }
@@ -770,14 +747,14 @@ sv.r.switchSession = function (inDoc) {
 		var scriptdir = "";
 		var reportdir = "";
 		var cfg = "";
-		var cfgfile = sv.tools.file.path(sessionDir, ".svData");
+		var cfgfile = sv.file.path(sessionDir, ".svData");
 		var filefound = false;
 		// Look if this directory already exists and contains a .svData file
-		if (sv.tools.file.exists(sessionDir) == 2 &
-		sv.tools.file.exists(cfgfile) == 1) {
+		if (sv.file.exists(sessionDir) == 2 &
+		sv.file.exists(cfgfile) == 1) {
 			// Try reading .svData file
 			try {
-				cfg = sv.tools.file.read(cfgfile, "utf-8");
+				cfg = sv.file.read(cfgfile, "utf-8");
 				filefound = true;
 				// Actualize values for datadir, scriptdir and reportdir
 				cfg = cfg.split("\n");
@@ -810,7 +787,7 @@ sv.r.switchSession = function (inDoc) {
 		// If there were no .svData file, create it now
 		if (!filefound) {
 			// Save these informations to the .svData file in the session dir
-			sv.tools.file.write(cfgfile, "datadir=" + datadir + "\nscriptdir=" +
+			sv.file.write(cfgfile, "datadir=" + datadir + "\nscriptdir=" +
 			scriptdir + "\nreportdir=" + reportdir, "utf-8", false);
 		}
 		return(true);
@@ -829,11 +806,10 @@ sv.r.reloadSession = function () {
 		// .RData and Rhistory files
 		var dir = sv.pref.getPref("sciviews.session.dir", "");
 		var cmd = 'rm(list = ls(pattern = "[.]active[.]", all.names = TRUE))\n' +
-		'rm(list = ls()); .savdir. <- setwd("' + dir + '")\n' +
-		'if (file.exists(".RData")) load(".RData")\n' +
-		'if (file.exists(".Rhistory")) loadhistory()\n' +
-		'setwd(.savdir.); rm(.savdir.)\n' +
-		'try(guiRefresh(force = TRUE), silent = TRUE)';
+			'rm(list = ls()); .savdir. <- setwd("' + dir + '")\n' +
+			'if (file.exists(".RData")) load(".RData")\n' +
+			'if (file.exists(".Rhistory")) loadhistory()\n' +
+			'setwd(.savdir.); rm(.savdir.)\n';
 		sv.r.evalHidden(cmd);
 	}
 }
@@ -883,8 +859,7 @@ if (typeof(sv.r.pkg) == 'undefined') sv.r.pkg = new Object();
 // TODO: a Komodo version of this that returns pure R code
 sv.r.pkg.repositories = function () {
 	var res = sv.r.eval('setRepositories(TRUE)');
-	return(res);
-
+	return res;
 	//on Linux, try reading data from: "<HOME>/.R/repositories", "/usr/lib/R/etc/repositories", "usr/local/lib/R/etc/repositories"
 	//on Windows, "<HOME>/.R/repositories", "<R_installPath>/etc/repositories"
 }
@@ -896,7 +871,11 @@ sv.r.pkg.chooseCRANMirror = function (setPref) {
 	'write.table(getTemp("cranMirrors")[, c("Name", "URL")], col.names = FALSE, quote = FALSE, sep ="' +
 	sv.r.sep + '", row.names = FALSE)';
 
-	var reposList = sv.rconn.evalAtOnce(cmd, 1);
+	try {
+		var reposList = sv.rconn.evalAtOnce(cmd, 1);
+	} catch(e) {
+		return '';
+	}
 
 	if (!reposList.trim()) {
 		sv.alert("Error getting CRAN Mirrors list.");
@@ -1038,7 +1017,7 @@ sv.r.pkg.unload = function () {
 sv.r.pkg.unload_select = function (pkgs) {
 	ko.statusBar.AddMessage("", "SciViews-K");
 	var res = false;
-	if (sv.tools.string.removeLastCRLF(pkgs) == "") {
+	if (sv.string.removeLastCRLF(pkgs) == "") {
 		sv.alert("None of the loaded packages are safe to unload!");
 	} else {	// Something is returned
 		var items = pkgs.split(sv.r.sep);
@@ -1070,7 +1049,7 @@ sv.r.pkg.remove = function () {
 sv.r.pkg.remove_select = function (pkgs) {
 	ko.statusBar.AddMessage("", "SciViews-K");
 	var res = false;
-	if (sv.tools.string.removeLastCRLF(pkgs) == "") {
+	if (sv.string.removeLastCRLF(pkgs) == "") {
 		sv.alert(sv.translate("None of the installed R packages are safe to remove!"));
 	} else {	// Something is returned
 		var items = pkgs.split(sv.r.sep);
@@ -1078,7 +1057,7 @@ sv.r.pkg.remove_select = function (pkgs) {
 		var topic = ko.dialogs.selectFromList("Remove R package",
 		"Select one R package to remove:", items, "one");
 		if (topic != null) {
-			var pkg = (sv.tools.string.removeLastCRLF(topic.join('')));
+			var pkg = (sv.string.removeLastCRLF(topic.join('')));
 			var response = ko.dialogs.customButtons(
 			"You are about to remove the '" + pkg +
 			"' R package from disk! Are you sure?",
@@ -1119,7 +1098,11 @@ sv.r.pkg.install = function (pkgs, repos) {
 		} else
 			repos = defaultRepos;
 	} else if (repos === false) {
-		repos = sv.rconn.evalAtOnce("cat(getOption(\"repos\")[\"CRAN\"])").trim();
+		try {
+			repos = sv.rconn.evalAtOnce("cat(getOption(\"repos\")[\"CRAN\"])").trim();
+		} catch(e) {
+			return;
+		}
 		if (repos == "@CRAN@") return;
 	}
 
@@ -1130,7 +1113,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 	var startDir = null;
 
 	// TODO: allow for array of package files
-	if (typeof(pkgs) == "string" && sv.tools.file.exists(pkgs) == sv.tools.file.TYPE_DIRECTORY) {
+	if (typeof(pkgs) == "string" && sv.file.exists(pkgs) == sv.file.TYPE_DIRECTORY) {
 		repos = "local";
 		startDir = pkgs;
 	}
@@ -1139,9 +1122,16 @@ sv.r.pkg.install = function (pkgs, repos) {
 	if (!pkgs && repos != "local") {
 		ko.statusBar.AddMessage(sv.translate("Listing available packages..."),
 		"SciViews-K", 5000, true);
-		pkgs = sv.rconn.evalAtOnce('cat(tryCatch(available.packages(contriburl=contrib.url("'
-		+ repos + '", getOption("pkgType")))[,1],warning=function(e)e$message), sep="' +
-		sv.r.sep + '")', 5).trim();
+
+		try {
+			pkgs = sv.rconn.evalAtOnce(
+				'cat(tryCatch(available.packages(contriburl=contrib.url("'
+				+ repos +
+				'", getOption("pkgType")))[,1],warning=function(e)e$message), sep="' +
+				sv.r.sep + '")', 5).trim();
+		} catch(e) {
+			return;
+		}
 
 		pkgs = pkgs.split(sv.r.sep);
 		if (pkgs.length < 3) {
@@ -1230,7 +1220,7 @@ sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec, sep) 
 	}
 
 	var cmd = 'write.table(' + name + ', file="' +
-	sv.tools.string.addslashes(fileName) +
+	sv.string.addslashes(fileName) +
 	'", dec="' + dec + '", sep="' + sep + '", col.names=NA)';
 	sv.r.eval(cmd);
 	return(cmd);

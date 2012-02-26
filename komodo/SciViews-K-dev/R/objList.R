@@ -1,4 +1,4 @@
-objList <- function (id = "default", envir = .GlobalEnv, object = NULL,
+sv_objList <- function (id = "default", envir = .GlobalEnv, object = NULL,
 all.names = FALSE, pattern = "", group = "", all.info = FALSE, sep = "\t",
 path = NULL, compare = TRUE, ...)
 {

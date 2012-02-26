@@ -10,7 +10,9 @@
 <?xml-stylesheet href="chrome://sciviewsk/skin/pkgman.css" type="text/css"?>
 
 <window id="RPackageManager" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-  maxheight="350" maxwidth="300" title="R Package manager (beta)" >
+    width="400" height="300" screenX="20" screenY="20"
+    persist="screenX screenY width height"
+    title="R Package manager (beta)" >
 
 <script type="text/javascript">
 <![CDATA[
@@ -30,7 +32,7 @@ function JSONDecode(str) {
 function pkgManInstall(pkg, ask) {
 	ask = ', ask='  + (ask? 'TRUE' : 'FALSE') + ', installDeps=' + (ask? 'FALSE' :  'TRUE');
 
-	var cmd = 'cat(simpsON(pkgManInstallPackages("' + pkg + '"' + ask + ')))';
+	var cmd = 'cat(simpsON(sv_pkgManInstallPackages("' + pkg + '"' + ask + ')))';
 
 	sv.r.evalCallback(cmd,
 	function(res) {
@@ -40,7 +42,7 @@ function pkgManInstall(pkg, ask) {
 			return;
 		} else if (response.status == "question") {
 			if(ko.dialogs.okCancel(response.message, "OK", null, "R package manager") == "OK") {
-				sv.r.evalCallback('cat(simpsON(pkgManInstallPackages("' + pkg +
+				sv.r.evalCallback('cat(simpsON(sv_pkgManInstallPackages("' + pkg +
 					'", ask=FALSE, installDeps=TRUE)))', updateInfo, "installed");
 				doInstall = true;
 			}
@@ -53,17 +55,17 @@ function pkgManInstall(pkg, ask) {
 }
 
 function pkgManRemove(pkg) {
-	var cmd = 'cat(simpsON(pkgManRemovePackage("' + pkg + '")))';
+	var cmd = 'cat(simpsON(sv_pkgManRemovePackage("' + pkg + '")))';
 	sv.r.evalCallback(cmd, updateInfo, "removed");
 }
 
 function pkgManDetach(pkg) {
-	var cmd = 'cat(simpsON(pkgManDetachPackage("' + pkg + '")))';
+	var cmd = 'cat(simpsON(sv_pkgManDetachPackage("' + pkg + '")))';
 	sv.r.evalCallback(cmd, updateInfo, "detached");
 }
 
 function pkgManLoad(pkg) {
-	var cmd = 'cat(simpsON(pkgManLoadPackage("' + pkg + '")))';
+	var cmd = 'cat(simpsON(sv_pkgManLoadPackage("' + pkg + '")))';
 	sv.r.evalCallback(cmd, updateInfo, "loaded");
 }
 
@@ -158,23 +160,26 @@ function updateInfo(res, what) {
 
 function getDescriptionFor(el) {
 	var pkg = el.label;
-	sv.r.evalCallback('pkgManGetDescription("' + pkg + '")', function(desc, el) {
+	sv.r.evalCallback('sv_pkgManGetDescription("' + pkg + '")', function(desc, el) {
 		el.desc = desc;
 	}, el);
 };
 
 function setCranMirror(url) {
 	if(!url) url = sv.pref.getPref("CRANMirror").trim();
-	sv.rconn.evalAtOnce("pkgManSetCRANMirror(\"" + url + "\")");
+	try {
+		sv.rconn.evalAtOnce("sv_pkgManSetCRANMirror(\"" + url + "\")");
+	} catch(e) {
+		return;
+	}
 	var selectedCranMirror = document.getElementById('selectedCranMirror');
 	if(selectedCranMirror) selectedCranMirror.value = url;
 }
 
-function getCranMirrors() {
+function populateCranMirrorsList(rOutput) {
+	var lines = rOutput.split(/[\r\n]+/);
 	var mirror = sv.pref.getPref("CRANMirror").trim();
-	var cmd = "pkgManGetMirrors()";
-	var lines = sv.rconn.evalAtOnce(cmd, 3).split(/[\r\n]+/);
-	rl = document.getElementById("rCRANMirrorsList");
+	var rl = document.getElementById("rCRANMirrorsList");
 	var sel = -1;
 	for(var i = 0; i < lines.length; i++) {
 		l = lines[i].trim().split(';');
@@ -184,7 +189,6 @@ function getCranMirrors() {
 		cell.setAttribute('label',  l[0]);
 		cell.setAttribute('image', "chrome://sciviewsk/skin/images/flags/" + l[2] + ".gif");
 		cell.className = "listcell-iconic";
-
 		row.appendChild(cell);
 		cell = document.createElement('listcell');
 		cell.setAttribute('label',  l[1]);
@@ -192,11 +196,16 @@ function getCranMirrors() {
 		if(l[1].indexOf(mirror) > -1) sel = i;
 		rl.appendChild(row);
 	}
-	var it =  rl.getItemAtIndex( sel );
-	rl.scrollToIndex( sel);
+	var it = rl.getItemAtIndex(sel);
+	rl.scrollToIndex(sel);
 	rl.ensureIndexIsVisible( sel);
 	//rl.timedSelect(it , 10);
-	rl.selectItem( it);
+	rl.selectItem(it);
+}
+
+
+function getCranMirrors() {
+	sv.r.evalCallback("sv_pkgManGetMirrors()", populateCranMirrorsList);
 }
 
 function makePkgItem(name, version, installedVersion, status, installed, old, loaded) {
@@ -213,11 +222,14 @@ function makePkgItem(name, version, installedVersion, status, installed, old, lo
 
 
 function getInstalledPkgs() {
-	var lines = sv.rconn.evalAtOnce('pkgManGetInstalled()').trim();
-	if (lines == 'NULL') return;
-	lines = lines.split(/\t[\r\n]+/);
-	rl = document.getElementById("rPackageList");
+	sv.r.evalCallback("sv_pkgManGetInstalled()", populateInstalledPkgs);
+}
 
+function populateInstalledPkgs(rOutput) {
+	if (!rOutput || rOutput == 'NULL') return;
+	var lines = rOutput.split(/[\r\n]+/);
+
+	rl = document.getElementById("rPackageList");
 	var selectedIndex, selectedItem, selectedLabel;
 
 	selectedIndex = rl.selectedIndex;
@@ -242,19 +254,27 @@ function getInstalledPkgs() {
 }
 
 function getAvailablePkgs(page, reload) {
+	var rl = document.getElementById("rAvailablePackageList");
+
 	if (!page) page = '';
+	else if (page == "next")
+		rl.scrollToIndex(0);
+	else if (page == "prev")
+		rl.scrollToIndex(rl.getRowCount() - 1);
+
 	var searchPattern = document.getElementById('searchfield').value.trim();
-	searchPattern = sv.tools.string.toRegex(searchPattern);
+	searchPattern = sv.string.toRegex(searchPattern);
+	sv.r.evalCallback('sv_pkgManGetAvailable("' + page + '", pattern="' +
+		searchPattern + '", reload=' + (reload ? 'TRUE': 'FALSE') + ')',
+		populateAvailablePkgs);
+}
 
-	var lines = sv.rconn.evalAtOnce('pkgManGetAvailable("' + page + '", pattern="' +
-		searchPattern + '", reload=' +
-		(reload ? 'TRUE': 'FALSE') + ')', 2).trim();
-
+function populateAvailablePkgs(rOutput) {
+	var lines = rOutput.trim();
 	if (lines == 'NULL') return;
-
 	lines = lines.split(/\t[\r\n]+/);
 
-	rl = document.getElementById("rAvailablePackageList");
+	var rl = document.getElementById("rAvailablePackageList");
 	while(rl.itemCount) rl.removeItemAt(0);
 
 	idx = lines[0].trim().split(" ").map(function(x) parseInt(x));
@@ -292,12 +312,12 @@ function getAvailablePkgs(page, reload) {
 
 
 function init() {
-	var rDir = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R", "pkgman.R");
-	sv.r.evalHidden('if(!exists("pkgManGetInstalled", as.environment("komodoConnection"))) ' +
-	'sys.source("' + sv.tools.string.addslashes(rDir) +
+	var rDir = sv.file.path("ProfD", "extensions", "sciviewsk@sciviews.org", "R", "pkgman.R");
+	sv.r.evalHidden('if(!exists("sv_pkgManGetInstalled", as.environment("komodoConnection"))) ' +
+	'sys.source("' + sv.string.addslashes(rDir) +
 	'", as.environment("komodoConnection"));');
 
-	//sv.r.eval('sys.source("' + sv.tools.string.addslashes(rDir) + '", as.environment("komodoConnection"));');
+	//sv.r.eval('sys.source("' + sv.string.addslashes(rDir) + '", as.environment("komodoConnection"));');
 
 	setCranMirror();
 	getCranMirrors();
@@ -317,7 +337,13 @@ function pkgMgrOnLoad(event) {
 			break;
 	}}
 
-	window.setTimeout(init, 256);
+	if(sv.r.running)
+		window.setTimeout(init, 256);
+	else {
+		ko.dialogs.alert("R must be started to manage its packages.",
+						 null, "R package manager");
+		self.close();
+	}
 }
 
 addEventListener("load", pkgMgrOnLoad, false);

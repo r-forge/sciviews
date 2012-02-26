@@ -7,20 +7,12 @@
 // TODO: update this list...
 //////////////////////////////////////////////////////////////////////////////
 
-
-/* TODO: prefs to include:
-* address for remote R (sv.socket.host)? (if not localhost - disable source* commands)
-* R help: show in tab (sidebar - another TODO) or in separate window
-* R Site search url (%S replaced by topic)
-*/
-
-
 var sv;
 
 // For menulists, take the value argument/(or text in the textbox), and append
 // it as new element to the list if it is new, otherwise set as selected
 function editMenulist(el, value) {
-	var curValue = (!value)?  sv.tools.string.trim(el.value) : value;
+	var curValue = (!value)?  sv.string.trim(el.value) : value;
 	if (!curValue) return;
 	var values = [], val;
 	for (var j = 0; j < el.itemCount; j++) {
@@ -65,7 +57,7 @@ function menuListGetValues(attribute) {
 				values.push(escape(el.getItemAtIndex(k).value));
 			}
 
-			values = sv.tools.array.unique(values);
+			values = sv.array.unique(values);
 			var nMax = parseInt(el.getAttribute('maxValues'));
 			if(nMax > 0) values = values.slice(0, nMax);
 			el.setAttribute(attribute, values.join(' '));
@@ -128,7 +120,7 @@ function PrefR_OnLoad() {
     var platform = navigator.platform.substr(0,3);
 	apps = apps.filter(function(x) (x.platform.indexOf(platform) != -1)
 					   && (!x.required.length || x.required.every(
-						function(y) sv.tools.file.whereIs(y).length != 0)));
+						function(y) sv.file.whereIs(y).length != 0)));
 	var tmp = {};
 	for (var i in apps) tmp[apps[i].id] = apps[i];
 	apps = tmp;
@@ -176,8 +168,8 @@ function PrefR_PopulateRInterps() {
     ////////////////////////////////////
     switch (os.name) { //'posix', 'nt', 'mac', 'os2', 'ce', 'java', 'riscos'.
         case "nt":
-			rs = rs.concat(sv.tools.file.whereIs("Rgui"));
-			rs = rs.concat(sv.tools.file.whereIs("R"));
+			rs = rs.concat(sv.file.whereIs("Rgui"));
+			rs = rs.concat(sv.file.whereIs("R"));
 			rs.sort(); rs.reverse();
 			break;
         case "mac":
@@ -187,17 +179,17 @@ function PrefR_PopulateRInterps() {
 			break;
         case "posix":
         default:
-			rs = rs.concat(sv.tools.file.whereIs("R"));
+			rs = rs.concat(sv.file.whereIs("R"));
     }
     rs.unshift(prefExecutable);
 
     for (var i in rs) {
         rs[i] = os.path.normpath(rs[i]);
-        if (sv.tools.file.exists(rs[i]) == sv.tools.file.TYPE_NONE) {
+        if (sv.file.exists(rs[i]) == sv.file.TYPE_NONE) {
             rs.splice(i, 1);
         }
     }
-    rs = sv.tools.array.unique(rs); // Get rid of duplicates
+    rs = sv.array.unique(rs); // Get rid of duplicates
 
 	if(rs.indexOf(prefExecutable) == -1) {
 		prefset.setStringPref('svRDefaultInterpreter', '');
@@ -260,7 +252,7 @@ function svRDefaultInterpreterOnSelect(event) {
     var menuInterpreters = document.getElementById("svRDefaultInterpreter");
 
 	// Just in case
-	if(sv.tools.file.exists(menuInterpreters.value) == sv.tools.file.TYPE_NONE) {
+	if(sv.file.exists(menuInterpreters.value) == sv.file.TYPE_NONE) {
 		ko.dialogs.alert("Cannot find file: " + menuInterpreters.value, null, "SciViews-K preferences");
 	}
 
@@ -313,21 +305,21 @@ function PrefR_updateCommandLine(update) {
     var cmdArgs = document.getElementById("svRArgs").value;
 	var args1 = "";
 
-	if(document.getElementById("sciviews.pkgs.sciviews").checked)
-		args1 += " --svStartPkgs=SciViews,MASS,ellipse";
+	//if(document.getElementById("sciviews.pkgs.sciviews").checked)
+		//args1 += " --svStartPkgs=SciViews,MASS,ellipse";
 
-   	var cwd = sv.tools.file.path("ProfD", "extensions",
+   	var cwd = sv.file.path("ProfD", "extensions",
 		"sciviewsk@sciviews.org", "R");
 
 	cmdArgs = cmdArgs.replace(/\s*--[sm]di\b/, "");
 
 	var argsPos = cmdArgs.indexOf("--args");
 	if (argsPos != -1) {
-		args1 += " " + sv.tools.string.trim(cmdArgs.substring(argsPos + 6));
+		args1 += " " + sv.string.trim(cmdArgs.substring(argsPos + 6));
 		cmdArgs = cmdArgs.substring(0, argsPos);
 	}
 
-	args1 = sv.tools.string.trim(args1);
+	args1 = sv.string.trim(args1);
 	if (args1)
 		args1 = " --args " + args1;
 
@@ -347,7 +339,7 @@ function PrefR_updateCommandLine(update) {
 function PrefR_setExecutable(path) {
     var menu = document.getElementById("svRDefaultInterpreter");
 
-    if (!path || !sv.tools.file.exists(path)) {
+    if (!path || !sv.file.exists(path)) {
 		var os = Components.classes['@activestate.com/koOs;1']
         .getService(Components.interfaces.koIOs);
 
@@ -366,7 +358,7 @@ function PrefR_setExecutable(path) {
 
 // Get CRAN mirrors list - independently of R
 function PrefR_UpdateCranMirrors(localOnly) {
-	var svFile = sv.tools.file;
+	var svFile = sv.file;
 
 	// Get data in as CSV:
 	var csvName = "CRAN_mirrors.csv";

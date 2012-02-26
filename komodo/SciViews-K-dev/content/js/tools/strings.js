@@ -1,12 +1,12 @@
 // SciViews-K string functions
-// Various functions to manipulate strings 'sv.tools.string' & 'String' objects
+// Various functions to manipulate strings 'sv.string' & 'String' objects
 // Copyright (c) 2008-2009, Philippe Grosjean, Romain Francois and Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.tools.string.replaceCRLF(str, code);	// Replace LF and CR by 'code'
-// sv.tools.string.removeLastCRLF(str);    // Remove last CR and/or LF
-// sv.tools.string.toRegex(str);			// Changes a string to a regex
-// sv.tools.string.filename(str);			// Get filename/last dir from path
+// sv.string.replaceCRLF(str, code);	// Replace LF and CR by 'code'
+// sv.string.removeLastCRLF(str);    // Remove last CR and/or LF
+// sv.string.toRegex(str);			// Changes a string to a regex
+// sv.string.filename(str);			// Get filename/last dir from path
 //
 // Additional methods to String objects ////////////////////////////////////////
 // String.prototype.trim();					// Trim function for String
@@ -16,24 +16,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') sv = {};
-if (typeof(sv.tools) == 'undefined') sv.tools = {};
-if (typeof(sv.tools.string) == 'undefined') sv.tools.string = {};
+if (typeof(sv) == 'undefined') sv = {};
+if (typeof(sv.string) == 'undefined') sv.string = {};
 
 // Replace line feed and carriage return by 'code'
-sv.tools.string.replaceCRLF = function (str, code) {
+sv.string.replaceCRLF = function (str, code) {
 	// Replace all \r\n by 'code' in cmd
 	str = str.replace(/(\r?\n|\r)/g, code);
 	return(str);
 }
 
 // Remove the last line feed and or carriage return in the text
-sv.tools.string.removeLastCRLF = function (str) {
+sv.string.removeLastCRLF = function (str) {
 	if(str) str = str.replace(/[\n\r]{1,2}$/, "");
     return(str);
 }
 
 // changes a string to a regular expression
-sv.tools.string.toRegex = function (str) {
+sv.string.toRegex = function (str) {
 	// brackets
 	str = str.replace(/([\]\(\\\*\+\?\|\{\[\(\)\^\$\.\#])/g, "\\$1")
 		.replace(/\t/g, "\\t")	//.replace(/ /, "\\s")
@@ -43,7 +43,7 @@ sv.tools.string.toRegex = function (str) {
 }
 
 // Get filename or last directory name in a file path
-sv.tools.string.filename = function (str) {
+sv.string.filename = function (str) {
 	// Under Windows, replace \ by /
 	if (navigator.platform.indexOf("Win") == 0)
 		str = str.replace(/[\\]/g, "/");
@@ -55,14 +55,14 @@ sv.tools.string.filename = function (str) {
 	return(items[items.length - 1]);
 }
 
-sv.tools.string.addslashes = function(str) {
+sv.string.addslashes = function(str) {
 	// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 	return(str.replace(/([\\"'])/g, "\\$1")
 		.replace(/\x00/g, "\\0").replace(/\u0000/g, "\\0"));
 }
 
 
-sv.tools.string.trim = function (str, which) {
+sv.string.trim = function (str, which) {
 	if (which === undefined) which == "both";
 	var rx;
 	switch(which) {
@@ -81,16 +81,16 @@ sv.tools.string.trim = function (str, which) {
 
 //// Additional methods to String objects //////////////////////////////////////
 // Trim function for String
-String.prototype.trim = function() sv.tools.string.trim(this);
+String.prototype.trim = function() sv.string.trim(this);
 
 // Right trim
-String.prototype.rtrim = function() sv.tools.string.trim(this, "right");
+String.prototype.rtrim = function() sv.string.trim(this, "right");
 
 // Left trim
-String.prototype.ltrim = function() sv.tools.string.trim(this, "left");
+String.prototype.ltrim = function() sv.string.trim(this, "left");
 
 // Add slashes
-String.prototype.addslashes = function () sv.tools.string.addslashes(this);
+String.prototype.addslashes = function () sv.string.addslashes(this);
 
 // Escape string for regular expression
-String.prototype.regExpEscape = function() sv.tools.string.toRegex(this);
+String.prototype.regExpEscape = function() sv.string.toRegex(this);

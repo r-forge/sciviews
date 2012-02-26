@@ -5,7 +5,7 @@
 		<em:unpack>true</em:unpack>
         <em:id>sciviewsk@sciviews.org</em:id>
         <em:name>SciViews-K (dev)</em:name>
-        <em:version>1.1.4dev</em:version>
+        <em:version>1.1.5dev</em:version>
         <em:description>Edit R code with Komodo</em:description>
         <em:creator>Philippe Grosjean</em:creator>
         <em:contributor>Romain Francois</em:contributor>
