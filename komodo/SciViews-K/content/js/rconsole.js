@@ -1,3 +1,32 @@
+// SciViews-K R console management
+// Copyright (c) 2011-2012 Ph. Grosjean (phgrosjean@sciviews.org) & Kamil Barton
+// License: MPL 1.1/GPL 2.0/LGPL 2.1
+////////////////////////////////////////////////////////////////////////////////
+// sv.rconsole.intialize();          // Initialize the R console  
+// sv.rconsole.finalize();           // finalize the R console
+// sv.rconsole.getRTerminal();       // Get R terminal running in the console
+// sv.rconsole.getRTerminalView();   // Get the terminal view
+// sv.rconsole.getRProcess();        // Get the R process running in the console
+// sv.rconsole.startSession(command, cwd, clearContent);
+//                                   // Start an R session in the console
+// sv.rconsole.endSession(retval);   // End the R session in the console
+// sv.rconsole.start(editor, command, cwd, env, input, name,
+//     doNotOpenOutputWindow, clearOutputWindow, terminationCallback);
+//                                   // Function to use to start a R session
+// sv.rconsole.clear();              // Clear content & history in the R console
+// sv.rconsole.clearConsole();       // Clear the content of the console only
+// sv.rconsole.run(command, newline, show); // Run a line of code in R console
+// sv.rconsole.show(editor);         // Show the R console
+// sv.rconsole.setProcessHandle(process); // Set process handle
+// sv.rconsole.kill(retval);         // Kill the R process currently running
+// sv.rconsole.toggleView(newview);  // Toggle between R output/R console
+// sv.rconsole.scintillaOnClick(event); // On click event for the console
+// sv.rconsole.onFocus(event);       // On focus event for the console
+// sv.rconsole.rconsoleOnKeyPress(event); // On key press event for R console
+// sv.rconsole.routputOnKeyPtress(event); // On key press event for R output
+////////////////////////////////////////////////////////////////////////////////
+
+
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  * 
@@ -54,20 +83,20 @@ if (typeof(sv)=='undefined') {
  *       * ... setup sv.rconsole.endSession() to be run when R terminates
  */
 sv.rconsole = {};
-(function() {   
+(function () {   
     var _log = ko.logging.getLogger("sv.rconsole");    
     var _gRTerminalHandler = null;
     var _gRTerminalView = null;
     var _gRProcess = null;
     
-    function _ClearUI() {
+    function _ClearUI () {
         var descWidget = document.getElementById("rconsole-desc");
         descWidget.style.setProperty("color", "black", "");
         descWidget.removeAttribute("value");
         descWidget.removeAttribute("_command");
     }
     
-    this.initialize = function RConsole_Init() {
+    this.initialize = function RConsole_Init () {
         try {
             // Create a terminal for the R console window. The terminal has std
             // handlers that proxy read/write events between the scintilla and a
@@ -123,7 +152,7 @@ sv.rconsole = {};
         }
     }
      
-    this.finalize = function RConsole_Fini() {
+    this.finalize = function RConsole_Fini () {
         if (_gRTerminalView) {
             _gRTerminalView.finalizeTerminal();
             _gRTerminalView = null;
@@ -135,16 +164,16 @@ sv.rconsole = {};
         // Not needed? scintillaOverlayOnUnload();
     }
         
-    this.getRTerminal = function RConsole_GetTerminal() {
-        return _gRTerminalHandler;
+    this.getRTerminal = function RConsole_GetTerminal () {
+        return(_gRTerminalHandler);
     }
     
-    this.getRTerminalView = function RConsole_GetTerminalView() {
-        return _gRTerminalView;
+    this.getRTerminalView = function RConsole_GetTerminalView () {
+        return(_gRTerminalView);
     }
     
-    this.getRProcess = function RConsole_GetProcess() {
-        return _gRProcess;
+    this.getRProcess = function RConsole_GetProcess () {
+        return(_gRProcess);
     }
     
     // Start a terminal session with R in the console with the given command.
@@ -156,9 +185,8 @@ sv.rconsole = {};
     //    "cwd" is the directory in which the command is being run
     //    "clearContent" is a boolean indicating whether to clear the
     //    R console window content (by default "true").
-    this.startSession = function RConsole_StartSession(command, cwd,
-        clearContent /* =true */)
-    {
+    this.startSession = function RConsole_StartSession (command, cwd,
+        clearContent /* =true */) {
         if (typeof clearContent == 'undefined' || clearContent == null)
             clearContent = true;
     
@@ -200,8 +228,7 @@ sv.rconsole = {};
     }
     
     // Complete a terminal session. R exited with the given value
-    this.endSession = function RConsole_EndSession(retval)
-    {
+    this.endSession = function RConsole_EndSession (retval) {
         //dump("XXX RConsole_EndSession(retval="+retval+")\n");
         _gRTerminalView.endSession();
     
@@ -227,7 +254,7 @@ sv.rconsole = {};
     
     // koIRunTerminationListener implementation whose only job is to call
     // notify on child termination
-    function _RterminationListener() { }
+    function _RterminationListener () { }
     _RterminationListener.prototype = {
         init: function (editor, command, callback) {
             this._editor = editor;
@@ -257,10 +284,9 @@ sv.rconsole = {};
     }
     
     // Start a R process in our internal console
-    this.start = function RConsole_Start(editor, command, cwd, env, input,
+    this.start = function RConsole_Start (editor, command, cwd, env, input,
         name /* =internal R terminal*/, doNotOpenOutputWindow /* =false */, 
-        clearOutputWindow /* =true */, terminationCallback /* =null */)
-    {
+        clearOutputWindow /* =true */, terminationCallback /* =null */) {
         if (typeof name == 'undefined' || name == null)
             name = "internal R terminal";
         if (typeof doNotOpenOutputWindow == 'undefined' ||
@@ -315,7 +341,7 @@ sv.rconsole = {};
     }
     
     // Clear the R console and the command history
-    this.clear = function RConsole_Clear() {
+    this.clear = function RConsole_Clear () {
         //var scimoz = document.getElementById("runoutput-scintilla").scimoz;
         //var eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
         //var readOnly = scimoz.readOnly;
@@ -329,12 +355,13 @@ sv.rconsole = {};
     }
     
     // Clear the R console only, keep command history
-    this.clearConsole = function RConsole_ClearConsole() {
+    this.clearConsole = function RConsole_ClearConsole () {
         _gRTerminalView.clearBuffer();
     }
     
     // Execute a line of code in the R Console
-    this.run = function RConsole_Run(command, newline /* =true*/, show /* =true*/) {
+    this.run = function RConsole_Run (command, newline /* =true*/,
+        show /* =true*/) {
         if (typeof show == 'undefined' || show == null) show = true;
         if (show) ko.uilayout.ensureTabShown("sciviews_rconsole_tab", false);
         
@@ -356,10 +383,8 @@ sv.rconsole = {};
     }
     
     // Show the R console window (editor is the XUL window holding the console)
-    this.show = function RConsole_Show(editor) {
-        if (!editor) {
-            _log.error("show: 'editor' is not true");
-        }
+    this.show = function RConsole_Show (editor) {
+        if (!editor) _log.error("show: 'editor' is not true");
         // Make sure the tab is visible
         ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
     
@@ -369,8 +394,7 @@ sv.rconsole = {};
     
     // Pass a koIRunProcess reference to the R console window so it can manipulate
     // the process that is being run in its terminal, if necessary
-    this.setProcessHandle = function RConsole_SetProcessHandle(process)
-    {
+    this.setProcessHandle = function RConsole_SetProcessHandle (process) {
         if (_gRTerminalHandler.active) {
             _gRProcess = process;
             var closeButton = document.getElementById("rconsole-close-button");
@@ -379,19 +403,17 @@ sv.rconsole = {};
     }
     
     // Kill the process currently running in the console's terminal, if any
-    this.kill = function RConsole_Kill(retval) {
-        if (_gRProcess) {
-            _gRProcess.kill(retval);
-        }
+    this.kill = function RConsole_Kill (retval) {
+        if (_gRProcess) _gRProcess.kill(retval);
     }
     
-    function _SetView(editor, deck) {
+    function _SetView (editor, deck) {
         // Ignore editor, always use the window we're in
         var deckWidget = window.document.getElementById("rconsole-deck");
         deckWidget.setAttribute("selectedIndex", deck);
     }
     
-    this.toggleView = function RConsole_ToggleView(newview) {
+    this.toggleView = function RConsole_ToggleView (newview) {
         if (typeof newview == 'undefined' || newview == null) {
             var deckWidget = document.getElementById("rconsole-deck");
             if (deckWidget.getAttribute("selectedIndex") == 1) {
@@ -403,15 +425,13 @@ sv.rconsole = {};
         _SetView(window, newview);
     }
     
-    this.scintillaOnClick = function RConsole_scintillaOnClick(event) {
+    this.scintillaOnClick = function RConsole_scintillaOnClick (event) {
         // Do nothing for the moment... but should display a context menu on
         // right-click
     }
         
     this.onFocus = function RConsole_OnFocus(event) {
-        if (event.originalTarget != window) {
-            return;
-        }
+        if (event.originalTarget != window) return;
         var selected = window.document.getElementById("rconsole-deck")
             .selectedPanel;
         if ("scintilla" in selected) {
@@ -476,4 +496,3 @@ sv.rconsole = {};
 }).apply(sv.rconsole);
 
 window.addEventListener("load", sv.rconsole.initialize, false);
-
