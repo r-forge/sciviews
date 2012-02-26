@@ -55,47 +55,50 @@
 <?xml-stylesheet href="chrome://komodo/skin/autocomplete.css" type="text/css"?>
 
 <dialog id="dialog-interpolationquery"
-        xmlns:html="http://www.w3.org/1999/xhtml"
-        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        onload="OnLoad()"
-        orient="vertical"
-        style="min-width: 40em; max-width: 55em;"
-        flex="1"
-        buttons="help,accept,cancel"
-        ondialogaccept="return OK();"
-        ondialogcancel="return Cancel();"
-        ondialoghelp="alert('Sorry, not help currently available!');">
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  onload="OnLoad()"
+  orient="vertical"
+  style="min-width: 40em; max-width: 55em;"
+  flex="1"
+  buttons="help,accept,cancel"
+  ondialogaccept="return OK();"
+  ondialogcancel="return Cancel();"
+  ondialoghelp="alert('Sorry, not help currently available!');">
 
-    <script src="chrome://xtk/content/xtk.js" type="application/x-javascript;version=1.7"/>
-    <script type="application/x-javascript;version=1.7" src="chrome://komodo/content/library/logging.js"/>
-    <script type="application/x-javascript;version=1.7" src="chrome://komodo/content/library/trace.js"/>
-    <script type="application/x-javascript;version=1.7" src="chrome://komodo/content/library/mru.js"/>
-    <script type="application/x-javascript;version=1.7" src="chrome://sciviewsk/content/js/rinterpolationquery.js"/>
+  <script src="chrome://xtk/content/xtk.js" type="application/x-javascript;version=1.7"/>
+  <script type="application/x-javascript;version=1.7" src="chrome://komodo/content/library/logging.js"/>
+  <script type="application/x-javascript;version=1.7" src="chrome://komodo/content/library/trace.js"/>
+  <script type="application/x-javascript;version=1.7" src="chrome://komodo/content/library/mru.js"/>
+  <script type="application/x-javascript;version=1.7" src="chrome://sciviewsk/content/js/rinterpolationquery.js"/>
 
-    <popupset>
-        <panel type="autocomplete" id="popupTextboxAutoComplete" noautofocus="true"/>
-    </popupset>
+  <popupset>
+    <panel type="autocomplete" id="popupTextboxAutoComplete" noautofocus="true"/>
+  </popupset>
 
-    <vbox>
-        <!--PhG: how can I get a description area with multiple lines that nicely
-        fit in width in the dialog box? I can only do a single line, or use a
-        disabled textbox, but that does not fill well too!!!-->
-        <!--<textbox id="query-desc"
-          disabled="true" multiline="true" hidden="true" style="background-color:gray">
+  <vbox>
+    <!--PhG: how can I get a description area with multiple lines that nicely
+    fit in width in the dialog box? I can only do a single line, or use a
+    disabled textbox, but that does not fill well too!!!-->
+    <!--<textbox id="query-desc"
+      disabled="true" multiline="true" hidden="true" style="background-color:gray">
 		</textbox>-->
-        <description id="query-desc" crop="end">
-        </description>
-	    <separator class="thin"/>
-        <grid>
-            <columns>
-                <!--<column style="min-width: 100px;" flex="1"/>-->
-                <!--<column style="min-width: 200px;" flex="1"/>-->
-                <column />
-                <column flex="1"/>
-            </columns>
-            <rows id="query-rows">
-            </rows>
-        </grid>
-    </vbox>
-    <separator class="thin"/>
+    <description id="query-desc" crop="end">
+    </description>
+	  
+		<separator class="thin"/>
+    
+		<grid>
+      <columns>
+        <!--<column style="min-width: 100px;" flex="1"/>-->
+        <!--<column style="min-width: 200px;" flex="1"/>-->
+        <column />
+        <column flex="1"/>
+      </columns>
+      <rows id="query-rows">
+      </rows>
+    </grid>
+  </vbox>
+  
+	<separator class="thin"/>
 </dialog>

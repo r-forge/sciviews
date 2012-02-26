@@ -50,10 +50,17 @@ from codeintel2.common import *
 from codeintel2.citadel import CitadelBuffer, CitadelLangIntel
 from codeintel2.langintel import LangIntel
 from codeintel2.langintel import ParenStyleCalltipIntelMixin, ProgLangTriggerIntelMixin
-from codeintel2.udl import UDLLexer
+from codeintel2.udl import UDLLexer, UDLBuffer, UDLCILEDriver
 from codeintel2.util import CompareNPunctLast
+from codeintel2.accessor import AccessorCache, KoDocumentAccessor
 
-from SilverCity.ScintillaConstants import SCE_UDL_SSL_DEFAULT, SCE_UDL_SSL_IDENTIFIER, SCE_UDL_SSL_OPERATOR, SCE_UDL_SSL_VARIABLE, SCE_UDL_SSL_WORD, SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK
+#from SilverCity import find_lexer_module_by_id, PropertySet, WordList
+
+from SilverCity.ScintillaConstants import {
+    SCE_UDL_SSL_DEFAULT, SCE_UDL_SSL_IDENTIFIER, SCE_UDL_SSL_OPERATOR
+    SCE_UDL_SSL_VARIABLE, SCE_UDL_SSL_WORD, SCE_UDL_SSL_COMMENT,
+    SCE_UDL_SSL_COMMENTBLOCK, SCE_UDL_SSL_STRING
+}
 
 try:
     from xpcom.server import UnwrapObject
@@ -69,6 +76,7 @@ R = components.classes["@sciviews.org/svRinterpreter;1"].\
 #---- Globals
 lang = "R"
 log = logging.getLogger("codeintel.r")
+#log.setLevel(logging.WARNING)
 #log.setLevel(logging.DEBUG)
 
 # These keywords and builtin functions are copied from "Rlex.udl".
@@ -2668,6 +2676,36 @@ builtins = [
 class RLexer(UDLLexer):
     lang = lang
 
+# TODO: how to update keyword lists dynamically?
+
+    #def __init__(self):
+    #self._properties = SilverCity.PropertySet()
+    #self._keyword_lists = [
+        #SilverCity.WordList(SilverCity.Keywords.perl_keywords),
+        #SilverCity.WordList("")
+    #]
+    #SilverCity.WordList("fsfsd fsfsdf")
+
+
+
+# possible R triggers:
+# library|require(<|>     available packages
+# detach(<|>      loaded namespaces
+# data(<|>        available datasets
+# func(<|>        calltip or argument names
+# func(arg,<|>    argument names
+# func(firstar<|>    argument names
+# func(arg, secondar<|>    argument names
+# list $ <|>        list elements
+# s4object @ <|>    slots
+# namespace:: <|>  objects within namespace
+# namespace::: <|>  objects within namespace
+# variab<|>       complete variable names
+# "<|>            file paths
+# Note that each name may be single, double or backtick quoted, or in multiple
+# lines
+## completion for 'library(' or 'require(' R command :
+## 'unique(unlist(lapply(.libPaths(), dir)))'
 
 #---- LangIntel class
 # Dev Notes:
@@ -2691,13 +2729,46 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     # Used by ProgLangTriggerIntelMixin.preceding_trg_from_pos()
     trg_chars = tuple('$@[( ')
     calltip_trg_chars = tuple('(,')
+    
+    # named styles used by the class
+    whitespace_style = SCE_UDL_SSL_DEFAULT
+    operator_style   = SCE_UDL_SSL_OPERATOR
+    identifier_style = SCE_UDL_SSL_IDENTIFIER
+    keyword_style    = SCE_UDL_SSL_WORD
+    variable_style   = SCE_UDL_SSL_VARIABLE
+    string_style     = SCE_UDL_SSL_STRING
+    comment_styles   = (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK)
+    comment_styles_or_whitespace = comment_styles + (whitespace_style, )
+    word_styles      = ( variable_style, identifier_style, keyword_style)
+
+    type_sep = u'\u001e'
+    pathsep = os.sep + ("" if(os.altsep is None) else os.altsep)
+
+
+    koPrefs = components.classes["@activestate.com/koPrefService;1"] \
+        .getService(components.interfaces.koIPrefService).prefs
+
+    #def __init__:
+    #    CitadelLangIntel.__init__(self)
+    #    ParenStyleCalltipIntelMixin.__init__(self)
+    #    ProgLangTriggerIntelMixin.__init__(self)
+    #
 
     ##
     # Implicit triggering event, i.e. when typing in the editor.
     #
+    # TODO: trigger positions
     def trg_from_pos(self, buf, pos, implicit=True, DEBUG=False, ac=None):
         #DEBUG = True
-        if pos < 1:
+        
+        """If the given position is a _likely_ trigger point, return a
+        relevant Trigger instance. Otherwise return the None.
+            "pos" is the position at which to check for a trigger point.
+            "implicit" (optional) is a boolean indicating if this trigger
+                is being implicitly checked (i.e. as a side-effect of
+                typing). Defaults to true.
+        """
+        if pos < 3:
             return None
 
         accessor = buf.accessor
@@ -2772,7 +2843,7 @@ class RLangIntel(CitadelLangIntel, ParenStyleCalltipIntelMixin,
     def preceding_trg_from_pos(self, buf, pos, curr_pos,
                                preceding_trg_terminators=None, DEBUG=False):
         #DEBUG = True
-        if pos < 1:
+        if pos < 3:
             return None
 
         accessor = buf.accessor

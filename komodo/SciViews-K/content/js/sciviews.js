@@ -1,42 +1,46 @@
 // SciViews-K general functions
 // Define the basic 'sv' namespace, plus 'sv.cmdout', 'sv.log'
-// Copyright (c) 2008-2011, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2008-2012, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // _(); // A fake function used only to tag strings to be translated in projects
 //         and toolbox macros
 //
-// sv.version; // Get current SciViews-K version (major.minor.release)
-// sv.showVersion; // Do we display version in an alert() box or just set it?
+// sv.version;        // Get current SciViews-K version (major.minor.release)
+// sv.showVersion;    // Do we display version in an alert() box or just set it?
 // sv.checkVersion(version); // Check the SciViews-K extension version is fine
-//
-// Various functions defined in the 'sv' namespace directly
 // sv.alert(header, text); // Own alert box; text is optional
-// sv.getTextRange(what, gotoend, select);  // Get a part of text in the buffer,
-// but do not operate on selection
-// sv.marginClick(modifiers, position, margin);  // Custom margin click behaviour
-// sv.fileOpen(directory, filename, title, filter, multiple); // file open dlg,
-// more customizable replacement for ko.filepicker.open()
-
+// sv.getTextRange(what, gotoend, select, range, includeChars);
+//                    // Get a part of text in the buffer, do not select
+// sv.marginClick(modifiers, position, margin); // Custom margin click behaviour
+// sv.fileOpen(directory, filename, title, filter, multiple, save, filterIndex);
+//                    // File open, more customizable than ko.filepicker.open()
 // sv.browseURI(URI, internal); // Show URI in internal or external browser
 // sv.showFile(path, readonly); // Show a file in Komodo, possibly as read-only
-// sv.helpURL(URL); // Display URL help in the default browser
-// sv.helpContext(); // Get contextual help for selected word in buffer in R or
-// for active snippet in toolbox/project (see Help context)
+// sv.helpURL(URL);   // Display URL help in the default browser
+// sv.helpContext();  // Get contextual help for selected word in buffer in R or
+//                       for active snippet in toolbox (see Help context)
 // sv.translate(textId); // translate messages using data from
-// chrome://sciviewsk/locale/main.properties
+//                          chrome://sciviewsk/locale/main.properties
+// sv.addNotification(msg, severity, timeout); // Notification message as in ko7
+//                                                or statusbar message
+// sv.checkToolbox(); // Check SciViews-K & R reference toolboxes are installed
+// sv.toggleById(id, hide); // Show/hide UI element by id
+// sv.checkById(id, hide);  // Check/uncheck UI element by id
+// sv.askUI(change);  // Change the whole Komodo UI (simplify for useRs)
+// sv.reworkUI(level);// Function that performs Komodo UI change
 //
 // SciViews-K Command Output management ('sv.cmdout' namespace) ////////////////
-// sv.cmdout.append(str, newline, scrollToStart); // Append to Command Output
-// sv.cmdout.clear(all);					 // Clear the Command Output pane
-// sv.cmdout.message(msg, timeout, highlight);	 // Message in Command Output
-// sv.cmdout.exitPartial();				// Eliminate temporary multiline code
+// sv.cmdout.append(str, newline, scrollToEnd); // Append to Command Output
+// sv.cmdout.clear(all); // Clear the Command Output pane
+// sv.cmdout.message(msg, timeout, highlight); // Message in Command Output
+// sv.cmdout.exitPartial(); // Eliminate temporary multiline code
 //
 // SciViews-K logging feature ('sv.log' namespace) /////////////////////////////
 // sv.log.logger;           // The SciViews-K Komodo logger object
 // sv.log.exception(e, msg, showMsg); // Log an exception with error message
-// and stack. If showMsg == true, also display the
-// msg in an alert box (optional)
+//                                       and stack. If showMsg == true, also
+//                                       display the msg in an alert box
 // sv.log.critical(msg);    // Log a critical error
 // sv.log.error(msg);       // Log an error
 // sv.log.warn(msg);        // Log a warning
@@ -46,34 +50,15 @@
 // sv.log.all(debug);       // Toggle logging of debug/info messages on/off
 // sv.log.isAll();          // Do we currently log all messages?
 // sv.log.show();           // Show the Komodo log file
+////////////////////////////////////////////////////////////////////////////////
 //
-// sv.checkToolbox(); // Check SciViews-K & R reference toolboxes are installed
-
-/*
-FIXME: A loose list: PhG: YES, we definitely need to rethink SciViews-K
-shortcuts, but:
-1) The FX shortcuts you propose for main R interaction function (send to R,
-   source, etc.) are not easy to remember, and are not easy to use on a Mac. FX
-   keys are NOT commonly used on a Mac, and you have to press Fn+FX in original
-   keyboard config (this can be changed in the system preferences),
-2) The key combinations should work on all three platforms Windows, Linux & Mac
-3) As much as possible, the keys should be compatible with the other
-   SciViews-Something application I am currently working in: SciViews-LyX!!!
-   
-Key conflicts in toolbox: (to be removed/changed to unused combinations in SciViews toolbox)
-*Run function (Ctrl+Shift+F) conflicts with "Find in Files..."
-*Run paragraph (Ctrl+Shift+H) <--> "Replace in Files..."
-*Run line and hit enter (Ctrl+Return) <--> "Insert Newline (no favors)"
-*Working dir (current file): F7 <--> "Run marked block"
-*In toolbox: Ctrl+Shift+M (toolbox) and F7 (menu) both defined for "Run marked block"
-*Object structure (Ctrl+Shift+T) <--> Reopen the Last Closed Tab
-*Session in my documents... (Ctrl+Shift+S) <--> Save As... (This one is quite important!)
-*/
+// TODO: look at sv.cmdout in SciViews-K-dev... but these are two separate forks
+//       really => not easy to mix!
 ////////////////////////////////////////////////////////////////////////////////
 
 
 // This function is used to tag strings to be translated in projects/toolbox
-var _ = function(str) { return(str) }
+var _ = function (str) { return(str) }
 
 if (typeof(sv) == "undefined") var sv = {};
 
@@ -81,41 +66,23 @@ if (typeof(sv) == "undefined") var sv = {};
 if (typeof(sv.tools) == "undefined") sv.tools = {};
 
 // Version management
-sv.__defineGetter__("version", function() Components
-	.classes["@mozilla.org/extensions/manager;1"]
-	.getService(Components.interfaces.nsIExtensionManager)
-	.getItemForID("sciviewsk@sciviews.org").version);
+try { // Komodo 7
+	Components.utils.import("resource://gre/modules/AddonManager.jsm");
+	AddonManager.getAddonByID("sciviewsk@sciviews.org", function (addon) {
+		sv._version = addon.version; });
+} catch(e) {
+	sv._version = Components.classes["@mozilla.org/extensions/manager;1"]
+		.getService(Components.interfaces.nsIExtensionManager)
+		.getItemForID("sciviewsk@sciviews.org").version;
+}
+
+sv.__defineGetter__("version", function () sv._version);
 
 sv.showVersion = true;
 
-sv._compareVersion = function (a, b) {
-	if (!a)	return(-1);
-	if (!b)	return(1);
-
-	// try is necessary only till I find where is that damn macro causing an
-	// error at startup /-;
-	try {
-		a = a.split(/[.\-]/);
-		for (i in a) a[i] = parseInt(a[i]);
-		b = b.split(/[.\-]/);
-		for (i in b) b[i] = parseInt(b[i]);
-
-		for (k in a) {
-			if (k < b.length) {
-				if (a[k] > b[k]) {
-					return(1);
-				} else if (a[k] < b[k]) {
-					return(-1);
-				}
-			} else {
-				return(1);
-			}
-		}
-		return((b.length > a.length) ? -1 : 0);
-	} catch(e) {
-		return(1);
-	}
-}
+sv._compareVersions = function(a, b) Components
+	.classes["@mozilla.org/xpcom/version-comparator;1"]
+	.getService(Components.interfaces.nsIVersionComparator).compare(a, b);
 
 sv.checkVersion = function (version) {
 	if (sv._compareVersion(sv.version, version) < 0) {
@@ -137,7 +104,8 @@ sv.checkVersion = function (version) {
 
 //// Other functions directly defined in the 'sv' namespace ////////////////////
 // Our own alert box
-sv.alert = function (header, text) ko.dialogs.alert(header, text, "SciViews-K");
+sv.alert = function (header, text)
+	ko.dialogs.alert(header, text, "SciViews-K");
 
 //sv.alert("Error:", "Some message");
 // -or-
@@ -198,7 +166,7 @@ includeChars /*= "." if language is R*/) {
 			if (pStart != 0 | !wordCharTest(scimoz.getWCharAt(0))) pStart += 1;
 
 			for (pEnd = scimoz.currentPos;
-				 (pEnd < scimoz.length) && wordCharTest(scimoz.getWCharAt(pEnd));
+				(pEnd < scimoz.length) && wordCharTest(scimoz.getWCharAt(pEnd));
 			pEnd = scimoz.positionAfter(pEnd)) { };
 		}
 		break;
@@ -267,7 +235,8 @@ includeChars /*= "." if language is R*/) {
 
 			// Repeat if selected function does not embrace cursor position
 			// and if there are possibly any functions enclosing it
-			} while (pos4 < curPos && scimoz.getFoldParent(lineArgsStart) != -1);
+			} while (pos4 < curPos &&
+				scimoz.getFoldParent(lineArgsStart) != -1);
 
 		if (pos4 >= curPos) {
 			pStart = pos0;
@@ -347,7 +316,7 @@ includeChars /*= "." if language is R*/) {
 			scimoz.gotoPos(pEnd + 1);
 		} else scimoz.gotoPos(pEnd);
 	if (select && what != "sel") scimoz.setSel(pStart, pEnd);
-	if (typeof range == "object") {
+	if (range != undefined && (typeof range == "object")) {
 		range.value = {start: pStart, end: pEnd};
 	}
 	return(text);
@@ -448,7 +417,8 @@ filterIndex) {
     fp.appendFilters(nsIFilePicker.filterAll);
 	filters.push("");
 
-    if (directory) {
+    if (directory  &&
+		sv.tools.file.exists(directory = sv.tools.file.path(directory))) {
         var lf = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
         lf.initWithPath(directory);
@@ -574,13 +544,13 @@ sv.helpContext = function () {
 				content = content.replace(/[\n\r]/g, "\t");
 
 				// Look for a string defining the URL for associated help file
-				// This is something like: [[%ask|pref:URL|R|RWiki-help:<value>]]
+				// This is something like [[%ask|pref:URL|R|RWiki-help:<value>]]
 				// To ease search, replace all [[%ask by [[%pref
 				content = content.replace(/\[\[%ask:/g, "[[%pref:");
 
 				// Look for URL-help
-				var help = content.replace(/^.*\[\[%pref:URL-help:([^\]]*)]].*$/,
-					"$1");
+				var help = content
+					.replace(/^.*\[\[%pref:URL-help:([^\]]*)]].*$/, "$1");
 				if (help != content) {	// Found!
 					// Show in default browser
 					// TODO: a quick 'R help' tab to show this
@@ -642,8 +612,10 @@ sv.translate = function (textId) {
 			param = [];
 			for (var i = 1; i < arguments.length; i++)
 				param = param.concat(arguments[i]);
+			//return(strbundle.getFormattedString(textId, param));
 			return(bundle.formatStringFromName(textId, param, param.length));
 		} else {
+			//return(strbundle.getString(textId));
 			return(bundle.GetStringFromName(textId));
 		}
 	} catch (e) {
@@ -659,542 +631,166 @@ sv.translate = function (textId) {
 	}
 }
 
-
-//// Control the R output tab (was command output tab) /////////////////////////
-if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
-
-// Append text to the Command Output pane
-// Now, this is managed in a R Console pane!
-// TODO: handle \b correctly to delete char up to the beginning of line
-// TODO: what to do with \a? I already have a bell in R console...
-
-sv.cmdout = {};
-(function() {
-
-var _this = this;
-var scimoz, eolChar;
-
-// Get the EOL character
-this.__defineGetter__('eolChar', function() {
-	if (!eolChar) _init();
-	return(eolChar);
-});
-
-// Initialize the scintilla window in the R Output
-function _init() {
-	// Format the scintilla window with same style as for the Komodo console
-	try {
-		var scintilla = document
-			.getElementById("rconsole-scintilla2").scintilla;
-		scintilla.init();
-		scintilla.language = "Errors";
-	} catch(e) { } // We don't care of errors here (there are, because the
-	//'Errors' language assumes that a terminal is linked to scintilla!)
-	
-	// Get a reference to scimoz
-	scimoz = document.getElementById("rconsole-scintilla2").scimoz;
-	
-	// What EOL (end of line) character is in use here?
-	eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
-	
-	// Change a couple of other scimoz properties
-	scimoz.wrapMode = scimoz.SC_WRAP_NONE;
-	scimoz.caretStyle = scimoz.CARETSTYLE_INVISIBLE;
-	scimoz.viewWS = false;
-	scimoz.viewEOL = false;
-	scimoz.readOnly = true;
-	
-	// Now, check if R is responding on the server port
-	if (sv.r.test(true, true)) {
-		// Force refreshing the object explorer
-		// Use this instead???
-	// Differ synching R <-> Komodo to avoid deadlock situation
-	// That does not work!
-	
-		// Show a prompt
-		_newPrompt();
-		// ... and refresh R objects explorer
-		// PhG: this seems to make problem => temporary disabled!
-		//window.setTimeout("sv.r.objects.getPackageList(true, true, true);", 500);
-//	window.setTimeout("sv.r.test(true, true);", 500);
-//		sv.r.eval("try(koRefresh(force = TRUE), silent = TRUE)");
-		
+if (ko.notifications) {
+	sv.addNotification = function (msg, severity, timeout) {
+		var sm = Components.classes["@activestate.com/koStatusMessage;1"]
+			.createInstance(Components.interfaces.koIStatusMessage);
+		sm.category = "SV";
+		sm.msg = msg;
+		sm.log = true;
+		sm.severity = severity;
+		sm.timeout = timeout;
+		ko.notifications.addNotification(sm);
 	}
-	
-	// Rework UI
-	sv.reworkUI()
-}
-
-// Append text to R output. Default behaviour like a terminal: scroll to end
-this.append = function (str, newline /* =true*/, scrollToEnd /* = true*/) {
-	if (newline === undefined || newline == null) newline = true;
-	if (scrollToEnd === undefined || scrollToEnd == null) scrollToEnd = true;
-
-	if (!scimoz) _init();
-	
-	// Make sure R Output is visible
-	try {
-		ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
-		sv.rconsole.toggleView(1);
-		ko.views.manager.currentView.setFocus();
-	} catch(e) { } // We don't care if it fails, e.g., no buffer currently open
-
-	try {
-		// Keep reference of last line: we will have to style new text from there
-		var curline = scimoz.lineCount - 1;
-		
-		// Is the current position located in last line?
-		var isLast = (scimoz.lineFromPosition(scimoz.currentPos) == curline);
-		
-		//var readOnly = scimoz.readOnly;
-		scimoz.readOnly = false;
-		
-		// Do we add a carriage return at the ne of the text?
-		if (newline) str += eolChar;
-		
-		// Avoid double prompt: if prompt ':> ' or ':+ ' at the last line and
-		// the text to append also contains the same prompt, eliminate one
-		var curprompt = scimoz.getTextRange(scimoz.positionFromLine(curline),
-			scimoz.textLength);
-		var strprompt = str.substr(0, 3);
-		if (curprompt == ":> " && strprompt == ":> ") str = str.substr(3);
-		if (curprompt == ":+ " && strprompt == ":+ ") str = str.substr(3);
-		
-		// Avoid one carriage return too much after a prompt (this is the case
-		// with the socket server... and I don't know how to get rid of it!)
-		str = str.replace(/:> [\n\r]*$/, ":> ");
-		
-		// Append this text
-		var str_bytelength = ko.stringutils.bytelength(str);
-		scimoz.appendText(str_bytelength, str);
-		
-		// Apply style to the new text
-		var styleMask = (1 << scimoz.styleBits) - 1;
-		var start, prompt;
-		for (var i = curline; i < scimoz.lineCount; i++) { 
-			start = scimoz.positionFromLine(i);
-			prompt = scimoz.getTextRange(start, start + 3);
-			scimoz.startStyling(start, styleMask);
-			if (prompt == ":> " || prompt == ":+ ") {
-				// This should be a command line
-				scimoz.setStyling(scimoz.lineLength(i), 1);
-			} else {
-				// This should be output text
-				scimoz.setStyling(scimoz.lineLength(i), 0);
-			}
-		}	
-	} finally {
-		// Move to the end of the document if caret was in the last line
-		if (scrollToEnd && isLast) {
-			scimoz.gotoPos(scimoz.length);
-			scimoz.ensureVisible(scimoz.lineCount - 1);
-		}
-		//scimoz.readOnly = readOnly;
-		scimoz.readOnly = true;
+} else {
+	sv.addNotification = function (msg, severity, timeout) {
+		ko.statusBar.AddMessage(msg, 'sciviewsk', timeout, false, false, true);
 	}
 }
-
-// Clear text in the Output Command pane
-this.clear = function (all /*= false*/) {
-	if (all === undefined || all == null) all = false;
-	
-	// No need to show the R Output here, right?	
-	//try {
-	//	ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
-	//	sv.rconsole.toggleView(1);
-	//	ko.views.manager.currentView.setFocus();
-	//} catch(e) {} // We don't care if it fails, e.g., no buffer currently open
-	
-	var needPrompt = true;	
-	if (!scimoz) {
-		_init();
-		needPrompt = false;
-	}
-	
-	if (all) {
-		// Recalculate output width
-		var width = (Math.floor(window.innerWidth /
-			scimoz.textWidth(0, "0")) - 7)
-		// min = 66, max = 200 (otherwise, it is harder to read) 
-		if (width < 66) width = 66;
-		if (width > 266) width = 266;
-		sv.r.width = width;
-		_this.message("R output is cleared... - options(width = " +
-			width + ") will be inserted");
-	}
-	
-	if (needPrompt) _newPrompt();
-}	
-
-function _newPrompt() {
-	//var readOnly = scimoz.readOnly;
-	try {
-		scimoz.readOnly = false;
-		scimoz.clearAll();
-		// Show the default prompt
-		var str = ":> ";
-		var str_bytelength = ko.stringutils.bytelength(str);
-		scimoz.appendText(str_bytelength, str);
-		// Apply command line styling to it
-		var styleMask = (1 << scimoz.styleBits) - 1;
-		var start = scimoz.positionFromLine(0);
-		scimoz.startStyling(start, styleMask);
-		scimoz.setStyling(scimoz.lineLength(0), 1);
-		// Move to the end of the prompt
-		//scimoz.gotoPos(scimoz.length);
-		//scimoz.ensureVisible(0);
-		// PhG: if we do so, the R output panel is displaced by 3 chars to the
-		// right at startup when reconnecting to an already running R process
-		// So, we move to the FIRST character instead!
-		scimoz.gotoPos(0);
-		scimoz.scrollCaret();
-	} finally {
-		//scimoz.readOnly = readOnly;
-		scimoz.readOnly = true;
-	}
-}
-
-// Display message on the R output message area
-this.message = function (msg /* =""*/, timeout /* =0*/, highlight /* =false*/) {
-	if (msg === undefined || msg == null) msg = "";
-	if (timeout === undefined || timeout == null) timeout = 0;
-	if (highlight === undefined || highlight == null) highlight = false;
-	
-	// Make sure R Output is visible
-	try {
-		ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
-		sv.rconsole.toggleView(1);
-		ko.views.manager.currentView.setFocus();
-	} catch(e) { } // We don't care if it fails, e.g., no buffer currently open
-	
-	var rconsoleDesc = document.getElementById('rconsole-desc');
-	rconsoleDesc.parentNode.style.backgroundColor =
-		(highlight && msg) ? "highlight" : "";
-	rconsoleDesc.style.color = "rgb(0, 0, 0)";
-	var oldmsg = rconsoleDesc.getAttribute("value");
-	rconsoleDesc.setAttribute("value", msg);
-	window.clearTimeout(rconsoleDesc.timeout);
-	if (timeout > 0) rconsoleDesc.timeout = window
-		.setTimeout("sv.cmdout.message('" + oldmsg + "', 0);", timeout);
-}
-
-// In multiline mode, we temporarily print multiline command being constructed,
-// but once it is complete and evaluated by R, we got its reworked version. So,
-// we need to eliminate the temporary lines... This is done here.
-// Erase all lines starting with ':+ ' and the first one starting with ':> '
-this.exitPartial = function () {
-	if (!scimoz) _init();
-	
-	try {
-		//var readOnly = scimoz.readOnly;
-		scimoz.readOnly = false;
-		var firstline = -1;
-
-		i = scimoz.lineCount - 1;
-		// Allow for an empty line at the end
-		if (scimoz.lineLength(i) == 0 && i > 0) i = i - 1;
-		pos = scimoz.positionFromLine(i);
-		while (i >= 0 && scimoz.getTextRange(pos, pos + 3) == ":+ ") {
-			firstline = i;
-			i = i -1; // Test previous line
-			pos = scimoz.positionFromLine(i);
-		}
-		// Should take the line above also, but test it starts with ':> '
-		if (firstline > 0) {
-			pos = scimoz.positionFromLine(firstline - 1);
-			if (scimoz.getTextRange(pos, pos + 3) == ":> ")
-				firstline = firstline - 1;
-			// Erase this temporary multiline command
-			scimoz.setSel(scimoz.positionFromLine(firstline), scimoz.textLength);
-			scimoz.replaceSel("");
-		}
-	} finally {
-		//scimoz.readOnly = readOnly;
-		scimoz.readOnly = true;
-	}
-}
-
-}).apply(sv.cmdout);
-
-
-//// Logging management ////////////////////////////////////////////////////////
-if (typeof(sv.log) == 'undefined') sv.log = {};
-
-//const LOG_NOTSET = 0;	//const LOG_DEBUG = 10;	//const LOG_INFO = 20;
-//const LOG_WARN = 30; 	//const LOG_ERROR = 40;	//const LOG_CRITICAL = 50;
-// ko.logging.LOG_*
-
-(function () {
-	var logger = ko.logging.getLogger("SciViews-K");
-
-	this.exception = function (e, msg, showMsg) {
-		if (typeof(showMsg) != 'undefined' && showMsg == true)
-			sv.alert("Error", msg);
-		logger.exception(e, msg);
-	}
-
-	this.critical = function (msg) {
-		logger.critical(msg);
-	}
-
-	this.error = function (msg) {
-		logger.error(msg);
-	}
-
-	this.warn = function (msg) {
-		logger.warn(msg);
-	}
-
-	this.warnStack = function (msg) {
-		logger.deprecated(msg);
-	}
-
-	this.info = function (msg) {
-		logger.info(msg);
-	}
-
-	this.debug = function (msg) {
-		logger.debug(msg);
-	}
-
-	this.all = function (debug) {
-		logger.setLevel(!!debug);
-		if (logger.getEffectiveLevel() == 1) {
-			ko.statusBar.AddMessage("SciViews error logging set to debug level",
-				"svLog", 3000, true);
-		} else {
-			ko.statusBar.AddMessage("SciViews error logging set to level " +
-				logger.getEffectiveLevel(), "svLog", 3000, true);
-		}
-	}
-
-	this.isAll = function () {
-		return(logger.getEffectiveLevel() == 1);
-	}
-
-	this.show = function () {
-		var os = Components.classes['@activestate.com/koOs;1']
-			.getService(Components.interfaces.koIOs);
-		try {
-			// Note that in Komodo 6, interpolateStrings is deprecated in favor
-			// of interpolateString!
-			var appdir = ko.interpolate
-				.interpolateStrings('%(path:userDataDir)');
-			var logFile = os.path.join(appdir,'pystderr.log');
-			var winOpts =
-				"centerscreen,chrome,resizable,scrollbars,dialog=no,close";
-			window.openDialog('chrome://komodo/content/tail/tail.xul',
-				"_blank", winOpts, logFile);
-		} catch(e) {
-			this.exception(e,
-				"Unable to display the Komodo error log (" + e + ")", true);
-		}
-	}
-
-}).apply(sv.log);
-
-
-//sv.log.all(true);
-
-//// Tests... default level do not print debug and infos!
-//sv.log.all(false);
-//alert(sv.log.isAll());
-//try {
-//   test = nonexistingvar;
-//} catch(e) {sv.log.exception(e, "Test it exception"); }
-//sv.log.critical("Test it critical");
-//sv.log.error("Test it error");
-//sv.log.warn("Test it warning");
-//sv.log.info("Test it info");
-//sv.log.debug("Test it debug");
-//sv.log.warnStack("Test it warn with stack");
-//// Set at debug/info level
-//sv.log.all(true);
-//alert(sv.log.isAll());
-//sv.log.critical("Test it critical 2");
-//sv.log.error("Test it error 2");
-//sv.log.warn("Test it warning 2");
-//sv.log.info("Test it info 2");
-//sv.log.debug("Test it debug 2");
-//sv.log.warnStack("Test it warn with stack 2");
-//// Show Komodo log
-//sv.log.show();
 
 // Installs R reference toolbox
 sv.checkToolbox = function () {
-	var svFile = sv.tools.file;
-
-	// If Komodo 6, and new-style, zipped toolbox is present, redirect to
-	// sv.checkToolbox2
-	if (ko.toolbox2 && svFile.getfile("ProfD",
-		"extensions/sciviewsk@sciviews.org/defaults", "toolbox.zip").exists()) {
-		sv.checkToolbox2();
-		return;
-	}
-
 	// Ask for confirmation first
 	if (ko.dialogs.okCancel("(Re)install the R reference toolbox...", "OK",
 		"This will possibly overwrite existing R reference " +
 		"toolbox. Note that this may take some time. Proceed?",
 		"R reference installation") != "OK") return;
 
-	// otherwise, look for version 5 (kpf) toolboxes (DEPRECATED)
-	ko.statusBar.AddMessage(
-		sv.translate("(Re-)installing R reference toolbox..."), "SciViews",
-		3000, true);
-    try {
-		var path, tbxs;
+	// If Komodo 6, and new-style, zipped toolbox is there, use it
+	if (ko.toolbox2 && sv.tools.file.getfile("ProfD",
+		"extensions/sciviewsk@sciviews.org/defaults", "toolbox.zip").exists()) {
+		
+		ko.statusBar.AddMessage(
+			sv.translate("(Re-)installing R reference toolbox..."),
+			"SciViews", 3000, true);
+	
+		path = sv.tools.file.path("ProfD", "extensions",
+			"sciviewsk@sciviews.org", "defaults", "toolbox.zip");
+	
+		var tbxFile = sv.tools.file.getfile(path);
+		if(!tbxFile.exists()) return;
+	
 		var os = Components.classes['@activestate.com/koOs;1']
 			.getService(Components.interfaces.koIOs);
-
-		var tbxMgr;
-		if (ko.toolbox2 && ko.toolbox2.manager) { // Komodo >= 6.0.0?
-			tbxMgr = ko.toolbox2.manager;
-			var toolbox2Svc = tbxMgr.toolbox2Svc;
-			var targetDirectory = toolbox2Svc.getStandardToolbox().path;
-			function _installPkg(path)
-				toolbox2Svc.importV5Package(targetDirectory, path);
-		} else { // Komodo 5: (TODO: test it on Komodo 5!)
-			function _installPkg(path)
-				ko.toolboxes.importPackage(path);
-			tbxMgr = null;
+		var tbxMgr = ko.toolbox2.manager;
+		var toolbox2Svc = tbxMgr.toolbox2Svc;
+		var zipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
+		   .createInstance(Components.interfaces.nsIZipReader);
+	
+		var rxFolder1 = /^[^\/]+\/$/; // First level folder
+		var tbxFolderPaths = [];
+		var fTargetDir = sv.tools.file.getfile("TmpD", "svtoolbox");
+		if (fTargetDir.exists()) fTargetDir.remove(true);
+		var targetDir = fTargetDir.path;
+	
+		var toolsDirectory = toolbox2Svc.getStandardToolbox().path;
+	
+		zipReader.open(tbxFile);
+		var entries = zipReader.findEntries(null);
+		var entryName, outFile, isFile, folderdata, tbxNames = [];
+		while (entries.hasMore()) {
+			entryName = entries.getNext();
+			outFile = sv.tools.file.getfile(targetDir, entryName);
+			isFile = !(zipReader.getEntry(entryName).isDirectory);
+			sv.tools.file.getDir(outFile, isFile, false);
+			// Careful! This replaces current folders in 'tools' directory
+			if (isFile) zipReader.extract(entryName, outFile);
 		}
-
-		// Find all .kpz files in 'defaults', append/replace version string
-		// in filenames, finally install as toolbox
-		path = svFile.path("ProfD", "extensions",
-			"sciviewsk@sciviews.org", "defaults");
-		tbxs = svFile.list(path, "\\.kpz$");
-
-		var file1, file2, path1, path2;
-		for (var i in tbxs) {
-			file1 = tbxs[i];
-			path1 = svFile.path(path, file1);
-			file2 = os.path.withoutExtension(file1
-				.replace(/\s*(\([\s0-9a-c\.]+\)\s*)+/, ""));
-			tbxs[i] = file2 + " (" + sv.version + ")";
-			file2 = file2 + " (" + sv.version + ").kpz";
-			path2 = svFile.path(path, file2);
-			os.rename(path1, path2);
-			try {
-				_installPkg(path2);
-			} catch(e) { /***/ }
+		zipReader.close();
+	
+		var tbxs = sv.tools.file.list(targetDir);
+		for (var i = 0; i < tbxs.length; i++) {
+			path = sv.tools.file.path(targetDir, tbxs[i]);
+			toolbox2Svc.importDirectory(toolsDirectory, path);
+			sv.log.debug("sv.checkToolbox2: path ->" + tbxs[i]);
 		}
-
-		if (tbxMgr) tbxMgr.view.reloadToolsDirectoryView(-1);
-		
-		//Message prompting for removing old or duplicated toolboxes
+		fTargetDir.remove(true);
+	
+		toolbox2Svc.reloadToolsDirectory(toolsDirectory);
+		tbxMgr.view.reloadToolsDirectoryView(-1);
+	
+		var rowCount = tbxMgr.view.rowCount;
+		for (var i = 0; i < rowCount; i++) {
+			toolPath = os.path.relpath(tbxMgr.view.getPathFromIndex(i),
+				toolsDirectory);
+			if (tbxs.indexOf(toolPath) != -1) {
+				toolName = tbxMgr.view.getCellText(i, {});
+				tbxNames.push(toolName);
+				try { tbxMgr.view.renameTool(i, toolName) } catch(e) {
+					// This gives error on Linux. Bug in ko.toolbox2?
+					// The same when trying to rename manually.
+					// "NameError: global name 'path' is not defined"
+					// try other methods... edit .folderdata directly ???
+				}
+				sv.log.debug("sv.checkToolbox2: toolPath ->" +
+					toolPath + " :: " + toolName);
+			}
+		}
+	
 		sv.alert(sv.translate("Toolbox %S is added. " +
 			"To avoid conflicts, you should remove any previous or duplicated " +
 			"versions.", "\"" +
-			tbxs.join("\" and \"") + "\""));
-	} catch(e) {
-		sv.log.exception(e,
-			"Error while installing the R reference toolbox");
-    }
-	finally {
-		sv.showVersion = true;
-	}
-}
-
-// Use toolbox.zip file in 'defaults', unpack to toolbox directory
-// appending version string in root folders names
-sv.checkToolbox2 = function (path) {
-	// Ask for confirmation first
-	if (ko.dialogs.okCancel("(Re)install the R reference toolbox...", "OK",
-		"This will possibly overwrite existing R reference " +
-		"toolbox. Note that this may take some time. Proceed?",
-		"R reference installation") != "OK") return;
+			tbxNames.join("\" and \"") + "\""));	
 	
-	ko.statusBar.AddMessage(
-		sv.translate("(Re-)installing R reference toolbox..."),
-		"SciViews", 3000, true);
-
-	var svFile = sv.tools.file;
-	if(!path) path = svFile.path("ProfD", "extensions",
-		"sciviewsk@sciviews.org", "defaults", "toolbox.zip");
-
-	var tbxFile = svFile.getfile(path);
-	if(!tbxFile.exists()) return;
-
-	var os = Components.classes['@activestate.com/koOs;1']
-		.getService(Components.interfaces.koIOs);
-	var tbxMgr = ko.toolbox2.manager;
-	var toolbox2Svc = tbxMgr.toolbox2Svc;
-	var zipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
-	   .createInstance(Components.interfaces.nsIZipReader);
-
-	var rxFolder1 = /^[^\/]+\/$/; // First level folder
-	var tbxFolderPaths = [];
-
-	// Need to replace name of top directories anyway, to avoid overwriting ones
-	// from previous version, append a short random string to make it unique
-//	var pathRx = /^([^\/]+)/;
-	//var pathReplacePat =  "$1_" + sv.version + "_" +
-	//	Math.floor(Math.random() * 65536).toString(36);
-		
-//	var pathReplacePat =  "$1 ";
-
-	var fTargetDir = svFile.getfile("TmpD", "svtoolbox");
-	if (fTargetDir.exists()) fTargetDir.remove(true);
-	var targetDir = fTargetDir.path;
-
-	var toolsDirectory = toolbox2Svc.getStandardToolbox().path;
-
-	zipReader.open(tbxFile);
-	var entries = zipReader.findEntries(null);
-	var entryName, outFile, isFile, folderdata, tbxNames = [];
-	while (entries.hasMore()) {
-		entryName = entries.getNext();
-		//Note, renaming directory works only if there is no .folderdata:
-//		outFile = svFile.getfile(targetDir, entryName.replace(pathRx,
-//			pathReplacePat));
-		outFile = svFile.getfile(targetDir, entryName);
-		isFile = !(zipReader.getEntry(entryName).isDirectory);
-		svFile.getDir(outFile, isFile, false);
-		// Careful! This replaces current folders in 'tools' directory
-		if (isFile) zipReader.extract(entryName, outFile);
-	}
-	zipReader.close();
-
-	var tbxs = svFile.list(targetDir);
-	for (var i = 0; i < tbxs.length; i++) {
-		path = svFile.path(targetDir, tbxs[i]);
-		toolbox2Svc.importDirectory(toolsDirectory, path);
-		sv.log.debug("sv.checkToolbox2: path ->" + tbxs[i]);
-	}
-	fTargetDir.remove(true);
-
-	toolbox2Svc.reloadToolsDirectory(toolsDirectory);
-	tbxMgr.view.reloadToolsDirectoryView(-1);
-
-	var rowCount = tbxMgr.view.rowCount;
-	for (var i = 0; i < rowCount; i++) {
-		toolPath = os.path.relpath(tbxMgr.view.getPathFromIndex(i),
-			toolsDirectory);
-		if (tbxs.indexOf(toolPath) != -1) {
-			toolName = tbxMgr.view.getCellText(i, {}); // + " (" + sv.version + ")";
-			tbxNames.push(toolName);
-			try { tbxMgr.view.renameTool(i, toolName) } catch(e) {
-				// This gives error on Linux. Bug in ko.toolbox2?
-				// The same when trying to rename manually.
-				// "NameError: global name 'path' is not defined"
-				// try other methods... edit .folderdata directly ???
+	} else { // Old Komodo 5 toolbox management (kpf), or toolbox.zip not found
+		ko.statusBar.AddMessage(
+			sv.translate("(Re-)installing R reference toolbox..."), "SciViews",
+			3000, true);
+		try {
+			var path, tbxs;
+			var os = Components.classes['@activestate.com/koOs;1']
+				.getService(Components.interfaces.koIOs);
+	
+			var tbxMgr;
+			if (ko.toolbox2 && ko.toolbox2.manager) { // Komodo >= 6.0.0?
+				tbxMgr = ko.toolbox2.manager;
+				var toolbox2Svc = tbxMgr.toolbox2Svc;
+				var targetDirectory = toolbox2Svc.getStandardToolbox().path;
+				function _installPkg (path)
+					toolbox2Svc.importV5Package(targetDirectory, path);
+			} else { // Komodo 5
+				function _installPkg (path)
+					ko.toolboxes.importPackage(path);
+				tbxMgr = null;
 			}
-			sv.log.debug("sv.checkToolbox2: toolPath ->" +
-				toolPath + " :: " + toolName);
+	
+			// Find all .kpz files in 'defaults', append/replace version string
+			// in filenames, finally install as toolbox
+			path = sv.tools.file.path("ProfD", "extensions",
+				"sciviewsk@sciviews.org", "defaults");
+			tbxs = sv.tools.file.list(path, "\\.kpz$");
+	
+			var file1, file2, path1, path2;
+			for (var i in tbxs) {
+				file1 = tbxs[i];
+				path1 = sv.tools.file.path(path, file1);
+				file2 = os.path.withoutExtension(file1
+					.replace(/\s*(\([\s0-9a-c\.]+\)\s*)+/, ""));
+				tbxs[i] = file2 + " (" + sv.version + ")";
+				file2 = file2 + " (" + sv.version + ").kpz";
+				path2 = sv.tools.file.path(path, file2);
+				os.rename(path1, path2);
+				try {
+					_installPkg(path2);
+				} catch(e) { }
+			}
+	
+			if (tbxMgr) tbxMgr.view.reloadToolsDirectoryView(-1);
+			
+			//Message prompting for removing old or duplicated toolboxes
+			sv.alert(sv.translate("Toolbox %S is added. " +
+				"To avoid conflicts, you should remove any previous or " +
+				"duplicated versions.", "\"" +
+				tbxs.join("\" and \"") + "\""));
+		} catch(e) {
+			sv.log.exception(e,
+				"Error while installing the R reference toolbox");
+		}
+		finally {
+			sv.showVersion = true;
 		}
 	}
-
-	sv.alert(sv.translate("Toolbox %S is added. " +
-		"To avoid conflicts, you should remove any previous or duplicated " +
-		"versions.", "\"" +
-		tbxNames.join("\" and \"") + "\""));
 }
-
-// Ensure we check the toolbox is installed once the extension is loaded
-//addEventListener("load", function() { setTimeout (sv.checkToolbox, 5000) }, false);
-//addEventListener("load", sv.checkToolbox, false);
 
 // PhG: I have tried this to check closing R... but there is a problem.
 // maybe the SciViews server is not running any more after the user clicks
@@ -1228,13 +824,12 @@ sv.checkById = function (id, hide) {
 	if (item != null) item.setAttribute("checked", hide);
 }
 
-// Not good mechanism between askUI - reworkUI, could enter a dead loop!
-// but it's late, I am tired and need to finish this right now!
 sv.askUI = function (change /* = true*/) {
 	if (change === undefined || change == null) change = true;
 	
 	var levels = ["beginneR", "useR", "developeR", "full-Komodo"];
-	item = ko.dialogs.selectFromList(sv.translate("Menus & toolbars configuration for R"),
+	item = ko.dialogs.selectFromList(
+		sv.translate("Menus & toolbars configuration for R"),
 		sv.translate("Select the user interface level you like:"),
 		levels, "one");
 	if (item == null) return(null);
@@ -1584,3 +1179,355 @@ sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 // Done in sv.cmdout._init()
 //if (!(ko.toolbox2 === undefined))
 //	addEventListener("load", sv.reworkUI(), false);
+
+
+//// Control the R output tab (was command output tab) /////////////////////////
+if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
+
+// Append text to the Command Output pane
+// Now, this is managed in a R Console pane!
+// TODO: handle \b correctly to delete char up to the beginning of line
+// TODO: what to do with \a? I already have a bell in R console...
+
+(function() {
+	var _this = this;
+	var scimoz, eolChar;
+	
+	// Get the EOL character
+	this.__defineGetter__('eolChar', function() {
+		if (!eolChar) _init();
+		return(eolChar);
+	});
+	
+	// Initialize the scintilla window in the R Output
+	function _init () {
+		// Format the scintilla window with same style as for the Komodo console
+		try {
+			var scintilla = document
+				.getElementById("rconsole-scintilla2").scintilla;
+			scintilla.init();
+			scintilla.language = "Errors";
+		} catch(e) { } // We don't care of errors here (there are, because the
+		//'Errors' language assumes that a terminal is linked to scintilla!)
+		
+		// Get a reference to scimoz
+		scimoz = document.getElementById("rconsole-scintilla2").scimoz;
+		
+		// What EOL (end of line) character is in use here?
+		eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
+		
+		// Change a couple of other scimoz properties
+		scimoz.wrapMode = scimoz.SC_WRAP_NONE;
+		scimoz.caretStyle = scimoz.CARETSTYLE_INVISIBLE;
+		scimoz.viewWS = false;
+		scimoz.viewEOL = false;
+		scimoz.readOnly = true;
+		
+		// Now, check if R is responding on the server port
+		if (sv.r.test(true, true)) {
+			// Force refreshing the object explorer
+			// Use this instead???
+		// Differ synching R <-> Komodo to avoid deadlock situation
+		// That does not work!
+		
+			// Show a prompt
+			_newPrompt();
+			// ... and refresh R objects explorer
+			// PhG: this seems to make problem => temporary disabled!
+			//window.setTimeout("sv.r.objects
+			//	.getPackageList(true, true, true);", 500);
+			//window.setTimeout("sv.r.test(true, true);", 500);
+			//sv.r.eval("try(koRefresh(force = TRUE), silent = TRUE)");
+		}
+		sv.reworkUI()
+	}
+	
+	// Append text to R output. Default behaviour like a terminal: scroll to end
+	this.append = function (str, newline /* =true*/, scrollToEnd /* = true*/) {
+		if (newline === undefined || newline == null) newline = true;
+		if (scrollToEnd === undefined || scrollToEnd == null)
+			scrollToEnd = true;
+	
+		if (!scimoz) _init();
+		
+		// Make sure R Output is visible
+		try {
+			ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
+			sv.rconsole.toggleView(1);
+			ko.views.manager.currentView.setFocus();
+		} catch(e) { } // We don't care if it fails, e.g., no buffer opened
+	
+		try {
+			// Keep reference of last line: style new text from there
+			var curline = scimoz.lineCount - 1;
+			
+			// Is the current position located in last line?
+			var isLast = (scimoz
+				.lineFromPosition(scimoz.currentPos) == curline);
+			
+			scimoz.readOnly = false;
+			
+			// Do we add a carriage return at the ne of the text?
+			if (newline) str += eolChar;
+			
+			// Avoid double prompt: if prompt ':> ' or ':+ ' at the last line
+			// and text to append also contains the same prompt, eliminate one
+			var curprompt = scimoz.getTextRange(scimoz
+				.positionFromLine(curline), scimoz.textLength);
+			var strprompt = str.substr(0, 3);
+			if (curprompt == ":> " && strprompt == ":> ") str = str.substr(3);
+			if (curprompt == ":+ " && strprompt == ":+ ") str = str.substr(3);
+			
+			// Avoid one carriage return too much after a prompt (this is the case
+			// with the socket server... and I don't know how to get rid of it!)
+			str = str.replace(/:> [\n\r]*$/, ":> ");
+			
+			// Append this text
+			var str_bytelength = ko.stringutils.bytelength(str);
+			scimoz.appendText(str_bytelength, str);
+			
+			// Apply style to the new text
+			var styleMask = (1 << scimoz.styleBits) - 1;
+			var start, prompt;
+			for (var i = curline; i < scimoz.lineCount; i++) { 
+				start = scimoz.positionFromLine(i);
+				prompt = scimoz.getTextRange(start, start + 3);
+				scimoz.startStyling(start, styleMask);
+				if (prompt == ":> " || prompt == ":+ ") {
+					// This should be a command line
+					scimoz.setStyling(scimoz.lineLength(i), 1);
+				} else {
+					// This should be output text
+					scimoz.setStyling(scimoz.lineLength(i), 0);
+				}
+			}	
+		} finally {
+			// Move to the end of the document if caret was in the last line
+			if (scrollToEnd && isLast) {
+				scimoz.gotoPos(scimoz.length);
+				scimoz.ensureVisible(scimoz.lineCount - 1);
+			}
+			scimoz.readOnly = true;
+		}
+	}
+	
+	// Clear text in the Output Command pane
+	this.clear = function (all /*= false*/) {
+		if (all === undefined || all == null) all = false;
+		
+		// No need to show the R Output here, right?	
+		//try {
+		//	ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
+		//	sv.rconsole.toggleView(1);
+		//	ko.views.manager.currentView.setFocus();
+		//} catch(e) {} // We don't care if it fails, e.g., no buffer opened
+		
+		var needPrompt = true;	
+		if (!scimoz) {
+			_init();
+			needPrompt = false;
+		}
+		
+		if (all) {
+			// Recalculate output width
+			var width = (Math.floor(window.innerWidth /
+				scimoz.textWidth(0, "0")) - 7)
+			// min = 66, max = 200 (otherwise, it is harder to read) 
+			if (width < 66) width = 66;
+			if (width > 200) width = 200;
+			sv.r.width = width;
+			_this.message("R output is cleared... - options(width = " +
+				width + ") will be inserted");
+		}
+		if (needPrompt) _newPrompt();
+	}	
+	
+	function _newPrompt () {
+		try {
+			scimoz.readOnly = false;
+			scimoz.clearAll();
+			// Show the default prompt
+			var str = ":> ";
+			var str_bytelength = ko.stringutils.bytelength(str);
+			scimoz.appendText(str_bytelength, str);
+			// Apply command line styling to it
+			var styleMask = (1 << scimoz.styleBits) - 1;
+			var start = scimoz.positionFromLine(0);
+			scimoz.startStyling(start, styleMask);
+			scimoz.setStyling(scimoz.lineLength(0), 1);
+			// Move to the end of the prompt
+			//scimoz.gotoPos(scimoz.length);
+			//scimoz.ensureVisible(0);
+			// PhG: if we do so, the R output panel is displaced by 3 chars to
+			// the right at startup when reconnecting to an already running R
+			// process. So, we move to the FIRST character instead!
+			scimoz.gotoPos(0);
+			scimoz.scrollCaret();
+		} finally {
+			scimoz.readOnly = true;
+		}
+	}
+	
+	// Display message on the R output message area
+	this.message = function (msg /* =""*/, timeout /* =0*/,
+		highlight /* =false*/) {
+		if (msg === undefined || msg == null) msg = "";
+		if (timeout === undefined || timeout == null) timeout = 0;
+		if (highlight === undefined || highlight == null) highlight = false;
+		
+		// Make sure R Output is visible
+		try {
+			ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
+			sv.rconsole.toggleView(1);
+			ko.views.manager.currentView.setFocus();
+		} catch(e) { } // We don't care if it fails, e.g., no buffer opened
+		
+		var rconsoleDesc = document.getElementById('rconsole-desc');
+		rconsoleDesc.parentNode.style.backgroundColor =
+			(highlight && msg) ? "highlight" : "";
+		rconsoleDesc.style.color = "rgb(0, 0, 0)";
+		var oldmsg = rconsoleDesc.getAttribute("value");
+		rconsoleDesc.setAttribute("value", msg);
+		window.clearTimeout(rconsoleDesc.timeout);
+		if (timeout > 0) rconsoleDesc.timeout = window
+			.setTimeout("sv.cmdout.message('" + oldmsg + "', 0);", timeout);
+	}
+	
+	// In multiline mode, we temporarily print multiline command being
+	// constructed, but once it is complete and evaluated by R, we got its
+	// reworked version. So, we need to eliminate the temporary lines... This is
+	// done here. Erase all lines starting with ':+ ' and the first one starting
+	// with ':> '
+	this.exitPartial = function () {
+		if (!scimoz) _init();	
+		try {
+			scimoz.readOnly = false;
+			var firstline = -1;
+	
+			i = scimoz.lineCount - 1;
+			// Allow for an empty line at the end
+			if (scimoz.lineLength(i) == 0 && i > 0) i = i - 1;
+			pos = scimoz.positionFromLine(i);
+			while (i >= 0 && scimoz.getTextRange(pos, pos + 3) == ":+ ") {
+				firstline = i;
+				i = i -1; // Test previous line
+				pos = scimoz.positionFromLine(i);
+			}
+			// Should take the line above also, but test it starts with ':> '
+			if (firstline > 0) {
+				pos = scimoz.positionFromLine(firstline - 1);
+				if (scimoz.getTextRange(pos, pos + 3) == ":> ")
+					firstline = firstline - 1;
+				// Erase this temporary multiline command
+				scimoz.setSel(scimoz.positionFromLine(firstline),
+					scimoz.textLength);
+				scimoz.replaceSel("");
+			}
+		} finally {
+			scimoz.readOnly = true;
+		}
+	}
+}).apply(sv.cmdout);
+
+
+//// Logging management ////////////////////////////////////////////////////////
+if (typeof(sv.log) == 'undefined') sv.log = {};
+
+//const LOG_NOTSET = 0;	//const LOG_DEBUG = 10;	//const LOG_INFO = 20;
+//const LOG_WARN = 30; 	//const LOG_ERROR = 40;	//const LOG_CRITICAL = 50;
+// ko.logging.LOG_*
+
+(function () {
+	var logger = ko.logging.getLogger("SciViews-K");
+
+	this.exception = function (e, msg, showMsg) {
+		if (typeof(showMsg) != 'undefined' && showMsg == true)
+			sv.alert("Error", msg);
+		logger.exception(e, msg);
+	}
+
+	this.critical = function (msg) {
+		logger.critical(msg);
+	}
+
+	this.error = function (msg) {
+		logger.error(msg);
+	}
+
+	this.warn = function (msg) {
+		logger.warn(msg);
+	}
+
+	this.warnStack = function (msg) {
+		logger.deprecated(msg);
+	}
+
+	this.info = function (msg) {
+		logger.info(msg);
+	}
+
+	this.debug = function (msg) {
+		logger.debug(msg);
+	}
+
+	this.all = function (debug) {
+		logger.setLevel(!!debug);
+		if (logger.getEffectiveLevel() == 1) {
+			ko.statusBar.AddMessage("SciViews error logging set to debug level",
+				"svLog", 3000, true);
+		} else {
+			ko.statusBar.AddMessage("SciViews error logging set to level " +
+				logger.getEffectiveLevel(), "svLog", 3000, true);
+		}
+	}
+
+	this.isAll = function () {
+		return(logger.getEffectiveLevel() == 1);
+	}
+
+	this.show = function () {
+		var os = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs);
+		try {
+			// Note that in Komodo 6, interpolateStrings is deprecated in favor
+			// of interpolateString!
+			var appdir = ko.interpolate
+				.interpolateStrings('%(path:userDataDir)');
+			var logFile = os.path.join(appdir,'pystderr.log');
+			var winOpts =
+				"centerscreen,chrome,resizable,scrollbars,dialog=no,close";
+			window.openDialog('chrome://komodo/content/tail/tail.xul',
+				"_blank", winOpts, logFile);
+		} catch(e) {
+			this.exception(e,
+				"Unable to display the Komodo error log (" + e + ")", true);
+		}
+	}
+
+}).apply(sv.log);
+
+//sv.log.all(true);
+
+//// Tests... default level do not print debug and infos!
+//sv.log.all(false);
+//alert(sv.log.isAll());
+//try {
+//   test = nonexistingvar;
+//} catch(e) {sv.log.exception(e, "Test it exception"); }
+//sv.log.critical("Test it critical");
+//sv.log.error("Test it error");
+//sv.log.warn("Test it warning");
+//sv.log.info("Test it info");
+//sv.log.debug("Test it debug");
+//sv.log.warnStack("Test it warn with stack");
+//// Set at debug/info level
+//sv.log.all(true);
+//alert(sv.log.isAll());
+//sv.log.critical("Test it critical 2");
+//sv.log.error("Test it error 2");
+//sv.log.warn("Test it warning 2");
+//sv.log.info("Test it info 2");
+//sv.log.debug("Test it debug 2");
+//sv.log.warnStack("Test it warn with stack 2");
+//// Show Komodo log
+//sv.log.show();

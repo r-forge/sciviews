@@ -57,7 +57,7 @@ var argNames = new Object();
 var sv = null;
 var gOnOK = "";
 
-function OnLoad() {
+function OnLoad () {
     var dialog = document.getElementById("dialog-interpolationquery")
     var okButton = dialog.getButton("accept");
     var cancelButton = dialog.getButton("cancel");
@@ -267,7 +267,7 @@ function OnLoad() {
     dialog.moveToAlertPosition();
 }
 
-function OK() {
+function OK () {
     try { gHelpWin.closeHelp(); } catch(e) { }
     // Store users answers to query objects.
     for (var i = 0; i < gQueries.length; i++) {
@@ -290,13 +290,13 @@ function OK() {
     return(true);
 }
 
-function Cancel() {
+function Cancel () {
     try { gHelpWin.close(); } catch(e) { }
     window.arguments[0].retval = "Cancel";
     return(true);
 }
 
-function Help(uri) {
+function Help (uri) {
     // Try to differentiate an URL from a help topic
 	var isUri = uri.search(/^((f|ht)tps?|chrome|about|file):\/{0,3}/) === 0;
 	if (isUri) {
@@ -315,7 +315,7 @@ function Help(uri) {
     }
 }
 
-function ShowHelp(uri) {
+function ShowHelp (uri) {
     // Since we are a modal dialog box, we cannot reuse the RHelpWindow
     // So, we use a much simpler Rinterpolationhelp dialog box instead
     var obj = new Object();

@@ -1,4 +1,8 @@
 = SciViews-K To Do
+
+* Importation of SciViews-K-dev fork:
+  + The sv.cmdout items + startR() + -RControl/_ProcessObserver in command.js
+  + 
  
 * Solve crash on closing Komodo. Seems related with the help window.
 

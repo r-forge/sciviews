@@ -2,10 +2,11 @@
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
     <Description about="urn:mozilla:install-manifest">
+        <em:unpack>true</em:unpack>
         <em:id>sciviewsk@sciviews.org</em:id>
         <em:name>SciViews-K</em:name>
-        <em:version>0.9.26</em:version>
-        <em:description>Edit R (http://www.r-project.org) code with Komodo</em:description>
+        <em:version>0.9.27</em:version>
+        <em:description>Edit R code with Komodo</em:description>
         <em:creator>Philippe Grosjean</em:creator>
         <em:contributor>Romain Francois</em:contributor>
         <em:contributor>Kamil Barton</em:contributor>
