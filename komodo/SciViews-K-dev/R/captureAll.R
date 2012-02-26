@@ -62,7 +62,7 @@ sink(type="m");sink(type="o")
 
 # inspired by 'capture.output' and utils:::.try_silent
 # Requires: R >= 2.13.0 [??]
-`captureAll` <- function(expr, split = FALSE, file = NULL, markStdErr=FALSE,
+`sv_captureAll` <- function(expr, split = FALSE, file = NULL, markStdErr=FALSE,
 		envir = .GlobalEnv) {
 	# TODO: support for 'file' and 'split'
 
@@ -257,4 +257,4 @@ sink(type="m");sink(type="o")
 
 
 `captureAllQ` <- function(expr, ...)
-	captureAll(as.expression(substitute(expr)), ...)
+	sv_captureAll(as.expression(substitute(expr)), ...)

@@ -101,7 +101,7 @@ this.eval = function(command, callback, hidden, id, prepareOnly) { //, ...
 		if (prepareOnly) return id;
 	}
 	//if (mode == "e")	_this.printResults(result, command);
-	// TODO: 'id' should be one and the same for user commands,
+	// Note: 'id' should be one and the same for user commands,
 	// and unique for background calls
 
 	var mode = ['json']; if (hidden) mode.push('h');
@@ -114,8 +114,11 @@ this.eval = function(command, callback, hidden, id, prepareOnly) { //, ...
 // Evaluate in R quickly - and return result
 this.evalAtOnce = function(command, timeout) {
 	if(timeout == undefined) timeout = .5;
-	//return _svuSvc.execInR(command, "h", timeout).replace(/[\x02\x03]/g, '');
-	return _svuSvc.execInR(command, 'json h', timeout).replace(/[\x02\x03]/g, '');
+	var res = _svuSvc.execInR(command, 'json h', timeout);
+	if(res[0] == '\x15')
+		throw(new Error("Command was: " + command));
+	else
+		return res.replace(/[\x02\x03]/g, '');
 }
 
 this.escape = function(command) _svuSvc.escape(command);
@@ -145,8 +148,13 @@ this.escape = function(command) _svuSvc.escape(command);
 //}
 
 this.testRAvailability = function(checkProc) {
-	var result = _this.evalAtOnce("cat(123L)");
-	var connectionUp = result.indexOf("123") != -1;
+	var connectionUp;
+	try {
+		var result = _this.evalAtOnce("cat(123L)");
+		connectionUp = result.indexOf("123") != -1;
+	} catch(e) {
+		connectionUp = false;
+	}
 	var ret = connectionUp? "Connection with R successful." :
 		"Cannot connect to R.";
 	sv.addNotification("R connection test: " + ret, 0, 1000);
@@ -183,7 +191,11 @@ this.startSocketServer = function(requestHandler) {
 	} else if (port > 0) {
 		ko.statusBar.AddMessage('Server started at port ' + port, null, 2000);
 		sv.pref.setPref("sciviews.ko.port", port, true, true);
-		setTimeout(function() _this.evalAtOnce("options(ko.port=" + port + ")"), 1000);
+		setTimeout(function() {
+			try {
+				_this.evalAtOnce("options(ko.port=" + port + ")");
+			} catch(e) { }
+		}, 1000);
 	}
 	return port;
 }
@@ -294,8 +306,6 @@ this.printCommandinfo = function(cinfo) {
 
 	scimoz.readOnly = readOnly;
 }
-
-
 
 this.printResults = function(result, command, executed, wantMore) {
 	var msg;

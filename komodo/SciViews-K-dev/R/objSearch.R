@@ -1,4 +1,4 @@
-objSearch <- function(sep = "\t", path = NULL, compare = TRUE)
+sv_objSearch <- function(sep = "\t", path = NULL, compare = TRUE)
 {
     Search <- search()
 	if (isTRUE(compare)) {

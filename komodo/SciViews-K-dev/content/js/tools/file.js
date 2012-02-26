@@ -1,54 +1,57 @@
 // SciViews-K file related functions
-// Various file related functions in 'sv.tools.file' namespace
+// Various file related functions in 'sv.file' namespace
 // Copyright (c) 2008-2011, Kamil Barton
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
-// sv.tools.file.defaultEncoding;			// Default file encoding to use
-// sv.tools.file.read(filename, encoding);	// Read a file with encoding
-// sv.tools.file.write(filename, content, encoding, append);
+// sv.file.defaultEncoding;			// Default file encoding to use
+// sv.file.read(filename, encoding);	// Read a file with encoding
+// sv.file.write(filename, content, encoding, append);
 // Write in a file with encoding
-// sv.tools.file.exists(file); 	// Checks for file existence, returns 2 for
+// sv.file.exists(file); 	// Checks for file existence, returns 2 for
 // directory, 1 for file, otherwise 0
-// sv.tools.file.temp(prefix);	// Creates unique temporary file, accessible
+// sv.file.temp(prefix);	// Creates unique temporary file, accessible
 									// by all users, and returns its name
-// sv.tools.file.specDir(dirName)	// Translate special directory name
-// sv.tools.file.path(...); 		// Create path from concatenated arguments:
+// sv.file.specDir(dirName)	// Translate special directory name
+// sv.file.path(...); 		// Create path from concatenated arguments:
 									// - special directory names are translated,
 									// - relative paths are expanded.
-// sv.tools.file.getfile(baseDir, [pathComponents]);
+// sv.file.getfile(baseDir, [pathComponents]);
 									// Create nsILocalFile object from array
 									// and/or special dir name
-// sv.tools.file.readURI(uri);		// Read data from an URI
-// sv.tools.file.pathFromURI(uri);	// Converts an URI to local path
-// sv.tools.file.list(dirname, pattern, noext); // List all files matching
+// sv.file.readURI(uri);		// Read data from an URI
+// sv.file.pathFromURI(uri);	// Converts an URI to local path
+// sv.file.list(dirname, pattern, noext); // List all files matching
 									// pattern in dirname with(out) extension
-// sv.tools.file.whereIs(appName);
+// sv.file.whereIs(appName);
 									// Tries to find full application path,
 									// returns null if not found
 ////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') var sv = {};
-if (typeof(sv.tools) == 'undefined') sv.tools = {};
-if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
+if (typeof(sv.file) == 'undefined') sv.file = {};
 
 (function () {
 	// Default file encoding to use
 	var _this = this;
-	this.defaultEncoding = "latin1";
+// from selfish point of view I find it more useful than latin1
+// "licentia poetica"
+	this.defaultEncoding = "latin2";
 	this.TYPE_DIRECTORY = 2;
 	this.TYPE_FILE = 1;
 	this.TYPE_NONE = 0;
+
+	var Ci = Components.interfaces;
+	var Cc = Components.classes;
 
 	// Read a file with encoding
 	this.read = function (filename, encoding) {
 		if (!encoding) encoding = _this.defaultEncoding;
 
-		var file = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
-		var fis = Components.classes["@mozilla.org/network/file-input-stream;1"]
-		.createInstance(Components.interfaces.nsIFileInputStream);
-		var is = Components.classes["@mozilla.org/intl/converter-input-stream;1"]
-		.createInstance(Components.interfaces.nsIConverterInputStream);
+		var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+		var fis = Cc["@mozilla.org/network/file-input-stream;1"]
+			.createInstance(Ci.nsIFileInputStream);
+		var is = Cc["@mozilla.org/intl/converter-input-stream;1"]
+			.createInstance(Ci.nsIConverterInputStream);
 
 		try {
 			file.initWithPath(filename);
@@ -56,7 +59,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 			is.init(fis, encoding, 1024, 0xFFFD);
 
 			var ret = "";
-			if (is instanceof Components.interfaces.nsIUnicharLineInputStream) {
+			if (is instanceof Ci.nsIUnicharLineInputStream) {
 				var str = {};
 				var cont;
 				do {
@@ -80,12 +83,12 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 		append = append? 0x10 : 0x20;
 
-		var file = Components.classes["@mozilla.org/file/local;1"]
-			.createInstance(Components.interfaces.nsILocalFile);
-		var fos = Components.classes["@mozilla.org/network/file-output-stream;1"]
-			.createInstance(Components.interfaces.nsIFileOutputStream);
-		var os = Components.classes["@mozilla.org/intl/converter-output-stream;1"]
-			.createInstance(Components.interfaces.nsIConverterOutputStream);
+		var file = Cc["@mozilla.org/file/local;1"]
+			.createInstance(Ci.nsILocalFile);
+		var fos = Cc["@mozilla.org/network/file-output-stream;1"]
+			.createInstance(Ci.nsIFileOutputStream);
+		var os = Cc["@mozilla.org/intl/converter-output-stream;1"]
+			.createInstance(Ci.nsIConverterOutputStream);
 
 		//PR_CREATE_FILE = 0x08	PR_WRONLY 	 = 0x02
 		//PR_APPEND 	 = 0x10		PR_TRUNCATE 	 = 0x20
@@ -97,7 +100,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 			os.writeString(content);
 		} catch (e) {
 			sv.log.exception(e, "Error while trying to write in " + filename +
-			" (sv.tools.file.write)", true)
+			" (sv.file.write)", true)
 		} finally {
 			os.close();
 		}
@@ -105,8 +108,8 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 	// Checks for file existence, returns 2 for dir, 1 for file, otherwise 0
 	this.exists = function (path) {
-		var file = Components.classes["@mozilla.org/file/local;1"]
-			.createInstance(Components.interfaces.nsILocalFile);
+		var file = Cc["@mozilla.org/file/local;1"]
+			.createInstance(Ci.nsILocalFile);
 
 		try {
 			file.initWithPath(path);
@@ -125,24 +128,24 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	}
 
 	this.exists2 = function (path) {
-		var sysutils = Components.classes['@activestate.com/koSysUtils;1']
-			.getService(Components.interfaces.koISysUtils);
+		var sysutils = Cc['@activestate.com/koSysUtils;1']
+			.getService(Ci.koISysUtils);
 
 		if(sysutils.IsDir(path)) return(_this.TYPE_DIRECTORY);
 		if(sysutils.IsFile(path)) return(_this.TYPE_FILE);
-		return(_this.TYPE_NONE);
+			return(_this.TYPE_NONE);
 	}
 
 
 
 	// Creates unique temporary file, accessible by all users; returns its name
 	this.temp = function (prefix) {
-		var nsIFile = Components.interfaces.nsIFile;
-		var dirSvc = Components.classes["@mozilla.org/file/directory_service;1"]
-		.getService(Components.interfaces.nsIProperties);
+		var nsIFile = Ci.nsIFile;
+		var dirSvc = Cc["@mozilla.org/file/directory_service;1"]
+			.getService(Ci.nsIProperties);
 		var tempDir = dirSvc.get("TmpD", nsIFile).path;
-		var tmpfile = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
+		var tmpfile = Cc["@mozilla.org/file/local;1"]
+			.createInstance(Ci.nsILocalFile);
 
 		if (!prefix) prefix = "svtmp";
 
@@ -156,20 +159,20 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	this.specDir = function(dirName) {
 		var file;
 		if (dirName == "~")
-		dirName = (navigator.platform.indexOf("Win") == 0)? "Pers" : "Home";
+			dirName = (navigator.platform.indexOf("Win") == 0)? "Pers" : "Home";
 
 		try {
 			try {
-				file = Components.classes["@mozilla.org/file/directory_service;1"]
-				.getService(Components.interfaces.nsIProperties)
-				.get(dirName, Components.interfaces.nsILocalFile)
-				.path;
+				file = Cc["@mozilla.org/file/directory_service;1"]
+					.getService(Ci.nsIProperties)
+					.get(dirName, Ci.nsILocalFile)
+					.path;
 			} catch(e) {
 				// if above fails, try Komodo directories too:
-				var dirs = Components.classes['@activestate.com/koDirs;1']
-				.getService(Components.interfaces.koIDirs);
+				var dirs = Cc['@activestate.com/koDirs;1']
+					.getService(Ci.koIDirs);
 				if (dirs.propertyIsEnumerable(dirName))
-				file = dirs[dirName];
+					file = dirs[dirName];
 			}
 
 		} catch(e) {}
@@ -181,8 +184,8 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	this.getfile = function (path) {
 		path = _this.path.apply(_this, Array.apply(null, arguments));
 		//return(path);
-		var file = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
+		var file = Cc["@mozilla.org/file/local;1"]
+			.createInstance(Ci.nsILocalFile);
 		file.initWithPath(path);
 		return(file);
 	}
@@ -197,13 +200,13 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	//  "binDir", "pythonExe", "binDBGPDir", "perlDBGPDir" and "pythonDBGPDir".
 	// Leading "~" is expanded to a path of a home directory ("My documents" on windows).
 	// Following arguments can be specified as single array or string
-	// example: sv.tools.file.path("~/workspace/dir1", "dir2", "file1.tmp")
+	// example: sv.file.path("~/workspace/dir1", "dir2", "file1.tmp")
 	// would produce something like that:
 	// "c:\users\bob\MyDocuments\workspace\dir1\dir2\file1.tmp"
 	// "/home/bob/workspace/dir1/dir2/file1.tmp"
 	this.path = function (path) {
-		var os = Components.classes['@activestate.com/koOs;1']
-		.getService(Components.interfaces.koIOs);
+		var os = Cc['@activestate.com/koOs;1']
+		.getService(Ci.koIOs);
 		var sep = os.sep;
 		if (typeof path.join == "undefined")
 		path = Array.apply(null, arguments);
@@ -217,7 +220,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		if(os.name == "nt") path = path.replace(/\/+/g, sep);
 		dir0 = path.split(sep, 1)[0];
 
-		path = sv.tools.file.specDir(dir0) + path.substring(dir0.length);
+		path = sv.file.specDir(dir0) + path.substring(dir0.length);
 		path = os.path.abspath(os.path.normpath(path));
 		return(path);
 	}
@@ -226,35 +229,37 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		if (typeof file == "string") file = _this.getfile(file);
 		if (!file) return (null);
 
-		var ios = Components.classes["@mozilla.org/network/io-service;1"]
-		.getService(Components.interfaces.nsIIOService);
+		var ios = Cc["@mozilla.org/network/io-service;1"]
+			.getService(Ci.nsIIOService);
 		var URL = ios.newFileURI(file);
 		return (URL.spec);
 	}
 
 	// Read data from an URI
 	this.readURI = function (uri) {
-		var fileSvc = Components.classes["@activestate.com/koFileService;1"]
-		.getService(Components.interfaces.koIFileService);
+		var fileSvc = Cc["@activestate.com/koFileService;1"]
+			.getService(Ci.koIFileService);
 		var file = fileSvc.getFileFromURI(uri);
-		file.open('r');
-		var res = file.readfile();
-		file.close();
-		return (res);
+		if (file.open('r')) {
+			var res = file.readfile();
+			file.close();
+			return res;
+		}
+		return undefined;
 	}
 
 	// Read data from an URI
 	this.pathFromURI = function (uri) {
-		var fileSvc = Components.classes["@activestate.com/koFileService;1"]
-			.getService(Components.interfaces.koIFileService);
+		var fileSvc = Cc["@activestate.com/koFileService;1"]
+			.getService(Ci.koIFileService);
 		return (fileSvc.getFileFromURI(uri).path);
 	}
 
 	// List all files matching a given pattern in directory,
 	// python interface - ~2x faster than with nsILocalFile
 	this.list = function (dirname, pattern, noext) {
-		var os = Components.classes['@activestate.com/koOs;1']
-			.getService(Components.interfaces.koIOs);
+		var os = Cc['@activestate.com/koOs;1']
+			.getService(Ci.koIOs);
 		var ospath = os.path;
 
 		if (ospath.exists(dirname) && ospath.isdir(dirname)) {
@@ -290,8 +295,8 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 
 
 	function _WhichAll(file) {
-		var sysutils = Components.classes['@activestate.com/koSysUtils;1']
-			.getService(Components.interfaces.koISysUtils);
+		var sysutils = Cc['@activestate.com/koSysUtils;1']
+			.getService(Ci.koISysUtils);
 		return sysutils.WhichAll(file, {});
 	}
 
@@ -301,8 +306,8 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 			// add default extension for executable if none
 			if (appName.search(/\.[^\.]{3}$/) == -1) 	appName += ".exe";
 
-			var reg = Components.classes["@mozilla.org/windows-registry-key;1"]
-				.createInstance(Components.interfaces.nsIWindowsRegKey);
+			var reg = Cc["@mozilla.org/windows-registry-key;1"]
+				.createInstance(Ci.nsIWindowsRegKey);
 			var key, path;
 
 			//alert(appName);
@@ -396,8 +401,8 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	}
 
 	this.zipUnpack = function(zipPath, targetDir) {
-		var zipReader = Components.classes["@mozilla.org/libjar/zip-reader;1"]
-					.createInstance(Components.interfaces.nsIZipReader);
+		var zipReader = Cc["@mozilla.org/libjar/zip-reader;1"]
+					.createInstance(Ci.nsIZipReader);
 		zipReader.open(_this.getfile(zipPath));
 		var entries = zipReader.findEntries(null);
 		var entryName, outFile, isFile;
@@ -414,4 +419,4 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		}
 		zipReader.close();
 	}
-}).apply(sv.tools.file);
+}).apply(sv.file);

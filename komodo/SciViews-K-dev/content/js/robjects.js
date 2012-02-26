@@ -109,7 +109,7 @@ JSON transport:
 
 var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
 	.createInstance(Components.interfaces.nsIJSON);
-var result = sv.rconn.evalAtOnce('cat(toJSON(apply(objList(compare=F), 1, as.list)))')
+var result = sv.rconn.evalAtOnce('cat(toJSON(apply(sv_objList(compare=F), 1, as.list)))')
 var objects = nativeJSON.decode(result)
 
 for(i in objects) {
@@ -123,46 +123,19 @@ for(i in objects) {
 sv.rbrowser = {};
 
 
-////DEBUG///
-var print = sv.cmdout.append;	/// XXX DEBUG
-var clear = sv.cmdout.clear;	/// XXX DEBUG
-
-function _watcher(el, id, Fun){ el.watch(id, function(id, oldVal, newVal) {
-	print(id + "=" + oldVal + "->" + newVal +
-		  " [" + _callerStr(Fun) + "]");
-	return newVal;
-})};
-
-function _callerStr(fun) fun? fun.caller.toString().match(/^[^\)]*\)[.\s]{0,15}/) : '?'; // XXX
-//function _funStr(fun) (fun? fun : _funStr.caller).toString().match(/^[^\)]*\)/) ;
-//function _funStr2(fun) (fun? fun : _funStr.caller.caller).toString().match(/^[^\)]*\)/) ;
-//function _funStr(fun) {
-//	if (!fun) fun = _funStr.caller;
-//	return fun.toString().match(/^[^\)]*\)/) + " <- " +
-//	fun.caller.toString().match(/^[^\)]*\)/)
-//}
-
-function _funStr(fun) {
-	if (!fun) fun = _funStr.caller;
-	ret = [];
-	for (var i=0;i < 5 && fun.caller; i++) {
-		fun = fun.caller;
-		ret.push(new String(fun.toString().match(/^[^\)]*\)[\s\S]{0,35}/)).replace(/\s+/g, " "));
-	}
-	return "*" + ret.join("\n<-");
-}
-
-//{ }
 
 // sv.rbrowser constructor
 (function () {
 
-	// Item separator for objList
+	// Item separator for sv_objList
 	var sep = ";;";
 
-	var cmdPattern = 'print(objList(id = "%ID%_%ENV%_%OBJ%", envir = "%ENV%",' +
+	var cmdPattern = 'print(sv_objList(id = "%ID%_%ENV%_%OBJ%", envir = "%ENV%",' +
 	' object = "%OBJ%", all.info = FALSE, compare = FALSE), sep = "' + sep +
 	'", eol = "\\n")';
+
+	var print = sv.cmdout.append;	/// XXX DEBUG
+	var clear = sv.cmdout.clear;	/// XXX DEBUG
 
 	// This should be changed if new icons are added
 	var iconTypes = ['array', 'character', 'data.frame', 'Date', 'dist',
@@ -413,7 +386,7 @@ this.smartRefresh = function(force) {
 	} else {
 		var cmd1 = this.getOpenItems(true);
 		var cmd2 = this.treeData.map(function(x) _getObjListCommand(x.fullName,""));
-		cmd = sv.tools.array.unique(cmd1.concat(cmd2)).join("\n");
+		cmd = sv.array.unique(cmd1.concat(cmd2)).join("\n");
 	}
 
 	isInitialized = true;
@@ -903,7 +876,11 @@ this.drop = function (idx, orientation) { };
 
 // Get the list of packages on the search path from R
 this.getPackageList = function () {
-	var data = sv.rconn.evalAtOnce('cat(objSearch(sep="' + sep + '", compare=FALSE))');
+	try {
+		var data = sv.rconn.evalAtOnce('cat(sv_objSearch(sep="' + sep + '", compare=FALSE))');
+	} catch(e) {
+		return;
+	}
 	if (!data) return;
 	_this.searchPath = data.replace(/[\n\r\f]/g, "").split(sep);
 	_this.displayPackageList(false);
@@ -1270,7 +1247,7 @@ this.do = function (action) {
 				_this.selection.toggleSelect(x.index); return false }
 				else return true});
 
-			var dup = sv.tools.array.duplicates(obj.map(function(x) x.name));
+			var dup = sv.array.duplicates(obj.map(function(x) x.name));
 			if(dup.length &&
 			   ko.dialogs.okCancel("Objects with the same names from different" +
 				"environments selected. Following object will be taken from the " +
@@ -1280,7 +1257,11 @@ this.do = function (action) {
 			var fileName = (obj.length == 1)? obj[0].name
 				.replace(/[\/\\:\*\?"<>\|]/g, '_') : '';
 
-			var dir = sv.tools.file.path(sv.rconn.evalAtOnce("cat(getwd())"));
+			try {
+				var dir = sv.file.path(sv.rconn.evalAtOnce("cat(getwd())"));
+			} catch(e) {
+				return;
+			}
 
 			fileName = sv.fileOpen(dir, fileName + '.RData', '',
 				["R data (*.RData)|*.RData"], false, true, oFilterIdx = {});

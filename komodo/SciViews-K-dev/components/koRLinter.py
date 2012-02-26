@@ -66,7 +66,7 @@ class KoRLinter:
             getService(components.interfaces.svIUtils)
         pass
 
-        # 'lint' first evaluates in R 'quickParse(filename)' which returns R-style
+        # 'lint' first evaluates in R 'sv_quickParse(filename)' which returns R-style
         # formatted error or empty string. Then it retrieves from the error message
         # the position within text and description
     def lint(self, request):
@@ -80,14 +80,14 @@ class KoRLinter:
             fout = open(tmp_filename, 'wb')
             fout.write(text)
             fout.close()
-            command = 'cat(quickParse(\"' + tmp_filename.replace('\\', '/') + '", encoding = "UTF-8"))'
+            command = 'cat(sv_quickParse(\"' + tmp_filename.replace('\\', '/') + '", encoding = "UTF-8"))'
             #log.debug(command)
         except Exception, e:
             log.exception(e)
         try:
             lines = self.sv_utils.execInR(command, "json h", 1.5).rstrip() \
                 .replace('\x03', '').replace('\x02', '')
-            if lines == 'timed out':
+            if lines.startswith('\x15'): # connection error
                 raise ServerException(nsError.NS_ERROR_NOT_AVAILABLE)
 
             log.debug('lint: ' + lines)

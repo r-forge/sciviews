@@ -22,7 +22,7 @@ tail <- utils::tail
 getS3method <- utils::getS3method
 findGeneric <- utils:::findGeneric
 
-`completeArgs` <- function(FUNC.NAME, ..., field.sep = "\x1e") {
+`sv_completeArgs` <- function(FUNC.NAME, ..., field.sep = "\x1e") {
 	rx <- regexpr("^([\\w\\.]+):{2,3}(`|)([\\w\\.\\[\\%]+)\\2$", FUNC.NAME, perl = TRUE)
 	if (rx == 1L) {
 		cs <- attr(rx,"capture.start")
@@ -85,7 +85,7 @@ findGeneric <- utils:::findGeneric
 }
 
 # provide special completions
-`completeSpecial` <- function(what, x = NULL, field.sep = "\x1e") {
+`sv_completeSpecial` <- function(what, x = NULL, field.sep = "\x1e") {
 	res <- switch(what, search = {
 			type <- "namespace"
 			res <- search()
@@ -97,7 +97,7 @@ findGeneric <- utils:::findGeneric
 			unique(unlist(lapply(.libPaths(), dir), use.names = FALSE))
 	   }, par = {
 			type <- "argument"
-			res <- completion("par(", sep = NULL)[]
+			res <- sv_completion("par(", sep = NULL)[]
 			paste(substr(res, 1, nchar(res) - 1), "=")
 			#names(par())
 	   }, options = {
@@ -115,7 +115,7 @@ findGeneric <- utils:::findGeneric
 
 # From svMisc::completion (simplified)
 
-`completion` <- function (code, field.sep = "\x1e", sep = "\n",
+`sv_completion` <- function (code, field.sep = "\x1e", sep = "\n",
 						  pos = nchar(code), min.length = 2L,
 						  addition = FALSE, max.fun = 100L,
 						  skip.used.args = FALSE) {
@@ -207,7 +207,6 @@ findGeneric <- utils:::findGeneric
 	#funargs <- ComplEnv$funargs
 	#isFirstArg <- ComplEnv$isFirstArg
 
-	ret <- data.frame(completion = completions, stringsAsFactors = FALSE)
 	tl <- integer(length(completions))
 	tl[grep(" = $", completions)] <- 4L
 	tl[grep("::$", completions)] <- 3L

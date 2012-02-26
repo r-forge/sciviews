@@ -79,11 +79,11 @@ function OnLoad(event) {
 		if (sv && ko) break;
 	}
 	mainWin = p;
-	var sf = sv.tools.file;
+	var sf = sv.file;
 
 
 	var lastPlaces = [ko.places.manager.lastHomePlace, ko.places.manager.currentPlace]
-		.map(sv.tools.file.pathFromURI);
+		.map(sv.file.pathFromURI);
 
 	function hasPrefSetting(name, el) {
 		if (!el.hasAttribute("prefsettings")) return false;
@@ -123,7 +123,7 @@ function OnLoad(event) {
 				if (prefExistingOnly) {
 					values = values.filter(function(x) sf.exists(x) == sf.TYPE_DIRECTORY);
 				}
-				values = sv.tools.array.unique(values);
+				values = sv.array.unique(values);
 
 				if (values.length > 10)		values.splice(10);
 
@@ -144,7 +144,7 @@ function OK() {
 	var el = document.getElementById("sciviews.session.dir");
 	var newDir = el.value;
 	var mi, values = [];
-	for (var j = 0; j < el.itemCount; j++) {
+	for (var j = 0, l = el.itemCount; j < l; j++) {
 		values.push(homeSubst(el.getItemAtIndex(j).value));
 	}
 	sv.pref.setPref("sciviews.session.dir.mru", values.join(os.pathsep));
@@ -152,7 +152,7 @@ function OK() {
 	var prefEls = document.getElementsByAttribute("pref", "true");
 	var prefName, prefVal, el;
 	var prefAll = {};
-	for (var i = 0; i < prefEls.length; i++) {
+	for (var i = 0, l = prefEls.length; i < l; i++) {
 		el = prefEls[i];
 		prefVal = el.value;
 		if (el.getAttribute("prefsettings").indexOf("home-subst") != -1)
@@ -174,7 +174,7 @@ function OK() {
 		document.getElementById("sciviews.session.placesroot").checked;
 
 	if (setPlacesRoot &&
-		(sv.tools.file.pathFromURI(ko.places.manager.currentPlace) != newDir))
+		(sv.file.pathFromURI(ko.places.manager.currentPlace) != newDir))
 			ko.places.manager.openDirectory(newDir);
 
 	sv.pref.setPref("sciviews.session.placesroot", setPlacesRoot);
@@ -183,10 +183,10 @@ function OK() {
 }
 
 // Substitute real home path for "~"
-// use sv.tools.file.path for opposite action
+// use sv.file.path for opposite action
 function homeSubst(dir) {
 	var homeMacro = "~";
-	var homedir = sv.tools.file.path(homeMacro);
+	var homedir = sv.file.path(homeMacro);
 	dir = os.path.normpath(dir);
 	var platform = navigator.platform.substring(0,3).toLowerCase();
 
@@ -241,22 +241,22 @@ function remCurItemFromList() {
 // Select current session directory and read config files, check for existing workspace
 function selectSessionDir(noReadConfig) {
 	var dir = document.getElementById("sciviews.session.dir").value;
-	var cfgFile = sv.tools.file.path(dir, ".svData");
+	var cfgFile = sv.file.path(dir, ".svData");
 	// Look if this directory already exists and contains a .svData file
 	var config = {};
 	var hasConfig, hasWorkspace = false;
 
-	hasConfig = sv.tools.file.exists(dir) == 2 &&
-	sv.tools.file.exists(cfgFile) == 1;
+	hasConfig = sv.file.exists(dir) == 2 &&
+	sv.file.exists(cfgFile) == 1;
 
-	hasWorkspace = sv.tools.file.exists(sv.tools.file.path(dir, ".RData"));
+	hasWorkspace = sv.file.exists(sv.file.path(dir, ".RData"));
 
 	if (!noReadConfig) {
 		if (hasConfig) {
 			var key, value, cfgName, cfgValue, cfgEls;
 			hasConfig = true;
 
-			var cfg = sv.tools.file.read(cfgFile, "utf-8").split(/\r?\n+/);
+			var cfg = sv.file.read(cfgFile, "utf-8").split(/\r?\n+/);
 			for (var i in cfg) {
 				key = cfg[i].split(/\s*=\s*/);
 				config[key[0]] = key[1];
@@ -264,7 +264,7 @@ function selectSessionDir(noReadConfig) {
 		}
 
 		cfgEls = document.getElementsByAttribute("config", "*");
-		for (var i= 0; i < cfgEls.length; i++) {
+		for (var i = 0, l = cfgEls.length; i < l; i++) {
 			cfgName = cfgEls[i].getAttribute("config");
 			if (config.hasOwnProperty(cfgName)) {
 				cfgEls[i].value = config[cfgName];
@@ -295,10 +295,10 @@ function saveConfig() {
 	var cfgEls = document.getElementsByAttribute("config", "*");
 	for (var i= 0; i < cfgEls.length; i++) {
 		cfg.push(cfgEls[i].getAttribute("config") + " = " +
-				 sv.tools.strings.trim(cfgEls[i].value));
+				 sv.strings.trim(cfgEls[i].value));
 	}
-	var cfgFile = sv.tools.file.path(dir, ".svData");
-	sv.tools.file.write(cfgFile, cfg.join("\n"), "utf-8");
+	var cfgFile = sv.file.path(dir, ".svData");
+	sv.file.write(cfgFile, cfg.join("\n"), "utf-8");
 
 	selectSessionDir(true);
 	return false;
@@ -320,7 +320,7 @@ function clearFiles(which) {
 	var file;
 	for (i in files) {
 		try {
-			file = sv.tools.file.getfile(dir, files[i]);
+			file = sv.file.getfile(dir, files[i]);
 			file.remove(true);
 		} catch(e) {
 			printInfo("Cannot remove file: " + e);
@@ -335,8 +335,8 @@ function saveWorkspace() {
 	//TODO: if R is not running copy .RData file to "dir"
 	if (!sv.r.running) return;
 
-	var sf = sv.tools.file;
-	var addslashes = sv.tools.string.addslashes;
+	var sf = sv.file;
+	var addslashes = sv.string.addslashes;
 	var dir = sf.path(document.getElementById("sciviews.session.dir").value);
 
 	var rDataFile = sf.path(dir, ".RData");

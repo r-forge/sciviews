@@ -70,8 +70,8 @@ var _ = function(str) { return(str) }
 
 if (typeof(sv) == "undefined") var sv = {};
 
-// Create the 'sv.tools' namespace
-if (typeof(sv.tools) == "undefined") sv.tools = {};
+// Create the 'sv' namespace
+if (typeof(sv) == "undefined") sv = {};
 
 //sv._version
 /*= (function() {
@@ -436,7 +436,8 @@ filterIndex) {
     fp.appendFilters(nsIFilePicker.filterAll);
 	filters.push("");
 
-    if (directory) {
+
+    if (directory && sv.file.exists(directory = sv.file.path(directory))) {
         var lf = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
         lf.initWithPath(directory);
@@ -1006,7 +1007,7 @@ sv.log.all(true);
 // Installs toolboxes
 sv.checkToolbox = function () {
 
-	var svFile = sv.tools.file;
+	var svFile = sv.file;
 
 	// If Komodo 6, and new-style, zipped toolbox is present, redirect to sv.checkToolbox2
 	if(ko.toolbox2 &&
@@ -1075,7 +1076,7 @@ sv.checkToolbox2 = function (path) {
 	sv.cmdout.message(sv.translate("(Re-)installing SciViews-K toolboxes..."));
 	ko.dialogs.alert("SciViews-K toolboxes will be installed now. This may take some time.");
 
-	var svFile = sv.tools.file;
+	var svFile = sv.file;
 	if(!path) path = svFile.path("ProfD", "extensions",
 		"sciviewsk@sciviews.org", "defaults", "toolbox.zip");
 

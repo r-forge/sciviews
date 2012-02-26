@@ -46,7 +46,8 @@ from uuid import uuid1
 import logging
 log = logging.getLogger('svUtils')
 #log.setLevel(logging.INFO)
-log.setLevel(logging.DEBUG)
+# log.setLevel(logging.DEBUG)
+log.setLevel(logging.WARNING)
 
 
 def _makeStyledText(text, styles = {chr(2): chr(0), chr(3): chr(23)},
@@ -170,7 +171,11 @@ class svUtils:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(timeout)
         try: s.connect(self.socketOut)
-        except Exception, e: return unicode(e.args[0])
+        except IOError, e:
+            # Windows has : timeout('timed out',)
+            # Linux has: error(111, '... rejected')
+            # e.message or e.strerror
+            return unicode('\x15' + (e.message or e.strerror))
 
         cmdInfo = self._CommandInfo(uid, pretty_command, mode, 'Not ready')
 
@@ -194,7 +199,7 @@ class svUtils:
                 re.sub("(\r?\n|\r)", '<<<n>>>', command)
             #command.replace(os.linesep,  '<<<n>>>')
         s.send(command + os.linesep)
-        ## SOLVED: command must end with newline
+        ## command must end with newline
         ## TODO: replace all newlines by R
         s.shutdown(socket.SHUT_WR)
         result = u''
@@ -217,18 +222,19 @@ class svUtils:
         if useJSON:
             # Fix bad JSON: R escapes nonprintable characters as octal numbers
             # (\OOO), but json needs unicode notation (\uHHHH).
-            result = re.sub('(?<=\\\\)[0-9]{3}', lambda x: ("u%04x" % int(x.group(0), 8)), result)
+            result = re.sub('(?<=\\\\)[0-9]{3}', lambda x: \
+                ("u%04x" % int(x.group(0), 8)), result)
             try:
                 resultObj = json.loads(result)
                 if(isinstance(resultObj, dict)):
-                    if (resultObj.has_key('message')): message = resultObj['message']
-                    if (resultObj.has_key('result')):
-                        if isinstance(resultObj['result'], list):
-                            result = os.linesep.join(resultObj['result'])
-                        else: # isinstance(x, unicode)
-                            result = resultObj['result']
-                            #log.debug(type(result)) # <-- should be: <type 'unicode'>
-                            #log.debug(result)
+                    message = resultObj.get('message')
+                    result = resultObj.get('result')
+                    if isinstance(result, list):
+                        result = os.linesep.join(result)
+                    #else: # isinstance(x, unicode)
+                    #    result = resultObj.get('result')
+                    #log.debug(type(result)) # <-- should be: <type 'unicode'>
+                    #log.debug(result)
                     cmdInfo.message = unicode(message)
                     cmdInfo.result = unicode(result)
 
@@ -409,7 +415,7 @@ class svUtils:
         text = self._get_code_frag(scimoz)
 
         if not text.strip(): return
-        cmd = 'completion("%s", print=TRUE, types="scintilla", field.sep="?")' \
+        cmd = 'sv_completion("%s", print=TRUE, types="scintilla", field.sep="?")' \
             % text.replace('"', '\\"')
         autoCstring = self.execInR(cmd, "h") \
             .replace('\x03', '').replace('\x02', '')

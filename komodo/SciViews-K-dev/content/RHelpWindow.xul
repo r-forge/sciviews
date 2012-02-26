@@ -213,7 +213,7 @@ function onFindToolbarAttrModified(event) {
 }
 
 function rHelpBrowserContextOnShow(event) {
-	var selText = sv.tools.string.trim(window._content.getSelection().toString());
+	var selText = sv.string.trim(window._content.getSelection().toString());
 	var el = document.getElementById("cmd_rsearch_for");
 	var elLabel;
 	var nothingSelected = !selText;
@@ -231,7 +231,7 @@ function rHelpBrowserContextOnShow(event) {
 }
 
 function runSelAsRCode() {
-	var selText = sv.tools.string.trim(window._content.getSelection()
+	var selText = sv.string.trim(window._content.getSelection()
 	    .getRangeAt(0).toString());
 
 	// Looks like R help page, so require package first
@@ -307,11 +307,11 @@ function _getHomePage(browser, goTo) {
 	    cmd += 'cat(paste("\n", "http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = ""))';
 
 	    res = sv.r.evalCallback(cmd, function (path) {
-			path = sv.tools.string.removeLastCRLF(path);
+			path = sv.string.removeLastCRLF(path);
 			// Old treatment for R < 2.10
-			//path = sv.tools.file.getfile(path,
+			//path = sv.file.getfile(path,
 			//	[(isWin ? null : ".R"), "doc", "html", "index.html"]);
-			//path = sv.tools.file.getURI(path);
+			//path = sv.file.getURI(path);
 
 			// Get just the last line, get rid of the help.start's message
 			path = path.substring(path.lastIndexOf("\n") + 1);
@@ -356,6 +356,12 @@ function OnLoad (event) {
 				sv = p.sv;
 				break;
 			}
+		}
+		if (!sv) {
+			var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']
+				.getService(Components.interfaces.nsIWindowMediator);
+			var win = wm.getMostRecentWindow("Komodo");
+			sv = win.sv;
 		}
 	}
 
@@ -464,7 +470,7 @@ function getPPBrowser() rHelpBrowser;
 		   label="Save page" desc="Save page" accesskey="s" />
   <command id="cmd_run_r_code" oncommand="runSelAsRCode();"
 		   label="Run as R code" desc="Execute selected text in R" accesskey="r" />
-  <command id="cmd_rsearch_for" oncommand="rHelpSearch(sv.tools.string.trim(window._content.getSelection().toString()));"
+  <command id="cmd_rsearch_for" oncommand="rHelpSearch(sv.string.trim(window._content.getSelection().toString()));"
 		   label="Search R for selection" desc="Search R for selected text" accesskey="S" />
 </commandset>
 
