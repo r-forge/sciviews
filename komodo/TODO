@@ -8,7 +8,8 @@
     contrary to what was done in SciViews-K-dev (cf. we will need this for
     future use in Sweave documents!)
   + RHelWindow.xul => _getHomePage() slightly reworked
-  + 
+  + r.js/rconnection.js & components/svUtil.py/.idl: look what Kamil did and
+    decide what to do with this.
  
 * Solve crash on closing Komodo. Seems related with the help window.
 
