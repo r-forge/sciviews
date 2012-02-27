@@ -33,7 +33,10 @@
  ***** END LICENSE BLOCK ***** -->
 
 <!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
-"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [
+	<!ENTITY % textcontext SYSTEM "chrome://global/locale/textcontext.dtd">
+	%textcontext;
+]>
 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
@@ -50,10 +53,12 @@
 <window
   id="RHelpWindow" title="R Help"
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-  width="700" height="500"
+  width="700" height="500" screenX="20" screenY="20"
   persist="screenX screenY width height"
   style="min-height: 400px; min-width: 300px;">
 
+	<script type="application/javascript"
+		src="chrome://global/content/globalOverlay.js"/>
 	<script type="text/javascript">
 	<![CDATA[
 		var sv;
@@ -227,6 +232,7 @@
 			el.setAttribute("disabled", nothingSelected);
 			document.getElementById("cmd_run_r_code").setAttribute("disabled", nothingSelected);
 		
+			goUpdateCommand("cmd_copy");
 		}
 		
 		function runSelAsRCode () {
@@ -283,6 +289,7 @@
 			var cmd = "";
 			// Use only one type of connection for both client and server!
 			//if (sv.r.server == "http") {
+			// TODO: this is reworked in SciViews-K-dev => look what's there!!!
 			if (sv.prefs.getString("sciviews.client.type", "socket") == "http") {
 				var port = sv.prefs.getString("sciviews.client.socket", "8888");
 				var path = "http://127.0.0.1:" + port + "/doc/html/index.html";
@@ -339,6 +346,12 @@
 						sv = p.sv;
 						break;
 					}
+				}
+				if (!sv) {
+					var wm = Components.classes['@mozilla.org/appshell/window-mediator;1']
+						.getService(Components.interfaces.nsIWindowMediator);
+					var win = wm.getMostRecentWindow("Komodo");
+					sv = win.sv;
 				}
 			}
 		
@@ -446,15 +459,26 @@
 			label="Run as R code" desc="Execute selected text in R" accesskey="r" />
 	  <command id="cmd_rsearch_for" oncommand="rHelpSearch(sv.tools.strings.trim(window._content.getSelection().toString()));"
 			label="Search R for selection" desc="Search R for selected text" accesskey="S" />
+		<command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
+		<command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')"/>
 	</commandset>
 
 	<popupset>
 		<menupopup id="rHelpBrowserContext"
 			onpopupshowing="rHelpBrowserContextOnShow(event);">
 			<menuitem id="menu_cmd_run_r_code"
-				command="cmd_run_r_code" acceltext="Ctrl+R"/>
+				command="cmd_run_r_code" acceltext="Ctrl+Shift+R"/>
 			<menuitem id="menu_cmd_rsearch_for"
 				command="cmd_rsearch_for"/>
+			
+			<menuseparator />
+		
+			<menuitem id="context-copy"
+				label="&copyCmd.label;" accesskey="&copyCmd.accesskey;"
+				command="cmd_copy" disabled="true"/>
+			<menuitem id="context-selectall"
+				label="&selectAllCmd.label;" accesskey="&selectAllCmd.accesskey;"
+				command="cmd_selectAll"/>
 		</menupopup>
 	</popupset>
 
@@ -483,6 +507,9 @@
 					<menuitem id="rhelp-menu-cran" label="CRAN"
 						accesskey="c"
 						oncommand="go('@CRAN@');"/>
+					<menuitem id="rhelp-menu-vignettes" label="Browse vignettes"
+						accesskey="v"
+						oncommand="sv.r.eval('browseVignettes()');"/>
 					<menuitem id="rhelp-menu-wiki" label="R wiki"
 						accesskey="w"
 						oncommand="go('http://wiki.r-project.org/');"/>
