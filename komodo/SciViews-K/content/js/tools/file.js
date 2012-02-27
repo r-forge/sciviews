@@ -12,6 +12,7 @@
 //                                 // Write in a file with encoding
 // sv.tools.file.exists(file); 	   // Checks for file existence, returns 2 for
 //                                    directory, 1 for file, otherwise 0
+// sv.tools.file.exists(file); 	   // Alternate version of file.exists()
 // sv.tools.file.temp(prefix);	   // Creates unique temporary file, accessible
 //									  by all users, and returns its name
 // sv.tools.file.specDir(dirName)  // Translate special directory name
@@ -125,6 +126,15 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		return(_this.TYPE_NONE);
 	}
 
+	this.exists2 = function (path) {
+		var sysutils = Components.classes['@activestate.com/koSysUtils;1']
+			.getService(Components.interfaces.koISysUtils);
+
+		if (sysutils.IsDir(path)) return(_this.TYPE_DIRECTORY);
+		if (sysutils.IsFile(path)) return(_this.TYPE_FILE);
+		return(_this.TYPE_NONE);
+	}
+
 	// Create unique temporary file, accessible by all users; returns its name
 	this.temp = function (prefix) {
 		var nsIFile = Components.interfaces.nsIFile;
@@ -225,10 +235,13 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 		var fileSvc = Components.classes["@activestate.com/koFileService;1"]
 			.getService(Components.interfaces.koIFileService);
 		var file = fileSvc.getFileFromURI(uri);
-		file.open("r");
-		var res = file.readfile();
-		file.close();
-		return(res);
+		if (file.open("r")) {
+			var res = file.readfile();
+			file.close();
+			return(res);
+		} else {
+			return(undefined);
+		}
 	}
 
 	// Read data from an URI
@@ -355,14 +368,14 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 					return(_WhichAll(appName));
 				}
 			}
-			return (null);
+			return(null);
 		}
 
 	} else { // Not Windows
 		this.whereIs = function (appName, firstOne) {
 			if (firstOne === undefined) firstOne = false;
 			res = _WhichAll(appName);
-			if (!res) return (null);
+			if (!res) return(null);
 			if (firstOne) {
 				return(res[0]);
 			} else {

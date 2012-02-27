@@ -36,7 +36,7 @@
 # 
 # ***** END LICENSE BLOCK *****
 
-from xpcom import components, nsError, COMException
+from xpcom import components, nsError, COMException, ServerException
 from xpcom._xpcom import PROXY_SYNC, PROXY_ALWAYS, PROXY_ASYNC
 from koLintResult import *
 from koLintResults import koLintResults
@@ -45,6 +45,10 @@ import tempfile
 import string
 import process
 import koprocessutils
+import logging
+
+log = logging.getLogger('RLinter')
+#log.setLevel(logging.DEBUG)
 
 # R error line format with svTools:::koLint(..., type = "flat")
 # warning|error+++line+++column+++error message\n

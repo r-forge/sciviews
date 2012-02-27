@@ -77,7 +77,7 @@
 			<hbox align="center">
 				<label class="label" control="svRApplication" value="Preferred way to run R:"/>
 					<menulist
-						id="svRApplication" oncommand="PrefR_svRApplicationUpdate(event);"
+						id="svRApplication" oncommand="PrefR_svRApplicationOnSelect(event);"
 						pref="true" />
 			</hbox>
 			
@@ -115,64 +115,7 @@
 					style="background: none; padding-top: 1px !important; margin-left: 10px !important; color: rgb(184, 38, 25);" />
 			</vbox>
 		</groupbox>
-	
-		<groupbox orient="vertical">
-			<caption label="Socket connection"/>
-			
-			<hbox align="center">
-				<label value="Server type:" control="sciviews.client.type"/>
-				<menulist pref="true" id="sciviews.client.type"
-					values="http socket" persist="values">
-					<menupopup />
-				</menulist>
-			</hbox>
-			
-			<grid>
-				<columns>
-					<column flex="1"/>
-					<column flex="2"/>
-					<column flex="1"/>
-					<column flex="2"/>
-				</columns>
-				
-				<rows>
-					<row align="center">
-						<label value="Server port #:" control="sciviews.client.socket" />
-						<textbox id="sciviews.client.socket" pref="true" width="50" />
-						<label value="Host to connect to:" control="sciviews.server.host" />
-						<textbox id="sciviews.server.host" pref="true" width="150"
-							disabled="true"/>
-					</row>
-				</rows>
-			</grid>
-			
-			<hbox align="center">
-				<label value="Client type:" control="sciviews.server.type"/>
-				<menulist pref="true" id="sciviews.server.type"
-					values="file socket" persist="values">
-					<menupopup />
-				</menulist>
-			</hbox>		
-			
-			<grid>
-				<columns>
-					<column flex="1"/>
-					<column flex="2"/>
-					<column flex="1"/>
-					<column flex="2"/>
-				</columns>
-				
-				<rows>		
-					<row align="center">
-						<label value="Client port #:" control="sciviews.server.socket" />
-						<textbox id="sciviews.server.socket" pref="true" width="50" />
-						<label value="Client Id:" control="sciviews.client.id" />
-						<textbox id="sciviews.client.id" pref="true" width="150" />
-					</row>
-				</rows>
-			</grid>
-		</groupbox>
-	
+		
 		<groupbox orient="vertical">
 			<caption label="Data input and output"/>
 			
@@ -187,14 +130,14 @@
 					<row align="center">
 						<label value="Decimal separator" control="r.csv.dec"/>
 						<menulist pref="true" id="r.csv.dec"
-							values=", ." persist="values">
+							values=", ." persist="values" maxValues="3">
 							<menupopup />
 						</menulist>
 						<label value="CSV field separator" control="r.csv.sep" />
 						<menulist pref="true" id="r.csv.sep" editable="true"
 							onkeyup="if (event.keyCode == 13) PrefR_editMenulist(this);"
 							onblur="PrefR_editMenulist(this);"
-							values=", ; \t" persist="values">
+							values=", ; \t" persist="values" maxValues="5">
 							<menupopup />
 						</menulist>
 					</row>
@@ -256,6 +199,69 @@
 			</hbox>
 		</groupbox>
 	
+		<hbox>
+			<button label="Show advanced settings (rarely need to be changed)"
+				oncommand="document.getElementById('pref-R-advanced').hidden=false; this.hidden=true;" hidden="false" />
+		</hbox>
+	
+		<groupbox id="pref-R-advanced" orient="vertical" hidden="true">
+			<caption label="Connection to R"/>
+			
+			<hbox align="center">
+				<label value="Server type:" control="sciviews.client.type"/>
+				<menulist pref="true" id="sciviews.client.type"
+					values="http socket" persist="values">
+					<menupopup />
+				</menulist>
+			</hbox>
+			
+			<grid>
+				<columns>
+					<column flex="1"/>
+					<column flex="2"/>
+					<column flex="1"/>
+					<column flex="2"/>
+				</columns>
+				
+				<rows>
+					<row align="center">
+						<label value="Server port #:" control="sciviews.client.socket" />
+						<textbox id="sciviews.client.socket" pref="true" width="50" />
+						<label value="Host to connect to:" control="sciviews.server.host" />
+						<textbox id="sciviews.server.host" pref="true" width="150"
+							tooltip="Currently only local connection is allowed"
+							disabled="true"/>
+					</row>
+				</rows>
+			</grid>
+			
+			<hbox align="center">
+				<label value="Client type:" control="sciviews.server.type"/>
+				<menulist pref="true" id="sciviews.server.type"
+					values="file socket" persist="values">
+					<menupopup />
+				</menulist>
+			</hbox>		
+			
+			<grid>
+				<columns>
+					<column flex="1"/>
+					<column flex="2"/>
+					<column flex="1"/>
+					<column flex="2"/>
+				</columns>
+				
+				<rows>		
+					<row align="center">
+						<label value="Client port #:" control="sciviews.server.socket" />
+						<textbox id="sciviews.server.socket" pref="true" width="50" />
+						<label value="Client Id:" control="sciviews.client.id" />
+						<textbox id="sciviews.client.id" pref="true" width="150" />
+					</row>
+				</rows>
+			</grid>
+		</groupbox>
+
 		<groupbox orient="vertical" align="center">
 			<caption label="About"/>
 			<separator class="thin"/>

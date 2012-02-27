@@ -13,7 +13,7 @@
 // PrefR_OnLoad();                        // R preference window loaded
 // PrefR_editMenulist(el, value);         // Edit a list for a menu
 // PrefR_svRDefaultInterpreterOnSelect(event); // R app selected in the list
-// PrefR_svRApplicationUpdate(event);     // Update list of application
+// PrefR_svRApplicationOnSelect(event);   // Update list of application
 // PrefR_updateCommandLine(update);       // Update the command line label
 // PrefR_setExecutable(path);             // Set the path to the R executable
 // PrefR_UpdateCranMirrors(localOnly);    // Update the list of CRAN mirrors
@@ -34,9 +34,9 @@ var sv;
 // List of supported R applications
 var apps = [
 	{id:"r-terminal", label:"in default terminal",
-		path:"\"%Path%\" %args%",
+		path:"x-terminal-emulator -e '%Path% %args%'",
         app:"R",
-		required:"R",
+		required:"x-terminal-emulator,R",
 		platform:"Lin,Mac"},
 	{id:"r-terminal", label:"in console window",
 		path:"\"%Path%\" %args%",
@@ -121,6 +121,9 @@ function _menuListGetValues (attribute) {
 			values = [];
 			for (var k = 0; k < el.itemCount; k++)
 				values.push(escape(el.getItemAtIndex(k).value));
+			values = sv.tools.array.unique(values);
+			var nMax = parseInt(el.getAttribute('maxValues'));
+			if(nMax > 0) values = values.slice(0, nMax);
 			el.setAttribute(attribute, values.join(" "));
 		}
 	}
@@ -138,7 +141,8 @@ function _populateRInterps () {
      case "nt":
         rs = rs.concat(sv.tools.file.whereIs("Rgui"));
         rs = rs.concat(sv.tools.file.whereIs("R"));
-        break;
+        rs.sort(); rs.reverse();
+		break;
      case "mac":
 	 case "posix": // On Mac OS X, os.name is posix!!!
         rs = ["/Applications/R.app", "/Applications/R64.app",
@@ -157,6 +161,10 @@ function _populateRInterps () {
     }
 
     rs = sv.tools.array.unique(rs);
+	if (rs.indexOf(prefExecutable) == -1) {
+		prefset.setStringPref('svRDefaultInterpreter', '');
+		rs.unshift('');
+	}
     menu.removeAllItems();
     for (var i in rs)
         menu.appendItem(rs[i], rs[i], null);
@@ -235,7 +243,8 @@ function PrefR_svRDefaultInterpreterOnSelect (event) {
 	}
     
 	var app = os.path.basename(menuInterpreters.value);
-    if (apps[menuApplication.value].app != app) {
+    if (!(menuApplication.value in apps) ||
+		apps[menuApplication.value].app != app) {
         var i;
         for (i in apps)
 			if (apps[i].app == app) break;
@@ -244,15 +253,18 @@ function PrefR_svRDefaultInterpreterOnSelect (event) {
     PrefR_updateCommandLine(true);
 }
 
-function PrefR_svRApplicationUpdate (event) {
+function PrefR_svRApplicationOnSelect (event) {
 	var menuApplication = document.getElementById("svRApplication");
     var menuInterpreters = document.getElementById("svRDefaultInterpreter");
-    var app = apps[menuApplication.value].app;
-	var sel = menuApplication.selectedItem;
+    if (!(menuApplication.value in apps)) return;
+	var app = apps[menuApplication.value].app;
+	//var sel = menuApplication.selectedItem;
 	var os = Components.classes['@activestate.com/koOs;1']
 		.getService(Components.interfaces.koIOs);
     if (os.path.basename(menuInterpreters.value) != app) {
-        var item;
+        //TODO: modify to use with:
+        //PrefR_menulistSetValue(menuInterpreters, value, "value", null);
+		var item;
         for (var i = 0; i <= menuInterpreters.itemCount; i++) {
             item = menuInterpreters.getItemAtIndex(i);
             if (item) {
@@ -269,7 +281,8 @@ function PrefR_svRApplicationUpdate (event) {
 function PrefR_updateCommandLine (update) {
     var appId = document.getElementById("svRApplication").value;
     var appPath = document.getElementById("svRDefaultInterpreter").value;
-    var cmdArgs = document.getElementById("svRArgs").value;
+    if (!appId || !appPath) return("");
+	var cmdArgs = document.getElementById("svRArgs").value;
 	var args1 = "";
 
 	if (document.getElementById("sciviews.pkgs.sciviews").checked)
@@ -364,6 +377,7 @@ function PrefR_UpdateCranMirrors (localOnly) {
 		}
 	}
 	if (!csvContent && !arrData) return(false);
+	// TODO: Add error message when mirrors list cannot be obtained
 
 	if (!arrData) {
 		// Convert CSV string to Array
@@ -376,7 +390,7 @@ function PrefR_UpdateCranMirrors (localOnly) {
 		for (i in arrData) {
 			item = arrData[i];
 			if (item[colOK] == "1"
-				// fix for broken entries
+				// Fix for broken entries
 				&& (item[colURL].search(/^(f|ht)tp:\/\//) === 0)) {
 				arrData[i] = [item[colName], item[colURL]];
 			}
@@ -432,11 +446,14 @@ function OnPreferencePageOK(prefset) {
 			"SciViews-K preferences");
         return(false);
     }
-	prefset.setStringPref("r.csv.sep", outSep);
-	prefset.setStringPref("r.csv.dec", outDec);
-	if (sv.r.running) {
-		sv.r.evalHidden('options(OutDec = "' + outDec + '", ' +
-		'OutSep = "' + outSep + '")', true);
+	if (outDec != prefset.getStringPref('r.csv.dec')
+		|| outSep != prefset.getStringPref('r.csv.sep')) {
+		prefset.setStringPref("r.csv.sep", outSep);
+		prefset.setStringPref("r.csv.dec", outDec);
+		if (sv.r.running) {
+			sv.r.evalHidden('options(OutDec = "' + outDec + '", ' +
+			'OutSep = "' + outSep + '")', true);
+		}
 	}
 	
 	// Set the client type

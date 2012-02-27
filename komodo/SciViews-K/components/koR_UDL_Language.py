@@ -36,6 +36,7 @@
 
 import logging
 from koUDLLanguageBase import KoUDLLanguage
+from xpcom import components #, nsError, COMException, ServerException
 
 
 log = logging.getLogger("koRLanguage")
@@ -53,8 +54,9 @@ class KoRLanguage(KoUDLLanguage):
     _reg_desc_ = "%s Language" % name
     _reg_contractid_ = "@activestate.com/koLanguage?language=%s;1" % name
     _reg_clsid_ = "{4cc23d3b-52e2-426d-8a22-6d7eb2ba81ae}"
+    _reg_categories_ = [("komodo-language", name)]
     defaultExtension = '.R'
-
+    primary = 1
     lang_from_udl_family = {
         'SSL': 'R'
     }

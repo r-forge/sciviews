@@ -174,8 +174,10 @@ function PrefR_PopulateRInterps() {
 			break;
         case "mac":
 			//FIXME: as I understand there are only 2 options on Mac, is it right?:
-			rs = ["/Applications/R.app", "/Applications/R64.app"];
-			// What about "SciViews R*.app" ???
+			// PhG: no, five!
+			rs = ["/Applications/R.app", "/Applications/R64.app",
+			  "/Applications/SciViews R.app", "/Applications/SciViews R64.app",
+			  sv.file.whereIs("R")];
 			break;
         case "posix":
         default:
@@ -391,8 +393,10 @@ function PrefR_UpdateCranMirrors(localOnly) {
 				localPaths.push(svFile.path(sv.pref.getPref("svRDefaultInterpreter"),
 					"../../doc"));
 			else { // if (platform == "lin")
-				localPaths.push('/usr/share/R/doc'); 	// try other paths: // mac: ????
+				localPaths.push('/usr/share/R/doc');
 				localPaths.push('/usr/local/share/R/doc');
+				localPaths.push("/Library/Frameworks/R.framework/Versions/" +
+					"Current/Resources/doc"); // Mac OS X
 			}
 			var file;
 			for (i in localPaths) {

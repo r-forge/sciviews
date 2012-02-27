@@ -1,7 +1,13 @@
 = SciViews-K To Do
 
 * Importation of SciViews-K-dev fork:
-  + The sv.cmdout items + startR() + -RControl/_ProcessObserver in command.js
+  + The sv.cmdout items + startR() + openHelp() + -RControl/_ProcessObserver in
+    command.js
+  + Rework completion according to SciViews-K-dev (see lang_r.py)
+  + Rework UDL, but do keep modularity (R-mainex.udl + Rlex.udl), on the
+    contrary to what was done in SciViews-K-dev (cf. we will need this for
+    future use in Sweave documents!)
+  + RHelWindow.xul => _getHomePage() slightly reworked
   + 
  
 * Solve crash on closing Komodo. Seems related with the help window.
