@@ -245,6 +245,10 @@ sv.r.source = function (what) {
 				what += " \"" + (match? match[3] || match[4] : '') + "\"";
 				//.replace(/^(['"`])(.*)\1/, "$2")
 			}
+			// Starting from R 2.14, there is a warning if the file does not
+			// end with an empty line => add one now!
+			code = code + "\n";
+			
 			sv.cmdout.clear();
 			sv.cmdout.append(':> #source("' + file + '*") # buffer: ' + what);
 
