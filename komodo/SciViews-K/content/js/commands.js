@@ -448,7 +448,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				'cmd_svRHelpContext': ['sv.r.help("", false);', XisRDoc | XRRunning],
 				'cmd_svRHelpSearch': ['sv.r.search();', XisRDoc | XRRunning],
 				'cmd_svRObjStructure': ['sv.r.display("", "structure");', XisRDoc | XRRunning],
-				'cmd_svRObjRefreshDisplay': ['ko.uilayout.ensureTabShown("sciviews_robjects_tab", true); sv.r.objects.getPackageList(true);', XRRunning],
+				'cmd_svRObjRefreshDisplay': ['ko.uilayout.ensureTabShown("sciviews_robjects_tab", true); sv.robjects.getPackageList(true);', XRRunning],
 				'cmd_svRObjList': ['sv.r.eval("ls()");', XRRunning],
 				'cmd_svRObjRemove': ['sv.r.eval("rm(list = ls())");', XRRunning],
 				'cmd_svRActiveDF': ['sv.r.obj();', XRRunning],

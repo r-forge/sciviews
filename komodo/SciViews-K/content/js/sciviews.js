@@ -1234,7 +1234,7 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 			_newPrompt();
 			// ... and refresh R objects explorer
 			// PhG: this seems to make problem => temporary disabled!
-			//window.setTimeout("sv.r.objects
+			//window.setTimeout("sv.robjects
 			//	.getPackageList(true, true, true);", 500);
 			//window.setTimeout("sv.r.test(true, true);", 500);
 			//sv.r.eval("try(koRefresh(force = TRUE), silent = TRUE)");
