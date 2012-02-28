@@ -53,21 +53,21 @@
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/robjects.js"/>
 
 	<popupset id="extensionPopupSet">
-		<menupopup id="rObjectsContext" onpopupshowing="sv.r.objects.contextOnShow(event);">
+		<menupopup id="rObjectsContext" onpopupshowing="sv.robjects.contextOnShow(event);">
 			<menuitem id="menu_robjects_insertfullname"
 				class="primary_menu_item"
-				oncommand="sv.r.objects.insertName(true)"
+				oncommand="sv.robjects.insertName(true)"
 				accesskey="F"
 				label="&sciviews.robjects.insFullName;"
 				acceltext="Ins" />
 			<menuitem id="menu_cmd_robjects_insertquoted"
 				label="&sciviews.robjects.insertQuoted;"
-				oncommand="sv.r.objects.insertName(false, true);"
+				oncommand="sv.robjects.insertName(false, true);"
 				accesskey="&sciviews.robjects.insertQuoted.acc;"
 				acceltext="Shift+Ins" />
 			<menuitem id="menu_robjects_insertname"
 				label="&sciviews.robjects.insName;"
-				oncommand="sv.r.objects.insertName(false)"
+				oncommand="sv.robjects.insertName(false)"
 				accesskey="I"
 				acceltext="Ctrl+Ins" />
 
@@ -75,14 +75,14 @@
 
 			<menuitem id="cmd_robjects_removeobj"
 				label="&sciviews.robjects.rmObj;"
-				oncommand="sv.r.objects.removeSelected(event.shiftKey)"
+				oncommand="sv.robjects.removeSelected(event.shiftKey)"
 				accesskey="R"
 				acceltext="Del"
 				testDisableIf="t:noDelete"
 				key="key_cmd_delete" />
 			<menuitem id="menu_cmd_robjects_deletenow"
 				label="&sciviews.robjects.deleteNow;"
-				oncommand="sv.r.objects.removeSelected(true);"
+				oncommand="sv.robjects.removeSelected(true);"
 				class="menuitem-iconic list-item-remove-icon"
 				acceltext="Shift+Del"
 				testDisableIf="t:noDelete"
@@ -92,22 +92,22 @@
 			
 			<menuitem id="cmd_robjects_summary"
 				label="&sciviews.robjects.summary;"
-				oncommand="sv.r.objects.do('summary')"
+				oncommand="sv.robjects.do('summary')"
 				testDisableIf="t:isFunction t:isEnvironment"
 				accesskey="S" />
 			<menuitem id="cmd_robjects_print"
 				label="&sciviews.robjects.print;"
-				oncommand="sv.r.objects.do('print')"
+				oncommand="sv.robjects.do('print')"
 				testDisableIf="t:isPackage"
 				accesskey="P" />
 			<menuitem id="cmd_robjects_plot"
 				label="&sciviews.robjects.plot;"
-				oncommand="sv.r.objects.do('plot')"
+				oncommand="sv.robjects.do('plot')"
 				testDisableIf="t:isFunction t:isEnvironment"
 				accesskey="O"/>
 			<menuitem id="cmd_robjects_str"
 				label="&sciviews.robjects.str;"
-				oncommand="sv.r.objects.do('str')"
+				oncommand="sv.robjects.do('str')"
 				testDisableIf="t:isPackage"
 				accesskey="T"/>
 
@@ -115,12 +115,12 @@
 			
 			<menuitem id="menu_cmd_robjects_selectall"
 				label="&sciviews.robjects.selectAll;"
-				oncommand="sv.r.objects.selection.selectAll();"
+				oncommand="sv.robjects.selection.selectAll();"
 				accesskey="&sciviews.robjects.selectAll.acc;"
 				acceltext="Ctrl+A" />
 			<menuitem id="menu_cmd_robjects_selectsiblings"
 				label="&sciviews.robjects.selectSiblings;"
-				oncommand="sv.r.objects.selectAllSiblings(sv.r.objects.selection.currentIndex);"
+				oncommand="sv.robjects.selectAllSiblings(sv.robjects.selection.currentIndex);"
 				accesskey="&sciviews.robjects.selectSiblings.acc;"
 				acceltext="Ctrl+Shift+A" />
 
@@ -129,13 +129,13 @@
 			<menuitem id="menu_cmd_robjects_write_table"
 				class="menuitem-iconic save-buffer-icon"
 				label="&sciviews.robjects.write_table;"
-				oncommand="sv.r.objects.do('write.table')"
+				oncommand="sv.robjects.do('write.table')"
 				testDisableIf="t:cannotSaveToFile"
 				accesskey="T"/>
 			<menuitem id="menu_cmd_robjects_save"
 			class="menuitem-iconic save-buffer-icon"
 				label="&sciviews.robjects.save;"
-				oncommand="sv.r.objects.do('save')"
+				oncommand="sv.robjects.do('save')"
 				testDisableIf="t:cannotSave"
 				accesskey="S" />
 
@@ -143,7 +143,7 @@
 			
 			<menuitem id="menu_cmd_robjects_help"
 				label="&sciviews.robjects.help;"
-				oncommand="sv.r.objects.do('help')"
+				oncommand="sv.robjects.do('help')"
 				class="menuitem-iconic help-icon"
 				testDisableIf="t:multipleSelection t:noHelp"
 				accesskey="H" />
@@ -155,7 +155,7 @@
 			tooltiptext="&sciviews.robjects.tab;: &sciviews.robjects.showHide;"
 			label="&sciviews.robjects.showHide;" splitter="bottom_splitter"
 			box="robjects_searchpath_panel"
-			oncommand="sv.r.objects.toggleViewSearchPath(event);"
+			oncommand="sv.robjects.toggleViewSearchPath(event);"
 			checked="true" state="open"/>
 	</broadcasterset>
 
@@ -180,7 +180,7 @@
 		<tabs id="project_toolbox_tabs">
 			<tab id="sciviews_robjects_tab" label="&sciviews.robjects.tab;"
 			insertbefore="project_tab, places_tab"
-			onclick="sv.r.objects.getPackageList(false);"
+			onclick="sv.robjects.getPackageList(false);"
 			tooltiptext="&sciviews.robjects.tip;"/>
 		</tabs> <!-- or insertafter="project_tab,codebrowser_tab" -->
 		<tabpanels id="project_toolbox_tabpanels">
@@ -193,8 +193,8 @@
 							tooltiptext="&sciviews.robjects.refresh.tip;"
 							buttonstyle="pictures"
 							label="&sciviews.robjects.refresh;" class="refresh-icon"
-							oncommand="sv.r.objects.getPackageList(true);"/>
-						<!-- or oncommand="sv.r.objects.refreshAll();"-->
+							oncommand="sv.robjects.getPackageList(true);"/>
+						<!-- or oncommand="sv.robjects.refreshAll();"-->
 						<toolbarbutton id="sciviews_robjects_searchpath_button"
 							observes="cmd_robjects_viewSearchPath"
 							buttonstyle="pictures" class="searchPath-icon"
@@ -248,21 +248,21 @@
 								<menuitem id="sciviews_robjects_context_filterByName"
 									label="&sciviews.robjects.filterByName;"
 									checked="true" accesskey="n" type="checkbox"
-									oncommand="sv.r.objects.setFilterBy(this, 'name')"/>
+									oncommand="sv.robjects.setFilterBy(this, 'name')"/>
 								<menuitem id="sciviews_robjects_context_filterByClass"
 									label="&sciviews.robjects.filterByClass;"
 									accesskey="c" type="checkbox"
-									oncommand="sv.r.objects.setFilterBy(this, 'class')"/>
+									oncommand="sv.robjects.setFilterBy(this, 'class')"/>
 								<menuitem id="sciviews_robjects_context_filterByGroup"
 									label="&sciviews.robjects.filterByGroup;"
 									accesskey="g" type="checkbox"
-									oncommand="sv.r.objects.setFilterBy(this, 'group')"/>
+									oncommand="sv.robjects.setFilterBy(this, 'group')"/>
 								
 								<menuseparator/>
 								
 								<menuitem id="sciviews_robjects_context_clrFilter"
 									label="&sciviews.robjects.clrFilter;" accesskey="l"
-									oncommand="document.getElementById('sciviews_robjects_filterbox').value = ''; sv.r.objects.applyFilter();"/>
+									oncommand="document.getElementById('sciviews_robjects_filterbox').value = ''; sv.robjects.applyFilter();"/>
 							</menupopup>
 						</toolbarbutton>
 						
@@ -271,7 +271,7 @@
 							tooltiptext="&sciviews.robjects.filter.tip;"
 							style="min-width: 40px; max-width: 200px; margin-right: 0px;"
 							class="search-box"
-							oncommand="sv.r.objects.applyFilter();"
+							oncommand="sv.robjects.applyFilter();"
 							emptytext="&sciviews.robjects.filterEmptyText;"/>
 					</hbox>
 					
@@ -279,11 +279,11 @@
 						persist="height collapsed" state="collapsed" flex="1">
 						
 						<listbox flex="1" id="sciviews_robjects_searchpath_listbox"
-							ondragdrop="nsDragAndDrop.drop(event, sv.r.objects.packageListObserver);"
-							ondragover="nsDragAndDrop.dragOver(event, sv.r.objects.packageListObserver);"
-							ondraggesture="nsDragAndDrop.startDrag(event, sv.r.objects.packageListObserver);"
-							onkeypress="sv.r.objects.packageListKeyEvent(event);"
-							oncommand="sv.r.objects.packageSelectedEvent(event);"/>
+							ondragdrop="nsDragAndDrop.drop(event, sv.robjects.packageListObserver);"
+							ondragover="nsDragAndDrop.dragOver(event, sv.robjects.packageListObserver);"
+							ondraggesture="nsDragAndDrop.startDrag(event, sv.robjects.packageListObserver);"
+							onkeypress="sv.robjects.packageListKeyEvent(event);"
+							oncommand="sv.robjects.packageSelectedEvent(event);"/>
 					</vbox>
 					
 					<splitter id="sciviews_robjects_splitter" collapse="before"
@@ -297,37 +297,37 @@
 							persist="sortDirection sortResource"
 							sortDirection="ascending" sortResource="r-name"
 							enableColumnDrag="true"
-							onselect="sv.r.objects.onEvent(event);"
-							onkeypress="sv.r.objects.onEvent(event);">
+							onselect="sv.robjects.onEvent(event);"
+							onkeypress="sv.robjects.onEvent(event);">
 							
 							<treecols>
 								<treecol id="r-name" label="&sciviews.robjects.Name;"
 									primary="true" sortActive="true"
 									persist="width ordinal hidden"
-									onclick="sv.r.objects.sort(this);" ordinal="1" flex="4"/>
+									onclick="sv.robjects.sort(this);" ordinal="1" flex="4"/>
 								<splitter class="tree-splitter" ordinal="2"/>
 								<treecol id="r-dims" label="&sciviews.robjects.Dims;"
 									persist="width ordinal hidden"
-									onclick="sv.r.objects.sort(this);" flex="1" ordinal="3"/>
+									onclick="sv.robjects.sort(this);" flex="1" ordinal="3"/>
 								<splitter class="tree-splitter" ordinal="4"/>
 								<treecol id="r-group" label="&sciviews.robjects.Group;"
 									flex="2" hidden="true" persist="width ordinal hidden"
-									onclick="sv.r.objects.sort(this);" ordinal="5"/>
+									onclick="sv.robjects.sort(this);" ordinal="5"/>
 								<splitter class="tree-splitter" ordinal="6"/>
 								<treecol id="r-class" label="&sciviews.robjects.Class;"
 									flex="2" hidden="true" persist="width ordinal hidden"
-									onclick="sv.r.objects.sort(this);" ordinal="7"/>
+									onclick="sv.robjects.sort(this);" ordinal="7"/>
 								<splitter class="tree-splitter" ordinal="8"/>
 								<treecol id="r-fullName" label="&sciviews.robjects.FullName;"
 									persist="width ordinal hidden" flex="1" hidden="true" ordinal="9"/>
 							</treecols>
 							
 							<treechildren id="sciviews_robjects_objects_tree_main"
-								ondraggesture="nsDragAndDrop.startDrag(event, sv.r.objects.listObserver);"
-								ondragdrop="nsDragAndDrop.drop(event, sv.r.objects.listObserver);"
-								ondragover="nsDragAndDrop.dragOver(event, sv.r.objects.listObserver);"
-								onclick="sv.r.objects.onEvent(event);"
-								ondblclick="sv.r.objects.onEvent(event);"
+								ondraggesture="nsDragAndDrop.startDrag(event, sv.robjects.listObserver);"
+								ondragdrop="nsDragAndDrop.drop(event, sv.robjects.listObserver);"
+								ondragover="nsDragAndDrop.dragOver(event, sv.robjects.listObserver);"
+								onclick="sv.robjects.onEvent(event);"
+								ondblclick="sv.robjects.onEvent(event);"
 								context="rObjectsContext">
 							</treechildren>
 						</tree>
@@ -338,12 +338,12 @@
 							<toolbarbutton id="sciviews_robjects_foldAll_button"
 								label="Fold All" buttonstyle="pictures"
 								class="robjects-fold-all-icon"
-								oncommand="sv.r.objects.foldAll(true);"
+								oncommand="sv.robjects.foldAll(true);"
 								tooltiptext="&sciviews.robjects.foldAll;"/>
 							<toolbarbutton id="sciviews_robjects_ExpandAll_button"
 								label="Expand All" buttonstyle="pictures"
 								class="robjects-expand-all-icon"
-								oncommand="sv.r.objects.foldAll(false);"
+								oncommand="sv.robjects.foldAll(false);"
 								tooltiptext="&sciviews.robjects.unfoldAll;"/>
 						</hbox>
 					</vbox>

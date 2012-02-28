@@ -62,7 +62,7 @@
 // sv.r.kpfTranslate(kpfFile); // Translate a project
 // sv.r.kpzTranslate(kpzFile); // Translate a package
 //
-// Note: sv.r.objects is implemented in robjects.js
+// Note: sv.robjects is implemented in robjects.js
 //       sv.rconsole functions are implemented in rconsole.js
 //
 // sv.r.pkg namespace: /////////////////////////////////////////////////////////
@@ -185,7 +185,7 @@ sv.r.closed = function () {
 	sv.cmdout.clear(false);
 	// Reset the objects explorer
 	// PhG: this seems to cause problems => don't use this yet!
-	//sv.r.objects.clearPackageList();
+	//sv.robjects.clearPackageList();
 }
 
 // Print some text (command or results) in the local R console
@@ -1548,7 +1548,7 @@ sv.r.quit = function (save) {
 	// Clear the R-relative statusbar message
 	ko.statusBar.AddMessage("", "SciViews-K");
 	// Clear the objects browser
-	sv.r.objects.clearPackageList();
+	sv.robjects.clearPackageList();
 	// TODO: from SciViews-K-dev... adapt here?
 	//setTimeout(function() sv.command.updateRStatus(
 	//	sv.rconn.testRAvailability()), 1000);
