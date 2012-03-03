@@ -40,7 +40,6 @@
 	%komodoDTD;
 	<!ENTITY % sciviewskDTD SYSTEM "chrome://sciviewsk/locale/sciviewsk.dtd">
 	%sciviewskDTD;
-	<!ENTITY % console SYSTEM "chrome://global/locale/console.dtd"> %console;
 ]>
 
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
@@ -52,7 +51,7 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	
+
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/array.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/file.js"/>
@@ -368,7 +367,7 @@
 			</menupopup>
 		</menu>
 	</menubar>
-
+	
 	<menupopup id="popup_help">
 				<menuitem id="r_start_help" observes="cmd_svOpenHelp"
 						  class="menuitem-iconic" insertbefore="helpLanguagesMenu"/>
@@ -390,20 +389,16 @@
 				<menuseparator  insertbefore="helpLanguagesMenu"/>
 	</menupopup>
 
-	<toolboxrow id="main-toolboxrow">
-		<toolbar
+	<toolbar id="main-toolboxrow">
+		<toolbaritem class="chromeclass-toolbar"
 			id="RToolbar"
-			class="chromeclass-toolbar"
-			toolboxid="toolbox_main"
-			align="center"
 			broadcaster="cmd_viewrtoolbar"
 			grippyhidden="true"
-			kohidden="true"
-			mode="icons"
-			persist="kohidden collapsed buttonstyle mode"
+			align="center"
+			persist="hidden collapsed buttonstyle"
 			buttonstyle="pictures"
 			tooltiptext="R Toolbar"
-			customizable="true"
+			mode="icons"
 			insertbefore="toolsToolbar">
 			<toolbarbutton buttonstyle="pictures"
 				id="r_send_line_sel_tool"
@@ -512,8 +507,8 @@
 				class="r-help-search-icon"
 				observes="cmd_svRHelpSearch"
 				label="&rHelpSearch;" />
-		</toolbar>
-	</toolboxrow>
+		</toolbaritem>
+	</toolbar>
 
 	<menupopup id="context-toolbox-menu">
 		<menuitem id="context_viewrtoolbar"
@@ -525,8 +520,8 @@
 	</menupopup>
 
 	<menupopup id="popup_toolbars">
-		<menuitem id="menu_viewrtoolbar"
-			label="&RToolbar.label;"
+			<menuitem id="menu_viewrtoolbar"
+			label="&RToolbar.shortlabel;"
 			observes="cmd_viewrtoolbar"
 			persist="checked"
 			checked="true"
@@ -534,42 +529,46 @@
 			insertbefore="menu_viewtoolstoolbar"/>
 	</menupopup>
 
-	<!-- Ko7 -->
-	<ko-pane id="workspace_left_area">
-		<browser type="ko-widget"
-			id="rbrowser_tabpanel"
-			label="&sciviews.robjects.tab;"
-			src="chrome://sciviewsk/content/RObjects2Pane.xul"
-			tab_onfocus="sv.robjects.focus();"/>
-	</ko-pane>
-	
-		<ko-pane id="workspace_bottom_area">
-		<browser type="ko-widget"
-			id="rconsole_tabpanel"
-			label="&sciviews.console.tab;"
-			src="chrome://sciviewsk/content/RConsole2Pane.xul"
-			tab_onfocus="sv.rconsole.focus();"/>
-	</ko-pane>
+	<menupopup id="places-files-popup">
+		<menuseparator id="placesContextMenu_separatorR"
+			testEval_HideIf="!sv.command.places.anyRFilesSelected &amp;&amp; !sv.command.places.anyRDataFilesSelected"/>
+		<menuitem oncommand="sv.command.places.sourceSelection()"
+		  disableIf="folder"
+		  class="menuitem-iconic"
+		  id="placesContextMenu_Rsource"
+		  label="Source into R"
+		  testEval_HideIf="!sv.command.places.anyRFilesSelected"/>
+		<menuitem oncommand="sv.command.places.loadSelection()"
+		  disableIf="folder"
+		  class="menuitem-iconic"
+		  id="placesContextMenu_Rload"
+		  label="Load into R"
+		  testEval_HideIf="!sv.command.places.anyRDataFilesSelected"/>
+	</menupopup>
 
-	<!--<ko-pane id="workspace_right_area">
-		<browser type="ko-widget"
-			id="rhelp_tabpanel"
-			label="R Help"
-			src="chrome://sciviewsk/content/RHelpWindow.xul"/>
-	</ko-pane>-->
-
-	<!--<ko-pane id="workspace_bottom_area">
-		<browser type="ko-widget"
-			id="errorconsole_tabpanel"
-			label="&errorConsole.title;"
-			src="chrome://global/content/console.xul"/>
-	</ko-pane>-->
-
-	<!--<ko-pane id="workspace_bottom_area">
-		<browser type="ko-widget"
-			id="pyshell_tabpanel"
-			label="Python shell"
-			src="chrome://extensiondev/content/pyshell.xul"/>
-	</ko-pane>-->
-
+<!--
+	<tabbox id="rightTabBox">
+		<tabs id="right_toolbox_tabs">
+			<tab id="rhelp_tab"
+				label="R Help tabbed"
+				accesskey="r"
+				insertafter="toolbox_tab"
+				oncommand="ko.toolboxes.user.viewMgr.tree.focus();"
+				onfocus="ko.toolboxes.user.viewMgr.focus();"
+				hidden="true"
+				persist="hidden"/>
+		</tabs>
+		<tabpanels id="right_toolbox_tabpanels">
+			<tabpanel id="rhelpviewbox"
+				flex="1"
+				insertafter="toolboxviewbox"
+				hidden="true"
+				persist="hidden">
+				<vbox id="rhelpviewbox-vbox" flex="1">
+					<iframe id="rhelpview-frame" src="about:blank" flex="1"/>
+				</vbox>
+			</tabpanel>
+		</tabpanels>
+	</tabbox>
+-->
 </overlay>
