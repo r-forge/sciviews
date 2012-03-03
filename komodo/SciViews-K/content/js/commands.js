@@ -12,8 +12,13 @@
 // sv.command.openHelp(uri);    // Open the R Help window at this web page
 // sv.command.closeHelp();      // Close -help tab
 // sv.command.svController();   // Controller for R related commands
-// sv.command.sourcePlacesSelection()); // Source a R file selected in 'places'
-///////////////////////////////////////////////////////////////////////////////
+//
+//// sv.command.places /////////////////////////////////////////////////////////
+// sv.command.places.sourceSelection();       // Source selected file(s) in R
+// sv.command.places.anyRFilesSelected();     // Any R file currently selected?
+// sv.command.places.loadSelection();         // Load selected .Rdata file(s)
+// sv.command.places.anyRDataFilesSelected(); // Any RData file selected? 
+////////////////////////////////////////////////////////////////////////////////
 
 if (typeof(sv) == 'undefined') sv = {};
 if (typeof(sv.command) == 'undefined') sv.command = {};
@@ -591,16 +596,6 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		kbMgr.loadConfiguration(kbMgr.currentConfiguration, true);
 		return(true);
 	}
-
-    this.sourcePlacesSelection = function sv_sourcePlacesSelection () {
-        var files = ko.places.manager.getSelectedItems()
-            .filter(function(x)(x.name.search(/\.[Rr]$/) != -1))
-            .map(function(x) x.file.path);
-        if (!files.length) return;
-        var cmd = files.map(function(x) "source('" +
-			sv.tools.string.addslashes(x) +"')" ).join("\n");
-        sv.r.eval(cmd);
-    }
 	
 	// TODO: code from SciViews-K-dev to be integrated!
 	//function _str(sString) sString.QueryInterface(Components.interfaces
@@ -617,50 +612,52 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	//	while(procList.hasMoreElements()) proc.push(_str(procList.getNext()));
 	//	return proc;
 	//}
-	//
-	//this.places = {
-	//	sourceSelection: function sv_sourcePlacesSelection() {
-	//		if(!sv.r.running) return;
-	//		var files = ko.places.manager.getSelectedItems()
-	//			.filter(function(x) (x.file.isLocal && x.file.ext.toLowerCase() == ".r"))
-	//			.map(function(x) x.file.path);
-	//		if (!files.length) return;
-	//		var cmd = files.map(function(x) "source('" +
-	//			sv.string.addslashes(x) +"')" ).join("\n");
-	//		sv.rconn.eval(cmd, function(z) {
-	//			sv.rbrowser.smartRefresh(true);
-	//			}, false);
-	//	},
-	//
-	//	get anyRFilesSelected()
-	//		sv.r.running &&
-	//		ko.places.manager.getSelectedItems().some(function(x)
-	//			x.file.isLocal &&
-	//			x.file.ext.toLowerCase() == ".r"),
-	//
-	//	loadSelection: function sv_loadPlacesSelection() {
-	//		if(!sv.r.running) return;
-	//		var files = ko.places.manager.getSelectedItems()
-	//			.filter(function(x) (x.file.isLocal &&
-	//				// for '.RData', .ext is ''
-	//				(x.file.ext || x.file.leafName).toLowerCase() == ".rdata"))
-	//			.map(function(x) x.file.path);
-	//		if (!files.length) return;
-	//		var cmd = files.map(function(x) "load('" +
-	//			sv.string.addslashes(x) +"')" ).join("\n");
-	//		sv.rconn.eval(cmd, function(z) {
-	//			sv.rbrowser.smartRefresh(true);
-	//			}, false);
-	//	},
-	//
-	//	get anyRDataFilesSelected()
-	//		sv.r.running &&
-	//		ko.places.manager.getSelectedItems().some(
-	//			function(x) x.file.isLocal &&
-	//			(x.file.ext || x.file.leafName).toLowerCase() == ".rdata")
-	//
-	//}
-	//
+	
+//// Implementation of places additions ////////////////////////////////////////
+	this.places = {
+		sourceSelection: function sv_sourcePlacesSelection () {
+			if (!sv.r.running) return;
+			var files = ko.places.manager.getSelectedItems()
+				.filter(function(x) (x.file.isLocal &&
+					x.file.ext.toLowerCase() == ".r"))
+				.map(function(x) x.file.path);
+			if (!files.length) return;
+			var cmd = files.map(function(x) "source('" +
+				sv.tools.strings.addslashes(x) +"')" ).join("\n");
+			sv.r.evalCallback(cmd, function (z) {
+				sv.r.objects.smartRefresh(true);
+			});
+		},
+	
+		get anyRFilesSelected()
+			sv.r.running &&
+			ko.places.manager.getSelectedItems().some(function (x)
+				x.file.isLocal &&
+				x.file.ext.toLowerCase() == ".r"),
+	
+		loadSelection: function sv_loadPlacesSelection () {
+			if (!sv.r.running) return;
+			var files = ko.places.manager.getSelectedItems()
+				.filter(function (x) (x.file.isLocal &&
+					// for '.RData', .ext is ''
+					(x.file.ext || x.file.leafName).toLowerCase() == ".rdata"))
+				.map(function(x) x.file.path);
+			if (!files.length) return;
+			var cmd = files.map(function(x) "load('" +
+				sv.tools.strings.addslashes(x) +"')" ).join("\n");
+			sv.r.evalCallback(cmd, function (z) {
+				sv.r.objects.smartRefresh(true);
+			});
+		},
+	
+		get anyRDataFilesSelected()
+			sv.r.running &&
+			ko.places.manager.getSelectedItems().some(
+				function (x) x.file.isLocal &&
+				(x.file.ext || x.file.leafName).toLowerCase() == ".rdata")
+	
+	}
+
 	////}
 	//// TODO: move this to sv.onLoad:
 	//this.onLoad = function(event) {

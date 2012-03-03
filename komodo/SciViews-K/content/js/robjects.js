@@ -1556,6 +1556,7 @@ sv.robjects = {};
 		_this.selection.rangedSelect(startIndex, endIndex, augment)
 	}
 
+	this.focus = function() { }
 
 	//_setOnEvent("sciviews_robjects_searchpath_listbox", "ondragdrop",
 	//		"nsDragAndDrop.drop(event, sv.robjects.packageListObserver);"

@@ -24,6 +24,7 @@
 // sv.rconsole.onFocus(event);       // On focus event for the console
 // sv.rconsole.rconsoleOnKeyPress(event); // On key press event for R console
 // sv.rconsole.routputOnKeyPtress(event); // On key press event for R output
+// sv.rconsole.focus();              // Code to run when focus goes into it 
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -492,6 +493,8 @@ sv.rconsole = {};
         	//}
         } catch(e) { }
     }
+    
+    this.focus = function() { }
 
 }).apply(sv.rconsole);
 
