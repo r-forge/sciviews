@@ -99,7 +99,7 @@ function OnLoad(event) {
 	for (var i = 0; i < prefEls.length; i++) {
 		el = prefEls[i];
 		prefName = el.id;
-		prefVal = sv.prefs.getString(prefName);
+		prefVal = sv.prefs.getPref(prefName);
 
 		prefHomeSubst = hasPrefSetting("home-subst", el);
 		prefExistingOnly = hasPrefSetting("existing-only", el);
@@ -112,7 +112,7 @@ function OnLoad(event) {
 			listContentPref = el.hasAttribute("contentpref")?
 			el.getAttribute("contentpref") : prefName + ".mru";
 
-			values = sv.prefs.getString(listContentPref, '').split(os.pathsep);
+			values = sv.prefs.getPref(listContentPref, "").split(os.pathsep);
 
 			if(hasPrefSetting('add-recent', el)) {
 				values = Array.concat(lastPlaces, values);
@@ -152,7 +152,7 @@ function OK() {
 	for (var j = 0; j < el.itemCount; j++) {
 		values.push(homeSubst(el.getItemAtIndex(j).value));
 	}
-	sv.prefs.setString("sciviews.session.dir.mru", values.join(os.pathsep));
+	sv.prefs.setPref("sciviews.session.dir.mru", values.join(os.pathsep));
 
 	var prefEls = document.getElementsByAttribute("pref", "true");
 	var prefName, prefVal, el;
@@ -171,7 +171,7 @@ function OK() {
 		prefAll["sciviews.session.reports"]);
 
 
-	for (i in prefAll) sv.prefs.setString(i, prefAll[i]);
+	for (i in prefAll) sv.prefs.setPref(i, prefAll[i]);
 
 	var setPlacesRoot =
 		document.getElementById("sciviews.session.placesroot").checked;
@@ -180,7 +180,7 @@ function OK() {
 		(sv.tools.file.pathFromURI(ko.places.manager.currentPlace) != newDir))
 			ko.places.manager.openDirectory(newDir);
 
-	sv.prefs.setString("sciviews.session.placesroot", setPlacesRoot);
+	sv.prefs.setPref("sciviews.session.placesroot", setPlacesRoot);
 
 	return (true);
 }
@@ -267,7 +267,7 @@ function selectSessionDir(noReadConfig) {
 			if (config.hasOwnProperty(cfgName)) {
 				cfgEls[i].value = config[cfgName];
 			} else {
-				cfgEls[i].value = sv.prefs.getString(cfgEls[i].id);
+				cfgEls[i].value = sv.prefs.getPref(cfgEls[i].id);
 			}
 		}
 	}

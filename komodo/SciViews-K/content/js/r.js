@@ -111,7 +111,7 @@ sv.r.application = function (warn) {
 	
 	// Save the path in r.application prefs
 	if (R == null) R = "";
-	sv.prefs.setString("r.application", R, true);
+	sv.prefs.setPref("r.application", R, true);
 	return(R);
 }
 
@@ -178,9 +178,9 @@ sv.r.closed = function () {
 	// Blank R output
 	sv.cmdout.message("R has quit!", 0, false);
 	// Reset statusbar
-	sv.prefs.setString("sciviews.session.dir", "~", true);
-	sv.prefs.setString("r.active.data.frame", "<none>", true);
-	sv.prefs.setString("r.active.lm", "<none>", true);
+	sv.prefs.setPref("sciviews.session.dir", "~", true);
+	sv.prefs.setPref("r.active.data.frame", "<none>", true);
+	sv.prefs.setPref("r.active.lm", "<none>", true);
 	ko.statusBar.AddMessage("", "SciViews-K");
 	sv.cmdout.clear(false);
 	// Reset the objects explorer
@@ -998,7 +998,7 @@ sv.r.obj_select = function (data) {
 					//alert("Update of MRU lists not implemented yet for " +
 					//	"other objects than 'data.frame'");
 					// Temporary code: at least set pref value
-					sv.prefs.setString("r.active." + objclass, objname, true);
+					sv.prefs.setPref("r.active." + objclass, objname, true);
 				}
 			}
 		}
@@ -1010,13 +1010,13 @@ sv.r.obj_select = function (data) {
 // active in the Komodo statusbar
 sv.r.obj_message = function () {
 	// Get the directory of current session
-	var ses = sv.prefs.getString("sciviews.session.dir", "~");
+	var ses = sv.prefs.getPref("sciviews.session.dir", "~");
 	ses = sv.tools.strings.filename(ses);
 	// Get currently active data frame
-	var df = sv.prefs.getString("r.active.data.frame", "<none>");
+	var df = sv.prefs.getPref("r.active.data.frame", "<none>");
 	if (df == "<df>") df = "<none>";
 	// Get currently active 'lm' object
-	var lm = sv.prefs.getString("r.active.lm", "<none>")
+	var lm = sv.prefs.getPref("r.active.lm", "<none>")
 	if (lm == "<lm>") lm = "<none>";
 	ko.statusBar.AddMessage(sv.translate(
 		"R session: %S  data: %S linear model: %S", ses, df, lm), "SciViews-K");
@@ -1044,9 +1044,9 @@ sv.r.obj_refresh_dataframe = function (data) {
 	ko.statusBar.AddMessage("", "SciViews-K");
 	// If we got nothing, then the object does not exists any more... clear MRUs
 	if (data == "<<<data>>>") {
-		//var oldobj = sv.prefs.getString("r.active.data.frame", "");
-		sv.prefs.setString("r.active.data.frame", "<df>", true); // Default
-		sv.prefs.setString("r.active.data.frame.d", "<df>$", true);
+		//var oldobj = sv.prefs.getPref("r.active.data.frame", "");
+		sv.prefs.setPref("r.active.data.frame", "<df>", true); // Default
+		sv.prefs.setPref("r.active.data.frame.d", "<df>$", true);
 		sv.prefs.mru("var", true, "");
 		sv.prefs.mru("var2", true, "");
 		sv.prefs.mru("x", true, "");
@@ -1066,8 +1066,8 @@ sv.r.obj_refresh_dataframe = function (data) {
 	var objname = item[0];
 	var objclass = item[1];
 	// Make sure r.active.data.frame pref is set to obj
-	sv.prefs.setString("r.active.data.frame", objname, true);
-	sv.prefs.setString("r.active.data.frame.d", objname + "$", true);
+	sv.prefs.setPref("r.active.data.frame", objname, true);
+	sv.prefs.setPref("r.active.data.frame.d", objname + "$", true);
 	items.shift(); // Eliminate first item from the array
 	// Create three lists: vars collects all var names, nums and facts do so for
 	// only numeric and factor variables (separate items by "|")
@@ -1122,8 +1122,8 @@ sv.r.obj_refresh_lm = function (data) {
 	ko.statusBar.AddMessage("", "SciViews-K");
 	// If we got nothing, then the object does not exists any more... clear MRUs
 	if (data == "<<<data>>>") {
-		//var oldobj = sv.prefs.getString("r.active.lm", "");
-		sv.prefs.setString("r.active.lm", "<lm>", true); // Default value
+		//var oldobj = sv.prefs.getPref("r.active.lm", "");
+		sv.prefs.setPref("r.active.lm", "<lm>", true); // Default value
 		// Update message in the statusbar
 		sv.r.obj_message();
 		return(false);
@@ -1135,7 +1135,7 @@ sv.r.obj_refresh_lm = function (data) {
 	var objname = item[0];
 	var objclass = item[1];
 	// Make sure r.active.data.frame pref is set to obj
-	sv.prefs.setString("r.active.lm", objname, true);
+	sv.prefs.setPref("r.active.lm", objname, true);
 	// Update message in the statusbar
 	sv.r.obj_message();
 	return(true);
@@ -1143,8 +1143,8 @@ sv.r.obj_refresh_lm = function (data) {
 
 sv.r.saveDataFrame = function _saveDataFrame(name, fileName, objName, dec,
 sep) {
-	if (!dec) dec = sv.prefs.getString("r.csv.dec");
-	if (!sep) sep = sv.prefs.getString("r.csv.sep");
+	if (!dec) dec = sv.prefs.getPref("r.csv.dec");
+	if (!sep) sep = sv.prefs.getPref("r.csv.sep");
 
 	if (!fileName) {
 		var filterIndex;
@@ -1163,7 +1163,7 @@ sep) {
 			filterIndex = 3;
 		}
 
-		var dir = sv.prefs.getString("sciviews.session.dir");
+		var dir = sv.prefs.getPref("sciviews.session.dir");
 
 		oFilterIdx = {value : filterIndex};
 		fileName = sv.fileOpen(dir, objName, "",
@@ -1186,7 +1186,7 @@ sep) {
 sv.r.refreshSession = function () {
 	var i;
 	// Refresh lists of dataset
-	var items = sv.tools.file.list(sv.prefs.getString("sciviews.data.localdir"),
+	var items = sv.tools.file.list(sv.prefs.getPref("sciviews.data.localdir"),
 		/\.[cC][sS][vV]$/, true);
 	sv.prefs.mru("datafile", true, items);
 	ko.mru.reset("datafile_mru");
@@ -1195,7 +1195,7 @@ sv.r.refreshSession = function () {
 	}
 
 	// Refresh lists of scripts
-	items = sv.tools.file.list(sv.prefs.getString("sciviews.scripts.localdir"),
+	items = sv.tools.file.list(sv.prefs.getPref("sciviews.scripts.localdir"),
 		/\.[rR]$/, true);
 	sv.prefs.mru("scriptfile", true, items);
 	ko.mru.reset("scriptfile_mru");
@@ -1204,7 +1204,7 @@ sv.r.refreshSession = function () {
 	}
 
 	// Refresh lists of reports
-	items = sv.tools.file.list(sv.prefs.getString("sciviews.reports.localdir"),
+	items = sv.tools.file.list(sv.prefs.getPref("sciviews.reports.localdir"),
 		/\.[oO][dD][tT]$/, true);
 	sv.prefs.mru("reportfile", true, items);
 	ko.mru.reset("reportfile_mru");
@@ -1218,47 +1218,47 @@ sv.r.refreshSession = function () {
 sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	// Initialize the various arguments
 	if (typeof(dir) == "undefined")
-		dir = sv.prefs.getString("sciviews.session.dir", "~");
+		dir = sv.prefs.getPref("sciviews.session.dir", "~");
 	if (typeof(datadir) == "undefined")
-		datadir = sv.prefs.getString("sciviews.session.data", "");
+		datadir = sv.prefs.getPref("sciviews.session.data", "");
 	if (typeof(scriptdir) == "undefined")
-		scriptdir = sv.prefs.getString("sciviews.session.scripts", "");
+		scriptdir = sv.prefs.getPref("sciviews.session.scripts", "");
 	if (typeof(reportdir) == "undefined")
-		reportdir = sv.prefs.getString("sciviews.session.reports", "");
+		reportdir = sv.prefs.getPref("sciviews.session.reports", "");
 
 	var localdir = sv.tools.file.path(dir);
 	var sep = "/";
 
 	// Refresh preferences
-	sv.prefs.setString("sciviews.session.dir", dir, true);
-	sv.prefs.setString("sciviews.session.localdir", localdir, true);
+	sv.prefs.setPref("sciviews.session.dir", dir, true);
+	sv.prefs.setPref("sciviews.session.localdir", localdir, true);
 	// Subdirectories for data, reports and scripts
-	sv.prefs.setString("sciviews.session.data", datadir, true);
-	sv.prefs.setString("sciviews.session.scripts", scriptdir, true);
-	sv.prefs.setString("sciviews.session.reports", reportdir, true);
+	sv.prefs.setPref("sciviews.session.data", datadir, true);
+	sv.prefs.setPref("sciviews.session.scripts", scriptdir, true);
+	sv.prefs.setPref("sciviews.session.reports", reportdir, true);
 	// Combination of these to give access to respective dirs
 	if (datadir == "") {
-		sv.prefs.setString("sciviews.data.dir", dir, true);
-		sv.prefs.setString("sciviews.data.localdir", localdir, true);
+		sv.prefs.setPref("sciviews.data.dir", dir, true);
+		sv.prefs.setPref("sciviews.data.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.data.dir", dir + sep + datadir, true);
-		sv.prefs.setString("sciviews.data.localdir",
+		sv.prefs.setPref("sciviews.data.dir", dir + sep + datadir, true);
+		sv.prefs.setPref("sciviews.data.localdir",
 		sv.tools.file.path(localdir, datadir), true);
 	}
 	if (scriptdir == "") {
-		sv.prefs.setString("sciviews.scripts.dir", dir, true);
-		sv.prefs.setString("sciviews.scripts.localdir", localdir, true);
+		sv.prefs.setPref("sciviews.scripts.dir", dir, true);
+		sv.prefs.setPref("sciviews.scripts.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.scripts.dir", dir + sep + scriptdir, true);
-		sv.prefs.setString("sciviews.scripts.localdir",
+		sv.prefs.setPref("sciviews.scripts.dir", dir + sep + scriptdir, true);
+		sv.prefs.setPref("sciviews.scripts.localdir",
 		sv.tools.file.path(localdir, scriptdir), true);
 	}
 	if (reportdir == "") {
-		sv.prefs.setString("sciviews.reports.dir", dir, true);
-		sv.prefs.setString("sciviews.reports.localdir", localdir, true);
+		sv.prefs.setPref("sciviews.reports.dir", dir, true);
+		sv.prefs.setPref("sciviews.reports.localdir", localdir, true);
 	} else {
-		sv.prefs.setString("sciviews.reports.dir", dir + sep + reportdir, true);
-		sv.prefs.setString("sciviews.reports.localdir",
+		sv.prefs.setPref("sciviews.reports.dir", dir + sep + reportdir, true);
+		sv.prefs.setPref("sciviews.reports.localdir",
 		sv.tools.file.path(localdir, reportdir), true);
 	}
 
@@ -1312,7 +1312,7 @@ loadNew) {
 
 	// If dir is the same as current session dir, do nothing
 	if (typeof(dir) != "undefined" && sv.tools.file.path(dir) ==
-		sv.tools.file.path(sv.prefs.getString("sciviews.session.dir", "")))
+		sv.tools.file.path(sv.prefs.getPref("sciviews.session.dir", "")))
 		return(false);
 
 	// Before switching to the new session directory, close current one
@@ -1349,7 +1349,7 @@ loadNew) {
 		// Look for .Rprofile, in current, then in user directory
 		// (where else R looks for it?). If it exists, source the first one.
 		var Rprofile = [
-			svFile.path(sv.prefs.getString("sciviews.session.dir", "~"),
+			svFile.path(sv.prefs.getPref("sciviews.session.dir", "~"),
 				".Rprofile"),
 			svFile.path("~", ".Rprofile")
 		]
@@ -1474,7 +1474,7 @@ sv.r.switchSession = function (inDoc) {
 // TODO: Show session directory in Places instead (this is already done in
 // session manager)
 sv.r.exploreSession = function () {
-	var dataDir = sv.prefs.getString("sciviews.session.localdir", "~");
+	var dataDir = sv.prefs.getPref("sciviews.session.localdir", "~");
 	var file = Components.classes["@mozilla.org/file/local;1"]
 		.createInstance(Components.interfaces.nsILocalFile);
 	file.initWithPath(dataDir);
@@ -1504,7 +1504,7 @@ sv.r.reloadSession = function () {
 		"disk (.RData and .Rhistory files)...", "Reload session") == "OK") {
 		// Switch temporarily to the session directory and try loading
 		// .RData and Rhistory files
-		var dir = sv.prefs.getString("sciviews.session.dir", "");
+		var dir = sv.prefs.getPref("sciviews.session.dir", "");
 		var cmd = 'rm(list = ls(pattern = "[.]active[.]", all.names = TRUE))\n' +
 			'rm(list = ls()); .savdir. <- setwd("' + dir + '")\n' +
 			'if (file.exists(".RData")) load(".RData")\n' +
@@ -1523,7 +1523,7 @@ sv.r.clearSession = function () {
 		" saved in .RData and the command history saved in .Rhistory for the " +
 		"current session...", "Clear session") == "OK") {
 		// Delete .RData and Rhistory files
-		var dir = sv.prefs.getString("sciviews.session.dir", "");
+		var dir = sv.prefs.getPref("sciviews.session.dir", "");
 		var cmd = '.savdir. <- setwd("' + dir + '")\n' +
 			'unlink(".RData"); unlink(".Rhistory")\n' +
 			'setwd(.savdir.); rm(.savdir.)';
@@ -1680,7 +1680,7 @@ sv.r.pkg.chooseCRANMirror = function (setPrefString, callback) {
 			sv.r.eval('with(TempEnv(), {repos <- getOption("repos");' +
 				'repos["CRAN"] <- "' + repos + '"; ' +
 				'options(repos = repos)})');
-			if (setPref) sv.prefs.setString("r.cran.mirror", repos);
+			if (setPref) sv.prefs.setPref("r.cran.mirror", repos);
 			if (callback) callback(repos);
 		}
 		return(res);
@@ -1901,7 +1901,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 				if (cran == "@CRAN@") {
 					res = sv.r.pkg.chooseCRANMirror(true, _installCallback);
 				} else {
-					sv.prefs.setString("r.cran.mirror", cran);
+					sv.prefs.setPref("r.cran.mirror", cran);
 					res = sv.r.pkg.install(pkgs, cran, true);
 				}
 				return;

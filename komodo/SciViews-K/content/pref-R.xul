@@ -75,24 +75,24 @@
 			</vbox>
 			
 			<hbox align="center">
-				<label class="label" control="svRApplication" value="Preferred way to run R:"/>
+				<label class="label" control="sciviews.r.batchinterp" value="Preferred way to run R:"/>
 					<menulist
-						id="svRApplication" oncommand="PrefR_svRApplicationOnSelect(event);"
+						id="sciviews.r.batchinterp" oncommand="PrefR_svRApplicationOnSelect(event);"
 						pref="true" />
 			</hbox>
 			
-			<label value="Use this application:" control="svRDefaultInterpreter" />
+			<label value="Use this application:" control="sciviews.r.interpreter" />
 			
 			<hbox>
 				<vbox flex="2">
-					<menulist id="svRDefaultInterpreter" sizetopopup="none" width="200"
+					<menulist id="sciviews.r.interpreter" sizetopopup="none" width="200"
 						editable="false" flex="1" pref="true"
 						oncommand="PrefR_svRDefaultInterpreterOnSelect(event);" />
 	
 					<hbox align="center">
 						<label value="Command line arguments:"
-							control="svRArgs" pref="false" />
-						<textbox id="svRArgs" pref="true" editable="true" flex="1"
+							control="sciviews.r.args" pref="false" />
+						<textbox id="sciviews.r.args" pref="true" editable="true" flex="1"
 							oninput="PrefR_updateCommandLine(event);" />
 						<toolbarbutton
 							oncommand="sv.r.help(&quot;Startup&quot;)"
@@ -183,7 +183,7 @@
 	
 			<hbox align="center" hidden="true">
 				<label value="Show R help in:" />
-				<radiogroup id="sciviews.rhelp.open_in" disabled="true"
+				<radiogroup id="r.help.open.in" disabled="true"
 					pref="false" orient="horizontal">
 					<radio value="window" label="new window" accesskey="E"
 						selected="true" />
@@ -208,8 +208,8 @@
 			<caption label="Connection to R"/>
 			
 			<hbox align="center">
-				<label value="Server type:" control="sciviews.client.type"/>
-				<menulist pref="true" id="sciviews.client.type"
+				<label value="Server type:" control="sciviews.r.type"/>
+				<menulist pref="true" id="sciviews.r.type"
 					values="http socket" persist="values">
 					<menupopup />
 				</menulist>
@@ -225,10 +225,10 @@
 				
 				<rows>
 					<row align="center">
-						<label value="Server port #:" control="sciviews.client.socket" />
-						<textbox id="sciviews.client.socket" pref="true" width="50" />
-						<label value="Host to connect to:" control="sciviews.server.host" />
-						<textbox id="sciviews.server.host" pref="true" width="150"
+						<label value="Server port #:" control="sciviews.r.port" />
+						<textbox id="sciviews.r.port" pref="true" width="50" />
+						<label value="Host to connect to:" control="sciviews.r.host" />
+						<textbox id="sciviews.r.host" pref="true" width="150"
 							tooltip="Currently only local connection is allowed"
 							disabled="true"/>
 					</row>
@@ -236,8 +236,8 @@
 			</grid>
 			
 			<hbox align="center">
-				<label value="Client type:" control="sciviews.server.type"/>
-				<menulist pref="true" id="sciviews.server.type"
+				<label value="Client type:" control="sciviews.ko.type"/>
+				<menulist pref="true" id="sciviews.ko.type"
 					values="file socket" persist="values">
 					<menupopup />
 				</menulist>
@@ -253,10 +253,10 @@
 				
 				<rows>		
 					<row align="center">
-						<label value="Client port #:" control="sciviews.server.socket" />
-						<textbox id="sciviews.server.socket" pref="true" width="50" />
-						<label value="Client Id:" control="sciviews.client.id" />
-						<textbox id="sciviews.client.id" pref="true" width="150" />
+						<label value="Client port #:" control="sciviews.ko.port" />
+						<textbox id="sciviews.ko.port" pref="true" width="50" />
+						<label value="Client Id:" control="sciviews.ko.id" />
+						<textbox id="sciviews.ko.id" pref="true" width="150" />
 					</row>
 				</rows>
 			</grid>

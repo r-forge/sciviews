@@ -31,9 +31,9 @@ sv.ask.setDefault = function (object, classes) {
 				var obj = cls[0];
 				for (i = 1; i < cls.length; i++) {
 					if (cls[i] != null & cls[i] != "") {
-						sv.prefs.setString("r.active." + cls[i], obj, true);
+						sv.prefs.setPref("r.active." + cls[i], obj, true);
 						if (cls[i] == "data.frame") {
-							sv.prefs.setString("r.active.data.frame.d", obj +
+							sv.prefs.setPref("r.active.data.frame.d", obj +
 								"$", true);
 							sv.r.obj_message();
 						} else if (cls[i] == "lm") sv.r.obj_message();
@@ -47,9 +47,9 @@ sv.ask.setDefault = function (object, classes) {
 		cls = classes.split("|");
 		for (i = 0; i < cls.length; i++) {
 			if (cls[i] != null & cls[i] != "") {
-				sv.prefs.setString("r.active." + cls[i], object, true);
+				sv.prefs.setPref("r.active." + cls[i], object, true);
 				if (cls[i] == "data.frame") {
-					sv.prefs.setString("r.active.data.frame.d", object + "$", true);
+					sv.prefs.setPref("r.active.data.frame.d", object + "$", true);
 					sv.r.obj_message();
 				} else if (cls[i] == "lm") sv.r.obj_message();
 			}
@@ -67,9 +67,9 @@ sv.ask.setDefault_callback = function (msg) {
 	var obj = cls[0];
 	for (i = 1; i < cls.length; i++) {
 		if (cls[i] != null & cls[i] != "") {
-			sv.prefs.setString("r.active." + cls[i], obj, true);
+			sv.prefs.setPref("r.active." + cls[i], obj, true);
 			if (cls[i] == "data.frame") {
-				sv.prefs.setString("r.active.data.frame.d", obj + "$", true);
+				sv.prefs.setPref("r.active.data.frame.d", obj + "$", true);
 				sv.r.obj_message();
 			} else if (cls[i] == "lm") sv.r.obj_message();
 		}

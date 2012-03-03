@@ -160,7 +160,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 		var cwd = sv.tools.file.path("ProfD", "extensions",
 			"sciviewsk@sciviews.org", "defaults");
-		var cmd = sv.prefs.getString("svRCommand");
+		var cmd = sv.prefs.getPref("svRCommand");
 
 		// Remove /defaults/00LOCK if remained after a fail-start
 		try {
@@ -170,7 +170,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 		// On Mac OS X, R.app is not a file, but a dir!
 		if (!cmd || (sv.tools.file.exists(sv.tools.strings.trim(
-			sv.prefs.getString("svRDefaultInterpreter"))) ==
+			sv.prefs.getPref("sciviews.r.interpreter"))) ==
 			sv.tools.file.TYPE_NONE)) {
 			if (ko.dialogs.okCancel(sv.translate("R interpreter is not" +
 				"(correctly) configured in Preferences. Do you want to do it now?"),
@@ -182,7 +182,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 		// Default R program depends on the platform
 		var isWin = navigator.platform.indexOf("Win") === 0;
-		var id = sv.prefs.getString("svRApplication",
+		var id = sv.prefs.getPref("sciviews.r.batchinterp",
 			isWin? "r-gui" : "r-terminal");
 
 		// Width of R output defined to fit R output panel (min = 66, max = 200)
@@ -192,21 +192,21 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		if (width < 66) width = 66;
 		if (width > 200) width = 200;
 
-		var clientType = sv.prefs.getString("sciviews.client.type", "http");
+		var rType = sv.prefs.getPref("sciviews.r.type", "http");
 		var env = [
-			"koId=" + sv.prefs.getString("sciviews.client.id", "SciViewsK"),
+			"koId=" + sv.prefs.getPref("sciviews.ko.id", "SciViewsK"),
 			"koHost=localhost",
 			"koActivate=FALSE",
-			"Rinitdir=" + sv.prefs.getString("sciviews.session.dir", "~"),
-			"koType=" + clientType,
-			"koServe=" + sv.prefs.getString("sciviews.client.socket", "8888"),
-			"koPort=" + sv.prefs.getString("sciviews.server.socket", "7052"),
-			"koKotype=" + sv.prefs.getString("sciviews.server.type", "file"),
+			"Rinitdir=" + sv.prefs.getPref("sciviews.session.dir", "~"),
+			"koType=" + rType,
+			"koServe=" + sv.prefs.getPref("sciviews.r.port", 8888),
+			"koPort=" + sv.prefs.getPref("sciviews.ko.port", 7052),
+			"koKotype=" + sv.prefs.getPref("sciviews.ko.type", "file"),
 			"koDebug=" + String(sv.socket.debug).toUpperCase(),
 			"koAppFile=" + sv.tools.file.path("binDir", "komodo" +
 				(isWin? ".exe" : "")),
-			"OutDec=" + sv.prefs.getString("r.csv.dec", "."),
-			"OutSep=" + sv.prefs.getString("r.csv.sep", ","),
+			"OutDec=" + sv.prefs.getPref("r.csv.dec", "."),
+			"OutSep=" + sv.prefs.getPref("r.csv.sep", ","),
 			"width=" + width
 		];
 		var runIn = "no-console";
@@ -234,8 +234,8 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		// Register observer of application termination
 		this.rObserver = new AppTerminateObserver(cmd);
 
-		// Ensure the client type is correct for everyone
-		sv.socket.setSocketType(clientType);
+		// Ensure the R type is correct for everyone
+		sv.socket.setSocketType(rType);
 
 		// ... make sure to start with a clear R Output window
 		sv.cmdout.clear(false);
@@ -348,7 +348,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			uri = ""; // Home page will be shown
 		}
 
-		var rhelpTabbed = sv.prefs.getString("rhelp.tabbed", false) == "true";
+		var rhelpTabbed = sv.prefs.getPref("rhelp.tabbed", false) == "true";
 		var rHelpXulUri = "chrome://sciviewsk/content/RHelpWindow.xul";
 
 		// Open R-help in a right tab

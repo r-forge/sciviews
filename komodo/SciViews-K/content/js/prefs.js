@@ -5,10 +5,13 @@
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.prefs.defaults;             // Default preference values
+// sv.prefs.getPref(prefName, defaultValue);
+//                                // Get a preference, use 'def' is not found
+// sv.prefs.setPref(prefName, value, overwrite, asInt);
+//                                // Set a preference
+// sv.prefs.setPref(prefName);    // Delete a preference
+// sv.prefs.askPref(pref, defvalue); // Ask for the value of a preference
 // sv.prefs.checkAll();           // Check all preferences
-// sv.prefs.getString(pref, def); // Get a preference, use 'def' is not found
-// sv.prefs.setString(pref, value, overwrite); // Set a preference string
-// sv.prefs.askString(pref, defvalue); // Ask for the value of a preference
 // sv.prefs.mru(mru, reset, items, sep); //Simplify update of MRU lists
 //                                         history a text entries in dialog box
 // sv.prefs.tip(arg, tip);        // Default tooltips for interpolation queries
@@ -16,108 +19,179 @@
 // Definition of various preferences for SciViews-K
 ////////////////////////////////////////////////////////////////////////////////
 
-if (typeof(sv.prefs) == "undefined") sv.prefs = {};
+if (sv.prefs === undefined) sv.prefs = {};
 
 (function () {
 	
 	var prefset = Components.classes["@activestate.com/koPrefService;1"]
-	.getService(Components.interfaces.koIPrefService).prefs;
-
-this.prefset = prefset;
-
-// sv.prefs.defaults[preferenceName] = preferenceValue
-sv.prefs.defaults = {
-	"sciviews.server.socket": "7052",
-	"sciviews.server.type": "socket",
-	"sciviews.client.type": "http",
-	"sciviews.client.socket": "8888",
-	"sciviews.client.id": "SciViewsK",
-	"sciviews.server.host": "127.0.0.1",
-	"svRDefaultInterpreter": "",
-	"svRApplication": "",
-    "r.csv.dec": ".",
-	"r.csv.sep": ",",
-	"r.application": "",
-	"r.cran.mirror": "http://cran.r-project.org/"
-	//*Future preferences:*
-	//"svRArgs": "--quiet",
-	//"RHelpCommand": "javascript:sv.r.help(\"%w\")",
-	//"sciviews.rhelp.open_in": [tab, window]
-	//"sciviews.r.auto-start": false
-}
-
-// Get a string preference, or default value
-sv.prefs.getString = function (pref, def) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
-		.getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	if (prefs.hasStringPref(pref)) {
-		return(prefs.getStringPref(pref));
-	} else return(def);
-}
-
-// Set a string preference
-sv.prefs.setString = function (pref, value, overwrite) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
-		.getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	if (overwrite == false & prefs.hasStringPref(pref)) return;
-	prefs.setStringPref(pref, value);
-}
-
-// Display a dialog box to change a preference string
-sv.prefs.askString = function (pref, defvalue) {
-	var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
-		.getService(Components.interfaces.koIPrefService);
-	var prefs = prefsSvc.prefs;
-	// If defvalue is defined, use it, otherwise, use current pref value
-	if (defvalue == null & prefs.hasStringPref(pref))
-		defvalue = prefs.getStringPref(pref);
-	if (defvalue == null) defvalue == "";
-	// Display a dialog box to change the preference value
-	newvalue = ko.dialogs.prompt("Change preference value for:", pref,
-		defvalue, "SciViews-K preference", "svPref" + pref)
-	if (newvalue != null) prefs.setStringPref(pref, newvalue);
-}
-
-// Set default preferences
-sv.prefs.checkAll = function sv_checkAllPref (revert) {
-	var prefset = Components.classes['@activestate.com/koPrefService;1']
 		.getService(Components.interfaces.koIPrefService).prefs;
-	for (var i in sv.prefs.defaults) {
-		var el;
-		var p = sv.prefs.defaults[i];
-		switch(typeof(p)) {
-		 case "number":
-			el = (parseInt(p) == p)? "Long" : "Double";
-			break;
-		 case "boolean":
-			el = "Boolean";
-			break;
-		 case "string":
-		 default:
-			el = "String";
-			p = p.toString();
-		}
-		if (revert // take all
-			|| !prefset.hasPref(i) // if missing at all
-			|| (prefset["has" + el + "Pref"](i) // has right type, but empty
-			&& !prefset["get" + el + "Pref"](i))) {
-			prefset.deletePref(i); // To avoid _checkPrefType error
-			prefset["set" + el + "Pref"](i, p);
-		};
+	this.prefset = prefset;
+	var _this = this;
+
+	// sv.prefs.defaults[preferenceName] = preferenceValue
+	this.defaults = {
+		"sciviews.ko.id": "SciViewsK",
+		"sciviews.ko.type": "socket",
+		"sciviews.ko.port": 7052,
+		"sciviews.r.type": "http",
+		"sciviews.r.port": 8888,
+		"sciviews.r.host": "127.0.0.1",
+		"sciviews.r.interpreter": "",
+		//"sciviews.r.args": "--quiet",
+		//"sciviews.r.auto-start": false,
+		"sciviews.r.batchinterp": "",
+	    "r.csv.dec": ".",
+		"r.csv.sep": ",",
+		"r.application": "",
+		"r.cran.mirror": "http://cran.r-project.org/"
+		//"r.help.command": "javascript:sv.r.help(\"%w\")",
+		//"r.help.open.in": [tab, window],
+		//"r.help.remote": "http://finzi.psych.upenn.edu/R/"
 	}
-}
+
+	// Get a preference, or default value
+	this.getPref = function (prefName, defaultValue) {
+		var ret, typeName, type;
+		if (prefset.hasPref(prefName)) {
+			type = ['long', 'double', 'boolean', 'string']
+				.indexOf(prefset.getPrefType(prefName));
+			if (type == -1) return(undefined);
+			typeName = ['Long', 'Double', 'Boolean', 'String'][type];
+			ret = prefset['get' + typeName + 'Pref'](prefName);
+		} else ret = defaultValue;
+		return(ret);
+	}
+	
+	// Set a preference
+	this.setPref = function (prefName, value, overwrite, asInt) {
+		var typeName, type;
+		if (prefset.hasPref(prefName)) {
+			if (overwrite === false) return("");
+			type = prefset.getPrefType(prefName);
+		} else {
+			type = typeof(value);
+			if (type == 'number') type = asInt? "long" : "double";
+		}
+		type = ['double', 'long', 'boolean', 'string'].indexOf(type);
+		if (type == -1 || type == null) return(undefined);
+		typeName = ['Double', 'Long', 'Boolean', 'String'][type];
+		prefset['set' + typeName + 'Pref'](prefName, value);
+		return(typeName);
+	}
+	
+	// Delete a preference
+	this.deletePref = function (prefName) {
+		prefset.deletePref(prefName);
+		return(prefset.hasPref(prefName));
+	}
+	
+	// Display a dialog box to change a preference string
+	this.askPref = function (pref, defvalue) {
+		// If defvalue is defined, use it, otherwise, use current pref value
+		var prefExists = prefset.hasPref(pref);
+		if (defvalue == null) {
+			defvalue = prefExists ? this.getPref(pref) : "";
+		}
+		var prefType = prefExists ? prefset.getPrefType(pref) : 'undefined';
+		var validator = {
+			'double': function (win, x)
+				(/^[+-]?\d+\.\d*([eE][+-]?\d+)?$/).test(x),
+			'long': function (win,x)
+				x == parseInt(x),
+			'boolean': function (win, x)
+				["true", "false", "0", "1"].indexOf(x.toLowerCase()) != -1,
+			'string': function (win, x)
+				true,
+			'undefined': function (win, x)
+				true
+		}
+		// Display a dialog box to change the preference value
+		var newVal = ko.dialogs.prompt("Change preference value" +
+			(prefType == 'undefined' ? "" : " (" + prefType + ")") +
+			" for:", pref, 	defvalue, "SciViews-K preference", "svPref" + pref,
+			validator[prefType]);
+	
+		if (prefType == 'undefined') {
+			for (prefType in validator)
+				if (validator[prefType](null, newVal)) break;
+		}
+		switch(prefType) {
+		 case 'boolean':
+			newVal = !!eval(newVal.toLowerCase());
+			break;
+		 case 'long':
+			newVal = parseInt(newVal);
+			break;
+		 case 'double':
+			newVal = parseFloat(newVal);
+			break;
+		}
+		if (newVal != null) this.setPref(pref, newVal);
+	}
+	
+	// Set default preferences
+	this.checkAll = function sv_checkAllPref (revert) {
+		for (var i in _this.defaults) {
+			var el;
+			var p = _this.defaults[i];
+			switch(typeof(p)) {
+			 case "number":
+				el = (parseInt(p) == p)? "Long" : "Double";
+				break;
+			 case "boolean":
+				el = "Boolean";
+				break;
+			 case "string":
+			 default:
+				el = "String";
+				p = p.toString();
+			}
+			if (revert // take all
+				|| !prefset.hasPref(i) // if missing at all
+				|| (prefset["has" + el + "Pref"](i) // has right type, but empty
+				&& !prefset["get" + el + "Pref"](i))) {
+				_this.deletePref(i); // To avoid _checkPrefType error
+				prefset["set" + el + "Pref"](i, p);
+			};
+		}
+	}
+
+	// Simplify update of MRU lists
+	this.mru = function (mru, reset, items, sep) {
+		var mruList = "dialog-interpolationquery-" + mru + "Mru";
+		// Do we reset the MRU list?
+		if (reset === undefined) reset = false;
+		if (reset == true) ko.mru.reset(mruList);
+	
+		// Do we need to split items (when sep is defined)?
+		if (sep !== undefined) items = items.split(sep);
+	
+		// Add each item in items in inverse order
+		for (var i = items.length - 1; i >= 0; i--) {
+			if (items[i] != "")
+				ko.mru.add(mruList, items[i], true);
+		}
+	}
+	
+	// Simplify storage of default tooltips for arguments in interpolation queries
+	this.tip = function (arg, tip) {
+		_this.set("dialog-tip-" + arg, tip, true);
+	}
+
+}).apply(sv.prefs);
+
+
 // Preferences (default values, or values reset on each start)
 sv.prefs.checkAll(false);
+
 // Try getting a reasonable default R interpreter, if none is defined
-var svRDefaultInterpreter = sv.prefs.getString("svRDefaultInterpreter", "");
+var svRDefaultInterpreter = sv.prefs.getPref("sciviews.r.interpreter", "");
 // Is this R interpreter still there?
 if (svRDefaultInterpreter != "" &&
 	sv.tools.file.exists(svRDefaultInterpreter) == sv.tools.file.TYPE_NONE) {
 	// We don't warn the user that current R is not found here because Komodo
 	// is still loading. Will be rechecked on time in sv.command.startR()
-	sv.prefs.setString("svRDefaultInterpreter", "", true);
+	sv.prefs.setPref("sciviews.r.interpreter", "", true);
 	svRDefaultInterpreter = "";
 }
 // If no default R interpreter defined, try to get reasonable default one
@@ -126,9 +200,9 @@ if (svRDefaultInterpreter == "") {
 	if (navigator.platform.indexOf("Win") === 0) {
 		svRDefaultInterpreter = sv.tools.file.whereIs("Rgui");
 		if (svRDefaultInterpreter) {
-			sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter,
+			sv.prefs.setPref("sciviews.r.interpreter", svRDefaultInterpreter,
 				true);
-			sv.prefs.setString("svRApplication", "r-gui", true);		
+			sv.prefs.setPref("sciviews.r.batchinterp", "r-gui", true);		
 		}
 	} else { // Linux or Mac OS X
 		svRDefaultInterpreter = sv.tools.file.whereIs("R");
@@ -136,74 +210,54 @@ if (svRDefaultInterpreter == "") {
 			// Check if GnomeTerm Konsole or xfce4term are there, use them
 			if (sv.tools.file.exists("gnome-terminal") !=
 				sv.tools.file.TYPE_NONE) {
-				sv.prefs.setString("svRApplication", "r-gnome-term", true);
+				sv.prefs.setPref("sciviews.r.batchinterp", "r-gnome-term",
+					true);
 			} else if (sv.tools.file.exists("konsole") !=
 				sv.tools.file.TYPE_NONE) {
-				sv.prefs.setString("svRApplication", "r-kde-term", true);
+				sv.prefs.setPref("sciviews.r.batchinterp", "r-kde-term",
+					true);
 			} else if (sv.tools.file.exists("xfce4-terminal") !=
 				sv.tools.file.TYPE_NONE) {
-				sv.prefs.setString("svRApplication", "r-xfce4-term", true);
+				sv.prefs.setPref("sciviews.r.batchinterp", "r-xfce4-term",
+					true);
 			} else { // Use default terminal
-				sv.prefs.setString("svRApplication", "r-terminal", true);
+				sv.prefs.setPref("sciviews.r.batchinterp", "r-terminal",
+					true);
 			}
-			sv.prefs.setString("svRDefaultInterpreter", svRDefaultInterpreter,
+			sv.prefs.setPref("sciviews.r.interpreter", svRDefaultInterpreter,
 				true);
 		}
 	}
 }
-
-// Simplify update of MRU lists
-sv.prefs.mru = function (mru, reset, items, sep) {
-	var mruList = "dialog-interpolationquery-" + mru + "Mru";
-	// Do we reset the MRU list?
-	if (reset === undefined) reset = false;
-	if (reset == true) ko.mru.reset(mruList);
-
-	// Do we need to split items (when sep is defined)?
-	if (sep !== undefined) items = items.split(sep);
-
-	// Add each item in items in inverse order
-	for (var i = items.length - 1; i >= 0; i--) {
-		if (items[i] != "")
-			ko.mru.add(mruList, items[i], true);
-	}
-}
-
-// Simplify storage of default tooltips for arguments in interpolation queries
-sv.prefs.tip = function (arg, tip) {
-	sv.prefs.setString("dialog-tip-" + arg, tip, true);
-}
-
-}).apply(sv.prefs);
 
 // This is required by sv.helpContext() for attaching help to snippets
 // Create empty preference sets to be used with snippet help system hack
 // [[%pref:R-help:value]] which displays nothing when the snippet is used
 // but can be used to retrieve value to display a particular snippet help page
 // Help page triggered by a given URL
-sv.prefs.setString("URL-help", "", true);
+sv.prefs.setPref("URL-help", "", true);
 // R HTML help pages triggered with '?topic'
-sv.prefs.setString("R-help", "", true);
+sv.prefs.setPref("R-help", "", true);
 // Help page on the R Wiki
-sv.prefs.setString("RWiki-help", "", true);
+sv.prefs.setPref("RWiki-help", "", true);
 
 // Default working directory for R and default subdirs the first time SciViews-K
 // is used... the rest of session dirs is set in r.js with sv.r.setSession()
-sv.prefs.setString("sciviews.session.dir", "~", false);
+sv.prefs.setPref("sciviews.session.dir", "~", false);
 
 // Where do we want to display R help? In internal browser or not?
-sv.prefs.setString("sciviews.r.help", "internal", false);
+sv.prefs.setPref("sciviews.r.help", "internal", false);
 
 // This is the base path for the R Wiki context help feature sv.helpContext()
-sv.prefs.setString("sciviews.rwiki.help.base",
+sv.prefs.setPref("sciviews.rwiki.help.base",
 	"http:/wiki.r-project.org/rwiki/doku.php?id=", false);
 
 // Set default dataset to 'df'
 // Should be reset to a more useful value during first use of R
-sv.prefs.setString("r.active.data.frame", "<df>", true);
-sv.prefs.setString("r.active.data.frame.d", "<df>$", true);
-sv.prefs.setString("r.active.lm", "<lm>", true);
-sv.prefs.setString("r.active.pcomp", "<pcomp>", true);
+sv.prefs.setPref("r.active.data.frame", "<df>", true);
+sv.prefs.setPref("r.active.data.frame.d", "<df>$", true);
+sv.prefs.setPref("r.active.lm", "<lm>", true);
+sv.prefs.setPref("r.active.pcomp", "<pcomp>", true);
 sv.prefs.mru("var", true, "");
 sv.prefs.mru("var2", true, "");
 sv.prefs.mru("x", true, "");
@@ -223,7 +277,7 @@ sv.prefs.mru("sep", true, '" "|";"|","|"\\t"', "|");
 // header argument, like in read.table()
 sv.prefs.mru("header", true, 'TRUE|FALSE', "|");
 
-// Various examples of pkgdata (indeed, data frames in datatasets 2.9.1) /////
+// Various examples of pkgdata (indeed, data frames in datatasets 2.9.1) ///////
 sv.prefs.mru("pkgdata", false,
 	'airquality|anscombe|attenu|attitude|beaver1|beaver2|BOD|cars|' +
 	'ChickWeight|chickwts|CO2|DNase|esoph|faithful|Formaldehyde|freeny|' +

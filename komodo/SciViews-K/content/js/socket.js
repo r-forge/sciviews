@@ -51,8 +51,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Make sure sv.clientType and sv.serverType are defined using current prefs
-sv.clientType = sv.prefs.getString("sciviews.client.type", "socket");
-sv.serverType = sv.prefs.getString("sciviews.server.type", "socket");
+sv.clientType = sv.prefs.getPref("sciviews.r.type", "http");
+sv.serverType = sv.prefs.getPref("sciviews.ko.type", "socket");
 
 // Define the 'sv.socket' namespace
 if (typeof(sv.socket) == 'undefined') sv.socket = {};
@@ -319,7 +319,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 			// Make sure sv.clientType is correct
 			sv.clientType = "http";
 			// For calltip and complete, I have something different
-			sv.prefs.setString("sciviews.client.currentType", "http");
+			sv.prefs.setPref("sciviews.client.currentType", "http");
 			break;
 		 case "socket":
 		 default:
@@ -327,17 +327,17 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 			// Make sure sv.clientType is correct
 			sv.clientType = "socket";
 			// For calltip and complete, I have something different
-			sv.prefs.setString("sciviews.client.currentType", "socket");
+			sv.prefs.setPref("sciviews.client.currentType", "socket");
 			break;
 		}
 	}
 		
 	// PhG: no, we don't use this any more! We use sv.clientType!
-	//this.setSocketType(sv.prefs.getString("sciviews.client.type", "socket"));
-	// Explanation: the "sciviews.client.type" is the value the user would like
+	//this.setSocketType(sv.prefs.getPref("sciviews.r.type", "http"));
+	// Explanation: the "sciviews.r.type" is the value the user would like
 	// to use. The value in sv.clientType is the actual value used! Let's think
 	// at this situation: the user connects to R with socket server, then he
-	// changes settings in the pref box. "sciviews.client.type" is changed, but
+	// changes settings in the pref box. "sciviews.r.type" is changed, but
 	// sv.clientType remains the same until he quits and restart R.
 	this.setSocketType(sv.clientType);
 		
@@ -358,10 +358,10 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 				cmd.substring(7).replace(/[\n\r]{1,2}/, "\n:+ ");
 		}
 			
-		var host = sv.prefs.getString("sciviews.server.host", "127.0.0.1");
-		var port = sv.prefs.getString("sciviews.client.socket", "8888");
+		var host = sv.prefs.getPref("sciviews.r.host", "127.0.0.1");
+		var port = sv.prefs.getPref("sciviews.r.port", 8888);
 		var id = "<<<id=" +
-			sv.prefs.getString("sciviews.client.id", "SciViewsK") + ">>>";
+			sv.prefs.getPref("sciviews.ko.id", "SciViewsK") + ">>>";
 		cmd = sv.tools.strings.replaceCRLF(cmd, "<<<n>>>");
 		var listener;
 		var procname = null;
@@ -427,10 +427,10 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 		if (cmd === undefined || cmd == null) cmd = "cat(R.version.string)";
 		
 		// Some synchronous request from R
-		var host = sv.prefs.getString("sciviews.server.host", "127.0.0.1");
-		var port = sv.prefs.getString("sciviews.client.socket", "8888");
+		var host = sv.prefs.getPref("sciviews.r.host", "127.0.0.1");
+		var port = sv.prefs.getPref("sciviews.r.port", 8888);
 		var id = "<<<id=" +
-			sv.prefs.getString("sciviews.client.id", "SciViewsK") + ">>>";
+			sv.prefs.getPref("sciviews.ko.id", "SciViewsK") + ">>>";
 		//cmd = id + "<<<h>>>" + cmd;
 		cmd = sv.tools.strings.replaceCRLF(id + "<<<h>>>" + cmd, "<<<n>>>");
 	
@@ -486,8 +486,8 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 		// Thus, it seems we don't need this function any more!
 		// Make sure that dec and sep are correctly set in R
 	//	this.rCommand('<<<H>>>options(' +
-	//		'OutDec = "' + sv.prefs.getString("r.csv.dec", ".") +
-	//		'", OutSep = "' + sv.prefs.getString("r.csv.sep", ",") +
+	//		'OutDec = "' + sv.prefs.getPref("r.csv.dec", ".") +
+	//		'", OutSep = "' + sv.prefs.getPref("r.csv.sep", ",") +
 	//		'"); invisible(koRefresh(force = TRUE)); ' +
 	//		'cat("", localeToCharset()[1], sep="");',
 	//		// ??? The following does not work.
@@ -665,9 +665,9 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 		}
 		// Make sure port is OK
 		if (port) {
-			sv.prefs.setString("sciviews.server.socket", port);
+			sv.prefs.setPref("sciviews.ko.port", port);
 		} else {
-			port = sv.prefs.getString("sciviews.server.socket", "7052");
+			port = sv.prefs.getPref("sciviews.ko.port", 7052);
 		}
 		// The way the server is started depends on its type (file or socket)
 		if (sv.serverType == "file") {
@@ -715,7 +715,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 				//		"OK", null, "SciViews-K") == "OK") {
 				// Avoid increasing constantly the port number!
 				if (port >= 8000) port = 7051;
-				sv.prefs.setString("sciviews.server.socket", port + 1);
+				sv.prefs.setPref("sciviews.ko.port", port + 1);
 				_this.serverStart();
 				//}
 				return;
@@ -800,7 +800,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 	this.serverConfig = function () {
 		var serverStatus = " (stopped)"
 		if (_this.serverIsStarted) serverStatus = " (started)"
-		var port = sv.prefs.getString("sciviews.server.socket", "7052");
+		var port = sv.prefs.getPort("sciviews.ko.port", 7052);
 		if (_this.serverIsLocal) {
 			return("Local " + sv.serverType + " server on port " +
 				port + serverStatus);
