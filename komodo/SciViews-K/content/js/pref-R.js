@@ -131,11 +131,11 @@ function _menuListGetValues (attribute) {
 
 // Populate the list of available R interpreters
 function _populateRInterps () {
-    var prefExecutable = sv.prefs.getString('svRDefaultInterpreter');
+    var prefExecutable = sv.prefs.getPref('sciviews.r.interpreter');
     var rs = new Array();
     var os = Components.classes['@activestate.com/koOs;1']
 		.getService(Components.interfaces.koIOs);
-    var menu = document.getElementById("svRDefaultInterpreter");
+    var menu = document.getElementById("sciviews.r.interpreter");
 
     switch (os.name) { //'posix', 'nt', 'mac', 'os2', 'ce', 'java', 'riscos'.
      case "nt":
@@ -162,7 +162,7 @@ function _populateRInterps () {
 
     rs = sv.tools.array.unique(rs);
 	if (rs.indexOf(prefExecutable) == -1) {
-		prefset.setStringPref('svRDefaultInterpreter', '');
+		prefset.setStringPref('sciviews.r.interpreter', '');
 		rs.unshift('');
 	}
     menu.removeAllItems();
@@ -182,8 +182,8 @@ function PrefR_OnLoad () {
 	while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
 	var prefExecutable;
 	var prefset = parent.hPrefWindow.prefset;
-	var prefName = 'svRDefaultInterpreter';
-    var menu = document.getElementById("svRApplication");
+	var prefName = 'sciviews.r.interpreter';
+    var menu = document.getElementById("sciviews.r.batchinterp");
     menu.removeAllItems();
     var platform = navigator.platform.substr(0,3);
     var tmp = {}, required, res;
@@ -232,8 +232,8 @@ function PrefR_svRDefaultInterpreterOnSelect (event) {
 	var os = Components.classes['@activestate.com/koOs;1']
 		.getService(Components.interfaces.koIOs);
 
-	var menuApplication = document.getElementById("svRApplication");
-    var menuInterpreters = document.getElementById("svRDefaultInterpreter");
+	var menuApplication = document.getElementById("sciviews.r.batchinterp");
+    var menuInterpreters = document.getElementById("sciviews.r.interpreter");
 
 	// Just in case
 	if (sv.tools.file.exists(menuInterpreters.value) ==
@@ -254,8 +254,8 @@ function PrefR_svRDefaultInterpreterOnSelect (event) {
 }
 
 function PrefR_svRApplicationOnSelect (event) {
-	var menuApplication = document.getElementById("svRApplication");
-    var menuInterpreters = document.getElementById("svRDefaultInterpreter");
+	var menuApplication = document.getElementById("sciviews.r.batchinterp");
+    var menuInterpreters = document.getElementById("sciviews.r.interpreter");
     if (!(menuApplication.value in apps)) return;
 	var app = apps[menuApplication.value].app;
 	//var sel = menuApplication.selectedItem;
@@ -279,10 +279,10 @@ function PrefR_svRApplicationOnSelect (event) {
 }
 
 function PrefR_updateCommandLine (update) {
-    var appId = document.getElementById("svRApplication").value;
-    var appPath = document.getElementById("svRDefaultInterpreter").value;
+    var appId = document.getElementById("sciviews.r.batchinterp").value;
+    var appPath = document.getElementById("sciviews.r.interpreter").value;
     if (!appId || !appPath) return("");
-	var cmdArgs = document.getElementById("svRArgs").value;
+	var cmdArgs = document.getElementById("sciviews.r.args").value;
 	var args1 = "";
 
 	if (document.getElementById("sciviews.pkgs.sciviews").checked)
@@ -314,7 +314,7 @@ function PrefR_updateCommandLine (update) {
 }
 
 function PrefR_setExecutable (path) {
-    var menu = document.getElementById("svRDefaultInterpreter");
+    var menu = document.getElementById("sciviews.r.interpreter");
 
     if (!path || !sv.tools.file.exists(path)) {
 		var os = Components.classes['@activestate.com/koOs;1']
@@ -359,7 +359,7 @@ function PrefR_UpdateCranMirrors (localOnly) {
 			var platform = navigator.platform.toLowerCase().substr(0,3);
 			if (platform == "win")
 				localPaths.push(svFile.path(
-					sv.prefs.getString("svRDefaultInterpreter"), "../../doc"));
+					sv.prefs.getPref("sciviews.r.interpreter"), "../../doc"));
 			else { // Linux or Mac OS X
 				localPaths.push("/usr/share/R/doc"); // Linux
 				localPaths.push("/usr/local/share/R/doc"); // Linux
@@ -409,7 +409,7 @@ function PrefR_UpdateCranMirrors (localOnly) {
 	// Put arrData into MenuList
 	var menuList = document.getElementById("CRANMirror");
 	var value =
-		menuList.value? menuList.value : sv.prefs.getString("r.cran.mirror");
+		menuList.value? menuList.value : sv.prefs.getPref("r.cran.mirror");
 	menuList.removeAllItems();
 	for (i in arrData) {
 		if (arrData[i][0])
@@ -429,10 +429,10 @@ function OnPreferencePageOK(prefset) {
 	prefset = parent.hPrefWindow.prefset;
 	
 	// Set R interpreter
-	prefset.setStringPref("svRDefaultInterpreter",
-		document.getElementById("svRDefaultInterpreter").value);
-	prefset.setStringPref("svRApplication",
-		document.getElementById('svRApplication')
+	prefset.setStringPref("sciviews.r.interpreter",
+		document.getElementById("sciviews.r.interpreter").value);
+	prefset.setStringPref("sciviews.r.batchinterp",
+		document.getElementById('sciviews.r.batchinterp')
 		.selectedItem.getAttribute("value"));
 	prefset.setStringPref("svRCommand", PrefR_updateCommandLine(false));
 	
@@ -456,40 +456,40 @@ function OnPreferencePageOK(prefset) {
 		}
 	}
 	
-	// Set the client type
-	var clientType = document.getElementById('sciviews.client.type').value;
-	prefset.setStringPref("sciviews.client.type", clientType);
+	// Set the R type
+	var rType = document.getElementById('sciviews.r.type').value;
+	prefset.setStringPref("sciviews.r.type", rType);
 	// Check if selected item is different from current sv.clientType
 	// and if R is running
-	if (clientType != sv.clientType && sv.r.test()) {
+	if (rType != sv.clientType && sv.r.test()) {
 		// R is running, do not change right now
 		sv.alert("R server type changed",
 			"The R server type you selected will be" +
 			" used after restarting R!");
 	} else {
 		// Change current server type too
-		sv.socket.setSocketType(clientType);
+		sv.socket.setSocketType(rType);
 	}
 	
 	_menuListGetValues();
 	
 	// Restart socket server if running and port or channel changed
-	var serverType = document.getElementById('sciviews.server.type').value;
-	var serverPort = document.getElementById('sciviews.server.socket').value;
-	if (serverPort != prefset.getStringPref("sciviews.server.socket") ||
-		serverType != sv.serverType) {
+	var koType = document.getElementById('sciviews.ko.type').value;
+	var koPort = document.getElementById('sciviews.ko.port').value;
+	if (koPort != prefset.getStringPref("sciviews.ko.port") ||
+		koType != sv.serverType) {
 		// Stop server with old config, if it is started
 		var isStarted = sv.socket.serverIsStarted;
 		if (isStarted) sv.socket.serverStop();
-		prefset.setStringPref("sciviews.server.socket", serverPort);
-		prefset.setStringPref("sciviews.server.type", serverType);
-		sv.serverType = serverType;
+		prefset.setStringPref("sciviews.ko.port", koPort);
+		prefset.setStringPref("sciviews.ko.type", koType);
+		sv.serverType = koType;
 		// Start server with new config, if previous one was started
 		if (isStarted) sv.socket.serverStart();
 		// Change config in R, if it is running and connected
 		if (sv.r.running) {
-			sv.r.evalHidden('options(ko.kotype = "' + serverType + '", ' +
-				'ko.port = "' + serverPort + '")', true);
+			sv.r.evalHidden('options(ko.kotype = "' + koType + '", ' +
+				'ko.port = "' + koPort + '")', true);
 		}
 	}
 	return(true);

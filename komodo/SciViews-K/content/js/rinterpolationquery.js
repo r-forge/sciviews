@@ -186,7 +186,7 @@ function OnLoad () {
                 helpButton.setAttribute("hidden", "false");
                 // Get the RWiki base URL
 				var baseURL = "http:/wiki.r-project.org/rwiki/doku.php?id="
-				baseURL = sv.prefs.getString("sciviews.rwiki.help.base",
+				baseURL = sv.prefs.getPref("sciviews.rwiki.help.base",
 					baseURL);
                 dialog.setAttribute("ondialoghelp",
                     "Help('" + baseURL + q.answer + "');");

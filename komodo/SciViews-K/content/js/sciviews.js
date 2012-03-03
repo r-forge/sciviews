@@ -573,7 +573,7 @@ sv.helpContext = function () {
 				if (help != content) {	// Found!
 					// Get the RWiki base URL
 					var baseURL = "http:/wiki.r-project.org/rwiki/doku.php?id="
-					baseURL = sv.prefs.getString("sciviews.rwiki.help.base",
+					baseURL = sv.prefs.getPref("sciviews.rwiki.help.base",
 						baseURL);
 					// Display the RWiki page
 					// TODO: display this in the quick 'R help' tab
@@ -837,7 +837,7 @@ sv.askUI = function (change /* = true*/) {
 	if (change) sv.reworkUI(level);
 	
 	// If everything is fine, save config
-	sv.prefs.setString("sciviews.uilevel", level, true);
+	sv.prefs.setPref("sciviews.uilevel", level, true);
 	return(level);
 }
 
@@ -873,7 +873,7 @@ sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 	
 	// Retrieve or ask the desired uilevel
 	if (level === undefined || level == null) {
-		level = sv.prefs.getString("sciviews.uilevel", null);
+		level = sv.prefs.getPref("sciviews.uilevel", null);
 		if (level == null) level = sv.askUI(false);
 		if (level == null) return;
 		level = parseInt(level);

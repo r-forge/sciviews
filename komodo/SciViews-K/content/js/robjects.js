@@ -290,7 +290,7 @@ sv.robjects = {};
 	}
 	
 	function _getObjListCommand (env, objName) {
-		var id = sv.pref.getPref("sciviews.client.id", "sv");
+		var id = sv.pref.getPref("sciviews.ko.id", "sv");
 		var cmd = cmdPattern.replace(/%ID%/g, id)
 			.replace(/%ENV%/g, new String(env).addslashes())
 			.replace(/%OBJ%/g, objName? objName.replace(/\$/g, "$$$$") : "");

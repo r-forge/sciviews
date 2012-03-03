@@ -44,13 +44,13 @@ sv.r.console.init = function () {
     var checked;
     for (var i = 0; i < types.length; i++) {
         type = types[i];
-        //if (sv.prefs.getString("sciviews.console.completion.setting." +
+        //if (sv.prefs.getPref("sciviews.console.completion.setting." +
         //    type) == undefined) {
-        sv.prefs.setString("sciviews.console.completion.setting." + type,
+        sv.prefs.setPref("sciviews.console.completion.setting." + type,
             defaults[i]); 
         //}
         document.getElementById("sciviews_rconsole_completion_cb_" + type).
-            checked = sv.prefs.getString("sciviews.console.completion.setting." +
+            checked = sv.prefs.getPref("sciviews.console.completion.setting." +
             type ) == "true" ;
     }
 }
@@ -242,7 +242,7 @@ sv.r.console.getCompletionTypes = function () {
     var out = [];
     var types = ["arguments", "packages", "functions"];
     for (var i = 0; i < types.length; i++) {
-        if (sv.prefs.getString("sciviews.console.completion.setting." +
+        if (sv.prefs.getPref("sciviews.console.completion.setting." +
             types[i]) == "true") {
             out[out.length] = types[i];
         }
@@ -351,7 +351,7 @@ sv.r.console.updateCompletionTab = function (completions) {
     //        - description of arguments
     //        - description of package : use packageDescription
     var makeTree = function (tab, name, root) {
-        if (sv.prefs.getString( "sciviews.console.completion.setting.arguments")
+        if (sv.prefs.getPref( "sciviews.console.completion.setting.arguments")
             == "true" && tab.length > 0) {
             var newItem = <treeitem container="true" open="true">
                 <treerow>
@@ -394,7 +394,7 @@ sv.r.console.updateCompletionChoiceSetting = function (event, type) {
     } else {
         checked = "true";
     }
-    sv.prefs.setString("sciviews.console.completion.setting." + type, checked); 
+    sv.prefs.setPref("sciviews.console.completion.setting." + type, checked); 
 }
 
 // Completion counter

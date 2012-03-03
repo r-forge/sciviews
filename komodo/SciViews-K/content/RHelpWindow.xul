@@ -74,7 +74,7 @@
 				rHelpBrowser.goHome();
 				return;
 			 case "@CRAN@":
-				uri = sv.prefs.getString("r.cran.mirror");
+				uri = sv.prefs.getPref("r.cran.mirror");
 				if (!uri || uri.indexOf("ftp:/") === 0)
 					uri = "http://cran.r-project.org/";
 			}
@@ -290,8 +290,8 @@
 			// Use only one type of connection for both client and server!
 			//if (sv.r.server == "http") {
 			// TODO: this is reworked in SciViews-K-dev => look what's there!!!
-			if (sv.prefs.getString("sciviews.client.type", "socket") == "http") {
-				var port = sv.prefs.getString("sciviews.client.socket", "8888");
+			if (sv.prefs.getPref("sciviews.r.type", "socket") == "http") {
+				var port = sv.prefs.getPref("sciviews.r.port", 8888);
 				var path = "http://127.0.0.1:" + port + "/doc/html/index.html";
 				browser.homePage = sv.helpStartURI = path;
 				//alert(browser.homePage);
