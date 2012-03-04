@@ -9,6 +9,7 @@ pkgLoaded <- function ()
 ### Written by Romain Francois <francoisromain@free.fr>
 pkgInstalled <- function (pattern = NULL, ...)
 {
+	## Warning: installed.packages() can be very slow!
 	ip <- installed.packages(fields = "Title", ...)
 	if (!is.null(pattern)) {
 		keep <- suppressWarnings(union( 

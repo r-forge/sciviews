@@ -1,5 +1,13 @@
 = svMisc News
 
+== Changes in svMisc 0.9-64
+
+* Added listToJson() for conversion of lists of character strings into correct
+  JSON format.
+  
+* Added pkgManXXX() functions to run R code for the SciViews package manager.
+
+
 == Changes in svMisc 0.9-63
 
 * progress() used \8, that was treated as octal for R < 2.14. Changed to \b in

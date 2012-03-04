@@ -141,3 +141,20 @@ evalRjson <- function (rjson) {
 	## We need first to convert all ':=' into '='
 	return(eval(parse(text = gsub(":=", "=", rjson, fixed = TRUE))))
 }
+
+# Simple JSON for lists containing character strings
+listToJson <- function (x) {
+	if (!is.list(x) && length(x) == 1L)
+		return(encodeString(x, quote = '"'))
+	x <- lapply(x, listToJson)
+	x <- if (is.list(x) || length(x) > 1L) {
+		nms <- names(x)
+		if (is.null(nms)) {
+			paste('[', paste(x, collapse = ','), ']', sep = "")
+		} else {
+			paste("{", paste(paste(encodeString(make.unique(nms, sep = '#'),
+				quote = '"'), ":", x, sep = ""), collapse = ","), "}", sep = "")
+		}
+	}
+	return(x)
+}
