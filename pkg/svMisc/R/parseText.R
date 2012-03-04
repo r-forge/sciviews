@@ -22,18 +22,43 @@ encoding = "unknown") {
 	if (inherits(res, "error")) {
 		## Check if this is incomplete code
 		msg <- conditionMessage(res)
+		
 		if (regexpr(gettext("end of input", domain = "R"), msg) > 0)
 			return(NA)	
+		## TODO: this is from SciViews-K-dev,... but does not seem to work?!
+		#rxUEOI <- sprintf(gsub("%d", "\\\\d+", gettext("%s%d:%d: %s",
+		#	domain = "R")), if (getOption("keep.source")) "<text>:" else "",
+		#	gettextf("unexpected %s", gettext("end of input", domain = "R"),
+		#	domain = "R"))
+		#if (regexpr(rxUEOI, msg, perl = TRUE) == 1) return(NA)
 		
 		## This should be incorrect R code
 		## Rework the message a little bit... keep line:col position in front
+		
+		## TODO: from SciViews-K-dev:
+		## This reformats the message as it would appear in the CLI:
+		#errinfo <-
+		#	strsplit(sub("(?:<text>:)?(\\d+):(\\d+): +([^\n]+)\n([\\s\\S]*)$", "\\1\n\\2\n\\3\n\\4", msg, perl=T), "\n", fixed=TRUE)[[1]]
+
+		#errpos <- as.numeric(errinfo[1:2])
+		#err <- errinfo[-(1:3)]
+		#rx <- sprintf("^%d:", errpos[1])
+		#errcode <- sub(rx, "", err[grep(rx, err)])
+		#err <- simpleError(sprintf("%s in \"%s\"", errinfo[3], errcode))
+		
+		## -or-
+		
 		err <- res
 		err$message <- res <- sub("^<.*>:", "", msg)
 		## Call is from instructions in "text"... but from the corresponding line
 		err$call <- strsplit(text, "\n")[[1]][as.integer(
 			sub("^[^0-9]*([0-9]+):.*$", "\\1", res))]
 		
+		## ... until here...
+		
 		## Return a try-error object to remain compatible with previous versions
+		## TODO: from SciViews-K-dev:
+		#res <- .makeMessage(res)
 		class(res) <- "try-error"
 		attr(res, 'error') <- err
 	}

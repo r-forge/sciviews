@@ -1,6 +1,7 @@
 \name{toRjson}
 \alias{toRjson}
 \alias{evalRjson}
+\alias{listToJson}
 
 \title{ Convert R object to and from RJSON specification }
 \description{
@@ -14,6 +15,7 @@
 \usage{
 toRjson(x, attributes = FALSE)
 evalRjson(rjson)
+listToJson(x)
 }
 
 \arguments{
@@ -78,6 +80,9 @@ evalRjson(rjson)
   commands (for instance, a RJSONp -RJSON with padding- item where a RJSON
   object is an argument of an R function that is evaluated. In this case, the
   result of the evaluation is returned).
+  
+  For \code{listToJson()}, correct (standard) JSON code is generated if \code{x}
+  is a list of character strings, or lists.
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }

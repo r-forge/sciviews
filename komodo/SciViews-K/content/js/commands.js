@@ -316,9 +316,9 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	}
 
 	this.openPkgManager = function () {
-		var win = _getWindowRef("chrome://sciviewsk/content/RPkgManager.xul",
+		var win = _getWindowRef("chrome://sciviewsk/content/pkgman.xul",
 			"RPkgMgr", "chrome=yes,dependent" +
-			"scrollbars=yes,status=no,close,dialog=no", true, sv);
+			"scrollbars=yes,status=no,close,dialog=no, resizable", true, sv);
 		return(win);
 	}
 

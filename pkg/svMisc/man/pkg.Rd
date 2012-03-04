@@ -26,7 +26,7 @@
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link[base]{require}} }
+\seealso{ \code{\link[base]{require}}, \code{\link{pkgManLoad}} }
 
 \examples{
 ## This should work...
