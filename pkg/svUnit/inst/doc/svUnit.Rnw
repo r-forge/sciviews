@@ -1,24 +1,23 @@
-%% LyX 1.6.5 created this file.  For more info, see http://www.lyx.org/.
+%% LyX 2.0.0 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 \documentclass[twoside,english]{article}
 \usepackage{mathpazo}
 \renewcommand{\sfdefault}{lmss}
 \renewcommand{\ttdefault}{lmtt}
 \usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
+\usepackage[utf8x]{inputenc}
 \usepackage{listings}
 \usepackage[a4paper]{geometry}
 \geometry{verbose,tmargin=3cm,bmargin=4.5cm,lmargin=2.5cm,rmargin=3cm}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \usepackage{color}
+\definecolor{shadecolor}{rgb}{1, 0, 0}
 \usepackage{babel}
-
 \usepackage{framed}
 \usepackage{url}
 \usepackage{graphicx}
-\definecolor{shadecolor}{rgb}{0.7,0.7,0.7}
-\usepackage[unicode=true, 
+\usepackage[unicode=true,
  bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
  breaklinks=true,pdfborder={0 0 1},backref=false,colorlinks=true]
  {hyperref}
@@ -26,37 +25,12 @@
  pdfauthor={Philippe Grosjean},
  pdfsubject={Test units using the svUnit R package},
  pdfkeywords={test unit, extreme programming, code refactoring, quality insurance}}
- 
+\usepackage{breakurl}
+
 \makeatletter
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
-
-\providecommand{\R}{\textsf{R}}
-
-\providecommand{\file}[1]{`\textsf{#1}'}
-
-\providecommand{\command}{\bgroup\@noligs\@cmdx}
-\def\@cmdx#1{{\normalfont\texttt{#1}}\egroup}
-
-\providecommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
-
-{\catcode`\ =\active\global\def\code{\bgroup\@noligs\catcode`\ =\active\let \codespace\@codex}}
-\def\codespace{{ }}
-\def\@codex#1{\normalfont\texttt{#1}\egroup}
-
-\providecommand{\var}[1]{{\normalfont\textsl{#1}}}
-
-\providecommand{\SciViews}[1]{\textsf{\textsl{S}\lower.08em\hbox{ci}\textsl{\kern-.04emV}\kern-.02em\lower.08em\hbox{iews}\@#1}}
-
-\providecommand{\menuitem}[1]{\textsf{\textsc{#1}}}
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
-\providecommand{\Prob}{\mathop{\mathrm{P}}}
-\providecommand{\E}{\mathop{\mathrm{E}}}
-\providecommand{\VAR}{\mathop{\mathrm{var}}}
-\providecommand{\COV}{\mathop{\mathrm{cov}}}
-\providecommand{\COR}{\mathop{\mathrm{cor}}}
+\usepackage[noae]{Sweave}
+\usepackage[noae]{Sweave}
 \newenvironment{lyxlist}[1]
 {\begin{list}{}
 {\settowidth{\labelwidth}{#1}
@@ -74,6 +48,18 @@
 \normalfont\ttfamily}%
  \item[]}
 {\end{list}}
+\providecommand{\R}{\textsf{R}}
+\providecommand{\file}[1]{`\textsf{#1}'}
+\providecommand{\command}{\bgroup\@noligs\@cmdx}
+\def\@cmdx#1{{\normalfont\texttt{#1}}\egroup}
+\providecommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
+{\catcode`\ =\active\global\def\code{\bgroup\@noligs\catcode`\ =\active\let \codespace\@codex}}
+\def\codespace{{ }}
+\def\@codex#1{\normalfont\texttt{#1}\egroup}
+\providecommand{\class}[1]{\texttt{\textquotedbl{}#1\textquotedbl{}}}
+\providecommand{\SciViews}[1]{\textsf{\textsl{S}\lower.08em\hbox{ci}\textsl{\kern-.04emV}\kern-.02em\lower.08em\hbox{iews}\@#1}}
+\providecommand{\var}[1]{{\normalfont\textsl{#1}}}
+\providecommand{\widget}[1]{`\textsf{\textsc{#1}}'}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 % \VignetteIndexEntry{svUnit - A framework for unit testing in R}
@@ -131,7 +117,7 @@ of analyses.
 Besides the \textquotedbl{}regular\textquotedbl{} testing mechanism
 of \R{} packages, one can find the \pkg{RUnit} package on CRAN (\url{http://cran.r-project.org}).
 Another package used to provide an alternate implementation of test
-unit: \pkg{butler} , but it is not maintained any more and has given
+unit: \pkg{butler}, but it is not maintained any more and has given
 up in favor of \pkg{RUnit}. \pkg{RUnit} implements the following
 features: 
 \begin{itemize}
@@ -146,16 +132,16 @@ on, there is special function, named \code{DEACTIVATED()} that tags
 the test with a reminder for your deactivated items (i.e., the reminder
 is written in the test log).
 \item A series of test functions (whose name typically start with \code{test....})
-are collected together in a sourceable \R{} code file (name starting
-with \code{runit....} ) on disk. This file is called a \textbf{test
+are collected together in a source-able \R{} code file (name starting
+with \code{runit....}) on disk. This file is called a \textbf{test
 unit}.
-\item A \textbf{test suite} (object \var{RUnitTestSuite}) is a special
+\item A \textbf{test suite} (object \class{RUnitTestSuite}) is a special
 object defining a battery of tests It points to one or several directories
 containing test units. A test suite is defined by \code{defineTestSuite()}.
 \item One or more test suites can be run by calling \code{runTestSuite()}.
 There is a shortcut to define and run a test suite constituted by
 only one test unit by using the function \code{runTestFile()}. Once
-the test is run, a \var{RUnitTestData} object is created that contains
+the test is run, a \class{RUnitTestData} object is created that contains
 all the information collected from the various tests run.
 \item One can print a synthetic report (how many test units, test functions,
 number of errors, fails and deactivated item), or get a more extensive
@@ -197,13 +183,13 @@ should be able to test functions in a complex set of \R{} packages.
 However, we encountered several difficulties while trying to enhance
 \pkg{RUnit} mechanism. When we started to work on this project, \pkg{RUnit}
 (version 0.4-17) did not allow to subclass its objects. Moreover,
-its \var{RUnitTestData} object is optimized for quick testing, but
-not at all for easy reviewing of its content: it is a list of lists
-of lists,... requiring embedded for loop and \code{lapply()} /\code{sapply()}
-procedures to extract some content. Finally, the concept of test units
-as sourceable files on disk is a nice idea, but it is too rigid for
-quick writing test cases for objects not associated (yet) with an
-\R{} packages.
+its \class{RUnitTestData} object is optimized for quick testing,
+but not at all for easy reviewing of its content: it is a list of
+lists of lists,... requiring embedded for loop and \code{lapply()}
+/ \code{sapply()} procedures to extract some content. Finally, the
+concept of test units as source-able files on disk is a nice idea,
+but it is too rigid for quick writing test cases for objects not associated
+(yet) with an \R{} packages.
 
 We did a first implementation of the \pkg{RUnit} GUI based on these
 objects, before realizing that it is really not designed for such
@@ -238,14 +224,11 @@ You can install it with%
 \footnote{Install the development version with \code{install.packages(\textquotedbl{}svUnit\textquotedbl{}, repos = \textquotedbl{}http://r-forge.r-project.org\textquotedbl{})}.%
 }:
 
-
 \SweaveOpts{keep.source = TRUE}
-
 
 <<echo = FALSE, results = hide>>=
 options(useFancyQuotes = TRUE)
 @
-
 
 <<eval = FALSE>>=
 install.packages("svUnit")
@@ -254,11 +237,10 @@ install.packages("svUnit")
 This package has no dependence other than \R{} $\geq$ 1.9.0. However,
 if you would like to use its interactive mode in a GUI editor, you
 must also install Komodo Edit or Komodo IDE and \SciViews{}-K. The
-procedure is explaned here: \url{http://www.sciviews.org/SciViews-K}.
+procedure is explained here: \url{http://www.sciviews.org/SciViews-K}.
 
 Once the \pkg{svUnit} package is installed, you can check it is working
 correctly on your machine with the following example code:
-
 
 <<>>=
 library(svUnit)
@@ -274,7 +256,6 @@ clearLog()
 (runTest(Square))
 @
 
-%
 \begin{framed}%
 Although test unit code is compatible with both \pkg{svUnit} and
 \pkg{RUnit}, do not load both packages in \R{} memory at the same
@@ -288,13 +269,12 @@ work by defining a battery of tests that will compare the output of
 your code with reference values. In \pkg{svUnit}, the simplest way
 to define such a battery of tests is by attaching it to functions
 loaded in \R{} memory%
-\footnote{In fact, you can attach \pkg{svUnit} tests to any kind of \R{} object,
+\footnote{In fact, you can attach svUnit tests to any kind of \R{} object,
 not only function. This could be useful to test S3/S4 objects, or
 even, datasets. %
 }. Of course, you can also define batteries of tests that are independent
 of any \R{} object, or that check several of them together (so called,
 \emph{integration tests}). Here is a couple of examples:
-
 
 <<>>=
 library(svUnit)
@@ -327,11 +307,10 @@ logger. The idea is to get a central repository for tests that you
 can manipulate as you like (print, summarize, convert, search, display
 in a GUI, etc.). If you want to start new tests, you should first
 clean this logger by \code{clearLog()}. At any time, the logger is
-accessible by \code{Log()}, and a summary of its containt is displayed
-using \code{summary(Log())}. So, to run test for your \code{Square()}
+accessible by \code{Log()}, and a summary of its content is displayed
+using \code{summary(Log()}). So, to run test for your \code{Square()}
 function as well as your \var{test\_Integrate} integration test,
 you simply do the following:
-
 
 <<>>=
 clearLog()
@@ -347,11 +326,10 @@ and code that raises \textbf{error} (it was not possible to run the
 test because its code is incorrect, or for some other reasons). Note
 also that the function \code{checkException()} is designed to explicitly
 test code that should \code{stop()} in \R{}%
-\footnote{\code{checkException()} can also track \code{warning()} messages
-with this little trick: first convert all warnings into errors with
-\code{owarn <- options(warn = 2)\$warn}, run the code that should
-generate a warning inside \code{checkException()}, and then restore
-default warning behavior with \code{options(warn = owarn)}.%
+\footnote{checkException() can also track warning() messages with this little
+trick: first convert all warnings into errors with owarn <- options(warn = 2)\$warn,
+run the code that should generate a warning inside checkException(),
+and then restore default warning behavior with options(warn = owarn).%
 }. So, if that test does not raises an exception, it is considered
 to have failed. This is useful to check that your functions correctly
 trap wrong arguments, for instance, like in \code{checkException(Square(\textquotedbl{}xx\textquotedbl{}))}
@@ -360,7 +338,6 @@ is expected).
 
 Now, let's look what happens if we test the \code{Cube()} function
 without clearing the logger:
-
 
 <<>>=
 runTest(Cube)
@@ -408,24 +385,24 @@ both functions should be compatible.
 \item [{\code{checkException(expr)}}] verifies that a given code raises
 an exception (in \R{}, it means that a line of code with \code{stop()}
 is executed).
-\item [{DEACTIVATED()}] makes sure that all tests following this instruction
-(in a test function, see next paragraph) are deactivated, and inserts
-a reminder in the logger about the fact that some tests are deactivated
-in this suite.
+\item [{\code{DEACTIVATED()}}] makes sure that all tests following this
+instruction (in a test function, see next paragraph) are deactivated,
+and inserts a reminder in the logger about the fact that some tests
+are deactivated in this suite.
 \end{lyxlist}
 For all these functions, you have an additional optional argument
-\code{msg} where you can provide a (short) message to print in front
-of each text in the report. These functions return invisibly: \code{TRUE}
-if the test succeeds, or \code{FALSE} if it fails (code is executed
-correctly, but does not pass the test), and \code{NA} if there was
-an error (the \R{} code of the test was not executed correctly).
-Moreover, these functions record the results, the context of the test
-and the timing in a logger (object \var{svSuiteData} inheriting from
-\var{environment}) called \var{.Log} and located in the user’s workspace.
-So, executing a series of assertions and getting a report is simply
-done as (in its simplest form, you can use the various \code{checkXXX()}
-functions directly at the command line):
-
+\code{msg =} where you can provide a (short) message to print in
+front of each text in the report. These functions return invisibly:
+\code{TRUE} if the test succeeds, or \code{FALSE} if it fails (code
+is executed correctly, but does not pass the test), and \code{NA}
+if there was an error (the \R{} code of the test was not executed
+correctly). Moreover, these functions record the results, the context
+of the test and the timing in a logger (object \class{svSuiteData}
+inheriting from \class{environment}) called \var{.Log} and located
+in the user’s workspace. So, executing a series of assertions and
+getting a report is simply done as (in its simplest form, you can
+use the various \code{checkXXX()} functions directly at the command
+line):
 
 <<>>=
 clearLog()
@@ -444,7 +421,7 @@ of adding an entry to the logger.
 The last command \code{Log()} prints the content of the logger. You
 see how a report is printed, with a first part being a short summary
 by categories (assertions run at the command line are placed automatically
-in the \var{eval} category: there is no better context known for
+in the \code{eval} category: there is no better context known for
 them. Usually, those assertions should be placed in test functions,
 or in test units, as we will see later in this manual, and the category
 will reflect this organization). A detailed report on the tests that
@@ -465,7 +442,6 @@ tests and update a wiki page (look at your particular wiki engine
 documentation to determine how you can access wiki pages on the command
 line).
 
-%
 \begin{figure}
 
 \centering{}
@@ -480,7 +456,6 @@ navigate to the test log you are consulting). Timing of the test is
 also clearly indicated, since it is a complementary but important
 information (if a test succeeds, but calculation is way too long,
 it is good to know it)!}
-
 \end{figure}
 
 
@@ -492,7 +467,6 @@ it is good to know it)!}
 The \pkg{svUnit} package provides a series of functions to manipulate
 the logger from the command line, in particular, \code{stats()},
 \code{summary()}, \code{metadata()} and \code{ls()}:
-
 
 <<>>=
 ## Clear test exclusion list for running all test suites
@@ -512,12 +486,11 @@ ls(Log())
 @
 
 As you can see, \code{ls()} lists all components recorded in the
-test suite. Each component is a \var{svTestData} object inheriting
-from \var{data.frame}, and it can be easily accessed through the
+test suite. Each component is a \class{svTestData} object inheriting
+from \class{data.frame}, and it can be easily accessed through the
 \code{\$} operator. There are, of course similar methods defined
-for those \var{svTestData} objects, like \code{print()}, \code{summary()}
+for those \class{svTestData} objects, like \code{print()}, \code{summary()}
 and \code{stats()}:
-
 
 <<>>=
 myTest <- Log()$testCube
@@ -527,11 +500,10 @@ summary(myTest)
 stats(myTest)
 @
 
-As the logger inherits from \var{environment}, you can manage individual
+As the logger inherits from \class{environment}, you can manage individual
 test data the same way as objects in any other environment. For instance,
 if you want to delete a particular test data without touching to the
 rest, you can use:
-
 
 <<>>=
 ls(Log())
@@ -557,7 +529,6 @@ of assertions applied to one object, method, or function to be checked
 but good practices strongly suggest such a restriction). Here is an
 example:
 
-
 <<>>=
 test_function <- function () {
     checkTrue(1 < 2, "check1")
@@ -570,8 +541,8 @@ test_function <- as.svTest(test_function)
 is.svTest(test_function)
 @
 
-A test function should be made a special object called \var{svTest},
-so that \pkg{svUnit} can recognize it. This \var{svTest} object,
+A test function should be made a special object called \class{svTest},
+so that \pkg{svUnit} can recognize it. This \class{svTest} object,
 is allowed to live on its own (for instance, in the user's workspace,
 or anywhere you like). It can be defined in a \R{} script, be saved
 in a \file{.RData} file, etc... Note that this is very different
@@ -579,7 +550,6 @@ from \pkg{RUnit} where test must always be located in a unit test
 file on disk). In \pkg{svUnit} (not \pkg{RUnit}), you run such a
 test simply by using \code{runTest()}, which returns the results
 invisibly and add it to the logger:
-
 
 <<>>=
 clearLog()
@@ -593,7 +563,6 @@ function to the object to be tested. Hence, the test cases and the
 tested object conveniently form a single entity that one can manipulate,
 copy, save, reload, etc. with all the usual tools in \R{}. This association
 is simply made using \code{test(myobj) <-}:
-
 
 <<>>=
 ## A very simple function
@@ -610,14 +579,12 @@ is.test(Square)  # Does this object contain tests?
 
 One can retrieve the test associated with the object by using:
 
-
 <<>>=
 test(Square)
 @
 
 And of course, running the test associated with an object is as easy
 as:
-
 
 <<>>=
 runTest(Square)
@@ -645,16 +612,15 @@ in particular, \command{R CMD check}. In both \pkg{RUnit}, and \pkg{svUnit},
 one can define such test units, and they are made code compatible
 between the two implementations.
 
-A test unit is a sourceable text file that contains one or more test
+A test unit is a source-able text file that contains one or more test
 functions, plus possibly \code{.setUp()} and \code{.tearDown()}
 functions (see the online help for further information on these special
 functions). In \pkg{RUnit}, you must write such test unit files from
 scratch. With \pkg{svUnit}, you can {}``promote'' one or several
 test functions (associated to other objects, or {}``living'' alone
-as separate \var{svTest} objects) by using \code{makeUnit()}. Here
-is how you promote the test associated with our \code{Square()} function
-to a simple test unit containing only one test function:
-
+as separate \class{svTest} objects) by using \code{makeUnit()}.
+Here is how you promote the test associated with our \code{Square()}
+function to a simple test unit containing only one test function:
 
 <<eval = FALSE>>=
 # Create a test unit on disk and view its content
@@ -665,7 +631,7 @@ file.show(unit, delete.file = TRUE)
 You got the following file whose name must start with \file{runit},
 with an \file{.R} extension (\file{runit{*}.R}), and located by
 default in the temporary directory of \R{}. Specify another directory
-with the \code{dir =} argument of \code{makeUnit()} for a more permanent
+with the \code{dir =} argument of\code{ makeUnit()} for a more permanent
 record of this test unit file. Note also that \code{.setUp()} and
 \code{.tearDown()} functions are constructed automatically for you.
 They specify the context of these tests. This context is used, for
@@ -805,7 +771,7 @@ test units will be included nicely in the checking process of your
 packages, that is, they will run silently each time you check your
 package if no error occurs, but will produce a detailed report in
 case of problems.
-\item Here is how your \file{.Rd} file should looks like (exemple of the
+\item Here is how your \file{.Rd} file should looks like (example of the
 \pkg{svUnit} package):\end{itemize}
 \begin{lyxcode}
 \textbackslash{}name\{unitTests.svUnit\}
@@ -878,7 +844,6 @@ Also, this approach, associated with examples, provides a very convenient
 and easy way to test a package from the command line in an interactive
 session by running:
 
-
 <<>>=
 example(unitTests.svUnit)
 @
@@ -912,7 +877,7 @@ together in a test unit file on disk (located in the \R{} temporary
 directory, by default), and run from there. Hence, building a more
 complex test unit file by collecting together several test functions
 is just a question of constructing a test suite, and then, applying
-the \code{makeUnit()} function to this \var{svSuite} object.
+the \code{makeUnit()} function to this \class{svSuite} object.
 
 Before we apply all this, you should also know the existence of one
 more function: \code{svSuiteList()}. This function lists all test
@@ -929,12 +894,11 @@ used as filters to hide items from the list. This is required, since
 you will certainly not want to run again and again, let’s say, the
 example tests associated with the \pkg{svUnit} package (\pkg{svUnit}
 must be loaded in memory to run the tests, so its tests examples will
-always be listed by \code{svSuiteList()},... unless you define an
+always be listed by \code{svSuiteList()}, ... unless you define an
 adequate filter expression that will exclude them from your list)!
 As the default argument suggests it, the regular expression for list
 exclusion could also be recorded in \code{options(svUnit.excludeList = ...)}.
 Here is how it works:
-
 
 <<>>=
 ## Reset default exclusion list
@@ -949,7 +913,6 @@ and \code{package:RUnit} are excluded from the list. The entries
 first pattern and are thus excluded. Now, let's clear the exclusion
 list to see what happens:
 
-
 <<>>=
 ## Clear exclusion list
 options(svUnit.excludeList = NULL)
@@ -958,17 +921,15 @@ svSuiteList()
 
 The test units associated with the package \pkg{svUnit} are now listed.
 You have noticed that \code{svSuiteList()} can also find automatically
-\var{svTest} objects, as well as tests attached to objects in the
+\class{svTest} objects, as well as tests attached to objects in the
 user's workspace. You can create a suite by collecting all these items
 together very easily:
-
 
 <<>>=
 (mySuite <- svSuiteList())
 @
 
 Now let’s make a test unit using tests collected in this suite:
-
 
 <<eval = FALSE>>=
 myUnit <- makeUnit(mySuite, name = "ExampleTests")
@@ -977,12 +938,11 @@ file.show(myUnit, delete.file = TRUE)
 
 This produces a file named \file{runitExampleTests.R} located (by
 default) in the \R{} temporary directory, and which collects together
-all tests in the user's workspace (either as \var{svTest} objects,
+all tests in the user's workspace (either as \class{svTest} objects,
 or as tests attached to other objects), plus tests suites in packages
 that are \textbf{not} in the exclusion list. Running all tests in
 your suite is very simple. You still use \code{runTest()} as usual,
-but this time, you apply it to your \var{svSuite} object:
-
+but this time, you apply it to your \class{svSuite} object:
 
 <<>>=
 clearLog()
@@ -990,8 +950,8 @@ runTest(mySuite)
 summary(Log())
 @
 
-There are many other tools to manipulate \var{svSuite} objects in
-the \pkg{svUnit} package, including functions to define the content
+There are many other tools to manipulate \class{svSuite} objects
+in the \pkg{svUnit} package, including functions to define the content
 of the suite manually (see online help).
 
 
@@ -1005,7 +965,6 @@ and \SciViews{-K Unit} plugins installed), then, loading the \pkg{svUnit}
 package in \R{} automatically installs the \textbf{R Unit} side panel
 in Komodo at right. Its use should be straightforward:
 
-%
 \begin{figure}
 
 \centering{}
@@ -1021,13 +980,12 @@ top is green if all tests succeed, and red (as here), if at least
 one tests failed or raised an error.}
 
 
-
 \end{figure}
 
 \begin{itemize}
 \item Select the tests you want to run in the top part,
-\item Click the \menuitem{Run} button each time you want to refresh the
-test tree,
+\item Click the \widget{Run} button each time you want to refresh the test
+tree,
 \item Browse the tree for failures or errors (the color at the top of the
 panel immediately indicates if there is a problem somewhere: green
 -> everything is fine, red -> there is a problem).
@@ -1036,19 +994,18 @@ item in the tree, and you got more information displayed in a tooltip,
 \item Click on an item to open the test unit at that place in a buffer in
 Komodo.
 \end{itemize}
-The \menuitem{Auto} mode, when activated, sources \R{} files currently
+The \widget{Auto} mode, when activated, sources \R{} files currently
 edited in Komodo whenever you save them, and then, refreshes the test
 report tree. This mode allows you to run automatically your tests
 in the background while you edit your \R{} code!
 
-%
 \begin{framed}%
 If you want to implement such a side panel in another GUI, make sure
 to look at the \code{koUnit\_XXX()} functions in the \pkg{svUnit}
 package. These functions allow to control the GUI in Komodo remotely
 from within \R{}, and similar functions should not be too difficult
 to implement for other GUIs. \end{framed}
-\begin{thebibliography}{6}
+\begin{thebibliography}{References}
 \bibitem{Grosjean}Grosjean, Ph., 2003. SciViews: an object-oriented
 abstraction layer to design GUIs on top of various calculation kernels
 {[}online: \url{http://www.ci.tuwien.ac.at/Conferences/DSC-2003}{]}
@@ -1067,8 +1024,7 @@ A unit test framework for R. Vignette of the package RUnit available
 on CRAN. 11 pp.
 
 \bibitem{Rcore}R Development Core Team, 2008. R: A language and environment
-for statistical computing. {[}online: \url{http://www.R-project.org}{]}.
-\end{thebibliography}
+for statistical computing. {[}online: \url{http://www.R-project.org}{]}.\end{thebibliography}
 
 \end{document}
 NA
