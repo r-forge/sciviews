@@ -1,5 +1,11 @@
 = svSocket News
 
+== Changes in svSocket 0.9-53
+
+* A bug in evalServer() leading to evaluation of a condition of length > 1 in a
+  if() construct in some case is corrected. Thanks to Xiaoqian Jiang.
+
+
 == Changes in svSocket 0.9-52
 
 * processSocket() now uses the new version of captureAll() from svMisc >= 0.9-62
