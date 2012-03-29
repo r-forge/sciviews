@@ -44,21 +44,21 @@ evalServer <- function (con, expr, send = NULL)
 			next
 		}
 		endloc <- grep("<<<endflag>>>", obj)
-		if (length(endloc)) obj <- obj[0:(endloc - 1)]
+		if (length(endloc)) obj <- obj[0:(endloc[length(endloc)] - 1)]
 		## This is more robust than paste'ing together a potentially very
 		## large single string.
 		objdump <- c(objdump, obj)
 	}
 	if (!missing(send)) {
-		if (!all(objdump == "")) stop(objdump)
+		if (!all(objdump == "")) stop("You should send somethings")
 		return(TRUE)
 	}
-	start <- grep("<<<startflag>>>", objdump)
-	if (length(start) != 1)
+	startloc <- grep("<<<startflag>>>", objdump)
+	if (!length(startloc))
 		stop("Unable to find <<<startflag>>>")
 	## The startflag is because sometimes (strangely rarely) seek, flush and dump
 	## can write return value to stdout which do not source.
-	objdump <- objdump[-(1:start)]
+	objdump <- objdump[-(1:startloc[length(startloc)])]
 	## Fix any output buffer wrap issues. There are line breaks mid number
 	## sometimes which don't source.
 	## This is why warn = FALSE appears above in the call to readLines since it
