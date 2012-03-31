@@ -3,6 +3,32 @@ svTools.env <- new.env()
 .onAttach <- function (libname, pkgname)
 	addError(emptyError())
 
+## TODO: eliminate the descriptionFields data!
+.descriptionFields <- data.frame(
+	field = c("Package", "Version", "License", "Description", "Title", "Author",
+		"Maintainer", "Date", "Depends", "URL", "SystemRequirements", "Imports",
+		"Collate", "LazyLoad", "LazyData", "ZipData", "Encoding", "Type",
+		"LinkingTo", "Suggests", "Enhances", "Language", "OS_type",
+		"BugReports", "Classification/ACM", "Classification/JEL",
+		"Classification/MSC"),
+	optional = c(rep("Mandatory", 7), rep("Optional", 20)),
+	description = c("Name of the package", "Version number (x.y-z)", "License",
+		"Comprehensive description of the package", "Short (1 line) title",
+		"Author(s) of the package", "Maintainer (John Doe <john@doe.com>)",
+		"Date (yyyy-mm-dd)", "Dependencies of this package", "Homepage",
+		"System Requirements", "Packages that are imported", "Order of files",
+		"Use the lazy loading mechanism", "Use the lazy loading of data",
+		"Zip the data", "Encoding of this file",
+		"Type of the package (Package|Frontend|Translation)",
+		"The C code of this package links to ...",
+		"Suggested (optional) dependencies", "Package(s) enhanced by this one",
+		"Language used in this package", "Type of OS (unix|windows)",
+		"Where to report bugs?",
+		"Classification according to the Association of Computing Machinery",
+		"Classification according to the Journal of Economic Litterature",
+		"Classification according to the American Mathematical Society")
+)
+
 .looksLikeAFunction <- function (p)
 {
 	# Sometimes, p is not subsettable => use try here
@@ -132,7 +158,7 @@ target = NULL)
 	env <- new.env()
 	if (length(chunk) == 3) {
 		if (chunk[[1]] == "<-" || chunk[[1]] == "=") {    
-			eval(chunk, env = env)
+			eval(chunk, envir = env)
 			contents <- ls(env)
 			if (length(contents)) {
 				object <- env[[contents]]
@@ -178,7 +204,7 @@ target = NULL)
 {
 	env <- new.env()
 	out <- try({
-		eval(chunk, env = env)
+		eval(chunk, envir = env)
 		name <- ls(env) 
 	}, silent = TRUE)
 	testFun <- !inherits(out, "try-error") && length(name) == 1 &&

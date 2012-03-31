@@ -2,6 +2,12 @@
 
 == Changes in svGUI 0.9-52
 
+* R 2.15.0 complains about argument partial match in print.gui():
+  guiAsk(gui = x). Fixed.
+
+
+== Changes in svGUI 0.9-52
+
 * Large refactoring of SciViews-R packages. Most of the functions to interface
   with Komodo are moved to the svKomodo package: koCmd(),
   guiInstall(), guiUninstall(), guiRefresh(), guiAutoRefresh(). The function

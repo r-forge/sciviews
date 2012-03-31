@@ -2,6 +2,11 @@
 
 == Changes in svDialogs 0.9-1
 
+* An imports for svGUI was missing in the NAMESPACE file.
+  
+
+== Changes in svDialogs 0.9-1
+
 * xxxx.tcltkWidgets() is now rewritten as xxxx.tcltkGUI() to match convention
   used in svDialogs (nativeGUI).
 

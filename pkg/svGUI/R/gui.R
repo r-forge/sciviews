@@ -17,7 +17,7 @@ print.gui <- function (x, ...)
 		cat("A SciViews user interface named ", x$name, "\n", sep = "")
 	cat("using widgets from: ", paste(guiWidgets(x), collapse = ", "),
 		"\n", sep = "")
-	if (!guiAsk(gui = x)) cat("(it is currently inactivated - ask == FALSE)\n")
+	if (!guiAsk(x)) cat("(it is currently inactivated - ask == FALSE)\n")
 	if (!is.null(x[["call"]])) {
 		cat("* Last call: ", deparse(x[["call"]]), "\n" , sep = "")
 		cat("* Last widgets used: ", x$widgets, "\n", sep = "")

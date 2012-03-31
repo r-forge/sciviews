@@ -88,9 +88,9 @@ author = getOption("svTools.description.author"))
  	} else if (regexpr("[^[:alpha:]]", lastLine) > 0) {
 		return(list(ok = FALSE))
 	} else {
-		keep <- (regexpr(lastLine, descriptionFields[, 1]) > 0  |
-			regexpr(lastLine, descriptionFields[, 3]) > 0)
-		data <- as.matrix(descriptionFields[keep, c(1, 3), drop = FALSE])
+		keep <- (regexpr(lastLine, .descriptionFields[, 1]) > 0  |
+			regexpr(lastLine, .descriptionFields[, 3]) > 0)
+		data <- as.matrix(.descriptionFields[keep, c(1, 3), drop = FALSE])
 		data[, 1] <- paste(data[, 1], ": ", sep = "")
 		return(list(data = data, ok = TRUE, token = lastLine, type = "fields"))
 	}

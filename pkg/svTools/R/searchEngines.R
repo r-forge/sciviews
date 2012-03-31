@@ -138,9 +138,13 @@ searchGraph <- function (query, max = 30)
 
 ### Convert R news/R journal bib database into a data.frame
 .rbib <- function (url = "http://journal.r-project.org/RJournal.bib",
-	add.bibRNews = TRUE)
+add.bibRNews = TRUE)
 {
-	if (is.null(url) && isTRUE(add.bibRNews)) return(bibRNews)
+	if (isTRUE(add.bibRNews)) {
+		bibRNews <- data.frame()
+		load(system.file("data", "bibRNews.rda", package = "svTools"))
+		if (is.null(url)) return(bibRNews)
+	}
 	
 	tmp <- tempfile() 
 	on.exit(unlink(tmp))

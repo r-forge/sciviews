@@ -12,8 +12,8 @@
   \tabular{ll}{
     Package: \tab svDialogs\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-45\cr
-    Date: \tab 2011-11-11\cr
+    Version: \tab 0.9-50\cr
+    Date: \tab 2012-03-31\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples

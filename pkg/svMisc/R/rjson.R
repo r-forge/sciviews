@@ -9,9 +9,9 @@ toRjson <- function (x, attributes = FALSE)
 	file <- file()
 	on.exit(close(file))
 	if (isTRUE(attributes)) {
-		opts <- .deparseOpts(c("showAttributes", "S_compatible"))
+		opts <- c("showAttributes", "S_compatible")
 	} else {
-		opts <- .deparseOpts("S_compatible")
+		opts <- "S_compatible"
 	}
 	
 	## Non-named list items are not allowed => make sure we give names to these
@@ -76,7 +76,10 @@ toRjson <- function (x, attributes = FALSE)
 		cat(")\n", file = file)
 		invisible()
 	}
-	else .Internal(dput(rework(x, attributes), file, opts))
+	else {
+		## Was: .Internal(dput(rework(x, attributes), file, opts))
+		dput(rework(x, attributes), file = file, control = opts)
+	}
 	
 	## Now read content from the file
 	res <- readLines(file)

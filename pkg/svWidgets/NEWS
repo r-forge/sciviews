@@ -1,5 +1,15 @@
 = svWidgets News
 
+== Changes in svWidgets 0.9-42
+
+* Corrected a warning about argument partial matching in ToolRead() with
+  R 2.15.0.
+  
+* Call to .Internal(addhistory(....)) replaced by
+  timestamp(...., prefix = "", suffix = "") to avoid use of .Internal() in the
+  package.
+
+
 == Changes in svWidgets 0.9-41
 
 * Addition of a package man page.

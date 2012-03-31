@@ -1,5 +1,16 @@
 = svTools News
 
+== Changes in svTools 0.9-2
+
+* Fixed partial matching of arguments env(ir) in .argsFunAfter() and
+  .isFunction() and nc(ol), nr(ow) in completeCode()
+  
+* .descriptionFields is now created in code to avoid false warning of missing
+  object in R 2.15.0.
+  
+* .rbib() now loads the bibRNews.rda data before proceeding.
+
+
 == Changes in svTools 0.9-1
 
 * Several bugs eliminated in tryParse() and lintUsage().

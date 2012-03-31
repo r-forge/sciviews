@@ -1,4 +1,4 @@
-import(svDialogs, tcltk)
+import(svDialogs, svGUI, tcltk)
 
 #export()
 

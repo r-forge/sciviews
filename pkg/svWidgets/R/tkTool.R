@@ -128,7 +128,7 @@ tkToolAddItem <- function (toolbar, item, action, image = "", options = "")
 .actionWrapper <- function (action)
 {
 	function () {
-		.Internal(addhistory(action))
+		timestamp(action, prefix = "", suffix = "") # Was: .Internal(addhistory(action))
 		cat(">> ", action, "\n") 
 		eval(parse(text = action))
 	}

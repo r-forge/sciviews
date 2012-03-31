@@ -1,5 +1,14 @@
 = svKomodo News
 
+== Changes in svKomodo 0.9-55
+
+* On some machines, system("locate Komodo ...") fails. Added some more checking
+  in this situation.
+  
+* In .onLoad(), slight reworking of the svPager() function to avoid calling
+  .Internal(file.show(....)).
+
+
 == Changes in svKomodo 0.9-54
 
 * Startup code is changed... a part of the code in svStart.R in the SciViews-K

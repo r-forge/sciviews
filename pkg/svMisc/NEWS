@@ -1,5 +1,15 @@
 = svMisc News
 
+== Changes in svMisc 0.9-65
+
+* Partial argument matching in completion(), progress() and rmTemp() code fixed.
+
+* Call to .Internal(...) in captureAll() eliminated, but ned to call
+  .signalSimpleWarning() that is not intended for external use anyway.
+  
+* Call to .Internal(dput(....)) in toRjson() eliminated.
+
+
 == Changes in svMisc 0.9-64
 
 * Added listToJson() for conversion of lists of character strings into correct
