@@ -144,7 +144,7 @@
 	assignTemp(".max.print", getOption("max.print"))
 	options(max.print = 999)
 	
-	## Is svStart function exists in.GlobalEnv, delegate the rest to it!
+	## If svStart function exists in.GlobalEnv, delegate the rest to it!
 	if (exists("svStart", envir = .GlobalEnv, mode = "function",
 		inherits = FALSE)) return()
 	
@@ -174,8 +174,10 @@
 		}
 		
 		if (length(Komodo) == 0 || Komodo == "") {
-			Komodo <- system("locate --basename -e --regex ^komodo$ | grep -vF 'INSTALLDIR' | grep -F 'bin/komodo' | tail --lines=1",
-				intern = TRUE, ignore.stderr = TRUE)
+			Komodo <- try(suppressWarnings(system(
+				"locate --basename -e --regex ^komodo$ | grep -vF 'INSTALLDIR' | grep -F 'bin/komodo' | tail --lines=1",
+				intern = TRUE, ignore.stderr = TRUE)), silent = TRUE)
+			if (inherits(Komodo, "try-error")) Komodo <- NULL
 			#debugMsg("locate komodo", "returned", Komodo)
 		}
 		## Just to avoid warnings while compiling outside of Windows...
@@ -225,7 +227,7 @@
 		#debugMsg("Komodo path is:", Komodo)
 	}
 
-	if (!is.null(Komodo) && Komodo != "" && file.exists(Komodo)) {
+	if (length(Komodo) && Komodo != "" && file.exists(Komodo)) {
 		## Change the editor and the pager to Komodo
 		options(pager2 = getOption("pager"))
 		## A custom pager consists in displaying the file in Komodo
@@ -242,7 +244,11 @@
 					pager2(files = files, header = header, title = title,
 						delete.file = delete.file)
 				} else {
-					.Internal(file.show(files, header, title, delete.file, pager2))
+					## Replacement for the following line of code to avoid
+					## using .Internal()
+					#.Internal(file.show(files, header, title, delete.file, pager2))
+					file.show(files, header = header, title = title,
+						delete.file = delete.file, pager = pager2)
 				}
 			} else {
 				if (delete.file)

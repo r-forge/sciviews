@@ -2,7 +2,7 @@ completeCode <- function (...)
 {
 	out <- completion(..., min.length = 1)
 	if (is.null(out)) {
-		out <- matrix("", nc = 4, nr = 0) 
+		out <- matrix("", ncol = 4, nrow = 0) 
 		token <- utils:::.guessTokenFromLine()
 	} else {
 		token <- attr(out, "token")

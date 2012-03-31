@@ -57,7 +57,7 @@ max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 				pkgDesc <- function (pkg) {
 					## This is to deal with completion of :, ::, ::: in pkg base
 					if (grepl(":$", pkg)) return("") else
-						return(packageDescription(pkg, field = "Description"))
+						return(packageDescription(pkg, fields = "Description"))
 				}
 				ret[test.pack, "desc"] <- sapply(sub(":{2,3}$", "",
 					completions[test.pack]), pkgDesc)

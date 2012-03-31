@@ -67,7 +67,7 @@ init = (value == 0), console = TRUE, gui = TRUE)
 		l1 <- nchar(msg1)
 		msg2 <- gettext("on")
 		l2 <- nchar(msg2)
-		l3 <- def(CmdProgress$msglength, 0, mode = "numeric", length = 1)
+		l3 <- def(CmdProgress$msglength, 0, mode = "numeric", length.out = 1)
 		if (l3 < 0) l3 <- 0
 		CmdProgress$msglength <- NULL  # Avoid using twice same data
 		backspaces <- paste(rep("\b", l3), collapse = "")

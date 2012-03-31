@@ -164,8 +164,9 @@ ToolRead <- function (file = "Tools.txt")
 #				image = L$image[i], options = L$options[i])
 #		}
 		} else {  # Create a tool in the toolbar
-            ToolAddItem(tool = L$tool[i], item = L$item[i], action = L$action[i],
-				image = L$image[i], options = L$options[i])
+            ToolAddItem(toolbar = L$tool[i], item = L$item[i],
+				action = L$action[i], image = L$image[i],
+				options = L$options[i])
 		}
 	}
 

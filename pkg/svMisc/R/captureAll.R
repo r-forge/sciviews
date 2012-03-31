@@ -153,9 +153,10 @@ markStdErr = FALSE) {
 
 			if (getWarnLev() != 0L) {
 				putMark(FALSE, 2)
-				.Internal(.signalCondition(e, conditionMessage(e),
-					conditionCall(e)))
-				.Internal(.dfltWarn(conditionMessage(e), conditionCall(e)))
+				## Was:
+				#.Internal(.signalCondition(e, conditionMessage(e), conditionCall(e)))
+				#.Internal(.dfltWarn(conditionMessage(e), conditionCall(e)))
+				.signalSimpleWarning(conditionMessage(e), conditionCall(e))
 				putMark(TRUE, 3)
 			}
 			invokeRestart("muffleWarning")

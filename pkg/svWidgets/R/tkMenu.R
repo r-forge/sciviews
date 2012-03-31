@@ -82,7 +82,7 @@ tkMenuItemCall <- function (expr) {
 	## Remove { and } from the deparsed expression
 	text <- head(deparse(substitute(expr))[-1], -1)
 	cat(">> ", text, "\n")
-	.Internal(addhistory(text))
+	timestamp(text, prefix = "", suffix = "") # Was: .Internal(addhistory(text))
 	return(eval(expr, envir = parent.frame()))
 }
 

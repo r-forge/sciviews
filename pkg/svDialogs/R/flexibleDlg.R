@@ -138,9 +138,9 @@ item, ...)
 
     ## Define the environment to interact with these widgets
     resenv <- new.env(parent = parent.frame(2))
-    assign("varText", varText, env = resenv)
-    assign("txt", txt, env = resenv)
-    assign("argname", argname, env = resenv)
+    assign("varText", varText, envir = resenv)
+    assign("txt", txt, envir = resenv)
+    assign("argname", argname, envir = resenv)
     result <- function() {
     res <- if (is.null(argname)) tclvalue(varText) else
     if (tclvalue(varUseIt) == "1") {
@@ -150,14 +150,14 @@ item, ...)
     } else ""
         res
     }
-    assign("result", result, env = resenv)
+    assign("result", result, envir = resenv)
     select <- function() {
         tkselection.from(txt, "0")
         tkselection.to(txt, "end")
         tkicursor(txt, "end")
         tkfocus(txt)
     }
-    assign("select", select, env = resenv)
+    assign("select", select, envir = resenv)
     return(resenv)
 }
 
@@ -223,9 +223,9 @@ item, ...)
 
     ## Define the environment to interact with these widgets
     resenv <- new.env(parent = parent.frame(2))
-    assign("choices", choices, env = resenv)
-    assign("tl", tl, env = resenv)
-    assign("argname", argname, env = resenv)
+    assign("choices", choices, envir = resenv)
+    assign("tl", tl, envir = resenv)
+    assign("argname", argname, envir = resenv)
     result <- function() {
     sel <- choices[as.numeric(tkcurselection(tl)) + 1]
     res <- if (is.null(argname)) paste(sel, collapse = ", ") else
@@ -238,9 +238,9 @@ item, ...)
     } else ""
         res
     }
-    assign("result", result, env = resenv)
+    assign("result", result, envir = resenv)
     select <- function() tkfocus(tl)
-    assign("select", select, env = resenv)
+    assign("select", select, envir = resenv)
     return(resenv)
 }
 
@@ -352,10 +352,7 @@ guiEval <- function (code, ident = "GUI ")
     e <- try(parse(text = code))
     if (inherits(e, "try-error"))
         stop("Syntax error!")
-    eval.with.vis <- function (expr, envir = .GlobalEnv, enclos =
-    if (is.list(envir) || is.pairlist(envir)) parent.frame())
-        .Internal(eval.with.vis(expr, envir, enclos))
-    yy <- eval.with.vis(e)
+    yy <- withVisible(eval(e, envir = .GlobalEnv))
     if (yy$visible) print(yy$value)
 }
 
@@ -501,7 +498,7 @@ debug = FALSE, ...)
         ## Get results from individual panes
         res <- NULL
         for (i in 1:length(panes))
-            res[i] <- eval(parse(text = "result()"), env = panes[[i]]$env)
+            res[i] <- eval(parse(text = "result()"), envir = panes[[i]]$env)
         dlg$result <- res
         setdlg(dlg)
 		## Indicate we clicked 'OK'
@@ -543,7 +540,7 @@ debug = FALSE, ...)
     tkgrab.set(cnt)# This is a modal dialog box => keep focus!
     if (is.null(txtAssign)) {
         ## Select adequate widget in first pane
-        eval(parse(text = "select()"), env = dlg$panes[[1]]$env)
+        eval(parse(text = "select()"), envir = dlg$panes[[1]]$env)
     } else tkfocus(txtAssign)
     ## Set by default return value of the dialog box to "cancel"
     assignTemp(".guiDialog.res", "cancel")

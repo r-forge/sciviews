@@ -19,7 +19,7 @@ lintDescription <- function (descfile, txt = readLines(descfile))
 	## Check the fields
 	fields <- txt[regexpr("^[^:]+:", txt) > 0]
 	fields <- gsub("[[:space:]]*:.*$", "", fields)
-	okFields <- fields %in% descriptionFields[, 1]
+	okFields <- fields %in% .descriptionFields[, 1]
 	if (!all(okFields)) {
 		wrongFields <- fields[!okFields]
 		lapply(wrongFields, function (x) {

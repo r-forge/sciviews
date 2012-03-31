@@ -278,7 +278,7 @@ unitname = NULL, ...)
 		.ThisTestSuiteEnv <- new.env(parent = .GlobalEnv)
         ## store it globally so that we can inspect it in case of stop
 		## on error.  but please do not remove the local alias.  #1327
-        .TestSuiteEnv <<- .ThisTestSuiteEnv
+        assign(".TestSuiteEnv", .ThisTestSuiteEnv, envir = .GlobalEnv)
 		## Source the corresponding file
 		Unit <- .lastSuite[[unit]]$file
 		sys.source(Unit, envir = .ThisTestSuiteEnv)
