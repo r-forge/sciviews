@@ -3,6 +3,12 @@
 
 \section{Changes in version 0.9-2}{
 	\itemize{
+    \item{ NEWS file reworked to support new Rd format. }
+  }
+}
+
+\section{Changes in version 0.9-2}{
+	\itemize{
     \item{ An \code{imports} for \pkg{svGUI} was missing in the
 			\preformatted{NAMESPACE} file. }
   }
