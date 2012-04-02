@@ -1,7 +1,7 @@
 Package: svKomodo
 Type: Package
-Version: 0.9-55
-Date: 2012-03-31
+Version: 0.9-56
+Date: 2012-04-02
 Title: SciViews GUI API - Functions to interface with Komodo Edit/IDE
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))
@@ -9,7 +9,7 @@ Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 Depends: R (>= 2.6.0), svMisc (>= 0.9-62)
 Imports: utils
-Suggests: svHttp (>= 0.9-52), svSocket (>= 0.9-52)
+Suggests: svHttp, svSocket
 SystemRequirements: Komodo Edit (http://www.openkomodo.com), SciViews-K (http://www.sciviews.org/SciViews-K)
 Description: Functions to manage the GUI client, like Komodo with the
   SciViews-K extension

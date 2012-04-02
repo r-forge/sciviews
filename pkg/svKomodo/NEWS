@@ -1,5 +1,10 @@
 = svKomodo News
 
+== Changes in svKomodo 0.9-56
+
+* NEWS file reworked to use the new Rd format.
+
+
 == Changes in svKomodo 0.9-55
 
 * On some machines, system("locate Komodo ...") fails. Added some more checking
