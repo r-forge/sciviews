@@ -1,3 +1,4 @@
+## You have to run yad to get this dialog box!
 ## The form is defined as a list
 ## TXT, H, RO, NUM, CHK, CB, CBE, FL, SFL, DIR, CDIR, FN, MFL, DT, CLR, BTN or LBL
 ## TXT = simple text entry (default type)
