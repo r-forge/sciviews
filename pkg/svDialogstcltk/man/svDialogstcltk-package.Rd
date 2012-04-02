@@ -11,8 +11,8 @@
   \tabular{ll}{
     Package: \tab svDialogstcltk\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-2\cr
-    Date: \tab 2012-03-31\cr
+    Version: \tab 0.9-3\cr
+    Date: \tab 2012-04-02\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   
