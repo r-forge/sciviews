@@ -205,7 +205,7 @@ submenu=_Help
 	separator
 	
 	item=About
-	cmd=sh -c 'Rversion=`R --version`; zenity --info --title="About SciViews R" --text="$Rversion\n\nSciViews R extensions, version 1.0-0.\nCopyright (c) 2012 Ph. Grosjean." --timeout=10'
+	cmd=sh -c 'Rversion=`R --version`; zenity --info --title="About R" --text="$Rversion\n\nSciViews R extension using svDialogs." --timeout=10'
 	
 
 @@@ Graph device menu...
