@@ -1,5 +1,17 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-52
+
+* menuXXX() functions do not generate files in \tmp dir on Linux, unless in
+  interactive() session, and with explicit user's acknowledgement. Moreover,
+  the user name is not used anymore as part of the name of the temporary menu
+  files generated (cf CRAN policies and following B. Ripley's request).
+  
+* Code to manage menuXXX() items on Mac OS X is considered still experimental
+  (on R-forge, not CRAN) and is now commented out. Will be further developed in
+  a future version of the svDialogs package.
+
+
 == Changes in svDialogs 0.9-51
 
 * NEWS file reworked to use the new Rd format.

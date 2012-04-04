@@ -1,7 +1,7 @@
 Package: svDialogs
 Type: Package
-Version: 0.9-51
-Date: 2012-04-02
+Version: 0.9-52
+Date: 2012-04-04
 Title: SciViews GUI API - Dialog boxes
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))

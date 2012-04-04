@@ -129,7 +129,7 @@ menuDelItem <- function (menuname, itemname)
 .winMenuAddItem <- function (menuname, itemname, action)
 {
 	## As in R 2.14.1, the original winMenuAddItem() does things I don't like
-	## much when usin 'enable' or 'disable' for action, on a non existing menu:
+	## much when using 'enable' or 'disable' for action, on a non existing menu:
 	## it creates it with the action being 'enable' or 'disable'... I suppose
 	## if is a feature, but I want a different behaviour here: to ignore such
 	## a command applied to a non-existing menu item!
@@ -165,18 +165,20 @@ menuDelItem <- function (menuname, itemname)
 }
 
 .macMenuClear <- function () {
-    ## To be called when svDialogs package loads: make sure to zap all
-    ## custom menu items that may have been previously defined
-    ## (also call it when the package closes)
-    odir <- getwd()
-    on.exit(setwd(odir))
-    setwd(.macMenuFolder())
-	setwd("..")
-    folder <- file.path(".", basename(.macMenuFolder()))
-	unlink(folder, recursive = TRUE)
-    dir.create(folder, recursive = TRUE)
-    ## Now, I can assume that the dir is created and is empty
-    return(invisible(NULL))
+    stop("Not implemented yet!")
+	
+#	## To be called when svDialogs package loads: make sure to zap all
+#    ## custom menu items that may have been previously defined
+#    ## (also call it when the package closes)
+#    odir <- getwd()
+#    on.exit(setwd(odir))
+#    setwd(.macMenuFolder())
+#	setwd("..")
+#    folder <- file.path(".", basename(.macMenuFolder()))
+#	unlink(folder, recursive = TRUE)
+#    dir.create(folder, recursive = TRUE)
+#    ## Now, I can assume that the dir is created and is empty
+#    return(invisible(NULL))
 }
 
 .macMenuNames <- function ()
@@ -191,73 +193,83 @@ menuDelItem <- function (menuname, itemname)
 
 .macMenuAdd <- function (menuname)
 {
-    ## Menus are folders created in ~/Scripts/Applications/R/Custom
-    ## I just need to create (recursively) the directories
-    dir.create(file.path(.macMenuFolder(), menuname),
-		showWarnings = FALSE, recursive = TRUE)
-    return(invisible(NULL))
+    stop("Not implemented yet!")
+	
+#	## Menus are folders created in ~/Scripts/Applications/R/Custom
+#    ## I just need to create (recursively) the directories
+#    dir.create(file.path(.macMenuFolder(), menuname),
+#		showWarnings = FALSE, recursive = TRUE)
+#    return(invisible(NULL))
 }
 
 .macMenuAddItem <- function (menuname, itemname, action)
 {
-    ## TODO: manage 'enable' and 'disable'!!!
-	## Make sure that the dir is created
-    .macMenuAdd(menuname)
-    ## Switch to this folder
-	odir <- getwd()
-    on.exit(setwd(odir))
-    setwd(file.path(.macMenuFolder(), menuname))
-	## Add an executable file in it with 'itemname' name
-	## that contains AppleScript code to run action in R
-	## Determine if R is run in R.app or in a terminal window
-	if (.Platform$GUI == "AQUA") {
-		## Can be R or R64 or SciViews R or SciViews R64!
-		app <- paste('"', system("osascript -e 'name of application \"R\"'",
-			intern = TRUE), '"', sep = "")
-	} else app <- "\"Terminal\""
-	## Define action accordingly
-	if (action == "none") {
-		cmd <- "to activate"
-	} else {
-		## Make sure to quote "
-		action <- gsub('"', '\\\\"', action)
-		## Also replace \n, \r and \t
-		action <- gsub('\n', '\\\\\\\\n', action)
-		action <- gsub('\r', '\\\\\\\\r', action)
-		action <- gsub('\t', '\\\\\\\\t', action)
-		if (app == "\"Terminal\"") {
-			cmd <- paste("to do script \"", action, "\" in window 1", sep = "")	
-		} else {
-			cmd <- paste("to cmd \"", action, "\"", sep = "")
-		}
-	}
-	## Compile applescript item
-	system(paste("osacompile -e 'tell application ", app, " ", cmd,
-		"' -o \"", itemname, ".app\"", sep = ""), ignore.stdout = TRUE,
-		ignore.stderr = TRUE)
-    return(invisible(NULL))
+    stop("Not implemented yet!")
+	
+#	## TODO: manage 'enable' and 'disable'!!!
+#	## Make sure that the dir is created
+#    .macMenuAdd(menuname)
+#    ## Switch to this folder
+#	odir <- getwd()
+#    on.exit(setwd(odir))
+#    setwd(file.path(.macMenuFolder(), menuname))
+#	## Add an executable file in it with 'itemname' name
+#	## that contains AppleScript code to run action in R
+#	## Determine if R is run in R.app or in a terminal window
+#	if (.Platform$GUI == "AQUA") {
+#		## Can be R or R64 or SciViews R or SciViews R64!
+#		app <- paste('"', system("osascript -e 'name of application \"R\"'",
+#			intern = TRUE), '"', sep = "")
+#	} else app <- "\"Terminal\""
+#	## Define action accordingly
+#	if (action == "none") {
+#		cmd <- "to activate"
+#	} else {
+#		## Make sure to quote "
+#		action <- gsub('"', '\\\\"', action)
+#		## Also replace \n, \r and \t
+#		action <- gsub('\n', '\\\\\\\\n', action)
+#		action <- gsub('\r', '\\\\\\\\r', action)
+#		action <- gsub('\t', '\\\\\\\\t', action)
+#		if (app == "\"Terminal\"") {
+#			cmd <- paste("to do script \"", action, "\" in window 1", sep = "")	
+#		} else {
+#			cmd <- paste("to cmd \"", action, "\"", sep = "")
+#		}
+#	}
+#	## Compile applescript item
+#	system(paste("osacompile -e 'tell application ", app, " ", cmd,
+#		"' -o \"", itemname, ".app\"", sep = ""), ignore.stdout = TRUE,
+#		ignore.stderr = TRUE)
+#    return(invisible(NULL))
 }
 
 .macMenuDel <- function (menuname)
 {
-    ## Unlink does not like ~ => change working dir first
-    odir <- getwd()
-    on.exit(setwd(odir))
-    setwd(.macMenuFolder())
-    unlink(menuname, recursive = TRUE)
-    return(invisible(NULL))
+    stop("Not implemented yet!")
+	
+#	## Unlink does not like ~ => change working dir first
+#    odir <- getwd()
+#    on.exit(setwd(odir))
+#    setwd(.macMenuFolder())
+#    unlink(menuname, recursive = TRUE)
+#    return(invisible(NULL))
 }
 
 .macMenuDelItem <- function (menuname, itemname)
 {
-    ## Unlink does not like ~ => change working dir first
-    odir <- getwd()
-    on.exit(setwd(odir))
-    setwd(file.path(.macMenuFolder()))
-	unlink(file.path(".", menuname, paste(itemname, "app", sep = ".")),
-		recursive = TRUE) 
-    return(invisible(NULL))    
+	stop("Not implemented yet!")
+
+#    ## Unlink does not like ~ => change working dir first
+#    odir <- getwd()
+#    on.exit(setwd(odir))
+#    setwd(file.path(.macMenuFolder()))
+#	unlink(file.path(".", menuname, paste(itemname, "app", sep = ".")),
+#		recursive = TRUE) 
+#    return(invisible(NULL))    
 }
+
+
 
 ## This holds the custom menu structure in an R object
 .Rmenu <- function ()
@@ -267,35 +279,67 @@ menuDelItem <- function (menuname, itemname)
 }
 
 ## Linux/Unix version
-## To use R custom context menu, you have to install xvkbd and xdotool
-## You need also to compile and install myGtkmenu
+## To use R custom context menu, you have to install xvkbd, xdotool,
+## zenity (and, possibly, yad)
+## You need also to compile and install ctxmenu
 ## On Ubuntu:
-## sudo apt-get install xvkbd xdotool
-## Warning, you need to insqtall the English (US) keymap, even if you don't use
+## sudo apt-get install xvkbd xdotool zenity
+## Warning, you need to insstall the English (US) keymap, even if you don't use
 ## it. Otherwise, xvkbd will issue strange things in your R console!
 ## TODO: install and configure ctxmenu... + add shortcut keys!
 ## Use xbindkeys to bind shell commands to keyboard and mouse keys
 ## chmod +x ctxmenu
-##
-## THIS IS THE OLD VERSION (COMMENTED CODE BELLOW!)
-## Explanation: to run this, you need to install xvkbd and file-browser-applet
-## for Gnome. Under Ubuntu, you make:
-## sudo apt-get install file-browser-apple
-## sudo apt-get install xvkbd
-## You need to log out and in again to make the applet available
-## Then, you need to install and configure a file browser applet in a panel
-## right-click in a panel, select 'add to Panel...' and drag&drop a 'File Browser'
-## Right-click on the file browser and select 'Preferences'. In the preference
-## box, eliminate the default entry (Home) and add all subdirectories from
-## ~/Scripts/Applications/R. You can access R menus from there, and it sends
-## corresponding commands to the focused window (e.g., a terminal running R)
-## TODO: find a similar item for KDE and new Ubuntu unity interface!
-## winMenuAdd(), winMenuAddItem(), winMenuDel() and winMenuDelItem() already
-## defined for windows RGui, but need a substitution for Rterm!
+
+## We need to write menu files in /tmp... but CRAN policies do not allow this
+## unless we got acknowledgement by the user in the interactive session.
+## This function checks that R runs in interactive mode and the user gave
+## acknowledgement, either interactively,  or by defining the option
+## 'svDialogs.tmpfiles' to TRUE
+.tmpfilesAllowed <- function ()
+	return(interactive() && isTRUE(getOption("svDialogs.tmpfiles", FALSE)))
+
+.unixTmpfilesAsk <- function ()
+{
+	if (!interactive()) return(FALSE)
+	
+	## Make sure the user gave explicit right to create custom menus temp
+	## files, either interactively, or through the setting of an option
+	## options(svDialogs.tmpfiles = TRUE)
+	opt <- getOption("svDialogs.tmpfiles")
+	if (is.null(opt)) { # Ask user interactively
+		if (okCancelBox("Install custom menu configuration files in ~/.ctxmenu/tmp/?")) {
+			options(svDialogs.tmpfiles = TRUE)
+			## Make sure to clear old menus, and to install new ones
+			.menuClear()
+			.menuFileInit()
+			.ctxMenuFileInit()	
+			## Make sure that ctxmenu is installed
+			if (Sys.which("ctxmenu") == "") {
+				warning("Menus will not be displayed if you do not install ctxmenu properly, see: http://www.sciviews.org/SciViews-R/ctxmenu.zip")
+				return(FALSE)
+			} else return(TRUE) # Everything should be ok!
+		} else {
+			options(svDialogs.tmpfiles = FALSE)
+			## Indicate that it will not be possible to use custom menus before
+			## allowed by the corresponding option
+			warning("Menus will not be displayed unless you agree to create config files using options(svDialogs.tmpfiles = TRUE)")
+			return(FALSE)
+		}
+	} else if (!isTRUE(opt)) {
+		warning("Menus will not be displayed unless you agree to create config files using options(svDialogs.tmpfiles = TRUE)")
+		return(FALSE)
+	} else return(TRUE) # Note: we do not check again for ctxmenu here!
+}
+
 .unixMenuFolder <- function ()
 {
 	## Get the root folder for the R menus
-	return(getOption("menuFolder", default = "/tmp"))
+	mnudir <- getOption("menuFolder", default = "~/.ctxmenu/tmp")
+	## Make sure this directory exists, in one can write to it!
+	if (.tmpfilesAllowed() && !file.exists(mnudir))
+		try(dir.create(mnudir, showWarnings = FALSE, recursive = TRUE),
+			silent = TRUE)
+	return(mnudir)
 }
 
 .unixMenuFile <- function ()
@@ -303,14 +347,20 @@ menuDelItem <- function (menuname, itemname)
 	## Get the name of the file that contains the R menu
 	winid <- getTemp(".winid", default = Sys.getenv("WINDOWID"))
 	assignTemp(".winid", winid)
-	user <- getTemp(".user", default = Sys.getenv("USER"))
-	assignTemp(".user", user)
-	return(file.path(.unixMenuFolder(), paste(user, winid,
+	## Do not use user name in the filename (B. Ripley's request)
+	#user <- getTemp(".user", default = Sys.getenv("USER"))
+	#assignTemp(".user", user)
+	#return(file.path(.unixMenuFolder(), paste(user, winid,
+	#	"Menu.txt", sep = "")))
+	return(file.path(.unixMenuFolder(), paste(winid,
 		"Menu.txt", sep = "")))
 }
 
 .unixMenuFileInit <- function ()
 {
+	## Can we generate files in /tmp?
+	if (!.tmpfilesAllowed()) return(invisible(NULL))
+	
 	## Initialize the R menu file with default items
 	fil <- .unixMenuFile()
 	## Get the default R menu and start from there
@@ -318,8 +368,8 @@ menuDelItem <- function (menuname, itemname)
 		default = file.path("~", ".ctxmenu", "RMenu.txt"))
 	if (file.exists(def)) {
 		file.copy(def, fil, overwrite = TRUE)
-	} else file.copy(system.file("gui", "RMenu.txt", package = "svDialogs"),
-		fil, overwrite = TRUE)
+	} else file.copy(system.file("gui", "RMenuLinux.txt",
+		package = "svDialogs"), fil, overwrite = TRUE)
 	return(invisible(NULL))
 }
 
@@ -328,14 +378,20 @@ menuDelItem <- function (menuname, itemname)
 	## Get the name of the file that contains the R context menu
 	winid <- getTemp(".winid", default = Sys.getenv("WINDOWID"))
 	assignTemp(".winid", winid)
-	user <- getTemp(".user", default = Sys.getenv("USER"))
-	assignTemp(".user", user)
-	return(file.path(.unixMenuFolder(), paste(user, winid,
+	## Do not use user name in the filename (B. Ripley's request)
+	#user <- getTemp(".user", default = Sys.getenv("USER"))
+	#assignTemp(".user", user)
+	#return(file.path(.unixMenuFolder(), paste(user, winid,
+	#	"CtxMenu.txt", sep = "")))
+	return(file.path(.unixMenuFolder(), paste(winid,
 		"CtxMenu.txt", sep = "")))
 }
 
 .unixCtxMenuFileInit <- function ()
 {
+	## Can we generate files in /tmp?
+	if (!.tmpfilesAllowed()) return(invisible(NULL))
+	
 	## Initialize the R context menu file with default items
 	fil <- .unixCtxMenuFile()
 	## Get the default R context menu and start from there
@@ -343,8 +399,8 @@ menuDelItem <- function (menuname, itemname)
 		default = file.path("~", ".ctxmenu", "RCtxMenu.txt"))
 	if (file.exists(def)) {
 		file.copy(def, fil, overwrite = TRUE)
-	} else file.copy(system.file("gui", "RCtxMenu.txt", package = "svDialogs"),
-		fil, overwrite = TRUE)
+	} else file.copy(system.file("gui", "RCtxMenuLinux.txt",
+		package = "svDialogs"), fil, overwrite = TRUE)
 	return(invisible(NULL))
 }
 
@@ -354,6 +410,9 @@ menuDelItem <- function (menuname, itemname)
 	## mnu is either a list of lists with menu entries, or NULL to delete all
 	## custom menus
 	assignTemp("Rmenu", mnu)
+	
+	# Do nothing on files, unless interactive() and got user's acceptation
+	if (!.tmpfilesAllowed()) return(invisible(NULL))
 	if (!isTRUE(file)) return(invisible(NULL))
 	## The menu file is:
 	fil <- .unixMenuFile()
@@ -418,26 +477,10 @@ menuDelItem <- function (menuname, itemname)
     ## To be called when svDialogs package loads: make sure to zap all
     ## custom menu items that may have been previously defined
     ## (also call it when the package closes)
-#    odir <- getwd()
-#    on.exit(setwd(odir))
-#    res <- try(setwd(.unixMenuFolder()), silent = TRUE)
-#	if (inherits(res, "try-error")) {
-#		## The directory does not exists yet... create it!
-#		dir.create(.unixMenuFolder(), recursive = TRUE)
-#		## TODO: put the default R menu there...
-#	} else {
-#		## The directory already exists... clear it now
-#		setwd("..")
-#		folder <- file.path(".", basename(.unixMenuFolder()))
-#		unlink(folder, recursive = TRUE)
-#		dir.create(folder, recursive = TRUE)
-#		## TODO: a different procedure that does not delete the default R menu
-#	}
-    ## Now, I can assume that the dir is created and is empty
 
-	## Make also sure that 'Rmenu' application is installed
-	## TODO...
-
+	# Do nothing on files, unless interactive() and got user's acceptation
+	if (!.tmpfilesAllowed()) return(invisible(NULL))
+	
 	## Also clear the local object
 	.unixMenuSave(NULL)
 	unlink(.unixMenuFile())
@@ -485,14 +528,13 @@ menuDelItem <- function (menuname, itemname)
 }
 
 .unixMenuAdd <- function (menuname, itemname = NULL, action = "none") {
-#    ## I just need to create (recursively) the directories
-#    dir.create(file.path(.unixMenuFolder(), menuname),
-#		showWarnings = FALSE, recursive = TRUE)
-
+	## Make sure we can install required files in ~/.ctxmenu/tmp/
+	.unixTmpfilesAsk()
+	
 	## Add this menu to our Rmenu object
 	mnu <- .Rmenu()
 	items <- strsplit(as.character(menuname), "/", fixed = TRUE)[[1]]
-	## allow for a maximum of 5 sublevels (should be largely enough!)
+	## Allow for a maximum of 5 sublevels (should be largely enough!)
 	l <- length(items)
 	if (l == 1) {
 		if (!is.null(mnu[[items[1]]])) {
@@ -558,6 +600,9 @@ menuDelItem <- function (menuname, itemname)
 }
 
 .unixMenuAddItem <- function (menuname, itemname, action) {
+	## Make sure we can install required files in ~/.ctxmenu/tmp/
+	.unixTmpfilesAsk()
+	
 	if (action %in% c("enable", "disable")) {
 		## Enable or disable an existing menu item
 		if (action == "enable") action <- NULL # To eliminate the attribute
@@ -587,25 +632,6 @@ menuDelItem <- function (menuname, itemname)
 		.unixMenuSave(mnu)
 		return(invisible(NULL))
 	} else return(.unixMenuAdd(menuname, itemname, action))
-#    ## Make sure that the dir is created
-#    .unixMenuAdd(menuname)
-#    ## Add an executable file in it with 'itemname' name
-#    ## and containing: xvkbd -text "action\r" except if action is "none"
-#    cmdFile <- file.path(.unixMenuFolder(), menuname, itemname)
-#	if (action == "none") {
-#		cat("\n", file = cmdFile)
-#    } else {
-#		## Make sure to quote "
-#		action <- gsub('"', '\\\\"', action)
-#		## Also replace \n, \r and \t (and wait 200ms between lines)
-#		action <- gsub('\n', '\\\\r\\\\D2', action)
-#		action <- gsub('\r', '\\\\r\\\\D2', action)
-#		action <- gsub('\t', '    ', action)
-#		cat("xvkbd -text \"", action, "\\r\"\n", sep = "", file = cmdFile)
-#    }
-#    ## Make this file executable
-#    Sys.chmod(cmdFile, mode = "755")
-#    return(invisible(NULL))
 }
 
 .unixMenuDel <- function (menuname) {
@@ -627,13 +653,6 @@ menuDelItem <- function (menuname, itemname)
 	## Save these changes
 	.unixMenuSave(mnu)
 	return(invisible(NULL))	
-		
-#    ## Unlink does not like ~ => change working dir first
-#    odir <- getwd()
-#    on.exit(setwd(odir))
-#    setwd(.unixMenuFolder())
-#    unlink(menuname, recursive = TRUE)
-#    return(invisible(NULL))
 }
 
 .unixMenuDelItem <- function (menuname, itemname) {
@@ -654,15 +673,5 @@ menuDelItem <- function (menuname, itemname)
 	} else return(invisible(NULL))
 	## Save these changes
 	.unixMenuSave(mnu)
-	return(invisible(NULL))	
-	
-#    ## Unlink does not like ~ => change working dir first
-#    path <- file.path(.unixMenuFolder(), menuname)
-#    if (file.exists(path) && file.info(path)$isdir) {
-#		odir <- getwd()
-#		on.exit(setwd(odir))
-#		setwd(path)
-#		unlink(itemname)
-#    }
-#    return(invisible(NULL))    
+	return(invisible(NULL))	  
 }
