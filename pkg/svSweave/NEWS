@@ -1,5 +1,21 @@
 = svSweave News
 
+== Changes in svSweave 0.9-4
+
+* Added a dependence to the ascii package to support Asciidoc Sweave documents.
+
+* Asciidoc 8.6-7 is installed with the package but it will only work if
+  Python >= 2.4 is installed. Asciidoc is distributed under a GPL-2 license,
+  like the package.
+  
+* RasciidocToRnw() and RasciidocToHtml() added to convert SciViews R scripts
+  embedding Sweave data into Asciidoc .Rnw files and to Html, respectively.
+  RasciidocThemes() lists available HTML themes provided with this package.
+  
+* svBuild() is a convenient function to automatically compile any SciViews-R
+  script into the final document.
+
+
 == Changes in svSweave 0.9-3
 
 * Added functions tangleLyxRnw() and weaveLyxRnw() to be called directly from

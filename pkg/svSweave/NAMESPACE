@@ -1,5 +1,9 @@
-import(utils)
+import(utils, ascii)
 
 export(cleanLyxRnw,
        tangleLyxRnw,
-       weaveLyxRnw)
+       weaveLyxRnw,
+       RasciidocToRnw,
+       RasciidocToHtml,
+       RasciidocThemes,
+       svBuild)
