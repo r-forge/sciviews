@@ -1,3 +1,5 @@
+## TODO: see the tables package for better looking tables, including in LaTeX!
+
 weaveLyxRnw <- function (file, driver = RweaveLatex(),
 syntax = getOption("SweaveSyntax"), encoding = "UTF-8", width = 80,
 useFancyQuotes = TRUE, ...)
