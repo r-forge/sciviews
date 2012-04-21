@@ -99,8 +99,8 @@ RasciidocToRnw <- function (Rfile, RnwFile, encoding)
 	return(invisible(Rscript))
 }
 
-RasciidocToHtml <- function (Rfile, theme, show.it, figsDir, keepRnwFile,
-keepTxtFile, encoding, asciidoc)
+RasciidocConvert <- function (Rfile, theme, format, show.it, figsDir,
+keepRnwFile, keepTxtFile, encoding, asciidoc)
 {
 	## If Rfile is missing, try to get it from option or the command line
 	if (missing(Rfile)) Rfile <- .Rfile()
@@ -117,15 +117,31 @@ keepTxtFile, encoding, asciidoc)
 	} else TxtFile <- TxtFile
 	## Make sure this is not an old file
 	unlink(TxtFile)
-		
-	## HtmlFile is always at same location as TxtFile
-	HtmlFile <- .fileExt(TxtFile, "html")
 	
 	## If figsDir is defined (default to 'figures'), make sure it exists
 	if (missing(figsDir)) figsDir <- getOption("sv.figsDir", "figures")
-	if (length(figsDir)) dir.create(file.path(dirname(HtmlFile), figsDir),
+	if (length(figsDir)) dir.create(file.path(dirname(TxtFile), figsDir),
 		showWarnings = FALSE, recursive = TRUE)
 	
+	## If format is missing, try getting it from options(), or assume "html"
+	if (missing(format)) format <- getOption("sv.format", "html")
+	## The resulting file extension depends on the format used
+	## Note that EndFile is always at same location as TxtFile
+	EndExt <- switch(format,
+		html = "html",
+		html11 = "html",
+		html5 = "html",
+		html4 = "html",
+		slidy = "html",
+		slidy2 = "html",
+		wordpress = "html",
+		docbook = "xml",
+		docbook45 = "xml",
+		latex = "tex",
+		stop("Unknown format, use html/html4/html5/slidy/wordpress/docbook/latex")
+		)
+	EndFile <- .fileExt(TxtFile, EndExt)
+		
 	## If theme is missing, try getting it from options()
 	if (missing(theme)) theme <- getOption("sv.theme", "sciviews")
 	## If there is an initialization file for this theme, run it now
@@ -203,21 +219,25 @@ keepTxtFile, encoding, asciidoc)
 		stop("Problems while creating the Asciidoc file (", TxtFile, ")")
 	
 	## Do we use a particular theme with Asciidoc
-	if (theme == "classic") opts <- '" -a asciimath -a caption "' else
-		opts <- paste('" -a asciimath -a caption --theme=', theme, '@ "', sep = "")
+	if (theme == "classic") {
+		opts <- paste('" -b ', format, ' -a asciimath -a caption "', sep = "")
+	} else {
+		opts <- paste('" -b ', format, ' -a asciimath -a caption --theme=',
+			theme, '@ "', sep = "")
+	}
 
 	## Use AsciiDoc to convert the .txt file into an .html file
-	cat("Running asciidoc to create ", basename(HtmlFile), "\n", sep = "")
+	cat("Running asciidoc to create ", basename(EndFile), "\n", sep = "")
 	system(paste('"', python, '" "', asciidoc, opts, TxtFile, '"', sep = ""))
 		
 	## If there is a finalize code for this theme, run it now
 	## TODO...
 
 	## Do we view the resulting .html file?
-	if (isTRUE(show.it)) {
-		cat("Opening the report", basename(HtmlFile), "in the Web browser\n")
-		browseURL(normalizePath(HtmlFile))
-	} else cat("Report available at ", HtmlFile, "\n", sep = "")
+	if (isTRUE(show.it) && EndExt == "html") {
+		cat("Opening the formatted document", basename(EndFile), "in the Web browser\n")
+		browseURL(normalizePath(EndFile))
+	} else cat("Formatted document available at ", EndFile, "\n", sep = "")
 }
 
 RasciidocThemes <- function ()

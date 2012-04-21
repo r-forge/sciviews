@@ -4,6 +4,6 @@ export(cleanLyxRnw,
        tangleLyxRnw,
        weaveLyxRnw,
        RasciidocToRnw,
-       RasciidocToHtml,
+       RasciidocConvert,
        RasciidocThemes,
        svBuild)

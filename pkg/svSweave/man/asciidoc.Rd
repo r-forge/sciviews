@@ -1,6 +1,6 @@
 \name{asciidoc}
 \alias{RasciidocToRnw}
-\alias{RasciidocToHtml}
+\alias{RasciidocConvert}
 \alias{RasciidocThemes}
 \alias{svBuild}
 
@@ -14,7 +14,8 @@
 
 \usage{
 RasciidocToRnw(Rfile, RnwFile, encoding)
-RasciidocToHtml(Rfile, theme, show.it, figsDir, keepRnwFile, keepTxtFile, encoding, asciidoc)
+RasciidocConvert(Rfile, theme, format, show.it, figsDir, keepRnwFile,
+    keepTxtFile, encoding, asciidoc)
 RasciidocThemes()
 svBuild(Rfile, encoding)
 }
@@ -28,6 +29,10 @@ svBuild(Rfile, encoding)
     default, but you can change it here. }
   \item{theme}{ the theme to use with the Asciidoc HTML file. By default, it is
     \code{sciviews}. }
+  \item{format}{ export format to use. Either \code{"html"} (default, synonym of
+    \code{"html11"}), \code{"html4"}, \code{"html5"}, \code{"slidy"},
+    \code{"wordpress"}, \code{"docbook"}, \code{"docbook45"}, or \code{"latex"}
+    (see the AsciiDoc man page). }
   \item{show.it}{ is the resulting HTML file shown in the default browser.
     Default value depends if R is run interactively or not. }
   \item{figsDir}{ subdirectory where to place figures (R plots) when compiling
@@ -41,7 +46,7 @@ svBuild(Rfile, encoding)
 
 \value{
   The text of the R noweb data is returned invisibly by \code{RasciidocToRnw()}.
-  \code{NULL} is returned by \code{RasciidocToHtml()} (this function is invoked for
+  \code{NULL} is returned by \code{RasciidocConvert()} (this function is invoked for
   its side effect. \code{RasciidocThemes()} returns the list of themes
   available for your HTML documents. Finally, \code{svBuild()} is a convenient
   function to automatically build a report from a SciViews R script.
