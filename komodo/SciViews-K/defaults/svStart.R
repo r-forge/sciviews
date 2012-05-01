@@ -6,6 +6,7 @@
 ## Version 0.9.20, 2010-11-10 modified by K. Barton
 ## Version 0.9.23, 2011-08-05 modified by Ph. Grosjean
 ## Version 0.9.25, 2011-12-28 modified by Ph. Grosjean
+## Version 0.9.27, 2012-04-22 modified by Ph. Grosjean
 
 ## TODO: also use value in koDebug to debug server from within R!
 ## TODO: use the mechanism of startHttpServer() to retrieve default config
@@ -372,7 +373,8 @@ skip = NULL)
 			} else {
 				## Finally, load svKomodo and SciViews
 				res <- sapply(pkgsSecondary, function(pkgName)
-					require(pkgName, quietly = TRUE, character.only = TRUE))
+					require(pkgName, quietly = TRUE, warn.conflicts = FALSE,
+						character.only = TRUE))
 
 				if (all(res)) {
 					if (ko.type == "http") {
@@ -606,10 +608,9 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			## right place (in case of error, no change is made!)
 			try(setwd(getOption("R.initdir")), silent = TRUE)
 			## Clean up everything in Komodo
-			## PhG: this is problematic, because Komodo considers R quit here!
-			## => commented out for now!
-			#try(svKomodo::koCmd('window.setTimeout("sv.r.closed();", 1000);'),
-			#	silent = TRUE)
+			tryCatch(
+				svKomodo::koCmd("window.setTimeout(\"sv.r.closed();\", 1000);"),
+				error = function (e) invisible(NULL))
 		})
 
 		msg <- paste("Session directory is", dQuote(getOption("R.initdir")))
@@ -689,6 +690,23 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			' true);", 1000);', sep = "")), silent = TRUE)
 		#try(koRefresh(force = TRUE), silent = TRUE)
 	}
+	
+	## Save the whole config
+	.SciViewsConfig <- list()
+	.SciViewsConfig$ko.type <- getOption("ko.type")
+	.SciViewsConfig$ko.host <- getOption("ko.host")
+	.SciViewsConfig$ko.port <- getOption("ko.port")
+	.SciViewsConfig$ko.kotype <- getOption("ko.kotype")
+	.SciViewsConfig$ko.serve <- getOption("ko.serve")
+	.SciViewsConfig$ko.activate <- getOption("ko.activate")
+	.SciViewsConfig$ko.id <- getOption("ko.id")
+	.SciViewsConfig$R.id <- getOption("R.id")
+	.SciViewsConfig$R.initdir <- getOption("R.initdir")
+	.SciViewsConfig$width <- getOption("width")
+	.SciViewsConfig$OutDec <- getOption("OutDec")
+	.SciViewsConfig$OutSep <- getOption("OutSep")
+	## Save this to a file...
+	save(.SciViewsConfig, file = "~/.SciViewsConfig.RData")
 	
 	## Do we have a .Rprofile file to source?
 	rprofile <- file.path(c(getwd(), Sys.getenv("R_USER")), ".Rprofile")

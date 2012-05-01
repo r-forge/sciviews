@@ -193,7 +193,7 @@
 							tooltiptext="&sciviews.robjects.refresh.tip;"
 							buttonstyle="pictures"
 							label="&sciviews.robjects.refresh;" class="refresh-icon"
-							oncommand="sv.robjects.getPackageList(true);"/>
+							oncommand="sv.robjects.smartRefresh(true);"/>
 						<!-- or oncommand="sv.robjects.refreshAll();"-->
 						<toolbarbutton id="sciviews_robjects_searchpath_button"
 							observes="cmd_robjects_viewSearchPath"

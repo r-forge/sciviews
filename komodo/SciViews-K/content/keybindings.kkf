@@ -26,4 +26,4 @@ binding cmd_svRHelpSearch Alt+Shift+F1
 
 binding cmd_svRObjRefreshDisplay Ctrl+P
 binding cmd_svRActiveDF Ctrl+D
-binding cmd_svRLoadDF Ctrl+L
+#No! cmd_gotoLine?! binding cmd_svRLoadDF Ctrl+L

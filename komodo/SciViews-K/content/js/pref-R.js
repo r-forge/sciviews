@@ -23,6 +23,11 @@
 //                                           Note: PrefR_OnLoad() used instead
 // OnPreferencePageOK(prefset);           // User clicks OK
 ////////////////////////////////////////////////////////////////////////////////
+// TODO: eliminate items not found on the disk for the list of Mac R apps!?
+// TODO: wrong calculation of args + check problems when args is empty
+// TODO: x-terminal-emulator not defined on Mac OS X => R terminal is broken
+//       on Mac OS X!
+//
 // Prefs to possibly include later on:
 // * Address for remote R (sv.socket.host)?
 //   if not localhost - disable source* commands
@@ -30,6 +35,7 @@
 // * R Site search url (%S replaced by topic)
 
 var sv;
+var cancelled = false;
 
 // List of supported R applications
 var apps = [
@@ -65,7 +71,7 @@ var apps = [
 		required:"/Applications/R.app",
 		platform:"Mac"},
 	{id:"r64-app", label:"R64 app",
-	path:"open -a \"%Path%\" \"%cwd%\"",
+		path:"open -a \"%Path%\" \"%cwd%\"",
         app:"R64.app",
 		required:"/Applications/R64.app",
 		platform:"Mac"},
@@ -95,7 +101,7 @@ var apps = [
 //// Utilities /////////////////////////////////////////////////////////////////
 // Used at startup
 function _menuListSetValues (attribute) {
-	if (!attribute) attribute = 'values';
+	if (!attribute) attribute = 'items';
 	var ml = document.getElementsByTagName('menulist');
 	var el, values, v;
 	for (var i = 0; i < ml.length; i++) {
@@ -148,6 +154,7 @@ function _populateRInterps () {
         rs = ["/Applications/R.app", "/Applications/R64.app",
 			  "/Applications/SciViews R.app", "/Applications/SciViews R64.app",
 			  sv.tools.file.whereIs("R")];
+		// TODO: eliminate items not found on the disk!?
         break;
      default:
         rs = rs.concat(sv.tools.file.whereIs("R"));
@@ -421,11 +428,11 @@ function PrefR_UpdateCranMirrors (localOnly) {
 
 
 //// Standard interface for preference pages ///////////////////////////////////
-function OnPreferencePageLoading(prefset) {
-	// Nothing to do?
+function OnPreferencePageLoading (prefset) {
+	// Nothing to do? PrefR_OnLoad() invoked instead!
 }
 
-function OnPreferencePageOK(prefset) {
+function OnPreferencePageOK (prefset) {	
 	prefset = parent.hPrefWindow.prefset;
 	
 	// Set R interpreter
@@ -475,14 +482,15 @@ function OnPreferencePageOK(prefset) {
 	
 	// Restart socket server if running and port or channel changed
 	var koType = document.getElementById('sciviews.ko.type').value;
-	var koPort = document.getElementById('sciviews.ko.port').value;
-	if (koPort != prefset.getStringPref("sciviews.ko.port") ||
+	var koPort = parseInt(document.getElementById('sciviews.ko.port').value);
+	if (koPort != prefset.getDoublePref("sciviews.ko.port") ||
 		koType != sv.serverType) {
 		// Stop server with old config, if it is started
 		var isStarted = sv.socket.serverIsStarted;
 		if (isStarted) sv.socket.serverStop();
-		prefset.setStringPref("sciviews.ko.port", koPort);
+		prefset.setDoublePref("sciviews.ko.port", koPort);
 		prefset.setStringPref("sciviews.ko.type", koType);
+		
 		sv.serverType = koType;
 		// Start server with new config, if previous one was started
 		if (isStarted) sv.socket.serverStart();

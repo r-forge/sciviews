@@ -1,4 +1,4 @@
-.loadSaveSvOptions <- function ()
+.loadSvOptions <- function ()
 {
 	## Try loading SciViews options from ~/.SciViewsConfig.RData
 	argOption <- function(arg)
@@ -107,28 +107,12 @@
 		options(OutSep = .SciViewsConfig$OutSep)
 	if (is.null(getOption("OutSep")))
 		options(OutSep = ",")
-		
-	## Resave the whole config
-	.SciViewsConfig$ko.type <- getOption("ko.type")
-	.SciViewsConfig$ko.host <- getOption("ko.host")
-	.SciViewsConfig$ko.port <- getOption("ko.port")
-	.SciViewsConfig$ko.kotype <- getOption("ko.kotype")
-	.SciViewsConfig$ko.serve <- getOption("ko.serve")
-	.SciViewsConfig$ko.activate <- getOption("ko.activate")
-	.SciViewsConfig$ko.id <- getOption("ko.id")
-	.SciViewsConfig$R.id <- getOption("R.id")
-	.SciViewsConfig$R.initdir <- getOption("R.initdir")
-	.SciViewsConfig$width <- getOption("width")
-	.SciViewsConfig$OutDec <- getOption("OutDec")
-	.SciViewsConfig$OutSep <- getOption("OutSep")
-	## Save this file...
-	save(.SciViewsConfig, file = "~/.SciViewsConfig.RData")
 }
 
 .onLoad <- function (lib, pkg)
 {
 	## Make sure config is OK
-	.loadSaveSvOptions()
+	.loadSvOptions()
 	
 	## Create our SciViews task callback manager
 	## Should eliminate this???
@@ -153,10 +137,10 @@
 	req <- require
 	if (type == "http") {
 		req("svHttp", character.only = TRUE)
-		try(startHttpServer())
+		if (interactive()) try(startHttpServer())
 	} else {
 		req("svSocket", character.only = TRUE)
-		try(startSocketServer())
+		if (interactive()) try(startSocketServer())
 	}
 		
 	## This comes from svStart... and should really be placed here indeed!
@@ -354,19 +338,20 @@
 		assignTemp(".Last.sys", function () {
 			## Eliminate some known hidden variables from .GlobalEnv to prevent
 			## saving them in the .RData file
-#			if (exists(".required", envir = .GlobalEnv, inherits = FALSE))
-#				rm(.required, envir = .GlobalEnv, inherits = FALSE)
+			if (exists(".required", envir = .GlobalEnv, inherits = FALSE))
+				rm(list = ".required", envir = .GlobalEnv, inherits = FALSE)
 			## Note: .SciViewsReady is now recorded in TempEnv() instead of
 			## .GlobalEnv, but we leave this code for old workspaces...
-#			if (exists(".SciViewsReady", envir = .GlobalEnv, inherits = FALSE))
-#				rm(.SciViewsReady, envir = .GlobalEnv, inherits = FALSE)
+			if (exists(".SciViewsReady", envir = .GlobalEnv, inherits = FALSE))
+				rm(list = ".SciViewsReady", envir = .GlobalEnv, inherits = FALSE)
 			## If a R.initdir is defined, make sure to switch to it, so that
 			## the session's workspace and command history are written at the
 			## right place (in case of error, no change is made!)
 			try(setwd(getOption("R.initdir")), silent = TRUE)
 			## Clean up everything in Komodo
-	#		try(svKomodo::koCmd('window.setTimeout("sv.r.closed();", 1000);'),
-	#			silent = TRUE)
+			tryCatch(
+				svKomodo::koCmd("window.setTimeout(\"sv.r.closed();\", 1000);"),
+				error = function (e) invisible(NULL))
 		})
 
 		msg <- paste("Session directory is", dQuote(R.initdir))

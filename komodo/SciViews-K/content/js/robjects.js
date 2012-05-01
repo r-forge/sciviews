@@ -1,6 +1,6 @@
 // SciViews-K R objects explorer functions
 // Define the 'sv.robjects' tree and implement RObjectsOverlay functions
-// Copyright (c) 2009, Kamil Barton & Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2009-2012, K. Barton & Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // sv.robjects namespace (not intended for external use)
@@ -42,6 +42,9 @@ sv.robjects = {};
 	var cmdPattern = 'print(objList(id = "%ID%_%ENV%_%OBJ%", envir = "%ENV%",' +
 		' object = "%OBJ%", all.info = FALSE, compare = FALSE), sep = "' + sep +
 		'", eol = "\\n")';
+
+	var print = sv.cmdout.append;	/// XXX DEBUG
+	var clear = sv.cmdout.clear;	/// XXX DEBUG
 
 	// This should be changed if new icons are added
 	var iconTypes = ['array', 'character', 'data.frame', 'Date', 'dist',
@@ -290,7 +293,7 @@ sv.robjects = {};
 	}
 	
 	function _getObjListCommand (env, objName) {
-		var id = sv.pref.getPref("sciviews.ko.id", "sv");
+		var id = sv.prefs.getPref("sciviews.ko.id", "SciviewsK");
 		var cmd = cmdPattern.replace(/%ID%/g, id)
 			.replace(/%ENV%/g, new String(env).addslashes())
 			.replace(/%OBJ%/g, objName? objName.replace(/\$/g, "$$$$") : "");
@@ -576,12 +579,12 @@ sv.robjects = {};
 		document.getElementById(columnName)
 			.setAttribute("sortDirection", sortDirection);
 
-		if(!root || root == _this.treeData) {
+		if (!root || root == _this.treeData) {
 			// Sort packages always by name
 			this.treeData.sort(_sortComparePkgs);
 			for (var i in this.treeData) {
 				if (typeof (this.treeData[i].children) == "object")
-					_sortRecursive(this.treeData[i].children);
+					_sortRecursive(_this.treeData[i].children);
 			}
 		} else if (root.children) _sortRecursive(root.children);
 
@@ -619,16 +622,21 @@ sv.robjects = {};
 		var vd = this.visibleData;
 		var item = vd[idx];
 		if (!item) return;
+		
+		_this.selection.select(idx);
 		if (item.isList && !item.origItem.isOpen &&
 			!item.origItem.childrenLoaded) {
 			_addObject(item.origItem.env, item.origItem.fullName,
-				_parseSubObjectList, item);
+				this.parseObjListResult, item);
 			return;
 		}
 		var rowsChanged;
 		var iLevel = item.level;
 
-		if (!item.childrenLength) return;
+		if (!item.childrenLength) {
+			item.isContainer = item.origItem.isOpen = false;
+			return;
+		}
 
 		if (item.origItem.isOpen) { // Closing subtree
 			var k;
@@ -701,7 +709,7 @@ sv.robjects = {};
 	};
 
 	this.isContainerOpen = function (idx) {
-		return(this.visibleData[idx].origItem.isOpen);
+		return(_this.visibleData[idx].origItem.isOpen);
 	};
 
 	this.isContainerEmpty = function (idx) {
@@ -825,7 +833,7 @@ sv.robjects = {};
 			} else {
 				return(false);
 			}
-			pos = _this.searchPaths.indexOf(path);
+			pos = _this.searchPath.indexOf(path);
 			if (pos == -1) return(false);
 
 			document.getElementById("sciviews_robjects_searchpath_listbox")
@@ -873,20 +881,20 @@ sv.robjects = {};
 	// Callback to process the list of packages in the search path from R
 	this.processPackageList = function _processPackageList (data) {
 		if (data == "") return;
-		_this.searchPaths = data.replace(/[\n\r]/g, "").split(sep);
+		_this.searchPath = data.replace(/[\n\r]/g, "").split(sep);
 		_this.displayPackageList();
 	};
 
 	// Display the list of packages in the search path
 	this.displayPackageList = function () {
-		// refreshObjects is made optional and is true in this case
-		if (refreshObjects === undefined) refreshObjects = true;
 		var pack;
 		var node = document
 			.getElementById("sciviews_robjects_searchpath_listbox");
+		var selectedLabel = node.selectedItem? node.selectedItem.label : null;
+		
 		while (node.firstChild)
 			node.removeChild(node.firstChild);
-		var packs = _this.searchPaths;
+		var packs = _this.searchPath;
 		var selectedPackages = _this.treeData.map(function(x) x.name);
 		// Display at least .GlobalEnv
 		if (!selectedPackages.length) selectedPackages.push(".GlobalEnv");
@@ -913,7 +921,7 @@ sv.robjects = {};
 
 	// Clear the list of packages on the search path (when quitting R)
 	this.clearPackageList =  function () {
-		_this.searchPaths = [];
+		_this.searchPath = [];
 		_this.displayPackageList();
 		_this.parseObjListResult("Env=.GlobalEnv\nObj=\n");
 	}
@@ -936,7 +944,7 @@ sv.robjects = {};
 		}
 
 		if (!box.collapsed) {
-			//if (!_this.searchPaths.length) _this.getPackageList();
+			//if (!_this.searchPath.length) _this.getPackageList();
 			_this.smartRefresh();
 		}
 	}
@@ -1240,7 +1248,7 @@ sv.robjects = {};
 			// Select only objects:
 			obj = obj.filter(function (x) {
 				if (x.type != "object") {
-					_this.selection.toggleSelect(x.index); return false
+					_this.selection.toggleSelect(x.index); return(false)
 				} else {
 					return(true);
 				}
@@ -1271,8 +1279,8 @@ sv.robjects = {};
 			// PhG: I want the simplest syntax as possible
 			//var cmd = 'save(list = c(' + obj.map(function(x) '"' + x.name + '"')
 			//	.join(',')	+ '), file = "' + fileName.addslashes() + '")';
-			var cmd = 'save(' + obj.name.join(', ')	+ ', file = "' +
-				fileName.addslashes() + '")';
+			var cmd = 'save(list=c(' + obj.map(function(x) '"' + x.name + '"')
+				.join(',')	+ '), file = "' + fileName.addslashes() + '")';
 			sv.r.eval(cmd);
 			break;
 		
@@ -1321,9 +1329,9 @@ sv.robjects = {};
 				if (obj[i].env == ".GlobalEnv") {
 					cmds.push(action + "(" + obj[i].fullName + ")");
 				} else {
-					cmds.push(action + "evalq(" + obj[i].fullName +
+					cmds.push(action + "(evalq(" + obj[i].fullName +
 						", envir = as.environment(\"" +
-						obj[i].env.addslashes() + "\"))");
+						obj[i].env.addslashes() + "\")))");
 				}
 			}
 			sv.r.eval(cmds.join("\n"));
@@ -1492,7 +1500,7 @@ sv.robjects = {};
 			if (event.target.tagName != 'listitem')
 				return(false);
 
-			var text = _this.searchPaths[document
+			var text = _this.searchPath[document
 				.getElementById("sciviews_robjects_searchpath_listbox")
 				.selectedIndex];
 			transferData.data = new TransferData();
@@ -1521,11 +1529,12 @@ sv.robjects = {};
 			var listItem = listbox.selectedItem;
 			var pkg = listItem.getAttribute("label");
 
-			if (pkg == ".GlobalEnv" || pkg == "TempEnv") return;
+			if (pkg == ".GlobalEnv" || pkg == "TempEnv" || pkg == "Autoloads")
+				return;
 
 			sv.r.evalCallback(
 				'tryCatch(detach("' + pkg.addslashes() +
-				'"), error = function (e) cat("<error>"));',
+				'", unload = TRUE), error = function (e) cat("<error>"));',
 				function _packageListKeyEvent_callback (data) {
 					sv.log.debug(data);
 					if (data.trim() != "<error>") {

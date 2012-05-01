@@ -2624,14 +2624,17 @@ pattern CS = '_$NMSTART\d'              # inside cset
 pattern WS = '\s\t\r\n'                 # inside cset
 pattern OP = '!%&\(\)\*\+,-\/:;<=>\?@\[\]\^\{\}~|\$'
 
-# Initial IN_SSL_DEFAULT
+state IN_M_DEFAULT:
+## Transition to R code: about anything...
+/./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
+
 state IN_SSL_DEFAULT:
 
 # A special mode for function definition
 'function' : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER), => IN_SSL_FUNDEF
 
 # This is shebang line or the R wiki construct used for R output
-/^#!/ : paint(upto, SSL_DEFAULT), paint(include, SSL_COMMENT), => IN_SSL_OUTPUT
+/^#!/ : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_OUTPUT
 
 # One-line comments end at end-of-line
 '#' : paint(upto, SSL_DEFAULT),  => IN_SSL_COMMENT
@@ -2643,6 +2646,10 @@ state IN_SSL_DEFAULT:
 # We use also SSL_VARIABLE style to colorize function arguments (but also
 # assignations with '='). That is: arg/var = (but not var ==)
 /[$NMSTART](?=[$CS]*[$WS]*\=[^\=])/ : paint(upto, SSL_DEFAULT), => IN_SSL_ARGUMENT
+
+# Specials case of SciViews::R("Main title") where we want to colorize
+# Main title as a R wiki M_PI element
+"SciViews::R" : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_DOCHEADER
 
 # SSL_VARIABLE also colorizes namespaces ns in ns::fun() or ns:::fun()
 /[$NMSTART](?=[$CS]*[$WS]*::)/ : paint(upto, SSL_DEFAULT), => IN_SSL_NAMESPACE
@@ -2672,6 +2679,38 @@ state IN_SSL_DEFAULT:
 # Support high-bit characters in delimiter strings.
 /%[$CS$OP]*%/ : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 /[$OP]/ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_OP1
+
+
+#### The special SciViews::R() header ##########################################
+state IN_SSL_DOCHEADER:
+# We enter the doc header construct => must have an opening brace
+/[$WS]+/ : #stay, spaces allowed here
+'(' : paint(upto, SSL_DEFAULT), paint(include, SSL_OPERATOR), => IN_SSL_DOCHEADER2
+/./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
+
+state IN_SSL_DOCHEADER2:
+/[$WS]+/ : #stay, spaces allowed here
+# Enter string mode for main title
+/[^"]/ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT # Should never occur
+'"' : paint(upto, SSL_DEFAULT), paint(include, SSL_STRING), => IN_SSL_DOCTITLE
+
+state IN_SSL_DOCTITLE:
+'"' : paint(upto, M_PI), paint(include, SSL_STRING), => IN_SSL_DEFAULT
+/\\['"nrtbafv\\]/ : #stay, Don't miscount backslash at end and/or valid escape characters
+/\\(?=0{1,2})(?![1-8])/ : paint(upto, M_PI), => IN_SSL_DOCTITLE_BADESC # \0, \00, or \000 not accepted since R 2.8.0
+/\\(?=[0-8]{1,3})/ : #stay, this is valid octal code
+/\\(?=x[0-9a-fA-F]{1,2})/ : #stay, this is valid hex code
+/\\(?=u[0-9a-fA-F]{1,4})/ : #stay, this is valid unicode
+/\\(?=u\{[0-9a-fA-F]{1,4}\})/ : #stay, this is valid {unicode}
+/\\(?=U[0-9a-fA-F]{1,8})/ : #stay, this is valid multibyte unicode
+/\\(?=U\{[0-9a-fA-F]{1,8}\})/ : #stay, this is valid {multibyte unicode}
+/\\/ : paint(upto, M_PI), => IN_SSL_DOCTITLE_BADESC
+/[\r\n]/ : #stay, R strings are multi-line
+ 
+state IN_SSL_DOCTITLE_BADESC:
+/0{1,3}/ : paint(include, SSL_REGEX), => IN_SSL_DOCTITLE # \0, \00, or \000 not accepted since R 2.8.0
+/[uU]\{[^\}]*\}/ : paint(include, SSL_REGEX), => IN_SSL_DOCTITLE # wrong \u{xxxx} or \U{yyyyyyyy}
+/./ : paint(include, SSL_REGEX), => IN_SSL_DOCTITLE # any other wrong escaped character
 
 
 #### "Non-identifiers" names (slot names and list elements) ####################
@@ -2705,7 +2744,7 @@ state IN_SSL_NAMESPACE:
 # This is used in R Wiki to denote R output
 state IN_SSL_OUTPUT: # SSL_COMMENTBLOCK not different from SSL_COMMENT
 #/[\r\n]/ : paint(upto, SSL_COMMENTBLOCK), => IN_SSL_DEFAULT
-/[\r\n]/ : paint(upto, SSL_STRING), => IN_SSL_DEFAULT # Use SSL_STRING instead
+/[\r\n]/ : paint(upto, SSL_REGEX), => IN_SSL_DEFAULT # Use SSL_STRING instead
 
 state IN_SSL_COMMENT:
 /[\r\n]/ : paint(upto, SSL_COMMENT), => IN_SSL_DEFAULT

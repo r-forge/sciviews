@@ -131,7 +131,7 @@ sv.r.test = function sv_RTest (showVersion /*= false*/, testVersion /*= false*/,
 		res = sv.socket.rCommandSync(
 			'cat(localeToCharset()[1], R.version.string, sep = "%%%")');
 		if (res == null) { // If R is not running...
-			sv.r.running = false;
+			window.setTimeout("sv.command.updateRStatus(false);", 500);
 			// Indicate R should be started, or... is starting!
 			if (isStarting) {
 				sv.cmdout.message("R is starting... please wait", 0, false);
@@ -141,6 +141,9 @@ sv.r.test = function sv_RTest (showVersion /*= false*/, testVersion /*= false*/,
 			}
 			return(false);
 		} else {
+			// Update menus...
+			window.setTimeout("sv.command.updateRStatus(true);", 500);
+			
 			// Split results
 			var result = res.split("%%%");
 			// TODO: check we have two results and they match expected strings
@@ -162,7 +165,6 @@ sv.r.test = function sv_RTest (showVersion /*= false*/, testVersion /*= false*/,
 			// Change message in R Output
 			if (showVersion)
 				sv.cmdout.message(RversionString + " is ready!");
-			sv.r.running = true;
 			return(true);
 		}
 	} catch (e) {
@@ -174,7 +176,7 @@ sv.r.test = function sv_RTest (showVersion /*= false*/, testVersion /*= false*/,
 
 // Function called when R is closed
 sv.r.closed = function () {
-	sv.r.running = false;
+	window.setTimeout("sv.command.updateRStatus(false);", 500);
 	// Blank R output
 	sv.cmdout.message("R has quit!", 0, false);
 	// Reset statusbar
@@ -867,9 +869,9 @@ sv.r.loadWorkspace = function (file, attach, callback, param) {
 	// Ask for the filename if not provided
 	if (!file) {
 		file = sv.fileOpen("", ".RData",
-		sv.translate("Browse for R workspace file"),
+			sv.translate("Browse for R workspace file"),
 		    [sv.translate("R workspace") + " (*.RData)|*.RData"], true);
-	} else if (typeof file == "string") {
+	} else if (typeof(file == "string")) {
 		file = file.split(/[;,]/);
 	}
 	if (!file || !file.length) return;
@@ -904,9 +906,10 @@ sv.r.loadHistory = function (file, title) {
 	// Ask for the filename if not provided
 	if (typeof(file) == "undefined") {
 		if (typeof(title) == "undefined")
-			title = 'Load the history from a file';
-		file = ko.filepicker.openFile("", ".Rhistory", title);
-		if (file == null) return;	// User clicked cancel
+		file = sv.fileOpen("", ".Rhistory",
+			sv.translate("Load an R history from a file"),
+		    [sv.translate("R history") + " (*.Rhistory)|*.Rhistory"], false);
+		if (!file || !file.length) return;	// User clicked cancel
 	}
 	sv.r.eval('loadhistory("' + file.addslashes() + '")');
 }
@@ -1562,6 +1565,7 @@ sv.r.kpf2pot = function (kpfFile) {
 			var title = 'Select a Komodo project file (.kpf) to make .pot file';
 			var Filters = [];
 			Filters.push("Komodo Project");
+			// TODO: in Ko6, openFile() is deprecated in favor of browseForFile()
 			kpfFile = ko.filepicker.openFile("", "project.kpf", title,
 				null, Filters);
 		}
@@ -1581,6 +1585,7 @@ sv.r.kpz2pot = function (kpzFile) {
 			var title = 'Select a Komodo package file (.kpz) to make .pot file';
 			var Filters = [];
 			Filters.push("Komodo Package");
+			// TODO: in Ko6, openFile() is deprecated in favor of browseForFile()
 			kpzFile = ko.filepicker.openFile("", "package.kpz", title,
 				null, Filters);
 		}
@@ -1600,6 +1605,7 @@ sv.r.kpfTranslate = function (kpfFile) {
 			var title = 'Select a Komodo project file (.kpf) to translate';
 			var Filters = [];
 			Filters.push("Komodo Project");
+			// TODO: in Ko6, openFile() is deprecated in favor of browseForFile()
 			kpfFile = ko.filepicker.openFile("", "project.kpf", title,
 				null, Filters);
 		}
@@ -1619,6 +1625,7 @@ sv.r.kpzTranslate = function (kpzFile) {
 			var title = 'Select a Komodo package file (.kpz) to translate';
 			var Filters = [];
 			Filters.push("Komodo Package");
+			// TODO: in Ko6, openFile() is deprecated in favor of browseForFile()
 			kpzFile = ko.filepicker.openFile("", "package.kpz", title,
 				null, Filters);
 		}

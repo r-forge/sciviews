@@ -31,6 +31,17 @@
  the terms of any one of the MPL, the GPL or the LGPL.
 
  ***** END LICENSE BLOCK ***** -->
+ 
+<!--
+TODO:
+* Help called twice for help on selection, list R demos & browse R vignettes
+* Ctrl+Shift+R does not work in help window
+* Search for topic from help window is broken
+* Purge history => navigation arrows are not grayed out (although they are inactive)
+* Add Rseek.org, R blogger, Crantastic + other R web sites to the list
+* It seems that this window is at the origin of a bug that prevents Komodo Edit
+  to shut down on Windows and Linux
+-->
 
 <!DOCTYPE overlay PUBLIC "-//MOZILLA//DTD XUL V1.0//EN"
 	"http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" [

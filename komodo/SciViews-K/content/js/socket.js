@@ -649,7 +649,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 				" unmanaged error");
 		}
 	}
-		
+	
 	// Core function for the SciViews-K socket/file server
 	// Create the _serverSocket object
 	// TODO: it does not handle correctly conversion
@@ -658,8 +658,9 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 		if (_this.debug) sv.log.debug("Socket/file server: serverStart");
 	
 		try {
-			_serverSocket.close();
+			if (typeof(_serverSocket) != "undefined") _serverSocket.close();
 		} catch(e) {
+			// Note that this is not an error => activate this only for debugging
 			sv.log.exception(e, "sv.socket.serverStart() failed to close the" +
 				" socket/file before reopening it");
 		}
@@ -763,8 +764,8 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 					try {
 						_serverSocket.close();
 					} catch(e) {
-					sv.log.exception(e, "Socket server: serverStop() cannot" +
-						" close the socket", true);
+						sv.log.exception(e, "Socket server: serverStop()" +
+						" cannot close the socket", true);
 					}
 				}
 			}
@@ -827,5 +828,5 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 }).apply(sv.socket);
 
 // Launch the SciViews socket server on Komodo startup
-addEventListener("load", function()
-	window.setTimeout("sv.socket.serverStart();", 500), false);
+//addEventListener("load", function()
+//	window.setTimeout("sv.socket.serverStart();", 500), false);

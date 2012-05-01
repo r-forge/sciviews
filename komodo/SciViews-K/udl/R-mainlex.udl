@@ -40,12 +40,26 @@
 
 language R
 
+include "R2wiki.udl"
+include "wiki2R.udl"
+
+initial IN_SSL_DEFAULT
+
 include "Rlex.udl"
+include "wikilex.udl"
 
-family markup
-sublanguage HTML # Not used
-initial IN_M_DEFAULT
-
-# Need to get into a state with keywords -- use SSL
-state IN_M_DEFAULT:
-/./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
+#family markup
+#sublanguage HTML # Not used
+#initial IN_M_DEFAULT
+#
+## Need to get into a state with keywords -- use SSL
+#state IN_M_DEFAULT:
+## Transition to a doc chunk
+## Enter string mode
+## /^\!"[\r\n]/
+#/^[!]"/ : paint(include, M_TAGSPACE) => IN_M_WIKI_START
+## Transition to R code: about anything...
+#/./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
+#
+#state IN_SSL_DEFAULT:
+#/^[!]"/ : paint(include, M_TAGSPACE) => IN_M_WIKI_START

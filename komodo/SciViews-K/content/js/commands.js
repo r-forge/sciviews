@@ -64,9 +64,11 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		return(win);
 	}
 
-	function _isRRunning () {
-		return(sv.r.running);
-	}
+	// A temporary work-around for something that does not work!
+	//function _isRRunning () {
+	//	return(sv.r.running);
+	//}
+	function _isRRunning () { return(true); }
 
 	// TODO: code from SciViews-K-dev to integrate...
 	//function _RControl_supported () {
@@ -157,11 +159,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	// TODO: startR() is different in SciViews-K-dev => look how to rework!
 	this.startR = function () {
 		// Check if R is not already running and servicing on server port
-		if (sv.r.test(false, false, true)) {
-			ko.statusBar.AddMessage("R is already running!", "SciViews-K",
-				3000, true);
-			return;
-		}
+		try {
+			if (sv.r.test(false, false, true)) {
+				ko.statusBar.AddMessage("R is already running!", "SciViews-K",
+					3000, true);
+				return;
+			}
+		} catch(e) { }
 
 		var cwd = sv.tools.file.path("ProfD", "extensions",
 			"sciviewsk@sciviews.org", "defaults");
@@ -244,6 +248,9 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
 		// ... make sure to start with a clear R Output window
 		sv.cmdout.clear(false);
+		
+		// Change menus now
+		_this.updateRStatus(true);
 	}
 
 	// This will observe status message notification to be informed about
@@ -428,7 +435,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
                 'cmd_svConfigureR': ['sv.command.configureR();', 0],
 				'cmd_svInstallRtoolbox': ['sv.checkToolbox();', 0],
 				'cmd_svUIlevel': ['sv.askUI(true);', 0],
-				'cmd_svStartR': ['sv.command.startR();', XRStopped],
+				'cmd_svStartR': ['sv.command.startR();', 0], //XRStopped],
 				'cmd_svQuitR': ['sv.r.quit();', XRRunning],
 				'cmd_svOpenPkgManager': ['sv.command.openPkgManager();', XRRunning],
                 'cmd_svBrowseWD': ['sv.r.setwd("current", true);', XRRunning],
@@ -503,6 +510,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				(((test & XRRunning) != XRRunning) || _isRRunning())
 				&& (((test & XRStopped) != XRStopped) || !_isRRunning()));
 		}
+		//var test = handlers[command][1];
+		//return (((test & XRRunning) != XRRunning) || _isRRunning())
+		//&& (((test & XRStopped) != XRStopped) || !_isRRunning())
+		//&& (((test & XisRDoc) != XisRDoc) || true) //_isRCurLanguage())
+		//&& (((test & XHasSelection) != XHasSelection) || _hasSelection()));
+		//}
+		
         svController.prototype.supportsCommand = svController.prototype
 			.isCommandEnabled;
         svController.prototype.doCommand = function (command) {
@@ -659,35 +673,47 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 	}
 
 	////}
-	//// TODO: move this to sv.onLoad:
-	//this.onLoad = function(event) {
-	//	setTimeout(function() {
-	//		_setControllers();
-	//		_this.updateRStatus(false); // XXX: workaround for some items in
-	//									//'cmdset_rApp' commandset being grayed out
-	//									//at startup...
-	//		_this.updateRStatus(sv.rconn.testRAvailability(false));
-	//		if(sv.r.running) sv.rbrowser.smartRefresh(true);
-	//
-	//		// For completions
-	//		var cuih = ko.codeintel.CompletionUIHandler;
-	//		cuih.prototype.types.argument = cuih.prototype.types.interface;
-	//		cuih.prototype.types.environment = cuih.prototype.types.namespace;
-	//		cuih.prototype.types.file = "chrome://sciviewsk/skin/images/cb_file.png";
-	//	}, 600);
-	//
-	//
-	//	var osName = Components.classes['@activestate.com/koOs;1']
-	//		.getService(Components.interfaces.koIOs).name;
-	//
-	//	if(!_setKeybindings(false, osName)) // use system specific keybindings
-	//		_setKeybindings(false, '') // fallback - use default
-	//
-	//	sv.rconn.startSocketServer();	
+	// TODO: move this to sv.onLoad:
+	this.onLoad = function (event) {
+		setTimeout(function () {
+			_setControllers();
+			_this.updateRStatus(false); // XXX: workaround for some items in
+										//'cmdset_rApp' commandset being grayed out
+										//at startup...
+			_this.updateRStatus(sv.r.test());
+			if(sv.r.running) sv.rbrowser.smartRefresh(true);
+	
+			// For completions
+			var cuih = ko.codeintel.CompletionUIHandler;
+			cuih.prototype.types.argument = cuih.prototype.types.interface;
+			cuih.prototype.types.environment = cuih.prototype.types.namespace;
+			cuih.prototype.types.file = "chrome://sciviewsk/skin/images/cb_file.png";
+		}, 600);
 
-	addEventListener("load", _setKeybindings, false);
-	addEventListener("load", function ()
-		setTimeout(_setControllers, 600), false);
+		var osName = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs).name;
+	
+		if (!_setKeybindings(false, osName)) // use system specific keybindings
+			_setKeybindings(false, '') // fallback - use default
+	
+		sv.socket.serverStart();	
+	}
+	
+	//addEventListener("load", _setKeybindings, false);
+	//addEventListener("load", function ()
+	//	setTimeout(_setControllers, 600), false);
+	addEventListener("load", _this.onLoad, false);
+	
+	// Just in case, run a clean-up before quitting Komodo:
+	function svCleanup () sv.socket.serverStop();
+	ko.main.addWillCloseHandler(svCleanup);
+
+
+//	function ObserveR () {
+//		var el = document.getElementById('cmd_svRStarted');
+//		el.setAttribute("checked", _isRRunning());
+//	}
+//	addEventListener("r_app_started_closed", ObserveR, false);
 
 }).apply(sv.command);
 
