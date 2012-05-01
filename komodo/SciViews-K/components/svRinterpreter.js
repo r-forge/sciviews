@@ -16,6 +16,7 @@
 // R.complete(code); 				// Get completion list for this code
 ////////////////////////////////////////////////////////////////////////////////
 // TODO: rework calltip() and complete() in sv.r to use this one.
+// TODO: I sometimes got an error, 'callTipItem is undefined'!
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 

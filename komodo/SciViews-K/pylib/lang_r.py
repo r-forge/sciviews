@@ -56,11 +56,7 @@ from codeintel2.accessor import AccessorCache, KoDocumentAccessor
 
 #from SilverCity import find_lexer_module_by_id, PropertySet, WordList
 
-from SilverCity.ScintillaConstants import {
-    SCE_UDL_SSL_DEFAULT, SCE_UDL_SSL_IDENTIFIER, SCE_UDL_SSL_OPERATOR
-    SCE_UDL_SSL_VARIABLE, SCE_UDL_SSL_WORD, SCE_UDL_SSL_COMMENT,
-    SCE_UDL_SSL_COMMENTBLOCK, SCE_UDL_SSL_STRING
-}
+from SilverCity.ScintillaConstants import SCE_UDL_SSL_DEFAULT, SCE_UDL_SSL_IDENTIFIER, SCE_UDL_SSL_OPERATOR, SCE_UDL_SSL_VARIABLE, SCE_UDL_SSL_WORD, SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK, SCE_UDL_SSL_STRING
 
 try:
     from xpcom.server import UnwrapObject

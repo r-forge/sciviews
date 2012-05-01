@@ -26,4 +26,4 @@ binding cmd_svRHelpSearch Alt+Shift+F1
 
 binding cmd_svRObjRefreshDisplay Meta+P
 binding cmd_svRActiveDF Meta+D
-binding cmd_svRLoadDF Meta+L
+#No! This is cmd_gotoLine! binding cmd_svRLoadDF Meta+L

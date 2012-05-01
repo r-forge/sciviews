@@ -58,7 +58,7 @@ class KoRLanguage(KoUDLLanguage):
     defaultExtension = '.R'
     primary = 1
     lang_from_udl_family = {
-        'SSL': 'R'
+        'SSL': None
     }
 
     commentDelimiterInfo = {
@@ -86,7 +86,17 @@ class KoRLanguage(KoUDLLanguage):
 a <- data.frame(x = 1:10, y = rnorm(10))
 cube(a$x)
 plot(y ~ x, data = a, col = 'blue', main = "Plot of \\"a\\"\\0")
-a$y <- NULL; a"""
+a$y <- NULL; a
+
+!"
+== Wiki block
+
+* Item 1,
+* Item 2.
+
+This is a paragraph of **bold** ans //italic// text.
+!"
+"""
 
     # Overriding these base methods to work around bug 81066.
     def get_linter(self):

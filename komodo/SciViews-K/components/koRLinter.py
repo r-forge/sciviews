@@ -86,7 +86,6 @@ class KoRCompileLinter:
         
         Raise an exception if there is a problem.
         """        
-        # TODO: R does not like utf-8 produced by Komodo => use a different encoding?
         text = request.content.encode("utf-8")
 
         # Retrieve the path to R...
@@ -108,7 +107,7 @@ class KoRCompileLinter:
 
         p = None
         try:
-            argv = [R] + ["--slave"] + ["-e", "if(isTRUE(require('svTools',quietly=TRUE)))lint('" + os.path.basename(Rfilename) + "',type='flat',encoding='utf8')"]
+            argv = [R] + ["--slave"] + ["-e", "try(Sys.setlocale('LC_CTYPE','UTF-8'),silent=TRUE);if(isTRUE(require('svTools',quietly=TRUE)))lint('" + os.path.basename(Rfilename) + "',type='flat',encoding='utf8')"]
             env = koprocessutils.getUserEnv()
             cwd = os.path.dirname(Rfilename)
             p = process.ProcessOpen(argv, cwd=cwd, env=env)
@@ -140,6 +139,7 @@ class KoRCompileLinter:
                 columnNo = int(items[2])
                 result.lineStart = result.lineEnd = lineNo
                 result.columnStart = columnNo
+                # TODO: this sometimes raises an error!?
                 result.columnEnd = len(datalines[result.lineEnd-1]) + 1
                 # Get the error message
                 if items[3]:

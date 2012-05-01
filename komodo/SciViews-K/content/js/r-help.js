@@ -10,6 +10,7 @@
 						// handle "javascript:" commands.
 // original code located in chrome://komodo/content/launch.js
 ////////////////////////////////////////////////////////////////////////////////
+// TODO: check if this works!!!
 
 // This should be kept updated with new versions of the original function
 ko.help.language = function () {
@@ -52,6 +53,7 @@ ko.help.language = function () {
     }
 
 	if (command.search(/^\s*javascript:\s*(\S.*)\s*$/) != -1)  {
+		// Note that in Komodo 6, interpolateStrings is deprecated in favor of interpolateString!
 		command = ko.interpolate.interpolateStrings(RegExp.$1);
 		eval(command);
 	} else {

@@ -1,5 +1,16 @@
 = svKomodo News
 
+== Changes in svKomodo 0.9-57
+
+* svKomodo creates now at loading a .Last.sys() function in TempEnv indicating
+  to Komodo Edit that R has quit. This is required to update R menus there.
+  
+* The SciViews-K configuration file is not saved from here anymore (CRAN
+  now does not accept packages that write files elsewhere than in R temp dir).
+  This configuration file is now created by the SciViews-K Komodo plugin, in
+  svStart.R.
+
+
 == Changes in svKomodo 0.9-56
 
 * NEWS file reworked to use the new Rd format.

@@ -37,7 +37,7 @@ if (sv.prefs === undefined) sv.prefs = {};
 		"sciviews.r.port": 8888,
 		"sciviews.r.host": "127.0.0.1",
 		"sciviews.r.interpreter": "",
-		//"sciviews.r.args": "--quiet",
+		"sciviews.r.args": "--quiet",
 		//"sciviews.r.auto-start": false,
 		"sciviews.r.batchinterp": "",
 	    "r.csv.dec": ".",
@@ -175,7 +175,7 @@ if (sv.prefs === undefined) sv.prefs = {};
 	
 	// Simplify storage of default tooltips for arguments in interpolation queries
 	this.tip = function (arg, tip) {
-		_this.set("dialog-tip-" + arg, tip, true);
+		_this.setPref("dialog-tip-" + arg, tip, true);
 	}
 
 }).apply(sv.prefs);

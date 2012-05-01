@@ -1,6 +1,19 @@
 \name{NEWS}
 \title{NEWS file for the svKomodo package}
 
+\section{Changes in version 0.9-57}{
+	\itemize{
+    \item{ svKomodo creates now at loading a \code{.Last.sys()} function in
+		 \code{TempEnv} indicating to Komodo Edit that R has quit. This is required
+		 to update R menus there. }
+	
+		\item{ The SciViews-K configuration file is not saved from here anymore
+			(CRAN now does not accept packages that write files elsewhere than in R
+			temp dir). This configuration file is now created by the SciViews-K Komodo
+			plugin, in \preformatted{svStart.R}. }
+  }
+}
+
 \section{Changes in version 0.9-56}{
 	\itemize{
     \item{ NEWS file reworked to use the new Rd format. }

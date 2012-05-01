@@ -68,15 +68,20 @@ type = c("js", "rjsonp", "output"), pad = NULL, ...)
 			Encoding(res) <- "UTF-8"
 		} else res <- character(0)	
 	} else { # This must be a socket server
-		tryCatch(con <- socketConnection(host = host, port = port,
-			blocking = TRUE), warning = function(e) {
+		tryCatch({
+				con <- socketConnection(host = host, port = port,
+					blocking = TRUE)
+				writeLines(cmd, con)
+				res <- readLines(con)
+				close(con)
+			}, warning = function (e) {
 				stop(simpleError("Komodo socket server is not available!",
 				quote(koCmd)))
 		})
-		ret <- try(writeLines(cmd, con), silent = TRUE)
-		if (!inherits(ret, "try-error"))
-			res <- try(readLines(con), silent = TRUE)
-		try(close(con), silent = TRUE)
+#		ret <- try(writeLines(cmd, con), silent = TRUE)
+#		if (!inherits(ret, "try-error"))
+#			res <- try(readLines(con), silent = TRUE)
+#		try(close(con), silent = TRUE)
 	}
 	options(timeout = otimeout)
     return(res)

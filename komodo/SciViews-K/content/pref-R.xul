@@ -33,7 +33,7 @@
 
 	***** END LICENSE BLOCK ***** -->
 
-<!-- SciViews-K preference page -->
+<!-- SciViews-K preference page to configure R interpreter -->
 
 <?xml-stylesheet href="chrome://global/skin" type="text/css"?>
 <?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>
@@ -45,8 +45,8 @@
 <?xml-stylesheet href="chrome://komodo/skin/prefs/prefs.css" type="text/css"?>
 
 <window xmlns:html="http://www.w3.org/1999/xhtml"
- xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	class="kodialog" orient="vertical" onload="PrefR_OnLoad(event);">
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	class="kodialog" orient="vertical" onload="PrefR_OnLoad();">
 
 	<script src="chrome://komodo/content/library/trace.js" type="application/x-javascript"/>
 	<script src="chrome://komodo/content/library/logging.js" type="application/x-javascript"/>
@@ -58,7 +58,7 @@
 	
 	<box class="kobox-smallheader" title="R interpreter configuration"/>
 	
-	<vbox flex="1" class="autoscroll">	
+	<vbox id="r-prefs-vbox" flex="1" class="autoscroll">	
 		<groupbox orient="vertical">
 			<caption label="Default R Interpreter"/>
 			
@@ -130,14 +130,14 @@
 					<row align="center">
 						<label value="Decimal separator" control="r.csv.dec"/>
 						<menulist pref="true" id="r.csv.dec"
-							values=", ." persist="values" maxValues="3">
+							items=", ." persist="items" maxValues="3">
 							<menupopup />
 						</menulist>
 						<label value="CSV field separator" control="r.csv.sep" />
 						<menulist pref="true" id="r.csv.sep" editable="true"
 							onkeyup="if (event.keyCode == 13) PrefR_editMenulist(this);"
 							onblur="PrefR_editMenulist(this);"
-							values=", ; \t" persist="values" maxValues="5">
+							items=", ; \t" persist="items" maxValues="5">
 							<menupopup />
 						</menulist>
 					</row>
@@ -161,7 +161,7 @@
 		</groupbox>
 	
 		<groupbox orient="vertical"  align="left">
-			<caption label="Miscellanous"/>
+			<caption label="Miscellaneous"/>
 			<label value="Startup packages"/>
 	
 			<vbox align="left">
@@ -210,9 +210,9 @@
 			<hbox align="center">
 				<label value="Server type:" control="sciviews.r.type"/>
 				<menulist pref="true" id="sciviews.r.type"
-					values="http socket" persist="values">
+					items="http socket" persist="items">
 					<menupopup />
-				</menulist>
+				</menulist>				
 			</hbox>
 			
 			<grid>
@@ -238,7 +238,7 @@
 			<hbox align="center">
 				<label value="Client type:" control="sciviews.ko.type"/>
 				<menulist pref="true" id="sciviews.ko.type"
-					values="file socket" persist="values">
+					items="file socket" persist="items">
 					<menupopup />
 				</menulist>
 			</hbox>		

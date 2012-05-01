@@ -80,7 +80,7 @@ sv.__defineGetter__("version", function () sv._version);
 
 sv.showVersion = true;
 
-sv._compareVersions = function(a, b) Components
+sv._compareVersion = function(a, b) Components
 	.classes["@mozilla.org/xpcom/version-comparator;1"]
 	.getService(Components.interfaces.nsIVersionComparator).compare(a, b);
 
@@ -511,10 +511,12 @@ sv.helpURL = function (URL) {
 				sv.alert(sv.translate("Nothing is selected!"));
 				return(false);
 			} else {
+				// Note that in Komodo 6, interpolateStrings is deprecated in favor of interpolateString!
 				sel = ko.interpolate.interpolateStrings('%W');
 			}
 		} else {
 			// Get the URL-escaped selection
+			// Note that in Komodo 6, interpolateStrings is deprecated in favor of interpolateString!
 			sel = ko.interpolate.interpolateStrings('%S');
 		}
 		var helpURL = URL.replace("<keyword>", sel);
