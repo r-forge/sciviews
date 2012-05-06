@@ -52,7 +52,8 @@ menuItems(menuname)
   the \preformatted{README} file in the \preformatted{ctxmenu} download.
   
   On Mac OS X, these functions are not implemented yet (but see source of the
-  package for experimental code commented out).
+  package for experimental code commented out and try the JGR version for a
+  first implementation there).
   %On Mac OS X, AppleScript custom application folder is used by default. It
   %can be used only with R.app and you can access it through Mac script menu
   %displayed in menu bar (to activate it, open Utilities -> AppleScript editor,

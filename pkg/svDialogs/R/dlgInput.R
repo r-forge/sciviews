@@ -74,7 +74,7 @@ default = "", ..., gui = .GUI)
 {
     ## Display a modal message with native Mac dialog box
 	if (.Platform$GUI == "AQUA") app <- "(name of application \"R\")" else
-		app <- "\"Terminal\""
+		if (.isJGR()) app <- "\"JGR\"" else app <- "\"Terminal\""
 	## Avoid displaying warning message when the user clicks on 'Cancel'
 	owarn <- getOption("warn")
 	on.exit(options(warn = owarn))

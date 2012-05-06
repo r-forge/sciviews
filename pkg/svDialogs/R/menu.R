@@ -1,6 +1,7 @@
 ## Menu functions
 .menuClear <- function ()
 {
+	if (.isJGR()) return(invisible(NULL))
 	res <- switch(Sys.info()["sysname"],
 		Windows = NULL,
 		Darwin = .macMenuClear(),
@@ -11,6 +12,7 @@
 
 .menuFileInit <- function ()
 {
+		if (.isJGR()) return(invisible(NULL))
 		res <- switch(Sys.info()["sysname"],
 		Windows = NULL,
 		Darwin = NULL, # TODO: should we have a default menu?
@@ -36,6 +38,7 @@
 	if (length(menuname) != 1)
 		stop("'menuname' must be a single character string")
 	
+	## TODO: this is not allowed in JGR!
 	## $ConsoleMain/<menu> is equivalent, and thus, transformed into <menu>
 	menuname <- sub("^\\$ConsoleMain/", "", menuname)
 	
@@ -55,6 +58,7 @@
 
 menuNames <- function ()
 {
+	if (.isJGR()) return(.jgrMenuNames())
 	res <- switch(Sys.info()["sysname"],
 		Windows = winMenuNames(),
 		Darwin = .macMenuNames(),
@@ -67,6 +71,7 @@ menuItems <- function (menuname)
 {
 	menuname <- .checkMenuName(menuname)
 	
+	if (.isJGR()) return(.jgrMenuItems(menuname))
 	res <- switch(Sys.info()["sysname"],
 		Windows = winMenuItems(menuname),
 		Darwin = .macMenuItems(menuname),
@@ -79,6 +84,7 @@ menuAdd <- function (menuname)
 {
 	menuname <- .checkMenuName(menuname)
 	
+	if (.isJGR()) return(invisible(.jgrMenuAdd(menuname)))
 	res <- switch(Sys.info()["sysname"],
 		Windows = winMenuAdd(menuname),
 		Darwin = .macMenuAdd(menuname),
@@ -91,6 +97,7 @@ menuAddItem <- function (menuname, itemname, action)
 {
 	menuname <- .checkMenuName(menuname)
 	
+	if (.isJGR()) return(invisible(.jgrMenuAddItem(menuname, itemname, action)))
 	res <- switch(Sys.info()["sysname"],
 		Windows = .winMenuAddItem(menuname, itemname, action),
 		Darwin = .macMenuAddItem(menuname, itemname, action),
@@ -103,6 +110,7 @@ menuDel <- function (menuname)
 {
 	menuname <- .checkMenuName(menuname)
 	
+	if (.isJGR()) return(invisible(.jgrMenuDel(menuname)))
 	res <- switch(Sys.info()["sysname"],
 		Windows = try(winMenuDel(menuname), silent = TRUE),
 		Darwin = .macMenuDel(menuname),
@@ -115,12 +123,490 @@ menuDelItem <- function (menuname, itemname)
 {
 	menuname <- .checkMenuName(menuname)
 	
+	if (.isJGR()) return(invisible(.jgrMenuDelItem(menuname, itemname)))
 	res <- switch(Sys.info()["sysname"],
 		Windows = try(winMenuDelItem(menuname, itemname), silent = TRUE),
 		Darwin = .macMenuDelItem(menuname, itemname),
 		.unixMenuDelItem(menuname, itemname)
 	)
 	return(invisible(res))
+}
+
+
+## JGR menus manipulation functions
+## The default menus in JGR (for consistence with other implementations, we
+## don't want to see them!)
+.jgrDefaultMenus <-
+	c("File", "Edit", "Workspace", "Packages & Data", "Window", "Help")
+
+.jgrMenuMem <- function ()
+{
+	## Get an environment with info about JGR menus I cannot get otherwise
+	## Basically, I keep track of two things here:
+	## 1) which menu action is related to which menu entry
+	## 2) for separators, names can be any number of '-', but it is only '-'
+	##    in JGR => keep track of the correspondance!
+	mnu <- getTemp(".jgrMenuMem")
+	if (is.null(mnu)) {
+		mnu <- new.env()
+		assignTemp(".jgrMenuMem", mnu) 
+	}
+	return(mnu)
+}
+
+.jgrMenuMemAdd <- function (menuname, itemname, action)
+{
+	e <- .jgrMenuMem()
+	e[[paste(menuname, itemname, sep = "//")]] <- action
+}
+
+.jgrMenuMemGet <- function (menuname, itemname)
+{
+	e <- .jgrMenuMem()
+	e[[paste(menuname, itemname, sep = "//")]]
+}
+
+.jgrMenuMemDel <- function (menuname, itemname)
+{
+	e <- .jgrMenuMem()
+	item <- paste(menuname, itemname, sep = "//")
+	if (exists(item, envir = e, inherits = FALSE)) rm(list = item, envir = e)	
+}
+
+## I redefine the jgr.XXX() function here because I don't want to depend
+## on JGR in this package (too much trouble on install of JGR and I never
+## want to force users of svDialogs to install JGR)
+.jgr.register.function <- function (fun) 
+{
+    if (is.null(.GlobalEnv$.jgr.user.functions)) 
+        .GlobalEnv$.jgr.user.functions <- list()
+    fnc <- length(.GlobalEnv$.jgr.user.functions) + 1
+    .GlobalEnv$.jgr.user.functions[[fnc]] <- fun
+    paste(".jgr.user.functions[[", fnc, "]]()", sep = "")
+}
+
+.jgr.getMenuNames <- function () 
+{
+    if (!.isJGR()) {
+        cat(".jgr.getMenuNames() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		J <- function (...) return() # Just to avoir R CMD check warning
+    }
+    J("org/rosuda/JGR/JGR")$getMenuNames()
+}
+
+.jgr.getMenuItemNames <- function (menu) 
+{
+    if (!.isJGR()) {
+        cat("/jgr.getMenuItemNames() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		J <- function (...) return() # Just to avoir R CMD check warning
+    }
+    J("org/rosuda/JGR/JGR")$getMenuItemNames(as.character(menu))
+}
+
+.jgr.addMenu <- function (name) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.addMenu() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		.jcall <- function (...) return() # Just to avoir R CMD check warning
+    }
+    invisible(.jcall("org/rosuda/JGR/JGR", "V", "addMenu", as.character(name)))
+}
+
+.jgr.insertMenu <- function (name, index) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.insertMenu() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		.jcall <- function (...) return() # Just to avoir R CMD check warning
+    }
+    invisible(.jcall("org/rosuda/JGR/JGR", "V", "insertMenu", 
+        as.character(name), as.integer(index - 1)))
+}
+
+.jgr.addMenuItem <- function (menu, name, command, silent = TRUE) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.addMenuItem() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		.jcall <- function (...) return() # Just to avoir R CMD check warning
+    }
+    if (is.function(command)) 
+        command <- .jgr.register.function(command)
+    invisible(.jcall("org/rosuda/JGR/JGR", "V", "addMenuItem", 
+        as.character(menu), as.character(name), as.character(command), 
+        as.logical(silent)))
+}
+
+.jgr.insertMenuItem <- function (menu, name, command, index, silent = TRUE) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.insertMenuItem() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		.jcall <- function (...) return() # Just to avoir R CMD check warning
+    }
+    if (is.function(command)) 
+        command <- .jgr.register.function(command)
+    invisible(.jcall("org/rosuda/JGR/JGR", "V", "insertMenuItem", 
+        as.character(menu), as.character(name), as.character(command), 
+        as.logical(silent), as.integer(index - 1)))
+}
+
+.jgr.addMenuSeparator <- function (menu) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.addMenuSeparator() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		.jcall <- function (...) return() # Just to avoir R CMD check warning
+    }
+    invisible(.jcall("org/rosuda/JGR/JGR", "V", "addMenuSeparator", 
+        as.character(menu)))
+}
+
+.jgr.insertMenuSeparator <- function (menu, index) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.insertMenuSeparator() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		.jcall <- function (...) return() # Just to avoir R CMD check warning
+    }
+    invisible(.jcall("org/rosuda/JGR/JGR", "V", "insertMenuSeparator", 
+        as.character(menu), as.integer(index - 1)))
+}
+
+.jgr.addSubMenu <- function (menu, subMenuName, labels, commands) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.addSubMenu() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		J <- function (...) return() # Just to avoir R CMD check warning
+    }
+    invisible(J("org/rosuda/JGR/JGR")$addSubMenu(menu, subMenuName, 
+        labels, commands))
+}
+
+## There seems to be a bug in the original jgr.insertSubMenu() function
+.jgr.insertSubMenu <- function (menu, subMenuName, labels, commands, index) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.addSubMenu() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		J <- function (...) return() # Just to avoir R CMD check warning
+    }
+    invisible(J("org/rosuda/JGR/JGR")$insertSubMenu(menu, subMenuName, 
+        as.integer(index - 1), labels, commands))
+}
+
+.jgr.removeMenu <- function (index) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.removeMenu() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		J <- function (...) return() # Just to avoir R CMD check warning
+    }
+    J("org/rosuda/JGR/JGR")$removeMenu(as.integer(index - 1))
+}
+
+.jgr.removeMenuItem <- function (menu, index) 
+{
+    if (!.isJGR()) {
+        cat(".jgr.removeMenuItem() cannot be used outside JGR.\n")
+        return(invisible(NULL))
+		J <- function (...) return() # Just to avoir R CMD check warning
+    }
+    J("org/rosuda/JGR/JGR")$removeMenuItem(as.character(menu), 
+        as.integer(index - 1))
+}
+
+.jgrRun <- function (cmd, envir = .GlobalEnv)
+{
+	## This function is used for submenus where it is not currently possible
+	## to declare silent = FALSE
+	## Basically, it prints the command, then, evaluate it, capturing output
+	## and finally, it prints that output
+	cat("> ", deparse(substitute(cmd)), "\n", sep = "")
+	res <- capture.output(cmd)
+	cat(res)
+	cat("\n")
+}
+
+## Prepare a command to be printed more or less correctly on screen
+## for JGR submenus
+.jgrAction <- function (cmd) paste("svDialogs:::.jgrRun(", cmd, ")", sep = "")
+
+## Implementation of JGR menus manipulation
+.jgrMenuNames <- function ()
+{
+	## For consistency with the other implementations, do not return
+	## the stadard menus File, Edit, Workspace, Packages & Data, Window, Help
+	res <- .jgr.getMenuNames()
+	res <- res[!res %in% .jgrDefaultMenus]
+	return(res)
+}
+
+.jgrMenuItems <- function (menuname)
+{
+	## For consistency with the other implementations, return character(0)
+	res <- try(.jgr.getMenuItemNames(menuname), silent = TRUE)
+	## if the menu is not found
+	if (inherits(res, "try-error")) return(character(0)) else return(res)
+}
+
+.jgrMenuAdd <- function (menuname)
+{
+	## In JGR, one accepts only menus and one level of submenus... and
+	## submenus are managed in a quite different way!
+	## For compatibility, we allow to use menu/submenu
+	mnu <- strsplit(menuname[1], "/", fixed = TRUE)[[1]]
+	l <- length(mnu)
+	if (l == 0) return(invisible(NULL))
+		
+	.addTopMenu <- function (topmenu) {
+		if (!topmenu %in% .jgr.getMenuNames()) # Here, we check all JGR menus!
+		.jgr.addMenu(topmenu)
+	}
+		
+	if (l == 1) {
+		.addTopMenu(mnu)
+		return(invisible(NULL))
+	}
+	if (l > 2) stop("Only one submenu level allowed on JGR")
+	## Make sure the topmenu is define, and add an empty submenu to it
+	.addTopMenu(mnu[1])
+	.jgr.addSubMenu(mnu[1], mnu[2], character(0), character(0))
+	return(invisible(NULL))
+}
+
+.jgrMenuAddItem <- function (menuname, itemname, action)
+{
+	## In JGR, one accepts only menus and one level of submenus... and
+	## submenus are managed in a quite different way!
+	## For compatibility, we allow to use menu/submenu
+	mnu <- strsplit(menuname[1], "/", fixed = TRUE)[[1]]
+	l <- length(mnu)
+	if (l == 0) return(invisible(NULL)) # Nothing to do...
+		
+	silent <- FALSE
+	## Special cases for "none", no action associated with this menu
+	if (action == "none") {
+		action <- ""
+		silent <- TRUE
+	}
+	## Replace \n by \\n, and \t by \\t
+	action <- gsub("\n", "\\\\n", action)
+	action <- gsub("\t", "\\\\t", action)
+		
+	if (l == 1) {
+		## First, make sure the menu exists
+		.jgrMenuAdd(mnu)
+		## Are we trying to add a separator?
+		if (grepl("^-+$", itemname)) { # This must be a separator
+			.jgr.addMenuSeparator(mnu)
+		} else { # This must be a menu entry
+			## Is the menu entry already implemented?
+			items <- .jgrMenuItems(mnu)
+			if (itemname %in% items) {
+				## Delete and recreate it with the new action
+				idx <- (1:length(items))[items == itemname][1]
+				.jgr.removeMenuItem(mnu, idx)
+				if (action == "enable")
+					action <- .jgrMenuMemGet(mnu, itemname)
+				if (is.null(action)) action <- ""
+				if (action == "disable") {
+					action <- 'cat("- disabled menu item...\n")'
+					silent <- TRUE
+					.jgr.insertMenuItem(mnu, itemname, action, idx,
+						silent = silent)
+					## Don't change action in .jgrMenus() so that we can
+					## recover it with "enable"!
+				} else {
+					.jgr.insertMenuItem(mnu, itemname, action, idx,
+						silent = silent)	
+					.jgrMenuMemAdd(mnu, itemname, action)
+				}
+			} else {
+				## This is a new item => just add it
+				if (action == "enable") action <- ""
+				if (action == "disable") {
+					action <- 'cat("- disabled menu item...\n")'
+					silent <- TRUE
+					.jgr.addMenuItem(mnu, itemname, action, silent = silent)
+					.jgrMenuMemAdd(mnu, itemname, "")
+				} else {
+					.jgr.addMenuItem(mnu, itemname, action, silent = silent)
+					.jgrMenuMemAdd(mnu, itemname, action)
+				}
+			}
+		}			
+		return(invisible(NULL))
+	}
+		
+	if (l == 2) {
+		## We add an entry in a submenu. In JGR, we must delete and
+		## reconstruct the submenu entirely!
+		## Does this submenu already exists?
+		## (note: in JGR it can be a menu entry as well!)
+		items <- .jgrMenuItems(mnu[1])
+		if (mnu[2] %in% items) { # The submenu already exists...
+			## Delete it and reconstruct it with the added or changed item
+			idx <- (1:length(items))[items == mnu[2]][1]
+			.jgr.removeMenuItem(mnu[1], idx)
+			## Get the list of entries in the submenu from .jgrMenus
+			## (how to get it otherwise???)
+			actions <- .jgrMenuMemGet(mnu[1], mnu[2])
+			if (is.null(actions)) { # Apparently nothing in there yet
+				if (action == "enable") action <- ""
+				if (action == "disable") {
+					action <- 'cat("- disabled menu item...\n")'
+					.jgr.insertSubMenu(mnu[1], mnu[2], c(itemname, "-"),
+						c(action, ""), idx)
+					actions <- ""
+				} else {
+					action <- .jgrAction(action)
+					.jgr.insertSubMenu(mnu[1], mnu[2], c(itemname, "-"),
+						c(action, ""), idx)
+					actions <- action
+				}
+				names(actions) <- itemname
+				.jgrMenuMemAdd(mnu[1], mnu[2], actions)
+			} else { # There are already items in this submenu
+				if (action == "disable") { # We want to disable one action
+					if (!itemname %in% names(actions))
+						return(invisible(NULL))
+					actions[[itemname]] <- 'cat("- disabled menu item...\n")'
+					if (length(actions) == 1) {
+						.jgr.insertSubMenu(mnu[1], mnu[2],
+							c(names(actions), "-"), c(actions, ""), idx)	
+					} else {
+						.jgr.insertSubMenu(mnu[1], mnu[2],
+							names(actions), actions, idx)
+					}
+				} else if (action == "enable") {
+					if (!itemname %in% names(actions))
+						return(invisible(NULL))
+					if (length(actions) == 1) {
+						.jgr.insertSubMenu(mnu[1], mnu[2],
+							c(names(actions), "-"), c(actions, ""), idx)
+					} else {
+						.jgr.insertSubMenu(mnu[1], mnu[2],
+							names(actions), actions, idx)	
+					}
+				} else { # An action is defined
+					actions[[itemname]] <- .jgrAction(action)
+					if (length(actions) == 1) {
+						.jgr.insertSubMenu(mnu[1], mnu[2],
+							c(names(actions), "-"), c(actions, ""), idx)
+					} else {
+						.jgr.insertSubMenu(mnu[1], mnu[2],
+							names(actions), actions, idx)	
+					}
+					.jgrMenuMemAdd(mnu[1], mnu[2], actions)	
+				}
+			}
+		} else { # The submenu does not exists yet, create it now
+			## First, make sure the top menu exists
+			.jgrMenuAdd(mnu[1])
+			if (action == "enable") action <- ""
+			if (action == "disable") {
+				action <- 'cat("- disabled menu item...\n")'
+				.jgr.addSubMenu(mnu[1], mnu[2], c(itemname, "-"), c(action, ""))
+				actions <- ""
+			} else {
+				action <- .jgrAction(action)
+				.jgr.addSubMenu(mnu[1], mnu[2], c(itemname, "-"), c(action, ""))
+				actions <- action
+			}
+			names(actions) <- itemname
+			.jgrMenuMemAdd(mnu[1], mnu[2], actions)
+		}
+		return(invisible(NULL))
+	}
+	
+	if (l > 2) stop("Only one submenu level allowed on JGR")
+}
+
+.jgrMenuDel <- function (menuname)
+{
+	## In JGR, one accepts only menus and one level of submenus... and
+	## submenus are managed in a quite different way!
+	## For compatibility, we allow to use menu/submenu
+	mnu <- strsplit(menuname[1], "/", fixed = TRUE)[[1]]
+	l <- length(mnu)
+	if (l == 0) return(invisible(NULL))
+		
+	if (l == 1) {
+		if (mnu %in% .jgrDefaultMenus) # Do not allow to delete default menus
+			return(invisible(NULL))
+		## Get the position of this menu and make sure it is not a default menu!
+		allmnu <- .jgr.getMenuNames()
+		allpos <- 1:length(allmnu)
+		pos <- allpos[allmnu == mnu]
+		if (!length(pos)) return(invisible(NULL)) # Not found
+		pos <- rev(pos)[1]
+		.jgr.removeMenu(pos)
+	}
+	if (l == 2) # Remove a submenu (note, that for JGR, this is the same as removing a menu item!)
+		.jgrMenuDelItem(mnu[1], mnu[2])
+	## If there are more levels, do nothing because these submenus do not exist!
+	return(invisible(NULL))
+}
+
+.jgrMenuDelItem <- function (menuname, itemname)
+{
+	## On JGR, all separators are named "-", but on, e.g., Windows, I must
+	## use a different name for each separator => What should we do???
+	## Here, we consider '-' for the first one, '--' for the second one, etc.
+	mnu <- strsplit(menuname[1], "/", fixed = TRUE)[[1]]
+	l <- length(mnu)
+	if (l == 0) return(invisible(NULL))
+		
+	if (l == 1) {
+		## Are we trying to delete a separator?
+		items <- .jgrMenuItems(mnu)
+		if (grepl("^-+$", itemname)) { # This must be a separator
+			isSep <- items == "-"
+			posSep <- (1:length(items))[isSep]
+			## Depending on the number of minus signs we try to remove
+			## first, second, etc. separator
+			nsep <- nchar(itemname)
+			if (length(posSep) < nsep) return(invisible(NULL))
+			idx <- posSep[nsep]
+		} else { # This must be a menu entry
+			idx <- (1:length(items))[itemname == items]
+		}
+		if (!length(idx)) return(invisible(NULL))
+		.jgr.removeMenuItem(mnu, idx)
+		.jgrMenuMemDel(mnu, itemname)
+	}
+		
+	if (l == 2) {
+		## We want to eliminate an item from a submenu. In JGR, there is no
+		## function for that, but we can delete and recreate the submenu
+		## without this item!
+		items <- .jgrMenuItems(mnu[1])
+		if (!mnu[2] %in% items) return(invisible(NULL)) # Submenu not there
+		## Get the list of submenus currently defined from our cache version
+		actions <- .jgrMenuMemGet(mnu[1], mnu[2])
+		if (is.null(actions) || !itemname %in% names(actions)) # Apparently not there
+			return(invisible(NULL))
+		## Delete and reconstruct the submenu without itemname
+		idx <- (1:length(items))[items == mnu[2]][1]
+		.jgr.removeMenuItem(mnu[1], idx)
+		## Recreate the submenu after eliminating itemname
+		actions <- actions[names(actions) != itemname]
+		if (!length(actions)) {
+			.jgr.insertSubMenu(mnu[1], mnu[2], character(0), character(0), idx)
+		} else if (length(actions) == 1) {
+			.jgr.insertSubMenu(mnu[1], mnu[2], c(names(actions), "-"),
+				c(actions, ""), idx)
+		} else {
+			.jgr.insertSubMenu(mnu[1], mnu[2], names(actions), actions, idx)
+		}
+		.jgrMenuMemAdd(mnu[1], mnu[2], actions)
+	}
+	return(invisible(NULL)) # Not more than one submenu level allowed!  
 }
 
 
@@ -165,7 +651,7 @@ menuDelItem <- function (menuname, itemname)
 }
 
 .macMenuClear <- function () {
-    stop("Not implemented yet!")
+	stop("Not implemented yet!")
 	
 #	## To be called when svDialogs package loads: make sure to zap all
 #    ## custom menu items that may have been previously defined
@@ -204,7 +690,7 @@ menuDelItem <- function (menuname, itemname)
 
 .macMenuAddItem <- function (menuname, itemname, action)
 {
-    stop("Not implemented yet!")
+	stop("Not implemented yet!")
 	
 #	## TODO: manage 'enable' and 'disable'!!!
 #	## Make sure that the dir is created
@@ -246,7 +732,7 @@ menuDelItem <- function (menuname, itemname)
 
 .macMenuDel <- function (menuname)
 {
-    stop("Not implemented yet!")
+	stop("Not implemented yet!")
 	
 #	## Unlink does not like ~ => change working dir first
 #    odir <- getwd()
@@ -268,7 +754,6 @@ menuDelItem <- function (menuname, itemname)
 #		recursive = TRUE) 
 #    return(invisible(NULL))    
 }
-
 
 
 ## This holds the custom menu structure in an R object
