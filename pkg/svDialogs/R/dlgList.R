@@ -102,32 +102,34 @@ title = NULL)
 			preselect <- choices[1]
 		return(select.list(choices = choices, preselect = preselect,
 			multiple = multiple, title = title, graphics = TRUE))
-	} else { # Probably run from terminal, use osascript to display the list box
-		## Make sure to keep only first preselection if !multiple
-		if (!multiple) preselect <- preselect[1]
-		## Format preselect into a single character string
-		sel <- paste('"', preselect, '  "', sep = "", collapse = ",")
-		## Format choices in a single string
-		items <- paste('"', choices, '  "', sep = "", collapse = ",")
-		## Default title
-		if (is.null(title)) if (multiple) title <- "Select one or more" else
-			title <- "Select one"
-		## Avoid displaying warning message when the user clicks on 'Cancel'
-		owarn <- getOption("warn")
-		on.exit(options(warn = owarn))
-		options(warn = -1)
-		cmd <- paste("-e 'tell application \"Terminal\" to choose from list {",
-			items, "} with title \"Make your selection\" with prompt \"", title,
-			"\" multiple selections allowed ", multiple, " default items {",
-			sel, "}'", sep = "")
-		#res <- system2("osascript", cmd, stdout = TRUE, stderr = TRUE, wait = TRUE)
-		res <- system(paste("osascript", cmd), intern = TRUE, wait = TRUE)
-		if (res == "false") {
-			return(character(0))
-		} else {
-			res <- unlist(strsplit(sub("  $", "", res), "  , ", fixed = TRUE))
-			return(res)
-		}
+	} else if (.isJGR()) { # This seems to be JGR
+		app <- "JGR"
+	} else app <- "Terminal" # Probably run from terminal
+	## Use osascript to display the list box
+	## Make sure to keep only first preselection if !multiple
+	if (!multiple) preselect <- preselect[1]
+	## Format preselect into a single character string
+	sel <- paste('"', preselect, '  "', sep = "", collapse = ",")
+	## Format choices in a single string
+	items <- paste('"', choices, '  "', sep = "", collapse = ",")
+	## Default title
+	if (is.null(title)) if (multiple) title <- "Select one or more" else
+		title <- "Select one"
+	## Avoid displaying warning message when the user clicks on 'Cancel'
+	owarn <- getOption("warn")
+	on.exit(options(warn = owarn))
+	options(warn = -1)
+	cmd <- paste("-e 'tell application \"", app, "\" to choose from list {",
+		items, "} with title \"Make your selection\" with prompt \"", title,
+		"\" multiple selections allowed ", multiple, " default items {",
+		sel, "}'", sep = "")
+	#res <- system2("osascript", cmd, stdout = TRUE, stderr = TRUE, wait = TRUE)
+	res <- system(paste("osascript", cmd), intern = TRUE, wait = TRUE)
+	if (res == "false") {
+		return(character(0))
+	} else {
+		res <- unlist(strsplit(sub("  $", "", res), "  , ", fixed = TRUE))
+		return(res)
 	}
 }
 

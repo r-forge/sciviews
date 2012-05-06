@@ -1,5 +1,12 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-53
+
+* Added support for JGR in dialog boxes under Mac OS X.
+
+* The menuXXX() functions can manage menus and submenus in JGR.
+
+
 == Changes in svDialogs 0.9-52
 
 * menuXXX() functions do not generate files in \tmp dir on Linux, unless in

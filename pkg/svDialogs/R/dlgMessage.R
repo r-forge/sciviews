@@ -102,7 +102,7 @@ dlgMessage.nativeGUI <- function (message, type = c("ok", "okcancel", "yesno",
 {
     ## Display a modal message with native Mac dialog box
 	if (.Platform$GUI == "AQUA") app <- "(name of application \"R\")" else
-		app <- "\"Terminal\""
+		if (.isJGR()) app <- "\"JGR\"" else app <- "\"Terminal\""
 	type <- match.arg(type)
     buttons <- switch(type,
 		ok = "\"OK\"",
