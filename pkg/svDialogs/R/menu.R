@@ -651,7 +651,7 @@ menuDelItem <- function (menuname, itemname)
 }
 
 .macMenuClear <- function () {
-	stop("Not implemented yet!")
+	#stop("Not implemented yet!")
 	
 #	## To be called when svDialogs package loads: make sure to zap all
 #    ## custom menu items that may have been previously defined
@@ -669,17 +669,17 @@ menuDelItem <- function (menuname, itemname)
 
 .macMenuNames <- function ()
 {
-	stop("Not implemented yet!")
+	#stop("Not implemented yet!")
 }
 
 .macMenuItems <- function (menuname)
 {
-	stop("Not implemented yet!")
+	#stop("Not implemented yet!")
 }
 
 .macMenuAdd <- function (menuname)
 {
-    stop("Not implemented yet!")
+    #stop("Not implemented yet!")
 	
 #	## Menus are folders created in ~/Scripts/Applications/R/Custom
 #    ## I just need to create (recursively) the directories
@@ -690,7 +690,7 @@ menuDelItem <- function (menuname, itemname)
 
 .macMenuAddItem <- function (menuname, itemname, action)
 {
-	stop("Not implemented yet!")
+	#stop("Not implemented yet!")
 	
 #	## TODO: manage 'enable' and 'disable'!!!
 #	## Make sure that the dir is created
@@ -732,7 +732,7 @@ menuDelItem <- function (menuname, itemname)
 
 .macMenuDel <- function (menuname)
 {
-	stop("Not implemented yet!")
+	#stop("Not implemented yet!")
 	
 #	## Unlink does not like ~ => change working dir first
 #    odir <- getwd()
@@ -744,7 +744,7 @@ menuDelItem <- function (menuname, itemname)
 
 .macMenuDelItem <- function (menuname, itemname)
 {
-	stop("Not implemented yet!")
+	#stop("Not implemented yet!")
 
 #    ## Unlink does not like ~ => change working dir first
 #    odir <- getwd()
