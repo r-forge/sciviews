@@ -23,7 +23,7 @@ export(browse,
        searchPackage,
        searchWiki,
        sidekick)
-# Currently hidden, but my be exported in the future
+# Currently hidden, but may be exported in the future
 #       addError,
 #       emptyError,
 #       getErrors,

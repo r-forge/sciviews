@@ -59,6 +59,8 @@ progress(value, max.value = NULL, progress.bar = FALSE, char = "|",
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
+\seealso{\code{\link{batch}}}
+
 \note{ In a GUI, it is preferable to use a non modal dialog box with a progress
 widget, or to display such a progress widget in the status bar of your main
 window. }

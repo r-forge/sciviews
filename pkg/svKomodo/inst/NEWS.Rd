@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{NEWS file for the svKomodo package}
 
+\section{Changes in version 0.9-58}{
+	\itemize{
+    \item{ The package was not loading correctly when not on \code{.libPaths}. Fixed. }
+  }
+}
+
 \section{Changes in version 0.9-57}{
 	\itemize{
     \item{ svKomodo creates now at loading a \code{.Last.sys()} function in

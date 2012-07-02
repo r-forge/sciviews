@@ -16,7 +16,7 @@ isWin()
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{isMac}}, \code{\link{isRgui}} }
+\seealso{ \code{\link{isMac}}, \code{\link{isRgui}}, \code{\link{isJGR}} }
 
 \examples{
 isWin()
