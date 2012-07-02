@@ -18,7 +18,7 @@ isRgui()
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{isSDI}}, \code{\link{isWin}} }
+\seealso{ \code{\link{isSDI}}, \code{\link{isWin}}, \code{\link{isJGR}} }
 
 \examples{
 isRgui()

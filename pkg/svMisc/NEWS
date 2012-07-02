@@ -1,5 +1,12 @@
 = svMisc News
 
+== Changes in svMisc 0.9-66
+
+* Added function isJGR().
+
+* Added batch processing function batch().
+
+
 == Changes in svMisc 0.9-65
 
 * Partial argument matching in completion(), progress() and rmTemp() code fixed.

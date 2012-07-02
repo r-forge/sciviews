@@ -1,7 +1,7 @@
 Package: svMisc
 Type: Package
-Version: 0.9-65
-Date: 2012-03-31
+Version: 0.9-66
+Date: 2012-07-01
 Title: SciViews GUI API - Miscellaneous functions
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"),

@@ -17,7 +17,7 @@ isMac()
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{isWin}}, \code{\link{isAqua}} }
+\seealso{ \code{\link{isWin}}, \code{\link{isAqua}}, \code{\link{isJGR}} }
 
 \examples{
 isMac()

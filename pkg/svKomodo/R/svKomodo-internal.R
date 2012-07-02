@@ -136,10 +136,10 @@
 	type <- getOption("ko.type")
 	req <- require
 	if (type == "http") {
-		req("svHttp", character.only = TRUE)
+		req("svHttp", character.only = TRUE, lib.loc = lib)
 		if (interactive()) try(startHttpServer())
 	} else {
-		req("svSocket", character.only = TRUE)
+		req("svSocket", character.only = TRUE, lib.loc = lib)
 		if (interactive()) try(startSocketServer())
 	}
 		
