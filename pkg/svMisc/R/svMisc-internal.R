@@ -1,5 +1,39 @@
-.onLoad <- function (lib, pkg)
+.onLoad <- function (lib, pkg) {
 	.initialize()
+
+	## Determine where to find the preferred file editor for fileEdit()
+	if (is.null(getOption("fileEditor"))) {
+		if (interactive()) {
+			if (isWin()) {
+				## First check if Notepad++ is installed in default location...
+				pfdir <- Sys.getenv("ProgramFiles")
+				if (pfdir == "") pfdir <- "c:\\program files"
+				fEdit <- paste(pfdir, "\\Notepad++\\notepad++.exe", sep = "")
+				## ... otherwise, fallback to notepad.exe
+				if (!file.exists(fEdit)) fEdit <- "notepad.exe"
+			} else if (isMac()) {
+				## First check if 'edit' is there
+				## (open files in TextWrangler or BBEdit)
+				if (length(system("which edit", intern = TRUE))) {
+					fEdit <- "edit --wait --resume \"%s\""
+				} else { # Fall back to the default text editor
+					## Note: use "open -e -n -W \"%s\"" to force use of TextEdit
+					fEdit <- "open -t -n -W \"%s\""
+				}
+			} else { # This is unix
+				## First check if gedit is there...
+				if (length(system("which gedit", intern = TRUE))) {
+					fEdit <- "gedit"
+				} else if (length(system("which kate", intern = TRUE))) {
+					fEdit <- "kate"
+				} else { # Fall back to something that is likely to be installed
+					fEdit <- "vi"
+				}
+			}
+			options(fileEditor = fEdit)
+		} else options(fileEditor = "") # Inactivate it!
+	}	
+}
 
 .initialize <- function (replace = TRUE)
 {

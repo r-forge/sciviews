@@ -44,7 +44,7 @@ systemDir(\dots, exec = FALSE, package = NULL, lib.loc = NULL)
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link[base]{file.path}}, \code{\link[base]{file.exists}} }
+\seealso{ \code{\link{fileEdit}}, \code{\link[base]{file.path}}, \code{\link[base]{file.exists}} }
 
 \examples{
 systemFile("INDEX", package = "base")
