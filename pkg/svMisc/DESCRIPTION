@@ -13,7 +13,7 @@ Author: Philippe Grosjean, with contributions from Romain Francois and Kamil Bar
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 Imports: utils, methods, tools
 Depends: R (>= 2.11.0)
-Suggests: svUnit
+Suggests: svUnit, rJava
 Description: Supporting functions for the GUI API (various utilitary functions)
 License: GPL-2
 URL: http://www.sciviews.org/SciViews-R

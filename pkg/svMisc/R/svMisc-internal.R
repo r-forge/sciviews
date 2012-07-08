@@ -10,24 +10,31 @@
 				if (pfdir == "") pfdir <- "c:\\program files"
 				fEdit <- paste(pfdir, "\\Notepad++\\notepad++.exe", sep = "")
 				## ... otherwise, fallback to notepad.exe
-				if (!file.exists(fEdit)) fEdit <- "notepad.exe"
+				if (!file.exists(fEdit)) fEdit <- "notepad"  # Default for Rterm
 			} else if (isMac()) {
+				## Note that, in R.app, one cannot edit and wait for it is done
+				## So, I always define a different editor, but fall back to
+				## internal R.app if internal.if.possible is TRUE
 				## First check if 'edit' is there
 				## (open files in TextWrangler or BBEdit)
 				if (length(system("which edit", intern = TRUE))) {
-					fEdit <- "edit --wait --resume \"%s\""
+					fEdit <- "textwrangler"
 				} else { # Fall back to the default text editor
 					## Note: use "open -e -n -W \"%s\"" to force use of TextEdit
-					fEdit <- "open -t -n -W \"%s\""
-				}
+					fEdit <- "textedit"
+				}			
 			} else { # This is unix
-				## First check if gedit is there...
+				## First check if gedit or kate is there... This is different
+				## from file.edit() and editor that looks directly to EDITOR!
 				if (length(system("which gedit", intern = TRUE))) {
 					fEdit <- "gedit"
 				} else if (length(system("which kate", intern = TRUE))) {
 					fEdit <- "kate"
 				} else { # Fall back to something that is likely to be installed
-					fEdit <- "vi"
+					## Look id EDITOR or VISUAL environment variable is defined
+					fEdit <- Sys.getenv("EDITOR")
+					if (nzchar(fEdit)) fEdit <- Sys.getenv("VISUAL")
+					if (nzchar(fEdit)) fEdit <- "vi"
 				}
 			}
 			options(fileEditor = fEdit)
