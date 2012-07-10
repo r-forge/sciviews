@@ -10,7 +10,7 @@
 
 \usage{
 batch(items, fun, ..., show.progress = !isAqua() && !isJGR(),
-    suppress.messages = show.progress)
+    suppress.messages = show.progress, verbose = TRUE)
 }
 
 \arguments{
@@ -23,6 +23,7 @@ batch(items, fun, ..., show.progress = !isAqua() && !isJGR(),
     uses the \code{progress()} function. }
   \item{suppress.messages}{ are messages from the batcheable function suppressed?
     Only warnings will be issued. Recommended if \code{show.progress = TRUE}. }
+  \item{verbose}{ display start and end messages if \code{TRUE} (default). }
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
