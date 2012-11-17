@@ -1,6 +1,8 @@
-import(utils, ascii)
+import(utils, knitr, ascii)
 
 export(cleanLyxRnw,
+       knitLyxRnw,
+       purlLyxRnw,
        tangleLyxRnw,
        weaveLyxRnw,
        RasciidocToRnw,

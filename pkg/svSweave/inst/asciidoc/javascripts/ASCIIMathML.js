@@ -29,13 +29,13 @@ var checkForMathML = true;   // check if browser can display MathML
 var notifyIfNoMathML = true; // display note if no MathML capability
 var alertIfNoMathML = false;  // show alert box if no MathML capability
 var mathcolor = "";       // change it to "" (to inherit) or any other color
-var mathfontfamily = "Charis SIL Compact"; // Was "serif" // change to "" to inherit (works in IE) 
+var mathfontfamily = "serif"; // change to "" to inherit (works in IE) 
                               // or another family (e.g. "arial")
 var displaystyle = true;      // puts limits above and below large operators
 var showasciiformulaonhover = true; // helps students learn ASCIIMath
 var decimalsign = ".";        // change to "," if you like, beware of `(1,2)`!
-var AMdelimiter1 = "```", AMescape1 = "\\\\`"; // can use other characters
-var AMdelimiter2 = "$$", AMescape2 = "\\\\\\$", AMdelimiter2regexp = "\\$";
+var AMdelimiter1 = "`", AMescape1 = "\\\\`"; // can use other characters
+var AMdelimiter2 = "$", AMescape2 = "\\\\\\$", AMdelimiter2regexp = "\\$";
 var doubleblankmathdelimiter = false; // if true,  x+1  is equal to `x+1`
                                       // for IE this works only in <!--   -->
 //var separatetokens;// has been removed (email me if this is a problem)

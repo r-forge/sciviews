@@ -2,6 +2,8 @@
 \alias{cleanLyxRnw}
 \alias{tangleLyxRnw}
 \alias{weaveLyxRnw}
+\alias{knitLyxRnw}
+\alias{purlLyxRnw}
 
 \title{ Clean up, weave or tangle Sweave files produced by LyX with the SciViews Sweave module }
 \description{
@@ -18,10 +20,14 @@
 
 \usage{
 cleanLyxRnw(RnwCon, RnwCon2 = RnwCon, encoding = "UTF-8")
+
 weaveLyxRnw(file, driver = RweaveLatex(), syntax = getOption("SweaveSyntax"),
     encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
+knitLyxRnw(file, encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
+
 tangleLyxRnw(file, driver = Rtangle(), syntax = getOption("SweaveSyntax"),
     encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, annotate = TRUE, \dots)
+purlLyxRnw(file, encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
 }
 
 \arguments{
@@ -43,7 +49,10 @@ tangleLyxRnw(file, driver = Rtangle(), syntax = getOption("SweaveSyntax"),
 }
 
 \value{
-  \code{NULL}, these functions are invoked for their side effects.
+  \code{NULL}, these functions are invoked for their side effects. The function
+  \code{weaveLyxRnw()} uses the standard Sweave driver, while \code{knitLyxRnw()}
+  does the same, but using the knitr driver. Similarly, \code{purlLyxRnw()} is
+  the knitr counterpart of \code{tangleLyxRnw()} standard tangling function.
 }
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 

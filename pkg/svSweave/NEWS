@@ -1,5 +1,12 @@
 = svSweave News
 
+== Changes in svSweave 0.9-5
+
+* Now knitr can also be used to weave your documents (knitLyxRnw/purlLyxRnw).
+
+* Asciidoc updated to version 8.6-8.
+
+
 == Changes in svSweave 0.9-4
 
 * Added a dependence to the ascii package to support Asciidoc Sweave documents.
