@@ -12,8 +12,8 @@
   \tabular{ll}{
     Package: \tab svDialogs\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-53\cr
-    Date: \tab 2012-05-05\cr
+    Version: \tab 0.9-54\cr
+    Date: \tab 2012-12-04\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples
@@ -27,14 +27,6 @@
 
 \examples{
 ## TODO...
-
-### Example of a custom function for an imput box that deleguates
-#dlgInput.wxGUI <- function (message = "Enter a value",
-#default = "", ..., gui = svGUI) {
-#	warning("No input box implemented yet with wxWidgets in R!")
-#	NextMethod("dlgInput", gui)	
-#}
-
 }
 
 \keyword{ package }

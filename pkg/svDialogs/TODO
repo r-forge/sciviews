@@ -1,9 +1,10 @@
 = svDialogs To Do list
 
-* Most fixed dialog boxes still need to be done!
+* Several fixed dialog boxes still need to be done!
 
-* Eliminate the dependency to tcltk, once all old code will be moved to
-  svDialogs..tcltk.
+* Menus for Mac OS X
+
+* dlgForm for Mac OS X and Windows
   
 * For the Mac one can also use:
   - osascript -e 'tell application "Terminal" to choose color default color {12, 56, 78}' # Warning: 0-65535!

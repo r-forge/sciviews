@@ -1,6 +1,16 @@
 \name{NEWS}
 \title{NEWS file for the svDialogs package}
 
+\section{Changes in version 0.9-54}{
+	\itemize{
+		\item{ Dependencies to tcltk and svMisc are eliminated.
+		Consequently, all functions that depend on Tcl/Tk are eliminated
+		too. It concerns \code{guiDlg()}, \code{guiDlgFunction()} and
+		other associated methods or functions. The new \code{dlgForm()}
+		function should be used instead. }
+	}
+}
+
 \section{Changes in version 0.9-53}{
 	\itemize{
 		\item{ Added support for \preformatted{JGR} in dialog boxes under Mac OS X. }

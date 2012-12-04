@@ -146,10 +146,10 @@ menuDelItem <- function (menuname, itemname)
 	## 1) which menu action is related to which menu entry
 	## 2) for separators, names can be any number of '-', but it is only '-'
 	##    in JGR => keep track of the correspondance!
-	mnu <- getTemp(".jgrMenuMem")
+	mnu <- .getTemp(".jgrMenuMem")
 	if (is.null(mnu)) {
 		mnu <- new.env()
-		assignTemp(".jgrMenuMem", mnu) 
+		.assignTemp(".jgrMenuMem", mnu) 
 	}
 	return(mnu)
 }
@@ -760,7 +760,7 @@ menuDelItem <- function (menuname, itemname)
 .Rmenu <- function ()
 {
 	## The custom R menu is cached in a Rmenu object in TempEnv
-	return(getTemp("Rmenu", default = list(), mode = "list"))
+	return(.getTemp("Rmenu", default = list(), mode = "list"))
 }
 
 ## Linux/Unix version
@@ -830,11 +830,11 @@ menuDelItem <- function (menuname, itemname)
 .unixMenuFile <- function ()
 {
 	## Get the name of the file that contains the R menu
-	winid <- getTemp(".winid", default = Sys.getenv("WINDOWID"))
-	assignTemp(".winid", winid)
+	winid <- .getTemp(".winid", default = Sys.getenv("WINDOWID"))
+	.assignTemp(".winid", winid)
 	## Do not use user name in the filename (B. Ripley's request)
-	#user <- getTemp(".user", default = Sys.getenv("USER"))
-	#assignTemp(".user", user)
+	#user <- .getTemp(".user", default = Sys.getenv("USER"))
+	#.assignTemp(".user", user)
 	#return(file.path(.unixMenuFolder(), paste(user, winid,
 	#	"Menu.txt", sep = "")))
 	return(file.path(.unixMenuFolder(), paste(winid,
@@ -861,11 +861,11 @@ menuDelItem <- function (menuname, itemname)
 .unixCtxMenuFile <- function ()
 {
 	## Get the name of the file that contains the R context menu
-	winid <- getTemp(".winid", default = Sys.getenv("WINDOWID"))
-	assignTemp(".winid", winid)
+	winid <- .getTemp(".winid", default = Sys.getenv("WINDOWID"))
+	.assignTemp(".winid", winid)
 	## Do not use user name in the filename (B. Ripley's request)
-	#user <- getTemp(".user", default = Sys.getenv("USER"))
-	#assignTemp(".user", user)
+	#user <- .getTemp(".user", default = Sys.getenv("USER"))
+	#.assignTemp(".user", user)
 	#return(file.path(.unixMenuFolder(), paste(user, winid,
 	#	"CtxMenu.txt", sep = "")))
 	return(file.path(.unixMenuFolder(), paste(winid,
@@ -894,7 +894,7 @@ menuDelItem <- function (menuname, itemname)
 	## Save the menu structure in both Rmenu object in TempEnv and in a file
 	## mnu is either a list of lists with menu entries, or NULL to delete all
 	## custom menus
-	assignTemp("Rmenu", mnu)
+	.assignTemp("Rmenu", mnu)
 	
 	# Do nothing on files, unless interactive() and got user's acceptation
 	if (!.tmpfilesAllowed()) return(invisible(NULL))

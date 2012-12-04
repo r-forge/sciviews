@@ -95,7 +95,7 @@ menuItems(menuname)
 
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org})}
 
-\seealso{ \code{\link{guiDlg}}, \code{\link{guiEval}} }
+\seealso{ \code{\link{dlgForm}} }
 
 \examples{
 \dontrun{
