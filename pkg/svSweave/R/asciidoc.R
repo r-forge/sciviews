@@ -138,7 +138,7 @@ keepRnwFile, keepTxtFile, encoding, asciidoc)
 		docbook = "xml",
 		docbook45 = "xml",
 		latex = "tex",
-		stop("Unknown format, use html/html4/html5/slidy/wordpress/docbook/latex")
+		stop("Unknown format, use html/html4/html5/slidy/slidy2/wordpress/docbook/latex")
 		)
 	EndFile <- .fileExt(TxtFile, EndExt)
 		

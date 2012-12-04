@@ -1,5 +1,6 @@
 # To be eliminated, except for svGUI
-import(tcltk, svMisc, svGUI)
+#import(tcltk, svMisc, svGUI)
+import(svGUI)
 
 export(dlgDir,
        dlgForm,
@@ -17,18 +18,18 @@ export(dlgDir,
        menuDelItem,
        menuNames,
        menuItems,
-       ".Last.lib",
-       display,
-       guiDlg,
-       guiDlgFunction,
-       guiEval,
-       guiPane.tcltk,
-       guiPane.entry.tcltk,
-       guiPane.list.tcltk,
-       guiSetStyle.tcltk)
+       ".Last.lib")
+       #display,
+       #guiDlg,
+       #guiDlgFunction,
+       #guiEval,
+       #guiPane.tcltk,
+       #guiPane.entry.tcltk,
+       #guiPane.list.tcltk,
+       #guiSetStyle.tcltk)
 
 # To be eliminated
-S3method(display, guiDlg)
+#S3method(display, guiDlg)
 
 S3method(dlgDir, gui)
 S3method(dlgDir, textCLI)
