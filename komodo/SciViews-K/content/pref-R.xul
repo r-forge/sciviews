@@ -150,9 +150,9 @@
 			
 			<vbox>
 				<hbox align="center">
-					<label value="Default CRAN mirror:" control="CRANMirror" />
-						<menulist id="CRANMirror" sizetopopup="none" width="200"
-							pref="true" prefattribute="value">
+					<label value="Default CRAN mirror:" control="r.cran.mirror" />
+					<menulist id="r.cran.mirror" sizetopopup="none" width="200"
+						pref="true"> <!-- prefattribute="value"> -->
 						<menupopup maxheight="200" />
 					</menulist>
 					<button label="Refresh list" oncommand="PrefR_UpdateCranMirrors(false);" />
@@ -160,11 +160,11 @@
 			</vbox>
 		</groupbox>
 	
-		<groupbox orient="vertical"  align="left">
+		<groupbox orient="vertical">
 			<caption label="Miscellaneous"/>
 			<label value="Startup packages"/>
 	
-			<vbox align="left">
+			<vbox>
 				<description>
 					&quot;SciViews-K&quot; needs packages &quot;svKomodo&quot;, &quot;svHttp&quot;,
 					&quot;svSocket&quot; and &quot;svMisc&quot; to be loaded in order for
@@ -175,7 +175,8 @@
 				<hbox>
 					<checkbox id="sciviews.pkgs.sciviews" checked="yes"
 						label="Load also package &quot;SciViews&quot; at R startup"
-						pref="true" oncommand="PrefR_updateCommandLine(true);"/>
+						control="sciviews.pkgs.sciviews" pref="true"
+						oncommand="PrefR_updateCommandLine(true);"/>
 				</hbox>
 			</vbox>
 		
