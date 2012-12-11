@@ -40,7 +40,8 @@ if (sv.prefs === undefined) sv.prefs = {};
 		"sciviews.r.args": "--quiet",
 		//"sciviews.r.auto-start": false,
 		"sciviews.r.batchinterp": "",
-	    "r.csv.dec": ".",
+		"sciviews.pkgs.sciviews": true,
+		"r.csv.dec": ".",
 		"r.csv.sep": ",",
 		"r.application": "",
 		"r.cran.mirror": "http://cran.r-project.org/"
@@ -64,6 +65,25 @@ if (sv.prefs === undefined) sv.prefs = {};
 	
 	// Set a preference
 	this.setPref = function (prefName, value, overwrite, asInt) {
+		var typeName, type;
+		if (prefset.hasPref(prefName)) {
+			if (overwrite === false) return("");
+			type = prefset.getPrefType(prefName);
+		} else {
+			type = typeof(value);
+			if (type == 'number') type = asInt? "long" : "double";
+		}
+		type = ['double', 'long', 'boolean', 'string'].indexOf(type);
+		if (type == -1 || type == null) return(undefined);
+		typeName = ['Double', 'Long', 'Boolean', 'String'][type];
+		prefset['set' + typeName + 'Pref'](prefName, value);
+		return(typeName);
+	}
+	
+	// TODO: eliminate this, once I have found where setString() is still used
+	//       and replaced by setPref()
+		// Set a preference
+	this.setString = function (prefName, value, overwrite, asInt) {
 		var typeName, type;
 		if (prefset.hasPref(prefName)) {
 			if (overwrite === false) return("");

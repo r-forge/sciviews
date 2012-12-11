@@ -182,9 +182,9 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			sv.prefs.getPref("sciviews.r.interpreter"))) ==
 			sv.tools.file.TYPE_NONE)) {
 			if (ko.dialogs.okCancel(sv.translate("R interpreter is not" +
-				"(correctly) configured in Preferences. Do you want to do it now?"),
+				" (correctly) configured in Preferences. Do you want to do it now?"),
 				"OK", null, "SciViews-K") == "OK") {
-				this.configure();
+				this.configureR();
 			}
 			return;
 		}

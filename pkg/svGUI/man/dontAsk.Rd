@@ -17,7 +17,7 @@ dontAsk(gui = .GUI)
 }
 
 \details{
-  Methods for 'gui' objects can dispatch as usuang using
+  Methods for 'gui' objects can dispatch as usual using
   \code{amethod(...., gui = agui)} but note that these methods do not dispatch
   on first provided argument, but to the named argument \code{gui}. There is
   another way to call 'gui' methods: \code{agui$amethod(....)}. This may be a

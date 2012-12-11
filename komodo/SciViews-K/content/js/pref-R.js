@@ -185,245 +185,282 @@ function _populateRInterps () {
 // For menulists, take the value argument/(or text in the textbox), and append
 // it as new element to the list if it is new, otherwise set as selected
 function PrefR_OnLoad () {
-	var p = parent;
-	while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
-	var prefExecutable;
-	var prefset = parent.hPrefWindow.prefset;
-	var prefName = 'sciviews.r.interpreter';
-    var menu = document.getElementById("sciviews.r.batchinterp");
-    menu.removeAllItems();
-    var platform = navigator.platform.substr(0,3);
-    var tmp = {}, required, res;
-    for (var i in apps) {
-		if (apps[i].platform.split(',').indexOf(platform) != -1) {
-			required = apps[i].required.split(',');
-			res = true;
-			for (var k in required) {
-				// Take care that R.app on the Mac is a directory!
-				if (!sv.tools.file.whereIs(required[k]) &&
-					(sv.tools.file.exists(required[k]) ==
-					sv.tools.file.TYPE_NONE)) res = false;
-			}			
-			if (res) tmp[apps[i].id] = apps[i];
+	try {
+		var p = parent;
+		while (p.opener && (p = p.opener) && !sv) if (p.sv) sv = p.sv;
+		var prefExecutable;
+		var prefset = parent.hPrefWindow.prefset;
+		var prefName = 'sciviews.r.interpreter';
+		var menu = document.getElementById("sciviews.r.batchinterp");
+		menu.removeAllItems();
+		var platform = navigator.platform.substr(0,3);
+		var tmp = {}, required, res;
+		for (var i in apps) {
+			if (apps[i].platform.split(',').indexOf(platform) != -1) {
+				required = apps[i].required.split(',');
+				res = true;
+				for (var k in required) {
+					// Take care that R.app on the Mac is a directory!
+					if (!sv.tools.file.whereIs(required[k]) &&
+						(sv.tools.file.exists(required[k]) ==
+						sv.tools.file.TYPE_NONE)) res = false;
+				}			
+				if (res) tmp[apps[i].id] = apps[i];
+			}
 		}
+		apps = tmp;
+		for (var i in apps)
+			menu.appendItem(apps[i].label, i, null);
+		// Update CRAN mirror list (first local, then tries remote at CRAN)
+		if (!PrefR_UpdateCranMirrors(true)) PrefR_UpdateCranMirrors(false);
+		_menuListSetValues(); // Restore saved menu values
+		sv.prefs.checkAll(); // Check all preferences are ok, or restore defaults
+		_populateRInterps();
+		parent.hPrefWindow.onpageload();
+		PrefR_updateCommandLine(true);
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while loading R preferences"
+			+ " PrefR_OnLoad():\n\n (" + e + ")", true);
 	}
-    apps = tmp;
-    for (var i in apps)
-		menu.appendItem(apps[i].label, i, null);
-    // Update CRAN mirror list (first local, then tries remote at CRAN)
-	if (!PrefR_UpdateCranMirrors(true)) PrefR_UpdateCranMirrors(false);
-	_menuListSetValues(); // Restore saved menu values
-	sv.prefs.checkAll(); // Check all preferences are ok, or restore defaults
-    _populateRInterps();
-	parent.hPrefWindow.onpageload();
-    PrefR_updateCommandLine(true);
 }
 
 // Change a menu list
 function PrefR_editMenulist (el, value) {
-	var curValue = (!value)?  sv.tools.strings.trim(el.value) : value;
-	if (!curValue) return;
-	var values = [], val;
-	for (var j = 0; j < el.itemCount; j++) {
-		val = el.getItemAtIndex(j).value;
-		if (val == curValue) {
-			el.selectedIndex = j;
-			return;
+	try {
+		var curValue = (!value)?  sv.tools.strings.trim(el.value) : value;
+		if (!curValue) return;
+		var values = [], val;
+		for (var j = 0; j < el.itemCount; j++) {
+			val = el.getItemAtIndex(j).value;
+			if (val == curValue) {
+				el.selectedIndex = j;
+				return;
+			}
+			values.push(val);
 		}
-		values.push(val);
+		el.appendItem(curValue, curValue, null);
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while editing R preferences menu list"
+			+ " editMenulist(el, value):\n\n (" + e + ")", true);
 	}
-	el.appendItem(curValue, curValue, null);
 }
 
 function PrefR_svRDefaultInterpreterOnSelect (event) {
-	var os = Components.classes['@activestate.com/koOs;1']
-		.getService(Components.interfaces.koIOs);
-
-	var menuApplication = document.getElementById("sciviews.r.batchinterp");
-    var menuInterpreters = document.getElementById("sciviews.r.interpreter");
-
-	// Just in case
-	if (sv.tools.file.exists(menuInterpreters.value) ==
-	   sv.tools.file.TYPE_NONE) {
-		ko.dialogs.alert("Cannot find file: " + menuInterpreters.value, null,
-			"SciViews-K preferences");
+	try {
+		var os = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs);
+	
+		var menuApplication = document.getElementById("sciviews.r.batchinterp");
+		var menuInterpreters = document.getElementById("sciviews.r.interpreter");
+	
+		// Just in case
+		if (sv.tools.file.exists(menuInterpreters.value) ==
+		   sv.tools.file.TYPE_NONE) {
+			ko.dialogs.alert("Cannot find file: " + menuInterpreters.value, null,
+				"SciViews-K preferences");
+		}
+		
+		var app = os.path.basename(menuInterpreters.value);
+		if (!(menuApplication.value in apps) ||
+			apps[menuApplication.value].app != app) {
+			var i;
+			for (i in apps)
+				if (apps[i].app == app) break;
+			menuApplication.value = i;
+		}
+		PrefR_updateCommandLine(true);
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while selecting default R interpreter"
+			+ " PrefR_svRDefaultInterpreterOnSelect(event):\n\n (" + e + ")", true);
 	}
-    
-	var app = os.path.basename(menuInterpreters.value);
-    if (!(menuApplication.value in apps) ||
-		apps[menuApplication.value].app != app) {
-        var i;
-        for (i in apps)
-			if (apps[i].app == app) break;
-        menuApplication.value = i;
-    }
-    PrefR_updateCommandLine(true);
 }
 
 function PrefR_svRApplicationOnSelect (event) {
-	var menuApplication = document.getElementById("sciviews.r.batchinterp");
-    var menuInterpreters = document.getElementById("sciviews.r.interpreter");
-    if (!(menuApplication.value in apps)) return;
-	var app = apps[menuApplication.value].app;
-	//var sel = menuApplication.selectedItem;
-	var os = Components.classes['@activestate.com/koOs;1']
-		.getService(Components.interfaces.koIOs);
-    if (os.path.basename(menuInterpreters.value) != app) {
-        //TODO: modify to use with:
-        //PrefR_menulistSetValue(menuInterpreters, value, "value", null);
-		var item;
-        for (var i = 0; i <= menuInterpreters.itemCount; i++) {
-            item = menuInterpreters.getItemAtIndex(i);
-            if (item) {
-                if (os.path.basename(item.getAttribute("value")) == app) {
-                    menuInterpreters.selectedIndex = i;
-                    break;
-                }
-            }
-        }
-    }
-    PrefR_updateCommandLine(true);
+	try {
+		var menuApplication = document.getElementById("sciviews.r.batchinterp");
+		var menuInterpreters = document.getElementById("sciviews.r.interpreter");
+		if (!(menuApplication.value in apps)) return;
+		var app = apps[menuApplication.value].app;
+		//var sel = menuApplication.selectedItem;
+		var os = Components.classes['@activestate.com/koOs;1']
+			.getService(Components.interfaces.koIOs);
+		if (os.path.basename(menuInterpreters.value) != app) {
+			//TODO: modify to use with:
+			//PrefR_menulistSetValue(menuInterpreters, value, "value", null);
+			var item;
+			for (var i = 0; i <= menuInterpreters.itemCount; i++) {
+				item = menuInterpreters.getItemAtIndex(i);
+				if (item) {
+					if (os.path.basename(item.getAttribute("value")) == app) {
+						menuInterpreters.selectedIndex = i;
+						break;
+					}
+				}
+			}
+		}
+		PrefR_updateCommandLine(true);
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while selecting R application"
+			+ " PrefR_svRApplicationOnSelect(event):\n\n (" + e + ")", true);
+	}
 }
 
 function PrefR_updateCommandLine (update) {
-    var appId = document.getElementById("sciviews.r.batchinterp").value;
-    var appPath = document.getElementById("sciviews.r.interpreter").value;
-    if (!appId || !appPath) return("");
-	var cmdArgs = document.getElementById("sciviews.r.args").value;
-	var args1 = "";
-
-	if (document.getElementById("sciviews.pkgs.sciviews").checked)
-			args1 += " --svStartPkgs=SciViews";
-
-   	var cwd = sv.tools.file.path("ProfD", "extensions",
-		"sciviewsk@sciviews.org", "defaults");
-
-	cmdArgs = cmdArgs.replace(/\s*--mdi/, "");
-
-	var argsPos = cmdArgs.indexOf("--args");
-	if (argsPos != -1) {
-		args1 += " " + sv.tools.strings.trim(cmdArgs.substring(argsPos + 6));
-		cmdArgs = cmdArgs.substring(0, argsPos);
+	try {
+		var appId = document.getElementById("sciviews.r.batchinterp").value;
+		var appPath = document.getElementById("sciviews.r.interpreter").value;
+		if (!appId || !appPath) return("");
+		var cmdArgs = document.getElementById("sciviews.r.args").value;
+		var args1 = "";
+	
+		if (document.getElementById("sciviews.pkgs.sciviews").checked)
+				args1 += " --svStartPkgs=SciViews";
+	
+		var cwd = sv.tools.file.path("ProfD", "extensions",
+			"sciviewsk@sciviews.org", "defaults");
+	
+		cmdArgs = cmdArgs.replace(/\s*--mdi/, "");
+	
+		var argsPos = cmdArgs.indexOf("--args");
+		if (argsPos != -1) {
+			args1 += " " + sv.tools.strings.trim(cmdArgs.substring(argsPos + 6));
+			cmdArgs = cmdArgs.substring(0, argsPos);
+		}
+	
+		args1 = sv.tools.strings.trim(args1);
+		if (args1)
+			args1 = " --args " + args1;
+	
+		var cmd = apps[appId].path;
+		cmd = cmd.replace("%Path%", appPath).replace("%title%", "SciViews-R")
+			.replace("%cwd%", cwd).replace("%args%", cmdArgs) + args1;
+	
+		if (update)
+			document.getElementById('R_command').value = cmd;
+	
+		return(cmd);
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while updating R command line"
+			+ " PrefR_updateCommandLine(update):\n\n (" + e + ")", true);
+		return("???");
 	}
-
-	args1 = sv.tools.strings.trim(args1);
-	if (args1)
-		args1 = " --args " + args1;
-
-    var cmd = apps[appId].path;
-	cmd = cmd.replace("%Path%", appPath).replace("%title%", "SciViews-R")
-		.replace("%cwd%", cwd).replace("%args%", cmdArgs) + args1;
-
-    if (update)
-        document.getElementById('R_command').value = cmd;
-
-    return(cmd);
 }
 
 function PrefR_setExecutable (path) {
-    var menu = document.getElementById("sciviews.r.interpreter");
-
-    if (!path || !sv.tools.file.exists(path)) {
-		var os = Components.classes['@activestate.com/koOs;1']
-			.getService(Components.interfaces.koIOs);
-		path = menu.value;
-        path = ko.filepicker.openExeFile(os.path.dirname(path),
-			os.path.basename(path));
+    try {
+		var menu = document.getElementById("sciviews.r.interpreter");
+	
+		if (!path || !sv.tools.file.exists(path)) {
+			var os = Components.classes['@activestate.com/koOs;1']
+				.getService(Components.interfaces.koIOs);
+			path = menu.value;
+			path = ko.filepicker.openExeFile(os.path.dirname(path),
+				os.path.basename(path));
+		}
+		if (!path) return;
+		path = os.path.normpath(path);
+		PrefR_editMenulist(menu, path);
+		menu.value = path;
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while setting R executable"
+			+ " PrefR_setExecutable(path):\n\n (" + e + ")", true);
 	}
-    if (!path) return;
-    path = os.path.normpath(path);
-    PrefR_editMenulist(menu, path);
-    menu.value = path;
 }
 
 // Get CRAN mirrors list - independently of R
 function PrefR_UpdateCranMirrors (localOnly) {
-	var svFile = sv.tools.file;
-
-	// Get data in as CSV
-	var csvName = "CRAN_mirrors.csv";
-	var localDir = svFile.path("PrefD", "extensions", "sciviewsk@sciviews.org");
-	var path, csvContent;
-	var arrData;
-	if (!localOnly) {
-		try {
-			csvContent = svFile.readURI("http://cran.r-project.org/" + csvName);
-		} catch(e) {}
-	}
-
-	var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
-		.createInstance(Components.interfaces.nsIJSON);
-
-	var jsonFile = svFile.path(localDir, "CRAN_mirrors.json");
-	var alreadyCached = false;
-	if (!csvContent) {
-		// First, check if there is serialized version
-		alreadyCached = svFile.exists(jsonFile);
-		if (alreadyCached) {
-			arrData = nativeJSON.decode(svFile.read(jsonFile));
-		} else {
-			var localPaths = [ ];
-			var platform = navigator.platform.toLowerCase().substr(0,3);
-			if (platform == "win")
-				localPaths.push(svFile.path(
-					sv.prefs.getPref("sciviews.r.interpreter"), "../../doc"));
-			else { // Linux or Mac OS X
-				localPaths.push("/usr/share/R/doc"); // Linux
-				localPaths.push("/usr/local/share/R/doc"); // Linux
-				localPaths.push("/Library/Frameworks/R.framework/Versions/" +
-					"Current/Resources/doc"); // Mac OS X
-			}
-			var file;
-			for (i in localPaths) {
-				file = svFile.getfile(localPaths[i], csvName);
-				if (file.exists()) {
-					csvContent = svFile.read(file.path);
-					break;
+	try {
+		var svFile = sv.tools.file;
+	
+		// Get data in as CSV
+		var csvName = "CRAN_mirrors.csv";
+		var localDir = svFile.path("PrefD", "extensions", "sciviewsk@sciviews.org");
+		var path, csvContent;
+		var arrData;
+		if (!localOnly) {
+			try {
+				csvContent = svFile.readURI("http://cran.r-project.org/" + csvName);
+			} catch(e) {}
+		}
+	
+		var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
+			.createInstance(Components.interfaces.nsIJSON);
+	
+		var jsonFile = svFile.path(localDir, "CRAN_mirrors.json");
+		var alreadyCached = false;
+		if (!csvContent) {
+			// First, check if there is serialized version
+			alreadyCached = svFile.exists(jsonFile);
+			if (alreadyCached) {
+				arrData = nativeJSON.decode(svFile.read(jsonFile));
+			} else {
+				var localPaths = [ ];
+				var platform = navigator.platform.toLowerCase().substr(0,3);
+				if (platform == "win")
+					localPaths.push(svFile.path(
+						sv.prefs.getPref("sciviews.r.interpreter"), "../../doc"));
+				else { // Linux or Mac OS X
+					localPaths.push("/usr/share/R/doc"); // Linux
+					localPaths.push("/usr/local/share/R/doc"); // Linux
+					localPaths.push("/Library/Frameworks/R.framework/Versions/" +
+						"Current/Resources/doc"); // Mac OS X
+				}
+				var file;
+				for (i in localPaths) {
+					file = svFile.getfile(localPaths[i], csvName);
+					if (file.exists()) {
+						csvContent = svFile.read(file.path);
+						break;
+					}
 				}
 			}
 		}
-	}
-	if (!csvContent && !arrData) return(false);
-	// TODO: Add error message when mirrors list cannot be obtained
-
-	if (!arrData) {
-		// Convert CSV string to Array
-		arrData = sv.tools.array.CSVToArray(csvContent);
-		var colNames = arrData.shift(1);
-		var colName = colNames.indexOf("Name");
-		var colURL = colNames.indexOf("URL");
-		var colOK = colNames.indexOf("OK");
-		var name, url, item;
-		for (i in arrData) {
-			item = arrData[i];
-			if (item[colOK] == "1"
-				// Fix for broken entries
-				&& (item[colURL].search(/^(f|ht)tp:\/\//) === 0)) {
-				arrData[i] = [item[colName], item[colURL]];
+		if (!csvContent && !arrData) return(false);
+		// TODO: Add error message when mirrors list cannot be obtained
+	
+		if (!arrData) {
+			// Convert CSV string to Array
+			arrData = sv.tools.array.CSVToArray(csvContent);
+			var colNames = arrData.shift(1);
+			var colName = colNames.indexOf("Name");
+			var colURL = colNames.indexOf("URL");
+			var colOK = colNames.indexOf("OK");
+			var name, url, item;
+			for (i in arrData) {
+				item = arrData[i];
+				if (item[colOK] == "1"
+					// Fix for broken entries
+					&& (item[colURL].search(/^(f|ht)tp:\/\//) === 0)) {
+					arrData[i] = [item[colName], item[colURL]];
+				}
 			}
+			// Add main server at the beginning
+			arrData.unshift(["Main CRAN server", "http://cran.r-project.org/"]);
 		}
-		// Add main server at the beginning
-		arrData.unshift(["Main CRAN server", "http://cran.r-project.org/"]);
+		if (!arrData) return(false);
+	
+		if (!localOnly || !alreadyCached) {
+			// If updated from web, or not cached yet,
+			// serialize and save to file for faster later use
+			svFile.write(jsonFile, nativeJSON.encode(arrData), 'utf-8');
+		}
+	
+		// Put arrData into MenuList
+		var menuList = document.getElementById("r.cran.mirror");
+		var value =
+			menuList.value? menuList.value : sv.prefs.getPref("r.cran.mirror");
+		menuList.removeAllItems();
+		for (i in arrData) {
+			if (arrData[i][0])
+				menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
+		}
+		menuList.value = value;
+		return(true);
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while setting R executable"
+			+ " PrefR_UpdateCranMirrors(localOnly):\n\n (" + e + ")", true);
+		return(true);
 	}
-	if (!arrData) return(false);
-
-	if (!localOnly || !alreadyCached) {
-		// If updated from web, or not cached yet,
-		// serialize and save to file for faster later use
-		svFile.write(jsonFile, nativeJSON.encode(arrData), 'utf-8');
-	}
-
-	// Put arrData into MenuList
-	var menuList = document.getElementById("CRANMirror");
-	var value =
-		menuList.value? menuList.value : sv.prefs.getPref("r.cran.mirror");
-	menuList.removeAllItems();
-	for (i in arrData) {
-		if (arrData[i][0])
-			menuList.appendItem(arrData[i][0], arrData[i][1], arrData[i][1]);
-	}
-	menuList.value = value;
-	return(true);
 }
 
 
@@ -433,72 +470,81 @@ function OnPreferencePageLoading (prefset) {
 }
 
 function OnPreferencePageOK (prefset) {	
-	prefset = parent.hPrefWindow.prefset;
-	
-	// Set R interpreter
-	prefset.setStringPref("sciviews.r.interpreter",
-		document.getElementById("sciviews.r.interpreter").value);
-	prefset.setStringPref("sciviews.r.batchinterp",
-		document.getElementById('sciviews.r.batchinterp')
-		.selectedItem.getAttribute("value"));
-	prefset.setStringPref("svRCommand", PrefR_updateCommandLine(false));
-	
-	// Set decimal and field separator
-	var outDec = document.getElementById('r.csv.dec').value;
-	var outSep = document.getElementById('r.csv.sep').value;	
-    if (outDec == outSep) {
-        parent.switchToPanel("svPrefRItem");
-        ko.dialogs.alert(
-			"Decimal separator cannot be the same as field separator.", null,
-			"SciViews-K preferences");
-        return(false);
-    }
-	if (outDec != prefset.getStringPref('r.csv.dec')
-		|| outSep != prefset.getStringPref('r.csv.sep')) {
-		prefset.setStringPref("r.csv.sep", outSep);
-		prefset.setStringPref("r.csv.dec", outDec);
-		if (sv.r.running) {
-			sv.r.evalHidden('options(OutDec = "' + outDec + '", ' +
-			'OutSep = "' + outSep + '")', true);
-		}
-	}
-	
-	// Set the R type
-	var rType = document.getElementById('sciviews.r.type').value;
-	prefset.setStringPref("sciviews.r.type", rType);
-	// Check if selected item is different from current sv.clientType
-	// and if R is running
-	if (rType != sv.clientType && sv.r.test()) {
-		// R is running, do not change right now
-		sv.alert("R server type changed",
-			"The R server type you selected will be" +
-			" used after restarting R!");
-	} else {
-		// Change current server type too
-		sv.socket.setSocketType(rType);
-	}
-	
-	_menuListGetValues();
-	
-	// Restart socket server if running and port or channel changed
-	var koType = document.getElementById('sciviews.ko.type').value;
-	var koPort = parseInt(document.getElementById('sciviews.ko.port').value);
-	if (koPort != prefset.getDoublePref("sciviews.ko.port") ||
-		koType != sv.serverType) {
-		// Stop server with old config, if it is started
-		var isStarted = sv.socket.serverIsStarted;
-		if (isStarted) sv.socket.serverStop();
-		prefset.setDoublePref("sciviews.ko.port", koPort);
-		prefset.setStringPref("sciviews.ko.type", koType);
+	try {
+		prefset = parent.hPrefWindow.prefset;
+		// Set R interpreter
+		prefset.setStringPref("sciviews.r.interpreter",
+			document.getElementById("sciviews.r.interpreter").value);
+		prefset.setStringPref("sciviews.r.batchinterp",
+			document.getElementById('sciviews.r.batchinterp')
+				.selectedItem.getAttribute("value"));
+		prefset.setStringPref("svRCommand", PrefR_updateCommandLine(false));
 		
-		sv.serverType = koType;
-		// Start server with new config, if previous one was started
-		if (isStarted) sv.socket.serverStart();
-		// Change config in R, if it is running and connected
-		if (sv.r.running) {
-			sv.r.evalHidden('options(ko.kotype = "' + koType + '", ' +
-				'ko.port = "' + koPort + '")', true);
+		// Set decimal and field separator
+		var outDec = document.getElementById('r.csv.dec').value;
+		var outSep = document.getElementById('r.csv.sep').value;	
+		if (outDec == outSep) {
+			parent.switchToPanel("svPrefRItem");
+			ko.dialogs.alert(
+				"Decimal separator cannot be the same as field separator.", null,
+				"SciViews-K preferences");
+			return(false);
 		}
+		if (outDec != prefset.getStringPref('r.csv.dec')
+			|| outSep != prefset.getStringPref('r.csv.sep')) {
+			prefset.setStringPref("r.csv.sep", outSep);
+			prefset.setStringPref("r.csv.dec", outDec);
+			if (sv.r.running) {
+				sv.r.evalHidden('options(OutDec = "' + outDec + '", ' +
+				'OutSep = "' + outSep + '")', true);
+			}
+		}
+		
+		// Set the R type
+		var rType = document.getElementById('sciviews.r.type').value;
+		prefset.setStringPref("sciviews.r.type", rType);
+		var rPort = parseInt(document.getElementById('sciviews.r.port').value);
+		prefset.setLongPref("sciviews.r.port", rPort);
+		// TODO: shouldn't we test for rPort too?
+		// Check if selected item is different from current sv.clientType
+		// and if R is running
+		if (rType != sv.clientType && sv.r.test()) {
+			// R is running, do not change right now
+			sv.alert("R server type changed",
+				"The R server type you selected will be" +
+				" used after restarting R!");
+		} else {
+			// Change current server type too
+			sv.socket.setSocketType(rType);
+		}
+
+		_menuListGetValues();
+		
+		// Restart socket server if running and port or channel changed
+		var koType = document.getElementById('sciviews.ko.type').value;
+		var koPort = parseInt(document.getElementById('sciviews.ko.port').value);
+		if (koPort != prefset.getLongPref("sciviews.ko.port") ||
+			koType != sv.serverType) {
+			// Stop server with old config, if it is started
+			var isStarted = sv.socket.serverIsStarted;
+			if (isStarted) sv.socket.serverStop();
+			prefset.setLongPref("sciviews.ko.port", koPort);
+			prefset.setStringPref("sciviews.ko.type", koType);
+			
+			sv.serverType = koType;
+			// Start server with new config, if previous one was started
+			if (isStarted) sv.socket.serverStart();
+			// Change config in R, if it is running and connected
+			if (sv.r.running) {
+				sv.r.evalHidden('options(ko.kotype = "' + koType + '", ' +
+					'ko.port = "' + koPort + '")', true);
+			}
+		}
+		return(true);
+	} catch (e) {
+		sv.log.exception(e, "Unknown error while setting R preferences"
+			+ " OnPreferencePageOK(prefset):\n\n (" + e + ")", true);
+		// Should really return false... but then, we don't exit from the page!
+		return(true);
 	}
-	return(true);
 }
