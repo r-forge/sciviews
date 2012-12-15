@@ -537,7 +537,7 @@
 	<!-- Ko7 -->
 	<ko-pane id="workspace_left_area">
 		<browser type="ko-widget"
-			id="rbrowser_tabpanel"
+			id="sciviews_robjects_tab"
 			label="&sciviews.robjects.tab;"
 			src="chrome://sciviewsk/content/RObjects2Pane.xul"
 			tab_onfocus="sv.robjects.focus();"/>
@@ -545,7 +545,7 @@
 	
 		<ko-pane id="workspace_bottom_area">
 		<browser type="ko-widget"
-			id="rconsole_tabpanel"
+			id="sciviews_rconsole_tab"
 			label="&sciviews.console.tab;"
 			src="chrome://sciviewsk/content/RConsole2Pane.xul"
 			tab_onfocus="sv.rconsole.focus();"/>

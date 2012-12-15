@@ -445,7 +445,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 			// one get null if no server is connected to this port.
 			// Otherwise, httpRequest.status should be 200 for success.
 			httpRequest.open('HEAD', url, false);
-			httpRequest.send('');
+			httpRequest.send(''); //DEBUG: error => data: no!?
 			var res = httpRequest.responseText;
 			if (res != '') { // This must be a R socket server
 				if (sv.clientType != "socket") {

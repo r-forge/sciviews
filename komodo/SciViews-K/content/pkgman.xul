@@ -362,7 +362,7 @@
 		}
 
 		function init () {
-//			var rDir = sv.file.path("ProfD", "extensions", "sciviewsk@sciviews.org",
+//			var rDir = sv.tools.file.path("ProfD", "extensions", "sciviewsk@sciviews.org",
 //				"R", "pkgman.R");
 //			sv.r.evalHidden('if (!exists("pkgManGetInstalled", ' +
 //				'as.environment("komodoConnection"))) ' +

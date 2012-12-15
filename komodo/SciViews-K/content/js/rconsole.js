@@ -92,6 +92,10 @@ sv.rconsole = {};
     
     function _ClearUI () {
         var descWidget = document.getElementById("rconsole-desc");
+        // In ko7, we need a different code!
+        if (descWidget == null) descWidget = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-desc");
         descWidget.style.setProperty("color", "black", "");
         descWidget.removeAttribute("value");
         descWidget.removeAttribute("_command");
@@ -113,6 +117,10 @@ sv.rconsole = {};
     
             // TODO: shouldn't we eliminate this???
             var treeWidget = document.getElementById("rconsole-tree");
+            // In ko7, we need a different code!
+            if (treeWidget == null) treeWidget = document
+            	.getElementById("sciviews_rconsole_tab")
+            	.contentDocument.getElementById("rconsole-tree");
             var boxObject = treeWidget.treeBoxObject
                 .QueryInterface(Components.interfaces.nsITreeBoxObject);
         
@@ -121,7 +129,10 @@ sv.rconsole = {};
                 // visible before we can assign the view to it
                 RConsole_Show(window);
             }
-            _gRTerminalView = document.getElementById("rconsole-scintilla");
+            _gRTerminalView = (document.getElementById("rconsole-scintilla") == null) ?
+                document.getElementById("sciviews_rconsole_tab")
+                    .contentDocument.getElementById("rconsole-scintilla") :
+                document.getElementById("rconsole-scintilla");
             _gRTerminalView.init();
             _gRTerminalView.initWithTerminal(_gRTerminalHandler);
             boxObject.view = _gRTerminalHandler;
@@ -130,7 +141,12 @@ sv.rconsole = {};
             //["mousedown", "focus"].forEach(function(eventname) {
             //        window.frameElement.addEventListener(eventname, function(event) {
             //        if (event.originalTarget == event.target) {
-            //            document.getElementById("rconsole-deck").focus();
+            //          var deck = document.getElementById("rconsole-deck");
+            //          // In ko7, we need a different code!
+            //          if (deck == null) deck = document
+            //          	.getElementById("sciviews_rconsole_tab")
+            //          	.contentDocument.getElementById("rconsole-deck");	
+            //          deck.focus();
             //        }
             //    }, false);
             //});
@@ -141,12 +157,20 @@ sv.rconsole = {};
             // by appending the prompt to it
             sv.cmdout.append(":> ", false);
             // Observe keypress event on the R Console panel
-            document.getElementById("rconsole-scintilla")
-                .addEventListener('keypress', sv.rconsole.rconsoleOnKeyPress,
+            var rcons = document.getElementById("rconsole-scintilla");
+            // In ko7, we need a different code!
+            if (rcons == null) rcons = document
+            	.getElementById("sciviews_rconsole_tab")
+            	.contentDocument.getElementById("rconsole-scintilla");	
+            rcons.addEventListener('keypress', sv.rconsole.rconsoleOnKeyPress,
                 true);            
             // And observe keypress events on the R Output panel
-            document.getElementById("rconsole-scintilla2")
-                .addEventListener('keypress', sv.rconsole.routputOnKeyPress,
+            var rcons2 = document.getElementById("rconsole-scintilla2");
+            // In ko7, we need a different code!
+            if (rcons2 == null) rcons2 = document
+                .getElementById("sciviews_rconsole_tab")
+                .contentDocument.getElementById("rconsole-scintilla2");	
+            rcons2.addEventListener('keypress', sv.rconsole.routputOnKeyPress,
                 true);
         } finally {
             ko.main.addWillCloseHandler(sv.rconsole.finalize);
@@ -199,7 +223,12 @@ sv.rconsole = {};
         _ClearUI();
         
         // Clear the console and make sure work wrap is none
-        //var scimoz = document.getElementById("rconsole-scintilla").scimoz;
+        var terminalView = document.getElementById("rconsole-scintilla");
+        // In ko7, we need a different code!
+        if (terminalView == null) terminalView = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-scintilla");
+        //var scimoz = terminalView.scimoz;
         // Note the width of the R console in characters is approximately
         //Math.floor(window.innerWidth / scimoz.textWidth(0, "0")) - 7
         // => set this option in R everytime the Komodo window size changes!
@@ -213,16 +242,23 @@ sv.rconsole = {};
             .getService(Components.interfaces.koILastErrorService);
         _gRTerminalView.startSession(clearContent);
         _gRTerminalHandler.setCwd(cwd);
-        var terminalView = document.getElementById("rconsole-scintilla");
         terminalView.cwd = cwd;
     
         var descWidget = document.getElementById("rconsole-desc");
+        // In ko7, we need a different code!
+        if (descWidget == null) descWidget = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-desc");
         descWidget.setAttribute("value", "R is running (" + command + ")");
         // Store the command name for later use
         descWidget.setAttribute("_command", command);
     
         if (clearContent) {
             var listButton = document.getElementById("rconsole-list-button");
+            // In ko7, we need a different code!
+            if (listButton == null) listButton = document
+                .getElementById("sciviews_rconsole_tab")
+                .contentDocument.getElementById("rconsole-list-button");
             listButton.setAttribute("disabled", "true");
             _gRTerminalView.clear();
         }
@@ -234,6 +270,10 @@ sv.rconsole = {};
         _gRTerminalView.endSession();
     
         var descWidget = document.getElementById("rconsole-desc");
+        // In ko7, we need a different code!
+        if (descWidget == null) descWidget = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-desc");
         var command = descWidget.getAttribute("_command");
         var msg = null;
         var osSvc = Components.classes["@activestate.com/koOs;1"]
@@ -250,6 +290,10 @@ sv.rconsole = {};
     
         _gRProcess = null;
         var closeButton = document.getElementById("rconsole-close-button");
+        // In ko7, we need a different code!
+        if (closeButton == null) closeButton = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-close-button");
         closeButton.setAttribute("disabled", "true");
     }
     
@@ -343,7 +387,7 @@ sv.rconsole = {};
     
     // Clear the R console and the command history
     this.clear = function RConsole_Clear () {
-        //var scimoz = document.getElementById("runoutput-scintilla").scimoz;
+        //var scimoz = _gTerminalView;
         //var eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
         //var readOnly = scimoz.readOnly;
         //try {
@@ -366,7 +410,6 @@ sv.rconsole = {};
         if (typeof show == 'undefined' || show == null) show = true;
         if (show) ko.uilayout.ensureTabShown("sciviews_rconsole_tab", false);
         
-        //var scimoz = document.getElementById("runoutput-scintilla").scimoz;
         var scimoz = _gRTerminalView;
         var eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
         if (newline || newline === undefined) command += eolChar;
@@ -399,6 +442,10 @@ sv.rconsole = {};
         if (_gRTerminalHandler.active) {
             _gRProcess = process;
             var closeButton = document.getElementById("rconsole-close-button");
+            // In ko7, we need a different code!
+            if (closeButton == null) closeButton = document
+                .getElementById("sciviews_rconsole_tab")
+                .contentDocument.getElementById("rconsole-close-button");
             closeButton.removeAttribute("disabled");
         }
     }
@@ -410,13 +457,21 @@ sv.rconsole = {};
     
     function _SetView (editor, deck) {
         // Ignore editor, always use the window we're in
-        var deckWidget = window.document.getElementById("rconsole-deck");
+        var deckWidget = document.getElementById("rconsole-deck");
+        // In ko7, we need a different code!
+        if (deckWidget == null) deckWidget = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-deck");
         deckWidget.setAttribute("selectedIndex", deck);
     }
     
     this.toggleView = function RConsole_ToggleView (newview) {
         if (typeof newview == 'undefined' || newview == null) {
             var deckWidget = document.getElementById("rconsole-deck");
+            // In ko7, we need a different code!
+            if (deckWidget == null) deckWidget = document
+                .getElementById("sciviews_rconsole_tab")
+                .contentDocument.getElementById("rconsole-deck");
             if (deckWidget.getAttribute("selectedIndex") == 1) {
                 newview = 0;
             } else {
@@ -433,8 +488,12 @@ sv.rconsole = {};
         
     this.onFocus = function RConsole_OnFocus(event) {
         if (event.originalTarget != window) return;
-        var selected = window.document.getElementById("rconsole-deck")
-            .selectedPanel;
+        var deckWidget = document.getElementById("rconsole-deck");
+        // In ko7, we need a different code!
+        if (deckWidget == null) deckWidget = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-deck");
+        var selected = deckWidget.selectedPanel;
         if ("scintilla" in selected) {
             selected.scintilla.focus();
         } else {
