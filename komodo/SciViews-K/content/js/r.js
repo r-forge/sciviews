@@ -382,7 +382,7 @@ sv.r.setwd = function (dir, ask, type) {
 					var file = ko.places.manager.getSelectedItem().file;
 					dir = file.isDirectory? file.path : file.dirName;
 				} catch(e) {
-					dir = sv.file.pathFromURI(ko.places.manager.currentPlace);
+					dir = sv.tools.file.pathFromURI(ko.places.manager.currentPlace);
 				}
 			}
 			break;
@@ -787,7 +787,7 @@ sv.r.pager = function (file, title, cleanUp) {
 	sv.command.openHelp(rSearchUrl + "?file:" + file);
 	// Do we clean up the file after use?
 	if (cleanUp || cleanUp === undefined)
-		window.setTimeout("try { sv.file.getfile('" + file +
+		window.setTimeout("try { sv.tools.file.getfile('" + file +
 			"').remove(false); } catch(e) {}", 10000);
 }
 

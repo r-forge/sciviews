@@ -54,6 +54,8 @@
 //
 // TODO: look at sv.cmdout in SciViews-K-dev... but these are two separate forks
 //       really => not easy to mix!
+// TODO: use sv.addNotification(msg, severity, timeout); instead of
+//       ko.statusbar.addMessage()!!!
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -637,7 +639,7 @@ if (ko.notifications) {
 	sv.addNotification = function (msg, severity, timeout) {
 		var sm = Components.classes["@activestate.com/koStatusMessage;1"]
 			.createInstance(Components.interfaces.koIStatusMessage);
-		sm.category = "SV";
+		sm.category = "sciviewsk";
 		sm.msg = msg;
 		sm.log = true;
 		sm.severity = severity;
@@ -1173,7 +1175,7 @@ sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 	
 	// Indicate what happened
 	var levels = ["beginner", "useR", "developeR", "full-Komodo"]; 
-	ko.statusBar.AddMessage("Use Interface set to '" + levels[level - 1] + "'",
+	ko.statusBar.AddMessage("User interface set to '" + levels[level - 1] + "'",
 		"SciViews-K", 2000, true);
 }
 
@@ -1203,17 +1205,21 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 	
 	// Initialize the scintilla window in the R Output
 	function _init () {
+		var rcons2 = document.getElementById("rconsole-scintilla2");
+		// In ko7, we need a different code!
+        if (rcons2 == null) rcons2 = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-scintilla2");
 		// Format the scintilla window with same style as for the Komodo console
 		try {
-			var scintilla = document
-				.getElementById("rconsole-scintilla2").scintilla;
+			var scintilla = rcons2.scintilla;
 			scintilla.init();
 			scintilla.language = "Errors";
 		} catch(e) { } // We don't care of errors here (there are, because the
 		//'Errors' language assumes that a terminal is linked to scintilla!)
 		
 		// Get a reference to scimoz
-		scimoz = document.getElementById("rconsole-scintilla2").scimoz;
+		scimoz = rcons2.scimoz;
 		
 		// What EOL (end of line) character is in use here?
 		eolChar = ["\r\n", "\n", "\r"][scimoz.eOLMode];
@@ -1255,6 +1261,12 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 		// Make sure R Output is visible
 		try {
 			ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);
+		} catch(e) { } // We don't care if it fails, e.g., no buffer opened
+		// TODO: should we use this instead in ko7?
+		//try {
+		//	ko.uilayout.ensurePaneShown('sciviews_rconsole_tab', true);
+		//} catch(e) { } // We don't care if it fails, e.g., no buffer opened
+		try {
 			sv.rconsole.toggleView(1);
 			ko.views.manager.currentView.setFocus();
 		} catch(e) { } // We don't care if it fails, e.g., no buffer opened
@@ -1385,6 +1397,10 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 		} catch(e) { } // We don't care if it fails, e.g., no buffer opened
 		
 		var rconsoleDesc = document.getElementById('rconsole-desc');
+		// In ko7, we need a different code!
+        if (rconsoleDesc == null) rconsoleDesc = document
+            .getElementById("sciviews_rconsole_tab")
+            .contentDocument.getElementById("rconsole-desc");
 		rconsoleDesc.parentNode.style.backgroundColor =
 			(highlight && msg) ? "highlight" : "";
 		rconsoleDesc.style.color = "rgb(0, 0, 0)";

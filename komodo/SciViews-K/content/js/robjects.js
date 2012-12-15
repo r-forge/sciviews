@@ -315,12 +315,18 @@ sv.robjects = {};
 			var cmd1 = this.getOpenItems(true);
 			var cmd2 = this.treeData.map(function (x)
 				_getObjListCommand(x.fullName,""));
-			cmd = sv.array.unique(cmd1.concat(cmd2)).join("\n");
+			cmd = sv.tools.array.unique(cmd1.concat(cmd2)).join("\n");
 		}
 	
 		isInitialized = true;
-		if (init) document.getElementById("sciviews_robjects_objects_tree")
-			.view = this;
+		if (init) {
+			var tree = document.getElementById("sciviews_robjects_objects_tree");
+			// In ko7, we need a different code!
+			if (tree == null) tree = document	
+				.getElementById("sciviews_robjects_tab").contentDocument
+				.getElementById("sciviews_robjects_objects_tree");
+			tree.view = this;
+		}
 	
 		//print(cmd);
 		// cmd, callback, hidden
@@ -351,6 +357,10 @@ sv.robjects = {};
 	// Allow for filtering by exclusion: prepend with "!"
 	function _getFilter () {
 		var tb = document.getElementById("sciviews_robjects_filterbox");
+		// In ko7, we need a different code!
+		if (tb == null) tb = document	
+			.getElementById("sciviews_robjects_tab").contentDocument
+			.getElementById("sciviews_robjects_filterbox");
 		var obRx, text, not;
 		text = tb.value;
 		not = (text[0] == "!");
@@ -501,6 +511,10 @@ sv.robjects = {};
 		var columnName, currentElement, tree, sortDirection, realOrder, order,
 			sortDirs;
 		tree = document.getElementById("sciviews_robjects_objects_tree");
+		// In ko7, we need a different code!
+		if (tree == null) tree = document	
+			.getElementById("sciviews_robjects_tab").contentDocument
+			.getElementById("sciviews_robjects_objects_tree");
 		sortDirection = tree.getAttribute("sortDirection");
 		sortDirs = ["descending", "natural", "ascending", "descending"];
 		realOrder = sortDirs.indexOf(sortDirection) - 1;
@@ -576,8 +590,12 @@ sv.robjects = {};
 		var cols = tree.getElementsByTagName("treecol");
 		for (var i = 0; i < cols.length; i++)
 			cols[i].removeAttribute("sortDirection");
-		document.getElementById(columnName)
-			.setAttribute("sortDirection", sortDirection);
+		var columnWidget = document.getElementById(columnName);
+		// In ko7, we need a different code!
+		if (columnWidget == null) columnWidget = document	
+			.getElementById("sciviews_robjects_tab").contentDocument
+			.getElementById(columnName);
+		columnWidget.setAttribute("sortDirection", sortDirection);
 
 		if (!root || root == _this.treeData) {
 			// Sort packages always by name
@@ -836,8 +854,13 @@ sv.robjects = {};
 			pos = _this.searchPath.indexOf(path);
 			if (pos == -1) return(false);
 
-			document.getElementById("sciviews_robjects_searchpath_listbox")
-				.getItemAtIndex(pos).checked = true;
+			var listWidget = document
+				.getElementById("sciviews_robjects_searchpath_listbox");
+			// In ko7, we need a different code!
+			if (listWidget == null) listWidget = document	
+				.getElementById("sciviews_robjects_tab").contentDocument
+				.getElementById("sciviews_robjects_searchpath_listbox");
+			listWidget.getItemAtIndex(pos).checked = true;
 			_addObject(path, "", _parseObjectList, path);
 			return(true);
 		},
@@ -868,7 +891,12 @@ sv.robjects = {};
 	//
 	//	isInitialized = true;
 	//
-	//	document.getElementById("sciviews_robjects_objects_tree").view = this;
+	// var objTree = document.getElementById("sciviews_robjects_objects_tree");
+	// In ko7, we need a different code!
+	//if (objTree == null) objTree = document	
+	//	.getElementById("sciviews_robjects_tab").contentDocument
+	//	.getElementById("sciviews_robjects_objects_tree");
+	//objTree.view = this;
 	//	this.treeBox.scrollToRow(0);
 	//};
 
@@ -890,7 +918,11 @@ sv.robjects = {};
 		var pack;
 		var node = document
 			.getElementById("sciviews_robjects_searchpath_listbox");
-		var selectedLabel = node.selectedItem? node.selectedItem.label : null;
+		// In ko7, we need a different code!
+		if (node == null) node = document	
+			.getElementById("sciviews_robjects_tab").contentDocument
+			.getElementById("sciviews_robjects_searchpath_listbox");
+		var selectedLabel = node.selectedItem ? node.selectedItem.label : null;
 		
 		while (node.firstChild)
 			node.removeChild(node.firstChild);
@@ -931,10 +963,18 @@ sv.robjects = {};
 		var broadcaster = document
 			.getElementById("cmd_robjects_viewSearchPath");
 		var box = document.getElementById(broadcaster.getAttribute("box"));
+		// In ko7, we need a different code!
+		if (box == null) box = document	
+			.getElementById("sciviews_robjects_tab").contentDocument
+			.getElementById(broadcaster.getAttribute("box"));
 
 		if (what == "splitter" || what == "grippy") {
-			var state = document.getElementById("sciviews_robjects_splitter")
-				.getAttribute("state");
+			var splitter = document.getElementById("sciviews_robjects_splitter");
+			// In ko7, we need a different code!
+			if (splitter == null) splitter = document	
+				.getElementById("sciviews_robjects_tab").contentDocument
+				.getElementById("sciviews_robjects_splitter");
+			var state = splitter.getAttribute("state");
 			broadcaster.setAttribute("checked", state != "collapsed");
 		} else {
 			box.collapsed = !box.collapsed;
@@ -1155,14 +1195,15 @@ sv.robjects = {};
 		}
 
 		var filterBox = document.getElementById("sciviews_robjects_filterbox");
-
+		// In ko7, we need a different code!
+		if (filterBox == null) filterBox = document
+			.getElementById("sciviews_robjects_tab").contentDocument
+			.getElementById("sciviews_robjects_filterbox");
 		filterBox.emptyText = menuItem.getAttribute("label") + "...";
 		filterBox.focus();
 
-		//document.getElementById("sciviews_robjects_filterbox")
-		//    .setAttribute("emptytext", menuItem.getAttribute("label"));
-		//sv.alert(document.getElementById("sciviews_robjects_filterbox")
-		//    .getAttribute("emptytext"));
+		//filterBox.setAttribute("emptytext", menuItem.getAttribute("label"));
+		//sv.alert(filterBox.getAttribute("emptytext"));
 		return;
 	}
 
@@ -1196,6 +1237,10 @@ sv.robjects = {};
 		var noHelp = !isPackage || !isInPackage;
 
 		//var menuNode = document.getElementById("rObjectsContext");
+		//// In ko7, we need a different code!
+		//if (menuNode == null) menuNode = document
+		//	.getElementById("sciviews_robjects_tab").contentDocument
+		//	.getElementById("rObjectsContext");
 		var menuItems = event.target.childNodes;
 		var testDisableIf, disable = false;
 
@@ -1268,7 +1313,7 @@ sv.robjects = {};
 				var dir = sv.tools.file
 					.pathFromURI(ko.places.manager.currentPlace);
 				// In the code in SciViews-K-dev, current R working dir is used
-				//var dir = sv.file.path(sv.rconn.evalAtOnce("cat(getwd())"));
+				//var dir = sv.tools.file.path(sv.rconn.evalAtOnce("cat(getwd())"));
 			} catch(e) { return; }
 
 
@@ -1410,6 +1455,10 @@ sv.robjects = {};
 			 case 93:
 				// Windows context menu key
 				var contextMenu = document.getElementById("rObjectsContext");
+				// In ko7, we need a different code!
+				if (contextMenu == null) contextMenu = document
+					.getElementById("sciviews_robjects_tab").contentDocument
+					.getElementById("rObjectsContext");
 				_this.treeBox.ensureRowIsVisible(_this.selection.currentIndex);
 				var y = ((2 + _this.selection.currentIndex -
 					_this.treeBox.getFirstVisibleRow())
@@ -1441,7 +1490,13 @@ sv.robjects = {};
 		_this.insertName(event.ctrlKey, event.shiftKey);
 
 		// This does not have any effect
-		//document.getElementById("sciviews_robjects_objects_tree").focus();
+		//var listWidget = document
+		//	.getElementById("sciviews_robjects_searchpath_listbox");
+		//// In ko7, we need a different code!
+        //if (listWidget == null) listWidget = document
+        //    .getElementById("sciviews_robjects_tab").contentDocument
+		//	.getElementById("sciviews_robjects_searchpath_listbox");
+		//listWidget.focus();
 		event.originalTarget.focus();
 		return(false);
 	}
@@ -1500,9 +1555,13 @@ sv.robjects = {};
 			if (event.target.tagName != 'listitem')
 				return(false);
 
-			var text = _this.searchPath[document
-				.getElementById("sciviews_robjects_searchpath_listbox")
-				.selectedIndex];
+			var listWidget = document
+				.getElementById("sciviews_robjects_searchpath_listbox");
+			// In ko7, we need a different code!
+            if (listWidget == null) listWidget = document
+            	.getElementById("sciviews_robjects_tab").contentDocument
+				.getElementById("sciviews_robjects_searchpath_listbox");
+			var text = _this.searchPath[listWidget.selectedIndex];
 			transferData.data = new TransferData();
 			transferData.data.addDataForFlavour("text/unicode", text);
 			return(true);

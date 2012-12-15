@@ -195,7 +195,12 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			isWin? "r-gui" : "r-terminal");
 
 		// Width of R output defined to fit R output panel (min = 66, max = 200)
-		var scimoz = document.getElementById("rconsole-scintilla2").scimoz;
+		var rcons = document.getElementById("rconsole-scintilla2");
+		// In ko7, we need a different code!
+		if (rcons == null) rcons = document
+			.getElementById("sciviews_rconsole_tab")
+			.contentDocument.getElementById("rconsole-scintilla2");	
+		var scimoz = rcons.scimoz;
 		var width = (Math.floor(window.innerWidth /
 			scimoz.textWidth(0, "0")) - 7)
 		if (width < 66) width = 66;
@@ -305,6 +310,8 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		}
 	};
 
+	// TODO: at Komodo startup when R is running, I got in the notification pane:
+	// R is running -> R is not running -> R is running
 	this.updateRStatus = function (running) {
         // Toggle status if no argument
 		if (running === undefined) {
@@ -681,13 +688,15 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 										//'cmdset_rApp' commandset being grayed out
 										//at startup...
 			_this.updateRStatus(sv.r.test());
-			if(sv.r.running) sv.rbrowser.smartRefresh(true);
+			if(sv.r.running) sv.robjects.smartRefresh(true);
 	
 			// For completions
-			var cuih = ko.codeintel.CompletionUIHandler;
-			cuih.prototype.types.argument = cuih.prototype.types.interface;
-			cuih.prototype.types.environment = cuih.prototype.types.namespace;
-			cuih.prototype.types.file = "chrome://sciviewsk/skin/images/cb_file.png";
+
+// TODO PhG: This does not work for Komodo Edit 7!
+//			var cuih = ko.codeintel.CompletionUIHandler;
+//			cuih.prototype.types.argument = cuih.prototype.types.interface;
+//			cuih.prototype.types.environment = cuih.prototype.types.namespace;
+//			cuih.prototype.types.file = "chrome://sciviewsk/skin/images/cb_file.png";
 		}, 600);
 
 		var osName = Components.classes['@activestate.com/koOs;1']
