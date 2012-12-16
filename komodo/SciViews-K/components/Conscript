@@ -36,18 +36,18 @@
 #
 # ***** END LICENSE BLOCK *****
 
-Import(
-    'cons',
-    'build',
-    'ranRegxpcomStateFileName',
-    'mozComponentsDir',
-    'mozIdlIncludePath',
-    'idlExportDir',
-    'komodoPythonUtilsDir',
-    'siloedPython',
-    'supportDir',
-    'sdkDir',
-    'platform',
-    'havePy2to3',
-);
-$cons->InstallXpcomComponent('koRLinter.py');
+#Import(
+#    'cons',
+#    'build',
+#    'ranRegxpcomStateFileName',
+#    'mozComponentsDir',
+#    'mozIdlIncludePath',
+#    'idlExportDir',
+#    'komodoPythonUtilsDir',
+#    'siloedPython',
+#    'supportDir',
+#    'sdkDir',
+#    'platform',
+#    'havePy2to3',
+#);
+#$cons->InstallXpcomComponent('koRLinter.py');

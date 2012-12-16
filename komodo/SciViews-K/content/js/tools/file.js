@@ -374,7 +374,7 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 	} else { // Not Windows
 		this.whereIs = function (appName, firstOne) {
 			if (firstOne === undefined) firstOne = false;
-			res = _WhichAll(appName);
+			var res = _WhichAll(appName);
 			if (!res) return(null);
 			if (firstOne) {
 				return(res[0]);

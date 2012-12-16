@@ -504,7 +504,12 @@ function OnPreferencePageOK (prefset) {
 		var rType = document.getElementById('sciviews.r.type').value;
 		prefset.setStringPref("sciviews.r.type", rType);
 		var rPort = parseInt(document.getElementById('sciviews.r.port').value);
-		prefset.setLongPref("sciviews.r.port", rPort);
+		// Allow for both a long or a double for sciviews.r.port
+		try {
+			prefset.setLongPref("sciviews.r.port", rPort);
+		} catch (e) {
+			prefset.setDoublePref("sciviews.r.port", rPort);
+		}
 		// TODO: shouldn't we test for rPort too?
 		// Check if selected item is different from current sv.clientType
 		// and if R is running
@@ -523,12 +528,22 @@ function OnPreferencePageOK (prefset) {
 		// Restart socket server if running and port or channel changed
 		var koType = document.getElementById('sciviews.ko.type').value;
 		var koPort = parseInt(document.getElementById('sciviews.ko.port').value);
-		if (koPort != prefset.getLongPref("sciviews.ko.port") ||
-			koType != sv.serverType) {
+		var curKoPort; // Either long or double
+		try {
+			curKoPort = prefset.getLongPref("sciviews.ko.port");
+		} catch (e) {
+			curKoPort = parseInt(prefset.getDoublePref("sciviews.ko.port"));
+		}
+		if (koPort != curKoPort || koType != sv.serverType) {
 			// Stop server with old config, if it is started
 			var isStarted = sv.socket.serverIsStarted;
 			if (isStarted) sv.socket.serverStop();
-			prefset.setLongPref("sciviews.ko.port", koPort);
+			// Allow for both a long or a double for sciviews.ko.port
+			try {
+				prefset.setLongPref("sciviews.ko.port", koPort);
+			} catch (e) {
+				prefset.setDoublePref("sciviews.ko.port", koPort);
+			}
 			prefset.setStringPref("sciviews.ko.type", koType);
 			
 			sv.serverType = koType;

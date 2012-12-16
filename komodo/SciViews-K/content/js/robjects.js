@@ -1164,18 +1164,21 @@ sv.robjects = {};
 		var text = _this.getSelectedNames(fullNames, extended).join(', ');
 		//view.setFocus();
 		var scimoz = view.scimoz;
-		var length = scimoz.length;
+		// Sometimes, scimoz could not be defined
+		try {
+			var length = scimoz.length;
 
-		if (scimoz.getWCharAt(scimoz.selectionStart - 1)
-			.search(/^[\w\.\u0100-\uFFFF"'`,\.;:=]$/) != -1)
-			text = " " + text;
-		if (scimoz.getWCharAt(scimoz.selectionEnd)
-			.search(/^[\w\.\u0100-\uFFFF"'`]$/) != -1)
-			text += " ";
+			if (scimoz.getWCharAt(scimoz.selectionStart - 1)
+				.search(/^[\w\.\u0100-\uFFFF"'`,\.;:=]$/) != -1)
+				text = " " + text;
+			if (scimoz.getWCharAt(scimoz.selectionEnd)
+				.search(/^[\w\.\u0100-\uFFFF"'`]$/) != -1)
+				text += " ";
 
-		scimoz.insertText(scimoz.currentPos, text);
-		scimoz.currentPos += scimoz.length - length;
-		scimoz.charRight();
+			scimoz.insertText(scimoz.currentPos, text);
+			scimoz.currentPos += scimoz.length - length;
+			scimoz.charRight();
+		} catch (e) { } // TODO: do something here?
 	}
 
 	this.setFilterBy = function (menuItem, column) {

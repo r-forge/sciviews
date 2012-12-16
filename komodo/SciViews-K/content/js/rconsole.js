@@ -309,7 +309,7 @@ sv.rconsole = {};
         onTerminate: function (retval) {
             //dump("_terminationListener::onTerminate(retval="+retval+")\n");
             this._editor.sv.rconsole.endSession(retval);
-            var msg = "R quitted with return value " + retval;
+            var msg = "R has quit with return value " + retval;
             this._editor.ko.statusBar.AddMessage(msg, "run_command", 3000,
                 retval ? 1 : 0);
             if (this._callback) {

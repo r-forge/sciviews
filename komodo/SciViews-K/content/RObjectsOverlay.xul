@@ -192,16 +192,22 @@
 						<toolbarbutton id="sciviews_robjects_refresh_button"
 							tooltiptext="&sciviews.robjects.refresh.tip;"
 							buttonstyle="pictures"
-							label="&sciviews.robjects.refresh;" class="refresh-icon"
+							label="&sciviews.robjects.refresh;"
+							class="refresh-icon"
 							oncommand="sv.robjects.smartRefresh(true);"/>
 						<!-- or oncommand="sv.robjects.refreshAll();"-->
 						<toolbarbutton id="sciviews_robjects_searchpath_button"
 							observes="cmd_robjects_viewSearchPath"
-							buttonstyle="pictures" class="searchPath-icon"
-							checked="true" persist="state checked"/>
+							tooltiptext="&sciviews.robjects.showHide.tip;"
+							buttonstyle="pictures"
+							class="searchPath-icon"
+							checked="true"
+							persist="state checked"/>
 						<toolbarbutton id="r_objects_pkg_menu"
-							buttonstyle="pictures" class="robjects-pkg-icon"
-							type="menu" orient="horizontal">
+							buttonstyle="pictures"
+							class="robjects-pkg-icon"
+							type="menu"
+							orient="horizontal">
 							
 							<menupopup>
 								<menuitem id="r_objects_pkg_load" label="Load packages..."
@@ -210,7 +216,7 @@
 								<menuitem id="r_objects_pkg_unload" label="Unload..."
 									accesskey="l" class="menuitem-iconic r-pkg-unload-icon"
 									oncommand="sv.r.pkg.unload();"/>
-								<menuitem id="r_objects_pkg_load" label="Attach workspace..."
+								<menuitem id="r_objects_wkspce_load" label="Attach workspace..."
 									accesskey="a" class="menuitem-iconic r-data-attach"
 									oncommand="sv.r.loadWorkspace(null, true);"/>
 								<menuitem id="r_objects_pkg_install" label="Install..."
@@ -336,12 +342,14 @@
 					<vbox>
 						<hbox align="center">
 							<toolbarbutton id="sciviews_robjects_foldAll_button"
-								label="Fold All" buttonstyle="pictures"
+								label="Fold All"
+								buttonstyle="pictures"
 								class="robjects-fold-all-icon"
 								oncommand="sv.robjects.foldAll(true);"
 								tooltiptext="&sciviews.robjects.foldAll;"/>
 							<toolbarbutton id="sciviews_robjects_ExpandAll_button"
-								label="Expand All" buttonstyle="pictures"
+								label="Expand All"
+								buttonstyle="pictures"
 								class="robjects-expand-all-icon"
 								oncommand="sv.robjects.foldAll(false);"
 								tooltiptext="&sciviews.robjects.unfoldAll;"/>

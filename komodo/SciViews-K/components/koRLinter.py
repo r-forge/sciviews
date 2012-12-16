@@ -53,7 +53,7 @@ log = logging.getLogger('RLinter')
 # R error line format with svTools:::koLint(..., type = "flat")
 # warning|error+++line+++column+++error message\n
 
-class KoRCompileLinter:
+class KoRLinter:
     _com_interfaces_ = [components.interfaces.koILinter]
     _reg_desc_ = "Komodo R Linter"
     _reg_clsid_ = "{E5B7415C-81C6-4185-8B53-B527193D251E}"

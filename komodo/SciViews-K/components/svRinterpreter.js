@@ -28,7 +28,7 @@ svRinterpreter.prototype = {
 
     // Properties required for XPCOM registration
     classDescription: "The SciViews-K R interpreter",
-    classID:          Components.ID("{57dbf673-ce91-4858-93f9-2e47fea3495d}"),
+    classID:          Components.ID("{22A6C234-CC35-D374-2F01-FD4C605C905B}"),
     contractID:       "@sciviews.org/svRinterpreter;1",
 
     // Category: An array of categories to register this component in.

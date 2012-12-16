@@ -141,7 +141,6 @@ if (window.parent && window.parent.sv) sv = window.parent.sv;
 				oncommand="sv.robjects.do('write.table')"
 				testDisableIf="t:cannotSaveToFile"
 				accesskey="T"/>
-
 			<menuitem id="menu_cmd_robjects_save"
 				class="menuitem-iconic save-buffer-icon"
 				label="&sciviews.robjects.save;"
@@ -157,19 +156,18 @@ if (window.parent && window.parent.sv) sv = window.parent.sv;
 				class="menuitem-iconic help-icon"
 				testDisableIf="t:multipleSelection t:noHelp"
 				accesskey="H" />
-
-			</menupopup>
-		</popupset>
+		</menupopup>
+</popupset>
 
 	<broadcasterset id="broadcasterset_global">
 		<broadcaster id="cmd_robjects_viewSearchPath"
 			tooltiptext="&sciviews.robjects.tab;: &sciviews.robjects.showHide;"
-			label="&sciviews.robjects.showHide;" splitter="bottom_splitter"
+			splitter="bottom_splitter"
 			box="robjects_searchpath_panel"
 			oncommand="sv.robjects.toggleViewSearchPath(event);"
 			checked="true" state="open"/>
 	</broadcasterset>
-
+	<!-- label="&sciviews.robjects.showHide;" -->
 
 <vbox flex="1" id="robjectsViewbox_robjectsWrapper">
 	<vbox flex="99" id="robjectsViewbox_robjects">
@@ -178,34 +176,43 @@ if (window.parent && window.parent.sv) sv = window.parent.sv;
 						tooltiptext="&sciviews.robjects.refresh.tip;"
 						buttonstyle="pictures"
 						class="refresh-icon"
-						oncommand="sv.robjects.refreshAll();"/>
+						oncommand="sv.robjects.smartRefresh(true);"/>
+			<!-- label="&sciviews.robjects.refresh;" -->
+			<!-- or oncommand="sv.robjects.refreshAll();"-->
 			<toolbarbutton id="sciviews_robjects_searchpath_button"
 						observes="cmd_robjects_viewSearchPath"
-						buttonstyle="pictures" class="searchPath-icon"
-						checked="true" persist="state checked"/>
+						buttonstyle="pictures"
+						class="searchPath-icon"
+						checked="true"
+						persist="state checked"/>
 			<toolbarbutton id="r_objects_pkg_menu"
-						buttonstyle="pictures" class="robjects-pkg-icon"
-						type="menu" orient="horizontal">
+						buttonstyle="pictures"
+						class="robjects-pkg-icon"
+						type="menu"
+						orient="horizontal">
 		  
 						<menupopup>
 								<menuitem id="r_objects_pkg_load" label="Load packages..."
-								accesskey="l" class="menuitem-iconic r-pkg-load-icon"
-								oncommand="sv.r.pkg.load();"/>
-								<menuitem id="r_objects_pkg_load" label="Attach workspace..."
-								accesskey="a" class="menuitem-iconic r-data-attach"
-								oncommand="sv.r.loadWorkspace(null, true);"/>
+								 accesskey="l" class="menuitem-iconic r-pkg-load-icon"
+								 oncommand="sv.r.pkg.load();"/>
+								<menuitem id="r_objects_pkg_unload" label="Unload..."
+									accesskey="l" class="menuitem-iconic r-pkg-unload-icon"
+									oncommand="sv.r.pkg.unload();"/>
+								<menuitem id="r_objects_wkspce_load" label="Attach workspace..."
+								 accesskey="a" class="menuitem-iconic r-data-attach"
+								 oncommand="sv.r.loadWorkspace(null, true);"/>
 								<menuitem id="r_objects_pkg_install" label="Install..."
-								accesskey="i" class="menuitem-iconic r-pkg-install-icon"
-								oncommand="sv.r.pkg.install();"/>
+								 accesskey="i" class="menuitem-iconic r-pkg-install-icon"
+								 oncommand="sv.r.pkg.install();"/>
 								<menuitem id="r_objects_pkg_installLocal" label="Install from local files..."
-								accesskey="c" class="menuitem-iconic r-pkg-install-local-icon"
-								oncommand="sv.r.pkg.install(null, 'local');"/>
+								 accesskey="c" class="menuitem-iconic r-pkg-install-local-icon"
+								 oncommand="sv.r.pkg.install(null, 'local');"/>
 								<menuitem id="r_objects_pkg_update" label="Update"
-								accesskey="u" class="menuitem-iconic r-pkg-update-icon"
-								oncommand="sv.r.pkg.update();"/>
+								 accesskey="u" class="menuitem-iconic r-pkg-update-icon"
+								 oncommand="sv.r.pkg.update();"/>
 								<menuitem id="r_objects_pkg_remove" label="Remove..."
-								accesskey="r" class="menuitem-iconic r-pkg-remove-icon"
-								oncommand="sv.r.pkg.remove();"/>
+								 accesskey="r" class="menuitem-iconic r-pkg-remove-icon"
+								 oncommand="sv.r.pkg.remove();"/>
 								
 								<menuseparator/>
 								
@@ -215,7 +222,6 @@ if (window.parent && window.parent.sv) sv = window.parent.sv;
 								<menuitem id="r_repositories" label="Select R repositories"
 									accesskey="r" class="menuitem-iconic r-repositories-icon"
 									oncommand="sv.r.pkg.repositories();"/>
-								
 							</menupopup>
 				</toolbarbutton>
 				
@@ -228,21 +234,23 @@ if (window.parent && window.parent.sv) sv = window.parent.sv;
 						
 						<menupopup id="sciviews_robjects_filterPopup">
 								<menuitem id="sciviews_robjects_context_filterByName"
-								label="&sciviews.robjects.filterByName;"
-								checked="true" accesskey="n" type="checkbox"
-								oncommand="sv.robjects.setFilterBy(this, 'name')"/>
+								 label="&sciviews.robjects.filterByName;"
+								 checked="true" accesskey="n" type="checkbox"
+								 oncommand="sv.robjects.setFilterBy(this, 'name')"/>
 								<menuitem id="sciviews_robjects_context_filterByClass"
-								label="&sciviews.robjects.filterByClass;"
-								accesskey="c" type="checkbox"
-								oncommand="sv.robjects.setFilterBy(this, 'class')"/>
+								 label="&sciviews.robjects.filterByClass;"
+								 accesskey="c" type="checkbox"
+								 oncommand="sv.robjects.setFilterBy(this, 'class')"/>
 								<menuitem id="sciviews_robjects_context_filterByGroup"
-								label="&sciviews.robjects.filterByGroup;"
-								accesskey="g" type="checkbox"
-								oncommand="sv.robjects.setFilterBy(this, 'group')"/>
+								 label="&sciviews.robjects.filterByGroup;"
+								 accesskey="g" type="checkbox"
+								 oncommand="sv.robjects.setFilterBy(this, 'group')"/>
+								
 								<menuseparator/>
+								
 								<menuitem id="sciviews_robjects_context_clrFilter"
-								label="&sciviews.robjects.clrFilter;" accesskey="l"
-								oncommand="document.getElementById('sciviews_robjects_filterbox')
+								 label="&sciviews.robjects.clrFilter;" accesskey="l"
+								 oncommand="document.getElementById('sciviews_robjects_filterbox')
 										.value = ''; sv.robjects.applyFilter();"/>
 							</menupopup>
 				</toolbarbutton>
@@ -268,18 +276,18 @@ if (window.parent && window.parent.sv) sv = window.parent.sv;
 					</vbox>
 			
 					<splitter id="sciviews_robjects_splitter" collapse="before"
-					resizeafter="closest" resizebefore="closest" persist="state"
-					observes="cmd_robjects_viewSearchPath">
+						resizeafter="closest" resizebefore="closest" persist="state"
+						observes="cmd_robjects_viewSearchPath">
 						<grippy/>
 					</splitter>
 					
 					<vbox flex="5">
 						<tree flex="1" id="sciviews_robjects_objects_tree"
-						persist="sortDirection sortResource"
-						sortDirection="ascending" sortResource="r-name"
-						enableColumnDrag="true"
-						onselect="sv.robjects.onEvent(event);"
-						onkeypress="sv.robjects.onEvent(event);">
+								persist="sortDirection sortResource"
+								sortDirection="ascending" sortResource="r-name"
+								enableColumnDrag="true"
+								onselect="sv.robjects.onEvent(event);"
+								onkeypress="sv.robjects.onEvent(event);">
 							
 							<treecols>
 								<treecol id="r-name" label="&sciviews.robjects.Name;"
@@ -304,12 +312,12 @@ if (window.parent && window.parent.sv) sv = window.parent.sv;
 							</treecols>
 							
 							<treechildren id="sciviews_robjects_objects_tree_main"
-							ondraggesture="nsDragAndDrop.startDrag(event, sv.robjects.listObserver);"
-							ondragdrop="nsDragAndDrop.drop(event, sv.robjects.listObserver);"
-							ondragover="nsDragAndDrop.dragOver(event, sv.robjects.listObserver);"
-							onclick="sv.robjects.onEvent(event);"
-							ondblclick="sv.robjects.onEvent(event);"
-							context="rObjectsContext">
+								ondraggesture="nsDragAndDrop.startDrag(event, sv.robjects.listObserver);"
+								ondragdrop="nsDragAndDrop.drop(event, sv.robjects.listObserver);"
+								ondragover="nsDragAndDrop.dragOver(event, sv.robjects.listObserver);"
+								onclick="sv.robjects.onEvent(event);"
+								ondblclick="sv.robjects.onEvent(event);"
+								context="rObjectsContext">
 							</treechildren>
 						</tree>
 					</vbox>
@@ -317,15 +325,17 @@ if (window.parent && window.parent.sv) sv = window.parent.sv;
 					<vbox>
 						<hbox align="center">
 							<toolbarbutton id="sciviews_robjects_foldAll_button"
-							buttonstyle="pictures"
-							class="robjects-fold-all-icon"
-							oncommand="sv.robjects.foldAll(true);"
-							tooltiptext="&sciviews.robjects.foldAll;"/>
+								label="Fold All"
+								buttonstyle="pictures"
+								class="robjects-fold-all-icon"
+								oncommand="sv.robjects.foldAll(true);"
+								tooltiptext="&sciviews.robjects.foldAll;"/>
 							<toolbarbutton id="sciviews_robjects_ExpandAll_button"
-							buttonstyle="pictures"
-							class="robjects-expand-all-icon"
-							oncommand="sv.robjects.foldAll(false);"
-							tooltiptext="&sciviews.robjects.unfoldAll;"/>
+								label="Expand All"
+								buttonstyle="pictures"
+								class="robjects-expand-all-icon"
+								oncommand="sv.robjects.foldAll(false);"
+								tooltiptext="&sciviews.robjects.unfoldAll;"/>
 						</hbox>
 					</vbox>
 				</vbox>

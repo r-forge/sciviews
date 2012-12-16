@@ -16,7 +16,7 @@
 #
 # Contributor(s):
 #   Philippe Grosjean
-#   ActiveState Software Inc (code inspired from)
+#   ActiveState Software Inc (code inspired from Komodo code)
 #
 # Alternatively, the contents of this file may be used under the terms of
 # either the GNU General Public License Version 2 or later (the "GPL"), or
