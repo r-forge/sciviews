@@ -66,36 +66,8 @@
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/strings.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/tools/file.js"/>
 	<script type="application/x-javascript" src="chrome://sciviewsk/content/js/rconsole.js"/>
-
-<!--	<menupopup id="tabPicker_popup">
-		<menuitem id="show_rconsole_tab" label="R Output"
-			insertbefore="show_runoutput_tab"
-			observes="show_sciviews_rconsole_tab"
-			oncommand="ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);"/>
-	</menupopup>
-
-	<menupopup id="menu_view_tabs_popup">
-		<menuitem id="show_rconsole_tab2" class="menuitem-iconic-wide"
-			insertbefore="show_runoutput_tab2"
-			label="R Output" type="checkbox"
-      observes="show_sciviews_rconsole_tab"
-			oncommand="ko.uilayout.ensureTabShown('sciviews_rconsole_tab', true);"/> 
-	</menupopup> -->
-
-<!--	<tabs id="output_tabs">
-		<tab id="sciviews_rconsole_tab" label="R Output"
-		  insertbefore="runoutput_tab"/> -->
-			<!--tooltiptext="A R process running locally"/>
-			onclick="sv.rconsole.run();"/>-->
-<!--	</tabs>
-	
-	<tabpanels id="output_tabpanels">
-		<tabpanel flex="1" id="rconsole_tabpanel"
-		  insertbefore="runoutput-desc-tabpanel">	-->
 		
 		<vbox flex="1" id="rconsoleViewBox_Wrapper">
-		
-		
 			<vbox flex="1" id="rconsole-desc-tabpane">
 				<hbox id="rconsole-desc-tabpanel-toolbar-hbox"
 					class="toolbar-background toolbar-hbox">
@@ -142,8 +114,5 @@
 						 <hbox id="scintillaOverlayXul"/> <!--<commandset id="rconsole-commandset"/>-->
 					 </vbox>
 				 </vbox>		
-<!--			</tabpanel>
-	</tabpanels>
-</overlay> -->
 		</vbox>
 </page>

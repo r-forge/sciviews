@@ -33,7 +33,7 @@
 
 #include "nsISupports.idl"
 
-[scriptable, uuid(5e04a8de-ac01-4df1-af7a-184130e645b8)]
+[scriptable, uuid(22A6C234-CC35-D374-2F01-FD4C605C905B)]
 interface svIRinterpreter : nsISupports {
 
     /**

@@ -575,46 +575,52 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 		}
 		if (!svSchemeDefault) return(false);
 
-		// If current config is not writable, clone it (with a suffix)
-		var currentConfiguration = kbMgr.currentConfiguration;
-		if (!kbMgr.configurationWriteable(currentConfiguration)) {
-			currentConfiguration =
-				kbMgr.makeNewConfiguration(currentConfiguration +
+		try {
+			// If current config is not writable, clone it (with a suffix)
+			var currentConfiguration = kbMgr.currentConfiguration;
+			if (!kbMgr.configurationWriteable(currentConfiguration)) {
+				currentConfiguration =
+					kbMgr.makeNewConfiguration(currentConfiguration +
 				" (SciViews-K)");
-		}
-
-		//from: gKeybindingMgr.parseConfiguration
-		var bindingRx = /[\r\n]+(# *SciViews|binding cmd_sv.*)/g;
-		function _getSvKeys (data, pattern) {
-			if (!pattern) pattern = "";
-			var keys = data.match(new RegExp("^binding " + pattern +
-				".*$", "gm"));
-			var res = {};
-			for (var j in keys) {
-				try {
-					keys[j].search(/^binding\s+(\S+)\s+(\S+)$/);
-					res[RegExp.$1] = RegExp.$2;
-				} catch(e) { }
 			}
-			return(res);
-		}
+		} catch (e) { }
 
-		var svKeysDefault = _getSvKeys (svSchemeDefault, "cmd_sv");
-		if (clearOnly) {
-			for (var i in svKeysDefault) kbMgr.clearBinding(i, "", false);
-		} else {
-			var keysequence;
-			for (var i in svKeysDefault) {
-				keysequence = svKeysDefault[i].split(/, /);
-				if (!kbMgr.usedBy(keysequence).length) {
-					kbMgr.assignKey(i, keysequence, '');
-					kbMgr.makeKeyActive(i, keysequence);
+		try {
+			//from: gKeybindingMgr.parseConfiguration
+			var bindingRx = /[\r\n]+(# *SciViews|binding cmd_sv.*)/g;
+			function _getSvKeys (data, pattern) {
+				if (!pattern) pattern = "";
+				var keys = data.match(new RegExp("^binding " + pattern +
+					".*$", "gm"));
+				var res = {};
+				for (var j in keys) {
+					try {
+						keys[j].search(/^binding\s+(\S+)\s+(\S+)$/);
+						res[RegExp.$1] = RegExp.$2;
+					} catch(e) { }
+				}
+				return(res);
+			}
+
+			var svKeysDefault = _getSvKeys (svSchemeDefault, "cmd_sv");
+			if (clearOnly) {
+				for (var i in svKeysDefault) kbMgr.clearBinding(i, "", false);
+			} else {
+				var keysequence;
+				for (var i in svKeysDefault) {
+					keysequence = svKeysDefault[i].split(/, /);
+					if (!kbMgr.usedBy(keysequence).length) {
+						kbMgr.assignKey(i, keysequence, '');
+						kbMgr.makeKeyActive(i, keysequence);
+					}
 				}
 			}
-		}
-		//kbMgr.saveAndApply(ko.prefs);
-		kbMgr.saveCurrentConfiguration();
-		kbMgr.loadConfiguration(kbMgr.currentConfiguration, true);
+			//kbMgr.saveAndApply(ko.prefs);
+			kbMgr.saveCurrentConfiguration();
+			kbMgr.loadConfiguration(kbMgr.currentConfiguration, true);
+		} catch (e) {
+			return(false);
+		} 
 		return(true);
 	}
 	

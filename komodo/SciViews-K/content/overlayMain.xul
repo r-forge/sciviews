@@ -540,7 +540,8 @@
 			id="sciviews_robjects_tab"
 			label="&sciviews.robjects.tab;"
 			src="chrome://sciviewsk/content/RObjects2Pane.xul"
-			tab_onfocus="sv.robjects.focus();"/>
+			tab_onfocus="sv.robjects.focus();"
+			insertbefore="placesViewbox"/>
 	</ko-pane>
 	
 		<ko-pane id="workspace_bottom_area">
@@ -548,7 +549,8 @@
 			id="sciviews_rconsole_tab"
 			label="&sciviews.console.tab;"
 			src="chrome://sciviewsk/content/RConsole2Pane.xul"
-			tab_onfocus="sv.rconsole.focus();"/>
+			tab_onfocus="sv.rconsole.focus();"
+			insertbefore="runoutput-desc-tabpanel"/>
 	</ko-pane>
 
 	<!--<ko-pane id="workspace_right_area">
