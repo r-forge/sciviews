@@ -529,7 +529,7 @@ TODO:
 						oncommand="go('http://www.bioconductor.org/');"/>
 					<menuitem id="rhelp-menu-graph" label="Graph Gallery"
 						accesskey="g"
-						oncommand="go('http://addictedtor.free.fr/graphiques/');"/>
+						oncommand="go('http://gallery.r-enthusiasts.com/');"/>
 					<menuitem id="rhelp-menu-forge" label="R-Forge"
 						accesskey="f"
 						oncommand="go('http://r-forge.r-project.org/');"/>

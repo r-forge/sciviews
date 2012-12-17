@@ -231,7 +231,7 @@
 						<label value="Host to connect to:" control="sciviews.r.host" />
 						<textbox id="sciviews.r.host" pref="true" width="150"
 							tooltip="Currently only local connection is allowed"
-							disabled="true"/>
+							disabled="false"/>
 					</row>
 				</rows>
 			</grid>

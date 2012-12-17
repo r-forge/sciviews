@@ -23,10 +23,6 @@
 //                                           Note: PrefR_OnLoad() used instead
 // OnPreferencePageOK(prefset);           // User clicks OK
 ////////////////////////////////////////////////////////////////////////////////
-// TODO: eliminate items not found on the disk for the list of Mac R apps!?
-// TODO: wrong calculation of args + check problems when args is empty
-// TODO: x-terminal-emulator not defined on Mac OS X => R terminal is broken
-//       on Mac OS X!
 //
 // Prefs to possibly include later on:
 // * Address for remote R (sv.socket.host)?
@@ -40,10 +36,20 @@ var cancelled = false;
 // List of supported R applications
 var apps = [
 	{id:"r-terminal", label:"in default terminal",
+		path:"\"%Path%\" %args%",
+        app:"R",
+		required:"R",
+		platform:"Mac"},
+//	{id:"r-terminal-sciviews", label:"in terminal (SciViews version)",
+//		path:"\"%Path%\" %args%",
+//        app:"svR",
+//		required:"svR",
+//		platform:"Mac"},
+	{id:"r-terminal", label:"in default terminal",
 		path:"x-terminal-emulator -e '%Path% %args%'",
         app:"R",
 		required:"x-terminal-emulator,R",
-		platform:"Lin,Mac"},
+		platform:"Lin"},
 	{id:"r-terminal", label:"in console window",
 		path:"\"%Path%\" %args%",
         app:"R.exe",
@@ -52,7 +58,7 @@ var apps = [
 	{id:"r-gnome-term", label:"in Gnome terminal",
         path:"gnome-terminal --hide-menubar --working-directory='%cwd%' " +
 			"-t '%title%' -x '%Path%' %args%",
-        app:"R",
+        app:"gnome-terminal,R",
 		required:"gnome-terminal,R",
 		platform:"Lin"},
 	{id:"r-kde-term", label:"in Konsole",
@@ -66,22 +72,22 @@ var apps = [
 		required:"xfce4-terminal,R",
 		platform:"Lin"},
 	{id:"r-app", label:"R app",
-		path:"open -a \"%Path%\" \"%cwd%\"",
+		path:"open -a \"%Path%\" --args \"%cwd%\" %args%",
         app:"R.app",
 		required:"/Applications/R.app",
 		platform:"Mac"},
 	{id:"r64-app", label:"R64 app",
-		path:"open -a \"%Path%\" \"%cwd%\"",
+		path:"open -a \"%Path%\" --args \"%cwd%\" %args%",
         app:"R64.app",
 		required:"/Applications/R64.app",
 		platform:"Mac"},
 	{id:"svr-app", label:"SciViews R app",
-		path:"open -a \"%Path%\" \"%cwd%\"",
+		path:"open -a \"%Path%\" --args \"%cwd%\" %args%",
         app:"SciViews R.app",
 		required:"/Applications/SciViews R.app",
 		platform: "Mac"},
 	{id:"svr64-app", label:"SciViews R64 app",
-		path:"open -a \"%Path%\" \"%cwd%\"",
+		path:"open -a \"%Path%\" --args \"%cwd%\" %args%",
         app:"SciViews R64.app",
 		required:"/Applications/SciViews R64.app",
 		platform:"Mac"},
@@ -153,8 +159,7 @@ function _populateRInterps () {
 	 case "posix": // On Mac OS X, os.name is posix!!!
         rs = ["/Applications/R.app", "/Applications/R64.app",
 			  "/Applications/SciViews R.app", "/Applications/SciViews R64.app",
-			  sv.tools.file.whereIs("R")];
-		// TODO: eliminate items not found on the disk!?
+			  sv.tools.file.whereIs("R")]; //, sv.tools.file.whereIs("svR")];
         break;
      default:
         rs = rs.concat(sv.tools.file.whereIs("R"));
@@ -201,7 +206,7 @@ function PrefR_OnLoad () {
 				res = true;
 				for (var k in required) {
 					// Take care that R.app on the Mac is a directory!
-					if (!sv.tools.file.whereIs(required[k]) &&
+					if ((sv.tools.file.whereIs(required[k]) == "") &&
 						(sv.tools.file.exists(required[k]) ==
 						sv.tools.file.TYPE_NONE)) res = false;
 				}			
