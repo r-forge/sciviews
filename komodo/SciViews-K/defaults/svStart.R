@@ -7,6 +7,7 @@
 ## Version 0.9.23, 2011-08-05 modified by Ph. Grosjean
 ## Version 0.9.25, 2011-12-28 modified by Ph. Grosjean
 ## Version 0.9.27, 2012-04-22 modified by Ph. Grosjean
+## Version 0.9.28, 2012-12-17 modified by Ph. Grosjean
 
 ## TODO: also use value in koDebug to debug server from within R!
 ## TODO: use the mechanism of startHttpServer() to retrieve default config
@@ -25,7 +26,7 @@ svStart <- function (minRVersion = "2.11.1", minVersion = NA,
 remote.repos = "http://R-Forge.R-project.org", pkg.dir = ".",
 debug = Sys.getenv("koDebug") == "TRUE",
 pkgsLast = c("svKomodo", "SciViews"), # to be loaded at the end
-pkgsDontLoad = c("codetools", "svTools", "ellipse", "MASS"),
+pkgsDontLoad = c("codetools", "svTools", "ellipse", "data.table", "MASS"),
 skip = NULL)
 {
 	## Note (KB): it would make life a way easier to put all (and only)
