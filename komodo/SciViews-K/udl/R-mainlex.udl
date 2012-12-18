@@ -43,7 +43,12 @@ language R
 include "R2wiki.udl"
 include "wiki2R.udl"
 
-initial IN_SSL_DEFAULT
+initial IN_M_DEFAULT
+
+# Need to get into a state with keywords -- use CSL
+family markup
+state IN_M_DEFAULT:
+/./ : redo, => IN_SSL_DEFAULT
 
 include "Rlex.udl"
 include "wikilex.udl"

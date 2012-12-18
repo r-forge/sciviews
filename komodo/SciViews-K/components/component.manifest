@@ -4,6 +4,6 @@ component {E5B7415C-81C6-4185-8B53-B527193D251E} koRLinter.py
 category komodo-language R @activestate.com/koLanguage?language=R;1
 component {4cc23d3b-52e2-426d-8a22-6d7eb2ba81ae} koR_UDL_Language.py
 contract @activestate.com/koLanguage?language=R;1 {4cc23d3b-52e2-426d-8a22-6d7eb2ba81ae}
-contract @sciviews.org/svRinterpreter;1 {22A6C234-CC35-D374-2F01-FD4C605C905B}
-component {22A6C234-CC35-D374-2F01-FD4C605C905B} svRinterpreter.js
+contract @sciviews.org/svRinterpreter;1 {2f89ed9d-6dda-9a4e-a78f-29e4838dcd08}
+component {2f89ed9d-6dda-9a4e-a78f-29e4838dcd08} svRinterpreter.js
 interfaces svIRinterpreter.xpt

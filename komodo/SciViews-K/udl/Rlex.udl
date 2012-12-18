@@ -52,6 +52,8 @@ sublanguage R
 start_style SSL_DEFAULT
 end_style SSL_VARIABLE
 
+initial IN_SSL_DEFAULT
+
 # If the language has keywords, specify which style needs to be transformed
 keyword_style SSL_IDENTIFIER => SSL_WORD
 
@@ -2865,6 +2867,10 @@ state IN_SSL_OP1:
 '->>'    : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 '%%'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 '::'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
+
+# PhG: added for SciViews!
+':='     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
+
 '<-'     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 '<='     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
 '=='     : paint(include, SSL_OPERATOR), => IN_SSL_DEFAULT
