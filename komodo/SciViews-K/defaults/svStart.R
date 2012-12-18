@@ -26,7 +26,7 @@ svStart <- function (minRVersion = "2.11.1", minVersion = NA,
 remote.repos = "http://R-Forge.R-project.org", pkg.dir = ".",
 debug = Sys.getenv("koDebug") == "TRUE",
 pkgsLast = c("svKomodo", "SciViews"), # to be loaded at the end
-pkgsDontLoad = c("codetools", "svTools", "ellipse", "data.table", "MASS"),
+pkgsDontLoad = c("codetools", "svTools", "ellipse", "MASS"),
 skip = NULL)
 {
 	## Note (KB): it would make life a way easier to put all (and only)
