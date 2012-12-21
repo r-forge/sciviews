@@ -59,6 +59,14 @@ dlgForm(form, title = "Fill the form", message = NULL, columns = 1,
   \code{:CLR} to enter a RGB color,
   \code{:BTN} to create a button that execute some code,
   \code{:LBL} to add a label.
+  
+  For the moment, the form dialog box is only supported on Linux. You have to
+  install yad to get access to it. On Ubuntu, you do so by:
+  \preformatted{
+sudo add-apt-repository ppa:webupd8team/y-ppa-manager
+sudo apt-get update
+sudo apt-get install yad  
+  }
 }
 
 \value{
