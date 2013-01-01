@@ -42,7 +42,7 @@ format:
     http://community.activestate.com/faq/codeintel-cix-schema
     
 Module Usage:
-    from cile_R import scan
+    from cile_r import scan
     mtime = os.stat("bar.R")[stat.ST_MTIME]
     content = open("bar.R", "r").read()
     scan(content, "bar.R", mtime=mtime)
@@ -67,16 +67,19 @@ from codeintel2.common import CILEError
 
 
 #---- exceptions
+
 class RCILEError(CILEError):
     pass
 
 
 #---- global data
+
 log = logging.getLogger("cile.r")
 #log.setLevel(logging.DEBUG)
 
 
 #---- public module interface
+
 def scan_buf(buf, mtime=None, lang="R"):
     """Scan the given RBuffer return an ElementTree (conforming
     to the CIX schema) giving a summary of its code elements.

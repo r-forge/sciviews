@@ -32,7 +32,7 @@
 #
 # ***** END LICENSE BLOCK *****
 
-# Komodo R language service
+# Registers the R language in Komodo.
 
 import logging
 from koUDLLanguageBase import KoUDLLanguage
@@ -49,35 +49,77 @@ def registerLanguage(registry):
 
 
 class KoRLanguage(KoUDLLanguage):
+    
+    # ------------ Komodo Registration Information ------------ #
+    
     name = "R"
     lexresLangName = "R"
     _reg_desc_ = "%s Language" % name
     _reg_contractid_ = "@activestate.com/koLanguage?language=%s;1" % name
-    _reg_clsid_ = "{4cc23d3b-52e2-426d-8a22-6d7eb2ba81ae}"
     _reg_categories_ = [("komodo-language", name)]
+    _reg_clsid_ = "4cc23d3b-52e2-426d-8a22-6d7eb2ba81ae"
     defaultExtension = '.R'
-    primary = 1
-    lang_from_udl_family = {
-        'SSL': None
-    }
-
+    
+    # ------------ Commenting Controls ------------ #
+    
     commentDelimiterInfo = {
         "line": [ "#", ],
     }
-
-    downloadURL = "http://cran.r-project.org"
-    searchURL = "http://www.rseek.org/"
-
-    variableIndicators = '$'
-    _dedenting_statements = [u'return', u'break', u'else', u'next']
-    _indenting_statements = [u'switch', u'if', u'ifelse', u'while', u'for', u'repeat']
+    
+    # ------------ Indentation Controls ------------ #
+    
+    # To support automatic indenting and dedenting after "{([" and "})]"
     supportsSmartIndent = "brace"
-
+    # Other smart indenting types are:
+    #   'text', 'python', 'XML' and 'keyword'
+    
+    # Indent/dedent after these words.
+    _indenting_statements = [u'switch', u'if', u'ifelse', u'while', u'for', u'repeat', u'break', u'local']
+    _dedenting_statements = [u'return', u'break', u'else', u'next']
+    
+    # ------------ Sub-language Controls ------------ #
+    
+    #Check: Update 'lang_from_udl_family' as appropriate for your
+    #      lexer definition. There are four UDL language families:
+    #           M (markup), i.e. HTML or XML
+    #           CSL (client-side language), e.g. JavaScript
+    #           SSL (server-side language), e.g. Perl, PHP, Python
+    #           TPL (template language), e.g. RHTML, Django, Smarty
+    #      'lang_from_udl_family' maps each UDL family code (M,
+    #      CSL, ...) to the sub-language name in your language.
+    #      Some examples:
+    #        lang_from_udl_family = {   # A PHP file can contain
+    #           'M': 'HTML',            #   HTML
+    #           'SSL': 'PHP',           #   PHP
+    #           'CSL': 'JavaScript',    #   JavaScript
+    #        }
+    #        lang_from_udl_family = {   # An RHTML file can contain
+    #           'M': 'HTML',            #   HTML
+    #           'SSL': 'Ruby',          #   Ruby
+    #           'CSL': 'JavaScript',    #   JavaScript
+    #           'TPL': 'RHTML',         #   RHTML template code
+    #        }
+    #        lang_from_udl_family = {   # A plain XML can just contain
+    #           'M': 'XML',             #   XML
+    #        }
+    lang_from_udl_family = {
+        'M': 'Rwiki',
+        'SSL': 'R'
+    }
+    
+    # ------------ Miscellaneous ------------ #
+    
+    #primary = 1
+    
+    #variableIndicators = '$'
+    
     #styleStdin = components.interfaces.ISciMoz.SCE_C_STDIN
     #styleStdout = components.interfaces.ISciMoz.SCE_C_STDOUT
     #styleStderr = components.interfaces.ISciMoz.SCE_C_STDERR
-
-
+    
+    downloadURL = "http://cran.r-project.org"
+    searchURL = "http://www.rseek.org/"
+    
     sample = """`cube`<- function(x, na.rm = FALSE) {
     if (isTRUE(na.rm))
         x <- x[!is.na(x)]
@@ -94,22 +136,24 @@ a$y <- NULL; a
 * Item 1,
 * Item 2.
 
-This is a paragraph of **bold** ans //italic// text.
+This is a paragraph of **bold** and //italic// text.
 !"
 """
 
-    # Overriding these base methods to work around bug 81066.
-    def get_linter(self):
-        return self._get_linter_from_lang("R")
-    def get_interpreter(self):
-        None
-
-    #def get_lexer(self):
-    #    return None
-    #    if self._lexer is None:
-    #        self._lexer = KoLexerLanguageService()
-    #        self._lexer.setLexer(components.interfaces.ISciMoz.SCLEX_CPP)
-    #        self._lexer.setKeywords(0, lang_r.keywords)
-    #        self._lexer.setKeywords(1, lang_r.builtins)
-    #        self._lexer.supportsFolding = 1
-    #    return self._lexer
+    ## PhG: what's this??? Everything is commented for now
+    ## Overriding these base methods to work around bug 81066.
+    #def get_linter(self):
+    #    return self._get_linter_from_lang("R")
+    #
+    #def get_interpreter(self):
+    #    None
+    #
+    ##def get_lexer(self):
+    ##    return None
+    ##    if self._lexer is None:
+    ##        self._lexer = KoLexerLanguageService()
+    ##        self._lexer.setLexer(components.interfaces.ISciMoz.SCLEX_CPP)
+    ##        self._lexer.setKeywords(0, lang_r.keywords)
+    ##        self._lexer.setKeywords(1, lang_r.builtins)
+    ##        self._lexer.supportsFolding = 1
+    ##    return self._lexer

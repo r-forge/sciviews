@@ -411,7 +411,7 @@ function PrefR_UpdateCranMirrors (localOnly) {
 						"Current/Resources/doc"); // Mac OS X
 				}
 				var file;
-				for (i in localPaths) {
+				for (var i in localPaths) {
 					file = svFile.getfile(localPaths[i], csvName);
 					if (file.exists()) {
 						csvContent = svFile.read(file.path);

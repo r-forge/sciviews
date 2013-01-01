@@ -1,7 +1,7 @@
 //{
 //}
 
-// 's.rconn' object is an interface to R implemented mostly in python
+// 'sv.rconn' object is an interface to R implemented mostly in python
 // 		The workhorse is 'svUtils' XPCOM interface
 
 //.command (Read only) last command evaluated

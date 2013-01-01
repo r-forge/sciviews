@@ -32,39 +32,27 @@
 #
 # ***** END LICENSE BLOCK *****
 
-# UDL for R files
-# To build:
-# python luddite.py compile udl/R-mainlex.udl -f --ext=.R [--guid, --skel needed]
-# python luddite.py package R -f
-# Open R_language-1.0.0-ko.xpi in Komodo, install, restart
+# UDL lexer for R files (including SciViews-R files).
+#
+# Note: UDL is a state machine and it uses regular expressions to move between
+#       the different language states.
+#
 
 language R
 
-include "R2wiki.udl"
-include "wiki2R.udl"
+################ Boilerplate ################
 
-initial IN_M_DEFAULT
-
-# Need to get into a state with keywords -- use CSL
+# Boilerplate - need to start with family set to markup and IN_M_DEFAULT state,
+# we'll later perform a null-transition change to get into the SSL state.
 family markup
+initial IN_M_DEFAULT
+# Null-transition to get into SSL state
 state IN_M_DEFAULT:
 /./ : redo, => IN_SSL_DEFAULT
 
+################ Language Definition ################
+
+include "R2wiki.udl"
+include "wiki2R.udl"
 include "Rlex.udl"
 include "wikilex.udl"
-
-#family markup
-#sublanguage HTML # Not used
-#initial IN_M_DEFAULT
-#
-## Need to get into a state with keywords -- use SSL
-#state IN_M_DEFAULT:
-## Transition to a doc chunk
-## Enter string mode
-## /^\!"[\r\n]/
-#/^[!]"/ : paint(include, M_TAGSPACE) => IN_M_WIKI_START
-## Transition to R code: about anything...
-#/./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
-#
-#state IN_SSL_DEFAULT:
-#/^[!]"/ : paint(include, M_TAGSPACE) => IN_M_WIKI_START

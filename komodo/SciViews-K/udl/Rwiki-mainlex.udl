@@ -31,28 +31,22 @@
 #
 # ***** END LICENSE BLOCK *****
 
-# UDL for R wiki files
-# To build:
-# python luddite.py compile udl/R-mainlex.udl -f --ext=.R [--guid, --skel needed]
-# python luddite.py package R -f
-# Open R_language-1.0.0-ko.xpi in Komodo, install, restart
+# UDL lexer for R wiki files.
+#
+# Note: UDL is a state machine and it uses regular expressions to move between
+#       the different language states.
+#
 
 language Rwiki
 
-include "R2wiki.udl"
-include "wiki2R.udl"
-
-initial IN_M_DEFAULT
-
-include "Rlex.udl"
-include "wikilex.udl"
+################ Initial state ################
 
 family markup
-#sublanguage HTML # Not used
+initial IN_M_DEFAULT
 
-#initial IN_M_DEFAULT
+################ Language Definition ################
 
-## Need to get into a state with keywords -- use SSL
-#state IN_M_DEFAULT:
-## Transition to R wiki language: about anything...
-#/./ : paint(upto, M_DEFAULT), redo => IN_M_WIKI_START
+include "wiki2R.udl"
+include "R2wiki.udl"
+include "wikilex.udl"
+include "Rlex.udl"

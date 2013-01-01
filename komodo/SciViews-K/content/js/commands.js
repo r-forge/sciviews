@@ -652,7 +652,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			var cmd = files.map(function(x) "source('" +
 				sv.tools.strings.addslashes(x) +"')" ).join("\n");
 			sv.r.evalCallback(cmd, function (z) {
-				sv.r.objects.smartRefresh(true);
+				sv.robjects.smartRefresh(true);
 			});
 		},
 	
@@ -673,7 +673,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			var cmd = files.map(function(x) "load('" +
 				sv.tools.strings.addslashes(x) +"')" ).join("\n");
 			sv.r.evalCallback(cmd, function (z) {
-				sv.r.objects.smartRefresh(true);
+				sv.robjects.smartRefresh(true);
 			});
 		},
 	

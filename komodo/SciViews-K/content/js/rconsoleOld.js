@@ -47,7 +47,7 @@ sv.r.console.init = function () {
         //if (sv.prefs.getPref("sciviews.console.completion.setting." +
         //    type) == undefined) {
         sv.prefs.setPref("sciviews.console.completion.setting." + type,
-            defaults[i]); 
+            defaults[i], true); 
         //}
         document.getElementById("sciviews_rconsole_completion_cb_" + type).
             checked = sv.prefs.getPref("sciviews.console.completion.setting." +
@@ -394,7 +394,7 @@ sv.r.console.updateCompletionChoiceSetting = function (event, type) {
     } else {
         checked = "true";
     }
-    sv.prefs.setPref("sciviews.console.completion.setting." + type, checked); 
+    sv.prefs.setPref("sciviews.console.completion.setting." + type, checked, true); 
 }
 
 // Completion counter
