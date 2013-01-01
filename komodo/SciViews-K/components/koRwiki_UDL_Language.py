@@ -31,11 +31,11 @@
 #
 # ***** END LICENSE BLOCK *****
 
-# Komodo R wiki language service
+# Registers the R wiki language in Komodo.
 
 import logging
 from koUDLLanguageBase import KoUDLLanguage
-from xpcom import components #, nsError, COMException, ServerException
+#from xpcom import components #, nsError, COMException, ServerException
 
 
 log = logging.getLogger("koRwikiLanguage")
@@ -48,57 +48,76 @@ def registerLanguage(registry):
 
 
 class KoRwikiLanguage(KoUDLLanguage):
+    
+    # ------------ Komodo Registration Information ------------ #
+    
     name = "Rwiki"
     lexresLangName = "Rwiki"
     _reg_desc_ = "%s Language" % name
     _reg_contractid_ = "@activestate.com/koLanguage?language=%s;1" % name
-    _reg_clsid_ = "{7de21e4c-23d3-513c-9b31-6e8dc4ab72bf}"
     _reg_categories_ = [("komodo-language", name)]
+    _reg_clsid_ = "7de21e4c-23d3-513c-9b31-6e8dc4ab72bf"
     defaultExtension = '.Rwiki'
-    primary = 1
-    lang_from_udl_family = {
-        'M': None
-    }
-
+    
+    # ------------ Commenting Controls ------------ #
+    
     commentDelimiterInfo = {
         "line": [ "#", ],
     }
-
+    
+    # ------------ Indentation Controls ------------ #
+    
+    # To support automatic indenting and dedenting after "{([" and "})]"
+    supportsSmartIndent = "text"
+    # Other smart indenting types are:
+    #   'brace', 'python', 'XML' and 'keyword'
+    
+    # Indent/dedent after these words.
+    #_indenting_statements = [u'switch', ]
+    #_dedenting_statements = [u'return', ]
+    
+    # ------------ Sub-language Controls ------------ #
+    
+    #Check: Update 'lang_from_udl_family' as appropriate for your
+    #      lexer definition. There are four UDL language families:
+    #           M (markup), i.e. HTML or XML
+    #           CSL (client-side language), e.g. JavaScript
+    #           SSL (server-side language), e.g. Perl, PHP, Python
+    #           TPL (template language), e.g. RHTML, Django, Smarty
+    #      'lang_from_udl_family' maps each UDL family code (M,
+    #      CSL, ...) to the sub-language name in your language.
+    #      Some examples:
+    #        lang_from_udl_family = {   # A PHP file can contain
+    #           'M': 'HTML',            #   HTML
+    #           'SSL': 'PHP',           #   PHP
+    #           'CSL': 'JavaScript',    #   JavaScript
+    #        }
+    #        lang_from_udl_family = {   # An RHTML file can contain
+    #           'M': 'HTML',            #   HTML
+    #           'SSL': 'Ruby',          #   Ruby
+    #           'CSL': 'JavaScript',    #   JavaScript
+    #           'TPL': 'RHTML',         #   RHTML template code
+    #        }
+    #        lang_from_udl_family = {   # A plain XML can just contain
+    #           'M': 'XML',             #   XML
+    #        }
+    lang_from_udl_family = {
+        'M': 'RWiki',
+        'SSL': 'R'
+    }
+    
+    # ------------ Miscellaneous ------------ #
+    
+    #primary = 1
+    
     downloadURL = "http://www.sciviews.org"
     searchURL = "http://www.rseek.org/"
-
-    variableIndicators = '$'
-    _dedenting_statements = [u'return', u'break', u'else', u'next']
-    _indenting_statements = [u'switch', u'if', u'ifelse', u'while', u'for', u'repeat']
-    supportsSmartIndent = "brace"
-
-    #styleStdin = components.interfaces.ISciMoz.SCE_C_STDIN
-    #styleStdout = components.interfaces.ISciMoz.SCE_C_STDOUT
-    #styleStderr = components.interfaces.ISciMoz.SCE_C_STDERR
-
-
+    
     sample = """== A h2 title
     
-A  paragraph of text with **bold** //italic// text...
+A  paragraph of text with **bold** and //italic// text...
 
 * Item 1,
 * Item 2
 
 """
-
-    # Overriding these base methods to work around bug 81066.
-    def get_linter(self):
-        None
-        #return self._get_linter_from_lang("R")
-    def get_interpreter(self):
-        None
-
-    #def get_lexer(self):
-    #    return None
-    #    if self._lexer is None:
-    #        self._lexer = KoLexerLanguageService()
-    #        self._lexer.setLexer(components.interfaces.ISciMoz.SCLEX_CPP)
-    #        self._lexer.setKeywords(0, lang_r.keywords)
-    #        self._lexer.setKeywords(1, lang_r.builtins)
-    #        self._lexer.supportsFolding = 1
-    #    return self._lexer

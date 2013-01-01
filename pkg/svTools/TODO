@@ -1,3 +1,7 @@
 = svTools To Do list
 
+* Lint(): checkUsage() message retrieval => update to codetools 0.2-8. Allow
+  for reporting of multiple errors + allow for checking warnings up to correct
+  code + used more checkers (those in R CMD check tools too!)
+
 * Localize this package

@@ -32,6 +32,7 @@
 # ***** END LICENSE BLOCK *****
 
 # Lexer description for R wiki chunks
+
 family markup
 sublanguage Rwiki
 
@@ -151,6 +152,11 @@ state in_wiki_caret:
 "^" : paint(upto, M_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
 #}}}
 
-#### Fold info #################################################################
+################ End of State Handling ################
+
+
+################ Fold Handling ################
 #fold '!"' M_STRING +
 #fold '!"' M_STRING -
+
+################ End of Fold Handling ################

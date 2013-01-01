@@ -128,7 +128,7 @@ sv.r.test = function sv_RTest (showVersion /*= false*/, testVersion /*= false*/,
 	try {
 		// Check that R is still there on the other side of the server port
 		// and adjust server type (http or socket) if needed
-		res = sv.socket.rCommandSync(
+		var res = sv.socket.rCommandSync(
 			'cat(localeToCharset()[1], R.version.string, sep = "%%%")');
 		if (res == null) { // If R is not running...
 			window.setTimeout("sv.command.updateRStatus(false);", 500);
@@ -471,6 +471,7 @@ sv.r.source = function (what) {
 		var doc = view.document;
 
 		var file;
+// FIXME: (sometimes?) doc is not defined in ko7!
 		if (!doc.isUntitled && doc.file) {
 			file = doc.file.path.addslashes();
 		} else {
@@ -1246,7 +1247,7 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	} else {
 		sv.prefs.setPref("sciviews.data.dir", dir + sep + datadir, true);
 		sv.prefs.setPref("sciviews.data.localdir",
-		sv.tools.file.path(localdir, datadir), true);
+			sv.tools.file.path(localdir, datadir), true);
 	}
 	if (scriptdir == "") {
 		sv.prefs.setPref("sciviews.scripts.dir", dir, true);
@@ -1254,7 +1255,7 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	} else {
 		sv.prefs.setPref("sciviews.scripts.dir", dir + sep + scriptdir, true);
 		sv.prefs.setPref("sciviews.scripts.localdir",
-		sv.tools.file.path(localdir, scriptdir), true);
+			sv.tools.file.path(localdir, scriptdir), true);
 	}
 	if (reportdir == "") {
 		sv.prefs.setPref("sciviews.reports.dir", dir, true);
@@ -1262,7 +1263,7 @@ sv.r.initSession = function (dir, datadir, scriptdir, reportdir) {
 	} else {
 		sv.prefs.setPref("sciviews.reports.dir", dir + sep + reportdir, true);
 		sv.prefs.setPref("sciviews.reports.localdir",
-		sv.tools.file.path(localdir, reportdir), true);
+			sv.tools.file.path(localdir, reportdir), true);
 	}
 
 	var DIRECTORY_TYPE = Components.interfaces.nsIFile.DIRECTORY_TYPE;
@@ -1687,7 +1688,7 @@ sv.r.pkg.chooseCRANMirror = function (setPrefString, callback) {
 			sv.r.eval('with(TempEnv(), {repos <- getOption("repos");' +
 				'repos["CRAN"] <- "' + repos + '"; ' +
 				'options(repos = repos)})');
-			if (setPref) sv.prefs.setPref("r.cran.mirror", repos);
+			if (setPref) sv.prefs.setPref("r.cran.mirror", repos, true);
 			if (callback) callback(repos);
 		}
 		return(res);
@@ -1908,7 +1909,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 				if (cran == "@CRAN@") {
 					res = sv.r.pkg.chooseCRANMirror(true, _installCallback);
 				} else {
-					sv.prefs.setPref("r.cran.mirror", cran);
+					sv.prefs.setPref("r.cran.mirror", cran, true);
 					res = sv.r.pkg.install(pkgs, cran, true);
 				}
 				return;
@@ -1973,7 +1974,7 @@ sv.r.pkg.install = function (pkgs, repos) {
 				['Zip archive (*.zip)|*.zip',
 				'Gzip archive (*.tgz;*.tar.gz)|*.tgz;*.tar.gz'], true);
 			if (pkgs == null) return;
-			for (i in pkgs) pkgs[i] = pkgs[i].addslashes();
+			for (var i in pkgs) pkgs[i] = pkgs[i].addslashes();
 		}
 	}
 

@@ -19,7 +19,7 @@
 # ActiveState Software Inc. All Rights Reserved.
 # 
 # Contributor(s):
-#   ActiveState Software Inc
+#   K. Barton
 #   Ph. Grosjean <phgrosjean@sciviews.org>
 # 
 # Alternatively, the contents of this file may be used under the terms of
@@ -43,14 +43,14 @@ from koLintResults import koLintResults
 import os, sys, re
 import tempfile
 import string
-import process
-import koprocessutils
+#import process
+#import koprocessutils
 import logging
 
 log = logging.getLogger('RLinter')
 #log.setLevel(logging.DEBUG)
 
-# R error line format with svTools:::koLint(..., type = "flat")
+# R error line format with svTools::lint(..., type = "flat")
 # warning|error+++line+++column+++error message\n
 
 class KoRLinter:
@@ -61,11 +61,14 @@ class KoRLinter:
     _reg_categories_ = [
          ("category-komodo-linter", 'R'),
          ]
-
+    
     def __init__(self):
         R = ""  # Default value points (no R application)
+        self.prefs = components.classes["@activestate.com/koPrefService;1"].\
+            getService(components.interfaces.koIPrefService).prefs
+        pass
     
-    # This is not used (yet) but kept for possible future reference
+        #This is not used (yet) but kept for possible future reference
     def checkValidVersion(self):
         version = 1
         if not version:
@@ -80,31 +83,31 @@ class KoRLinter:
             errmsg = "Could not find a suitable R interpreter for "\
                      "linting."
             raise COMException(nsError.NS_ERROR_NOT_AVAILABLE, errmsg)
-        
+    
     def lint(self, request):
         """Lint the given R content.
-        
-        Raise an exception if there is a problem.
-        """        
-        text = request.content.encode("utf-8")
 
+Raise an exception if there is a problem.
+"""
+        text = request.content.encode("utf-8")
+        #tabWidth = request.koDoc.tabWidth
+        #log.debug("linting %s" % text[1:15])
+        
         # Retrieve the path to R...
         R = ""
-        prefs = components.classes["@activestate.com/koPrefService;1"].\
-            getService(components.interfaces.koIPrefService).prefs
-        if prefs.hasStringPref("r.application"):
-            R = prefs.getStringPref("r.application")
+        if self.prefs.hasStringPref("r.application"):
+            R = self.prefs.getStringPref("r.application")
         if R == "":
             errmsg = "Could not find a suitable R interpreter for linting."
             raise COMException(nsError.NS_ERROR_NOT_AVAILABLE, errmsg)
         #self.checkValidVersion()
-
+        
         # Save R buffer to a temporary file
         Rfilename = tempfile.mktemp()
         fout = open(Rfilename, 'wb')
         fout.write(text)
         fout.close()
-
+        
         p = None
         try:
             argv = [R] + ["--slave"] + ["-e", "try(Sys.setlocale('LC_CTYPE','UTF-8'),silent=TRUE);if(isTRUE(require('svTools',quietly=TRUE)))lint('" + os.path.basename(Rfilename) + "',type='flat',encoding='utf8')"]
@@ -115,9 +118,12 @@ class KoRLinter:
             # TODO: check stderr to see if an error was generated here!
             # The relevant output is contained in stdout.
             lines = stdout.splitlines(1)
+            #log.debug('lint: ' + lines)
+        except Exception, e:
+            log.exception(e)
         finally:
             os.unlink(Rfilename)
-        
+            
         results = koLintResults()
         
         if lines:

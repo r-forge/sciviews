@@ -83,41 +83,49 @@ sep = "+++")
 		}
 	}
 	
+	## OK, tested with codetools 0.2-8
 	findParamChangedByAssign <- function (txt, p, i)
 		return(finding(txt, p, i, 
-			rx = "^.*: parameter .(.*). changed by assignment\\\n", 
+			rx = "^.*: parameter .(.*). changed by assignment.*\\\n", 
 			rx2 = "[^.a-zA-Z0-9_]*%s[[:space:]]*(=|<-|<<-)"))
 	
+	## OK, tested with codetools 0.2-8
 	findUnusedLocalAssign <- function (txt, p, i)
 		return(finding(txt, p, i, 
-			rx = "^.*: local variable .(.*). assigned but may not be used\\\n", 
+			rx = "^.*: local variable .(.*). assigned but may not be used.*\\\n", 
 			rx2 = "^[^.a-zA-Z0-9_(,]*%s[[:space:]]*(=|<-|<<-)"))
 	
+	## TODO: check this!
 	findNoGlobalDef <- function (txt, p, i)
 		return(finding(txt, p, i, 
-			rx = "^.*: no visible global function definition for .(.*).\\\n", 
+			rx = "^.*: no visible global function definition for .(.*)..*\\\n", 
 			rx2 = "[^.a-zA-Z0-9_]*%s[[:space:]]*\\("))
 	
+	## TODO: check this!
 	findNoLocalDefAsFun <- function (txt, p, i)
 		return(finding(txt, p, i, 
-			rx = "^.*: local variable .(.*). used as function with no apparent local function definition\\\n", 
+			rx = "^.*: local variable .(.*). used as function with no apparent local function definition.*\\\n", 
 			rx2 = "[^.a-zA-Z0-9_]*%s[[:space:]]*\\("))
 	 
+	## TODO: check this!
 	findNoBindingGlobalVar <- function (txt, p, i)
 		return(finding(txt, p, i, 
-			rx = "^.*: no visible binding for global variable .(.*).\\\n", 
+			rx = "^.*: no visible binding for global variable .(.*)..*\\\n", 
 			rx2 = "[^.a-zA-Z0-9_]*%s[^.a-zA-Z0-9_]*"))
 	
+	## OK, tested with codetools 0.2-8
 	findMultipleLocalDef <- function (txt, p, i)
 		return(finding(txt, p, i, 
-			rx = "^.*: multiple local function definitions for .(.*). with different formal arguments\\\n", 
+			rx = "^.*: multiple local function definitions for .(.*). with different formal arguments.*\\\n", 
 			rx2 = "[^.a-zA-Z0-9_]*%s[[:space:]]*(=|<-|<<-)[[:space:]]*function"))
 	
 	searchAndReport <- function (regex, fun) {
 		if (length(test.match <- grep(regex, chkres$findings)))
 			for (j in test.match) {
 				out <- fun(chkres$findings[j], p.out, i)
-				if (length(out)) addErrorFile(out, chkres$findings[j])
+				if (length(out))
+					addErrorFile(out, sub(" \\([^)]+\\)\\\n$", "",
+						chkres$findings[j]))
 			}
 	}
 	

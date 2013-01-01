@@ -714,6 +714,7 @@ sv.checkToolbox = function () {
 		tbxMgr.view.reloadToolsDirectoryView(-1);
 	
 		var rowCount = tbxMgr.view.rowCount;
+		var toolName, toolPath;
 		for (var i = 0; i < rowCount; i++) {
 			toolPath = os.path.relpath(tbxMgr.view.getPathFromIndex(i),
 				toolsDirectory);
@@ -832,12 +833,12 @@ sv.askUI = function (change /* = true*/) {
 	if (change === undefined || change == null) change = true;
 	
 	var levels = ["beginneR", "useR", "developeR", "full-Komodo"];
-	item = ko.dialogs.selectFromList(
+	var item = ko.dialogs.selectFromList(
 		sv.translate("Menus & toolbars configuration for R"),
 		sv.translate("Select the user interface level you like:"),
 		levels, "one");
 	if (item == null) return(null);
-	level = levels.indexOf(item[0]) + 1;
+	var level = levels.indexOf(item[0]) + 1;
 	if (change) sv.reworkUI(level);
 	
 	// If everything is fine, save config
@@ -1422,12 +1423,12 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 			scimoz.readOnly = false;
 			var firstline = -1;
 	
-			i = scimoz.lineCount - 1;
+			var i = scimoz.lineCount - 1;
 			// Allow for an empty line at the end
 			if (scimoz.lineLength(i) == 0 && i > 0) i = i - 1;
-			pos = scimoz.positionFromLine(i);
+			var pos = scimoz.positionFromLine(i);
 			while (i >= 0 && scimoz.getTextRange(pos, pos + 3) == ":+ ") {
-				firstline = i;
+				var firstline = i;
 				i = i -1; // Test previous line
 				pos = scimoz.positionFromLine(i);
 			}

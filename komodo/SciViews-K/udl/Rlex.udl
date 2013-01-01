@@ -33,6 +33,9 @@
 # ***** END LICENSE BLOCK *****
 
 # Lexer description for R
+
+initial IN_SSL_DEFAULT
+
 family ssl # server-side language (the way Komodo sees it!)
 sublanguage R
 
@@ -51,8 +54,6 @@ sublanguage R
 #SCE_UDL_SSL_VARIABLE=48
 start_style SSL_DEFAULT
 end_style SSL_VARIABLE
-
-initial IN_SSL_DEFAULT
 
 # If the language has keywords, specify which style needs to be transformed
 keyword_style SSL_IDENTIFIER => SSL_WORD
@@ -2620,20 +2621,32 @@ keywords [
 #}}
 ]
 
-# Some info on the styles we're using here
-pattern NMSTART = 'a-zA-Z\.\x80-\xff'   # inside cset
-pattern CS = '_$NMSTART\d'              # inside cset
-pattern WS = '\s\t\r\n'                 # inside cset
-pattern OP = '!%&\(\)\*\+,-\/:;<=>\?@\[\]\^\{\}~|\$'
+# Set the basic patterns we'll be using for styling transitions.
+# Names cannot start with a number or the underscore, but they
+# are allowed after the first character - e.g. "bar_21a"
+pattern NMSTART = 'a-zA-Z\.\x80-\xff'   # inside cset, first char for names
+pattern CS = '_$NMSTART\d'              # inside cset, rest of name
+pattern WS = '\s\t\r\n'                 # inside cset, whitespace
+pattern OP = '!%&\(\)\*\+,-\/:;<=>\?@\[\]\^\{\}~|\$'    # operator
+
+################ Transition ################
 
 state IN_M_DEFAULT:
 ## Transition to R code: about anything...
 /./ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
 
+
+################ Default Style ################
+
 state IN_SSL_DEFAULT:
+
+# ----------- Entering Functions Definitions ---------- #
 
 # A special mode for function definition
 'function' : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER), => IN_SSL_FUNDEF
+
+
+# ----------- Entering Comments ---------- #
 
 # This is shebang line or the R wiki construct used for R output
 /^#!/ : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_OUTPUT
@@ -2641,7 +2654,11 @@ state IN_SSL_DEFAULT:
 # One-line comments end at end-of-line
 '#' : paint(upto, SSL_DEFAULT),  => IN_SSL_COMMENT
 
-# Variables are always after $ or @ in list$var or obj@slot
+
+# ----------- Entering "Variables" ---------- #
+
+# "Variables" are always after $ or @ in list$var or obj@slot
+# (not really variables in R, but we reuse that style for such constructs)
 /[\$@]/ : paint(upto, SSL_DEFAULT), \
     paint(include, SSL_OPERATOR), => IN_SSL_VARIABLE_1
 
@@ -2649,20 +2666,30 @@ state IN_SSL_DEFAULT:
 # assignations with '='). That is: arg/var = (but not var ==)
 /[$NMSTART](?=[$CS]*[$WS]*\=[^\=])/ : paint(upto, SSL_DEFAULT), => IN_SSL_ARGUMENT
 
-# Specials case of SciViews::R("Main title") where we want to colorize
+# Special case of SciViews::R("Main title") where we want to colorize
 # Main title as a R wiki M_PI element
 "SciViews::R" : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_DOCHEADER
 
 # SSL_VARIABLE also colorizes namespaces ns in ns::fun() or ns:::fun()
+# So the SSL_VARIABLE style highlight essentially various pieces of
+# R code that should be separated from the rest...
 /[$NMSTART](?=[$CS]*[$WS]*::)/ : paint(upto, SSL_DEFAULT), => IN_SSL_NAMESPACE
+
+
+# ----------- Entering Whitespace ---------- #
 
 # Stay in SSL_DEFAULT mode, spaces have no meaning in R!
 /[$WS]+/  : #stay
 
-# Enter string mode
+
+# ----------- Entering Strings ---------- #
+
 '"' : paint(upto, SSL_DEFAULT), => IN_SSL_DSTRING
 '\'' : paint(upto, SSL_DEFAULT), => IN_SSL_SSTRING
 '`' : paint(upto, SSL_DEFAULT), => IN_SSL_BSTRING
+
+
+# ----------- Entering Numbers ---------- #
 
 # Go process a number, try to do it in regexes
 # Hexadecimal numbers: 0x0A or 0x10L or 0xFF23i
@@ -2673,8 +2700,13 @@ state IN_SSL_DEFAULT:
 # string, regex, number, or a few closing operators.
 /[-+]?\.\d/ : paint(upto, SSL_DEFAULT), => IN_SSL_NUMBER_FLOAT
 
-# Paint an identifier
+
+# ----------- Entering Identifiers ---------- #
+
 /[$NMSTART][$CS]*/ : paint(upto, SSL_DEFAULT), paint(include, SSL_IDENTIFIER), => IN_SSL_DEFAULT
+
+
+# ----------- Entering Operators ---------- #
 
 # Now a bunch of operators
 # Multi-char operators first
@@ -2753,7 +2785,7 @@ state IN_SSL_COMMENT:
 
 
 ##### Strings ##################################################################
-# Note: we use SSL_REGEX (not used in R) to denote wrong escaped characters
+# Note: we use SSL_REGEX style to denote wrong escaped characters
 state IN_SSL_DSTRING:
 '"' : paint(include, SSL_STRING), => IN_SSL_DEFAULT
 /\\['"nrtbafv\\]/ : #stay, Don't miscount backslash at end and/or valid escape characters
@@ -2918,8 +2950,7 @@ state IN_SSL_NO_ARGSDEF:
 /./ : redo, => IN_SSL_DEFAULT
 /$/ : => IN_SSL_DEFAULT # Idem at end of line
 
-
-##### End States ###############################################################
+################ End of State Handling ################
 
 
 # We might want to generalize this... by allowing named tokens.
@@ -2939,7 +2970,7 @@ SSL_COMMENT: skip all
 #SSL_COMMENTBLOCK: skip all
 
 
-#### Fold info #################################################################
+################ Fold Handling #################
 fold "{" SSL_OPERATOR +
 fold "}" SSL_OPERATOR -
 
@@ -2948,3 +2979,5 @@ fold ")" SSL_OPERATOR -
 
 fold "#{{" SSL_COMMENT +
 fold "#}}" SSL_COMMENT -
+
+################ End of Fold Handling ################

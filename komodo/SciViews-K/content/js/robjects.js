@@ -91,8 +91,9 @@ sv.robjects = {};
 		var rowsChanged = _this.visibleData.length - rowsBefore;
 		if (rowsChanged) _this.treeBox.rowCountChanged(0, rowsChanged);
 		
-		if (_this.treeBox.view.rowCount > _this.visibleData.length)
-			throw new Error("Whoops....");
+		// PhG: in ko7, _this.treeBox.view is not defined!
+		//if (_this.treeBox.view.rowCount > _this.visibleData.length)
+		//	throw new Error("Whoops....");
 
 		if (firstVisibleRow < _this.visibleData.length)
 			_this.treeBox.scrollToRow(firstVisibleRow);
@@ -109,15 +110,15 @@ sv.robjects = {};
 			(parentElement.group == "function" ? "args" : "sub-object")) :
 			'environment';
 	
-		dimNumeric = 1;
-		pos = index; // XXX ????
-		//this.index = index;
+		var dimNumeric = 1;
+		var pos = index;
+		this.index = index;
 		this.type = type;
 		if (obj) { /// Objects
 			dimNumeric = 1;
 			var dimRegExp = /^(\d+x)*\d+$/;
 			if (dimRegExp.test(arr[2])) {
-				dim = arr[2].split(/x/);
+				var dim = arr[2].split(/x/);
 				for (var j in dim) dimNumeric *= parseInt(dim[j]);
 			}
 			this.name = arr[0];
@@ -363,8 +364,8 @@ sv.robjects = {};
 			.getElementById("sciviews_robjects_filterbox");
 		var obRx, text, not;
 		text = tb.value;
-		not = (text[0] == "!");
-		if (not) text = text.substr(1);
+		not = (text.substring(0, 1) == "!")
+		if (not) text = text.substring(1);
 		if (!text) return(function (x) true);
 		try {
 			obRx = new RegExp(text, "i");
@@ -922,7 +923,9 @@ sv.robjects = {};
 		if (node == null) node = document	
 			.getElementById("sciviews_robjects_tab").contentDocument
 			.getElementById("sciviews_robjects_searchpath_listbox");
-		var selectedLabel = node.selectedItem ? node.selectedItem.label : null;
+				
+		var selectedLabel = node.selectedItem ?
+			node.selectedItem.getAttribute("label") : null;
 		
 		while (node.firstChild)
 			node.removeChild(node.firstChild);
@@ -941,7 +944,7 @@ sv.robjects = {};
 
 		if (selectedLabel != null) {
 			for (var i = 0; i < node.itemCount; i++) {
-				if (node.getItemAtIndex(i).label == selectedLabel) {
+				if (node.getItemAtIndex(i).getAttribute("label") == selectedLabel) {
 					node.selectedIndex = i;
 					break;
 				}
@@ -1133,7 +1136,7 @@ sv.robjects = {};
 		var cellText, item;
 		var name = fullNames ? "fullName" : "name";
 		var selectedItemsOrd = _this.selectedItemsOrd;
-		for (i in selectedItemsOrd) {
+		for (var i in selectedItemsOrd) {
 			item = selectedItemsOrd[i];
 			cellText = item[name];
 
@@ -1372,13 +1375,15 @@ sv.robjects = {};
 		 case 'names':
 		 default:
 			var cmds = [];
-			for (i in obj) {
+			for (var i in obj) {
 				// PhG: I want the simplest expression as possible
 				if (obj[i].env == ".GlobalEnv") {
 					cmds.push(action + "(" + obj[i].fullName + ")");
 				} else {
 					cmds.push(action + "(evalq(" + obj[i].fullName +
 						", envir = as.environment(\"" +
+// FIXME: in 'print' or 'structure' applied to .GlobalEnv, I got obj[i].env is null
+// Should the 'print' or 'structure' menu item apply to it???
 						obj[i].env.addslashes() + "\")))");
 				}
 			}

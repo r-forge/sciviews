@@ -76,7 +76,16 @@ if (sv.prefs === undefined) sv.prefs = {};
 		type = ['double', 'long', 'boolean', 'string'].indexOf(type);
 		if (type == -1 || type == null) return(undefined);
 		typeName = ['Double', 'Long', 'Boolean', 'String'][type];
-		prefset['set' + typeName + 'Pref'](prefName, value);
+		try {
+			prefset['set' + typeName + 'Pref'](prefName, value);
+		} catch (e) {
+			// If typeName is Long, try using Double instead
+			if (typeName == "Long") {
+				prefset['setDoublePref'](prefName, value);
+			} else { // Retry
+				prefset['set' + typeName + 'Pref'](prefName, value);
+			}
+		}
 		return(typeName);
 	}
 	

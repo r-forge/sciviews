@@ -1,5 +1,11 @@
 = svTools News
 
+== Changes in svTools 0.9-3
+
+* Fixed a bug in lint() that prevented to retrieve warnings from codetools 0.2-8
+  checkUsage() function.
+
+
 == Changes in svTools 0.9-2
 
 * Fixed partial matching of arguments env(ir) in .argsFunAfter() and

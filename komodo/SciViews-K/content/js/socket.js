@@ -319,7 +319,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 			// Make sure sv.clientType is correct
 			sv.clientType = "http";
 			// For calltip and complete, I have something different
-			sv.prefs.setPref("sciviews.client.currentType", "http");
+			sv.prefs.setPref("sciviews.client.currentType", "http", true);
 			break;
 		 case "socket":
 		 default:
@@ -327,7 +327,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 			// Make sure sv.clientType is correct
 			sv.clientType = "socket";
 			// For calltip and complete, I have something different
-			sv.prefs.setPref("sciviews.client.currentType", "socket");
+			sv.prefs.setPref("sciviews.client.currentType", "socket", true);
 			break;
 		}
 	}
@@ -666,7 +666,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 		}
 		// Make sure port is OK
 		if (port) {
-			sv.prefs.setPref("sciviews.ko.port", port);
+			sv.prefs.setPref("sciviews.ko.port", port, true, true);
 		} else {
 			port = sv.prefs.getPref("sciviews.ko.port", 7052);
 		}
@@ -715,16 +715,18 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 				//		"Click OK to change port to %S and try again.", port, port + 1),
 				//		"OK", null, "SciViews-K") == "OK") {
 				// Avoid increasing constantly the port number!
-				if (port >= 8000) port = 7051;
-				sv.prefs.setPref("sciviews.ko.port", port + 1);
-				_this.serverStart();
+				
+				// PhG: disabled for now because when offline, I cannot create server
+				// and it recurse indefinitely!
+//				if (port >= 8000) port = 7051;
+//				_this.serverStart(port + 1);
 				//}
-				return;
+//				return;
 		
-				// sv.log.exception(e, "SciViews-K cannot open a server socket on port "
-				//	+ port + ".\nMake sure the port is not already used by another" +
-				//	" Komodo instance" + "\nor choose another port in the" +
-				//	" preferences and restart Komodo", false);
+				sv.log.exception(e, "SciViews-K cannot open a server socket on port "
+					+ port + ".\nMake sure the port is not already used by another" +
+					" Komodo instance" + "\nor choose another port in the" +
+					" preferences and restart Komodo", false);
 				// If the port is already used, I got:
 				// "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame ::
 				// chrome://sciviewsk/content/js/socket.js :: anonymous :: line 285

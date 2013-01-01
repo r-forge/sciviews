@@ -32,36 +32,34 @@ svRinterpreter.prototype = {
     contractID:       "@sciviews.org/svRinterpreter;1",
 
     // Category: An array of categories to register this component in.
-//    _xpcom_categories: [{
-//
-//		// Each object in the array specifies the parameters to pass to
-//		// nsICategoryManager.addCategoryEntry(). 'true' is passed for both
-//		// aPersist and aReplace params.
-//		category: "r",
-//
-//		// Optional, defaults to the object's classDescription
-//		//entry: "",
-//
-//		// Optional, defaults to object's contractID (unless 'service' specified)
-//		//value: "...",
-//
-//		// Optional, defaults to false. When set to true, and only if 'value' is
-//		// not specified, the concatenation of the string "service," and the
-//		// object's contractID is passed as aValue parameter of addCategoryEntry.
-//		service: false
-//    }],
+    _xpcom_categories: [{
+
+		// Each object in the array specifies the parameters to pass to
+		// nsICategoryManager.addCategoryEntry(). 'true' is passed for both
+		// aPersist and aReplace params.
+		category: "r",
+
+		// Optional, defaults to the object's classDescription
+		//entry: "",
+
+		// Optional, defaults to object's contractID (unless 'service' specified)
+		//value: "...",
+
+		// Optional, defaults to false. When set to true, and only if 'value' is
+		// not specified, the concatenation of the string "service," and the
+		// object's contractID is passed as aValue parameter of addCategoryEntry.
+		service: false
+    }],
 
     // QueryInterface implementation, e.g. using the generateQI helper
 	// (remove argument if skipped steps above)
     QueryInterface: XPCOMUtils.generateQI([Components.interfaces.svIRinterpreter]),
 
-    //chromeURL: "chrome://komodo/content/colorpicker/colorpicker.html",
-
     /**
     * Escape from multiline mode in the R interpreter.
     */
     escape: function () {
-		// Currently do noting
+		// Currently do nothing
 		return(null);
 	},
 
@@ -70,29 +68,29 @@ svRinterpreter.prototype = {
     * @param code - The piece of code currently edited requiring calltip.
     */
     calltip: function (code) {
-///		if (typeof(code) == "undefined" | code == "") {
-			return("");
-///		}
-///		var cmd = 'cat(callTip("' + code.replace(/(")/g, "\\$1") +
-///			'", location = TRUE, description = TRUE, methods = FALSE, width = 80))';
-///		var res = rCommand("<<<h>>>" + cmd,
-///			function (tip) {
-///				if (tip != "") {
-///					koLogger.debug(tip);
-///					var kvSvc = Components
-///						.classes["@activestate.com/koViewService;1"]
-///						.getService(Components.interfaces.koIViewService);
-///					var ke = kvSvc.currentView.document.getView().scimoz;
-///					try {
-///						if (ke.callTipActive()) ke.callTipCancel();
-///						ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
-///					} catch(e) { }
-///					// TODO: does not work!
-///					//clearCodeintelMessage();
-///				}
-///			}
-///		);
-///		return(res);
+		if (typeof(code) == "undefined" | code == "") {
+			return(null);
+		}
+		var cmd = 'cat(callTip("' + code.replace(/(")/g, "\\$1") +
+			'", location = TRUE, description = TRUE, methods = FALSE, width = 80))';
+		var res = rCommand("<<<h>>>" + cmd,
+			function (tip) {
+				if (tip != "") {
+					koLogger.debug(tip);
+					var kvSvc = Components
+						.classes["@activestate.com/koViewService;1"]
+						.getService(Components.interfaces.koIViewService);
+					var ke = kvSvc.currentView.document.getView().scimoz;
+					try {
+						if (ke.callTipActive()) ke.callTipCancel();
+						ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
+					} catch(e) { }
+					// TODO: does not work!
+					//clearCodeintelMessage();
+				}
+			}
+		);
+		return(res);
     },
 
     /**
@@ -100,66 +98,66 @@ svRinterpreter.prototype = {
     * @param code - The piece of code currently edited requiring completion.
     */
     complete: function (code) {
-///		if (code === undefined | code == "") {
-			return "";
-///		}
-///		code = code.replace(/(")/g, "\\$1");
-///		var kvSvc = Components
-///			.classes["@activestate.com/koViewService;1"]
-///			.getService(Components.interfaces.koIViewService);
-///		var ke = kvSvc.currentView.document.getView().scimoz;
-///		// Record current position (could change, because asynch trigger of autoC)
-///		var lastPos = ke.anchor;
-///		var cmd = 'completion("' + code + '", print = TRUE, types = "scintilla", field.sep = "?")';
-///		koLogger.debug("completion: ..." + code.substring(code.length - 20));
-///		var res = rCommand("<<<h>>>" + cmd,
-///			function (autoCstring) {
-///				try {
-///					// These should be set only once?:
-///					ke.autoCSeparator = 9;
-///					//ke.autoCSetFillUps(" []{}<>/():;%+-*@!\t\n\r=$`");
-///					var autoCSeparatorChar = String.fromCharCode(ke.autoCSeparator);
-///					autoCstring = autoCstring.replace(/^(.*)[\r\n]+/, "");
-///					// Get length of the triggering text
-///					var trigLen = parseInt(RegExp.$1);
-///					koLogger.debug("trigLen: " + trigLen);
-///					// Is something returned by completion()?
-///					if (isNaN(trigLen)) { return; }
-///					// There is a bug (or feature?) in completion(): if it returns all the code, better set trigLen to 0!
-///					if (trigLen == code.length) { trigLen = 0; }
-///					// TODO: we need to sort AutoCString with uppercase first
-///					// otherwise, the algorithm does not find them (try: typing T, then ctrl+J, then R)
-///					// TODO: there is a problem with items with special character (conversion problems)
-///					autoCstring = autoCstring.replace(/\r?\n/g, autoCSeparatorChar);
-///
-///					// code below taken from "CodeIntelCompletionUIHandler"
-///				//	var iface = Components.interfaces.koICodeIntelCompletionUIHandler;
-///				//	ke.registerImage(iface.ACIID_FUNCTION, ko.markers.
-///				//		getPixmap("chrome://komodo/skin/images/ac_function.xpm"));
-///				//	ke.registerImage(iface.ACIID_VARIABLE, ko.markers.
-///				//		getPixmap("chrome://komodo/skin/images/ac_variable.xpm"));
-///				//	ke.registerImage(iface.ACIID_XML_ATTRIBUTE, ko.markers.
-///				//		getPixmap("chrome://komodo/skin/images/ac_xml_attribute.xpm"));
-///				//	ke.registerImage(iface.ACIID_NAMESPACE, ko.markers.
-///				//		getPixmap("chrome://komodo/skin/images/ac_namespace.xpm"));
-///				//	ke.registerImage(iface.ACIID_KEYWORD, ko.markers.
-///				//		getPixmap("chrome://komodo/skin/images/ac_interface.xpm"));
-///					ke.autoCChooseSingle = false;
-///					// Take into account if we entered more characters
-///					Delta = ke.anchor - lastPos;
-///					koLogger.debug("Delta: " + Delta);
-///					// Only display completion list if 0 <= Delta < 5
-///					// Otherwise, it means we moved away for the triggering area
-///					// and we are in a different context, most probably
-///					if (Delta >= 0 & Delta < 5) {
-///						ke.autoCShow(Delta + trigLen, autoCstring);
-///					}
-///				} catch(e) { }
-///				// TODO: does not work!
-///				//clearCodeintelMessage();
-///			}
-///		);
-///		return(res);
+		if (code === undefined | code == "") {
+			return(null);
+		}
+		code = code.replace(/(")/g, "\\$1");
+		var kvSvc = Components
+			.classes["@activestate.com/koViewService;1"]
+			.getService(Components.interfaces.koIViewService);
+		var ke = kvSvc.currentView.document.getView().scimoz;
+		// Record current position (could change, because asynch trigger of autoC)
+		var lastPos = ke.anchor;
+		var cmd = 'completion("' + code + '", print = TRUE, types = "scintilla", field.sep = "?")';
+		koLogger.debug("completion: ..." + code.substring(code.length - 20));
+		var res = rCommand("<<<h>>>" + cmd,
+			function (autoCstring) {
+				try {
+					// These should be set only once?:
+					ke.autoCSeparator = 9;
+					//ke.autoCSetFillUps(" []{}<>/():;%+-*@!\t\n\r=$`");
+					var autoCSeparatorChar = String.fromCharCode(ke.autoCSeparator);
+					autoCstring = autoCstring.replace(/^(.*)[\r\n]+/, "");
+					// Get length of the triggering text
+					var trigLen = parseInt(RegExp.$1);
+					koLogger.debug("trigLen: " + trigLen);
+					// Is something returned by completion()?
+					if (isNaN(trigLen)) { return; }
+					// There is a bug (or feature?) in completion(): if it returns all the code, better set trigLen to 0!
+					if (trigLen == code.length) { trigLen = 0; }
+					// TODO: we need to sort AutoCString with uppercase first
+					// otherwise, the algorithm does not find them (try: typing T, then ctrl+J, then R)
+					// TODO: there is a problem with items with special character (conversion problems)
+					autoCstring = autoCstring.replace(/\r?\n/g, autoCSeparatorChar);
+
+					// code below taken from "CodeIntelCompletionUIHandler"
+				//	var iface = Components.interfaces.koICodeIntelCompletionUIHandler;
+				//	ke.registerImage(iface.ACIID_FUNCTION, ko.markers.
+				//		getPixmap("chrome://komodo/skin/images/ac_function.xpm"));
+				//	ke.registerImage(iface.ACIID_VARIABLE, ko.markers.
+				//		getPixmap("chrome://komodo/skin/images/ac_variable.xpm"));
+				//	ke.registerImage(iface.ACIID_XML_ATTRIBUTE, ko.markers.
+				//		getPixmap("chrome://komodo/skin/images/ac_xml_attribute.xpm"));
+				//	ke.registerImage(iface.ACIID_NAMESPACE, ko.markers.
+				//		getPixmap("chrome://komodo/skin/images/ac_namespace.xpm"));
+				//	ke.registerImage(iface.ACIID_KEYWORD, ko.markers.
+				//		getPixmap("chrome://komodo/skin/images/ac_interface.xpm"));
+					ke.autoCChooseSingle = false;
+					// Take into account if we entered more characters
+					Delta = ke.anchor - lastPos;
+					koLogger.debug("Delta: " + Delta);
+					// Only display completion list if 0 <= Delta < 5
+					// Otherwise, it means we moved away for the triggering area
+					// and we are in a different context, most probably
+					if (Delta >= 0 & Delta < 5) {
+						ke.autoCShow(Delta + trigLen, autoCstring);
+					}
+				} catch(e) { }
+				// TODO: does not work!
+				//clearCodeintelMessage();
+			}
+		);
+		return(res);
     }
 };
 
