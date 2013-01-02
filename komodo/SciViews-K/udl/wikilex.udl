@@ -42,7 +42,27 @@ state IN_M_WIKI_START
 
 state in_wiki_default_start_of_line:
 #'{{{' : paint(upto, M_DEFAULT), paint(include, M_TAGNAME), => in_wiki_triple_brace_start
-'#': paint(upto, M_CDATA), paint(include, M_COMMENT), => in_wiki_have_comment
+'##': paint(upto, M_CDATA), paint(include, M_COMMENT), => in_wiki_have_comment
+
+# This is for the item list
+'* ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'*** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'**** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'***** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+# This is for the numbered list
+'. ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'.. ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'... ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'.... ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'..... ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/[1-9]\. /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/[a-z]\. /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/[A-Z]\. /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/[ivx]+\) /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/[IVX]+\) /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
 '===== ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
 '==== ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
 '=== ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
@@ -50,32 +70,40 @@ state in_wiki_default_start_of_line:
 '= ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
 '.': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
 
-# This is for the item list
-'* ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
-'** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
-'*** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
-'**** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+# This is for special paragraphs
+'NOTE:': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'IMPORTANT:': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'WARNING:': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'CAUTION:': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'TIP:': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+# Everything between [] on the beginning of a line, or with name:: is tag
+/\[.*\]$/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_start_of_line
+/[a-zA-Z][a-zA-Z _0-9]+::$/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_start_of_line
 
 /./: redo, => in_wiki_default_on_line
 
 state in_wiki_finish_header:
 /$/ : paint(upto, M_PI), paint(include, M_PI), => in_wiki_default_start_of_line
 #/\s+/ : #stay
-'#': paint(upto, M_PI), paint(include, M_COMMENT), => in_wiki_have_comment
+'##': paint(upto, M_PI), paint(include, M_COMMENT), => in_wiki_have_comment
 #/./: redo, => in_wiki_default_on_line
 
 state in_wiki_default_on_line:
-'#': paint(upto, M_CDATA), paint(include, M_COMMENT), => in_wiki_have_comment
+'##': paint(upto, M_CDATA), paint(include, M_COMMENT), => in_wiki_have_comment
+# Line break with +
+/ \+$/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_start_of_line
 /$/: => in_wiki_default_start_of_line
 "//" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_italic
 "**" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_bold
+"++" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_monospaced
 
 "'''''" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_q5
 "'''" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_q3
 "''" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_q2
 
 "~~" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_tilde2
-"^" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_caret
+"^^" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_caret
 
 '{{{' : paint(upto, M_CDATA), => in_wiki_brace_3
 /!'+/: #stay
@@ -134,6 +162,10 @@ state in_wiki_bold:
 /!\*+/: #stay
 "**" : paint(upto, M_TAGNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
+state in_wiki_monospaced:
+/!\++/: #stay
+"++" : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
 state in_wiki_q5:
 /!'+/: #stay
 "'''''" : paint(upto, M_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
@@ -148,8 +180,8 @@ state in_wiki_tilde2:
 /!~+/: #stay
 "~~" : paint(upto, M_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
 state in_wiki_caret:
-/!^/: #stay
-"^" : paint(upto, M_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/!^+/: #stay
+"^^" : paint(upto, M_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
 #}}}
 
 ################ End of State Handling ################
