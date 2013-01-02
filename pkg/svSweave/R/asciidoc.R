@@ -5,15 +5,14 @@
 ## in the initialisation block (second line) of the SciViews Rdoc!
 
 Rdoc <- function (title, author, email, revnumber = NULL, revdate = NULL,
-revremark = NULL, copyright = "cc-by", encoding = "utf-8", lang = "en",
+revremark = NULL, copyright = "cc-by", encoding = "UTF-8", lang = "en",
 pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
-format = "html", theme = "SciViews", max.width = 720, width = "100%",
-toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 3,
+theme = "SciViews", max.width = 640, width = NULL,
+toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 2,
 numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
 align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
-SweaveOpts = list(prefix.string = "figures/fig", width = 7.2, height = 7.2, pdf = TRUE),
-SweaveInit = { options(width = 90); options(SweaveHooks = list(fig = function()
-par(col.lab = "#434366", col.main = "#434366")))}
+SweaveInit = { options(width = 80); options(SweaveHooks = list(fig = function()
+par(col.lab = "#434366", col.main = "#434366"))) }
 )
 {
 	## Format AsciiDocsciidoc attributes
@@ -28,7 +27,6 @@ par(col.lab = "#434366", col.main = "#434366")))}
 		stop("You must provide a title for your Rdoc")
 	
 	## Idem for author, but allow several names
-	## TODO: Allows for first middle last and must replace space inside items by _
 	author <- paste(author, collapse = ", ")
 	if (!length(author))
 		stop("You must provide at least one author for your Rdoc")
@@ -40,14 +38,14 @@ par(col.lab = "#434366", col.main = "#434366")))}
 	
 	## Compute revision field: [revnumber], [revdate]:\n[revremark]
 	if (length(revnumber))
-		revfield <- paste0(revfield, ", ") else revfield <- ""
+		revfield <- paste0("v", revnumber, ", ") else revfield <- ""
 	if (!length(revdate)) revdate <- format(Sys.Date(), format = "%B %Y")
 	revfield <- paste0(revfield, revdate)
 	if (length(revremark))
 		revfield <- paste0(revfield, ":\n", paste(revremark, collapse = "\n"))
 		
 	## Create the Asciidoc header
-	header <- paste0("!\"\n",
+	header <- paste0(
 		"= ", title, "\n",
 		author, " <", email, ">\n",
 		revfield, "\n"
@@ -68,7 +66,6 @@ par(col.lab = "#434366", col.main = "#434366")))}
 	header <- asciiAttr(header, "title", pagetitle)
 	header <- asciiAttr(header, "description", description)
 	header <- asciiAttr(header, "keywords", keywords)
-	header <- asciiAttr(header, "format", format)
 	header <- asciiAttr(header, "theme", theme)
 	header <- asciiAttr(header, "max-width", max.width)
 	header <- asciiAttr(header, "width", width)
@@ -91,31 +88,16 @@ par(col.lab = "#434366", col.main = "#434366")))}
 	header <- asciiAttr(header, "halign", halign)
 	if (isTRUE(pygments)) header <- paste0(header, ":pygments:\n")
 	header <- asciiAttr(header, "slidefontsizeadjust", slidefontsizeadjust)
+	header <- paste0(header, "\n") # End of header section
 	
-	## Rework SweaveOpts
-	if (length(SweaveOpts)) {
-		if (!is.list(SweaveOpts))
-			stop("'SweaveOpts' must be a named list or NULL")
-		SweaveOpts <- paste(names(SweaveOpts), SweaveOpts, sep = " = ",
-			collapse = ", ")
-		header <- paste0(header,
-			"\n//////////\n",
-			"\\SweaveOpts{", SweaveOpts, "}\n",
-			"//////////\n"				 
-		)
-	} else header <- paste0(header, "\n") # End of header section
-		
-	## Add SweaveInit chunk here... or !<<>>="
-	## TODO: allow for either require(SciViews), or a def of `!`
-	if (is.null(SweaveInit)) SweaveInit <- "" else
-		SweaveInit <- paste(deparse(substitute(SweaveInit)), collapse = "\n")
-	header <- paste0(header,
-		"!<<init, echo = FALSE, results = hide>>=\"\n",
-		"## SweaveInit code\n",
-		SweaveInit,
-		"\n## More initialization\n",
-		"require(\"SciViews\")\n"
-	)
+	## Run SweaveInit now
+	SweaveInit
+	## More initialization
+	req <- base::require
+	req("SciViews", quietly = TRUE, warn.conflicts = FALSE)
+	
+	## Print the header and return it invisibly
+	if (!interactive()) cat(header)
 	invisible(header)
 }
 
@@ -163,10 +145,8 @@ RdocToRnw <- function (RdocFile, RnwFile, encoding)
 	## Check that the SciViews Rdoc file starts with #!
 	if (!grepl("^#!", Rscript[1]))
 		stop("Incorrect SciViews Rdoc (it must start with #!)")
-	
-	## TODO: change this into a header constructor from svSweave::Rdoc()
-	## Locate the header, which is one or several lines of initialization R code
-	inHeader <- 2:(lstart[1] - 1)
+	## Change this line into an init code chunk
+	Rscript[1] <- "<<init, echo=FALSE, results=ascii>>="
 	
 	## Doc chunks are lines where cstart > cend
 	inDoc <- cstart > cend
@@ -180,15 +160,14 @@ RdocToRnw <- function (RdocFile, RnwFile, encoding)
 	## Convert comments blocks using four or more #### by ////
 	Rscript[inDoc] <- gsub("^####+$", "////", Rscript[inDoc])
 	
-	## Convert line comments using ## by //
-	Rscript[inDoc] <- gsub("^##", "//", Rscript[inDoc])
+	## Convert line comments using ## by __
+	Rscript[inDoc] <- gsub("^##", "__", Rscript[inDoc])
 	
 	## Replace all doc chunk starters (!") by @
 	Rscript[start] <- "@"
 	
-	## Replace all doc chunk ends (!<<.*>>=") by the same without leading !
-	## and trailing "
-	Rscript[end] <- sub('!^(.*>>=)"[ \t]*$', "\\1", Rscript[end])
+	## Replace all doc chunk ends (<<.*>>=") by the same without trailing "
+	Rscript[end] <- sub('^(.*>>=)"[ \t]*$', "\\1", Rscript[end])
 	
 	## Polish the end of the document...
 	lastDoc <- lend[length(lend)]
@@ -202,16 +181,6 @@ RdocToRnw <- function (RdocFile, RnwFile, encoding)
 		Rscript <- c(Rscript, "@")
 	}
 	
-	## Now, rework the header lines to be compatible with a .Rnw file
-	## Place initialization R code in a 'echo = FALSE' code chunk just before
-	## the first current code chunck
-	firstChunk <- lend[1]
-	header <- paste(Rscript[inHeader], collapse = "\n")
-	Rscript[firstChunk] <- paste("<<echo = FALSE>>=\n", header,
-		"\n@\n\n", Rscript[firstChunk], sep = "")
-	## Now eliminate the header from the script
-	Rscript <- Rscript[-c(1, inHeader, max(inHeader) + 1)]
-
 	## Write result to the RnwFile
 	## TODO: check encoding of .Rnw file on all platforms
 #	utf8conv <- function(x) gsub("<U\\+([0-9A-F]{4})>","\\\\u\\1", x)
@@ -274,7 +243,7 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 		
 	## Do we show the resulting Html file in the current browser at the end?
 	## By default YES, unless in non-interactive mode
-	if (missing(show.it)) show.it <- getOption("Rdoc.showIt", interactive())
+	if (missing(show.it)) show.it <- getOption("Rdoc.show.it", interactive())
 	
 	## Do we keep intermediary .Rnw and .txt files? Default to FALSE
 	if (missing(keep.RnwFile))
@@ -339,8 +308,10 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 		if (!isTRUE(keep.TxtFile)) unlink(TxtFile)	
 	})
 	
-	## Sweave this document...
-	Asciidoc(RnwFile2, encoding = encoding) # This should create the TxtFile
+	## Sweave this document... (creating the TxtFile)
+	## Note: we change some default options here!
+	Asciidoc(RnwFile2, encoding = encoding, prefix.string = "figures/fig",
+		width = 7.2, height = 7.2, png = TRUE, jpeg = FALSE, format = "png")
 	
 	if (!file.exists(TxtFile))
 		stop("Problems while creating the Asciidoc file (", TxtFile, ")")
@@ -380,6 +351,9 @@ makeRdoc <- function (RdocFile, encoding)
 	## A function to run an a SciViews Rdoc file, and that looks at the #!
 	## line to determine what function to run for compiling the final document
 
+	## If RdocFile is missing, try to get it from option or the command line
+	if (missing(RdocFile)) RdocFile <- .RdocFile()
+	
 	## Check RdocFile
 	if (missing(RdocFile) || !length(RdocFile)) stop("No file provided")
 	if (!file.exists(RdocFile)) stop("RdocFile not found (", RdocFile, ")")

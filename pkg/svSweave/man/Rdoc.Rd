@@ -14,15 +14,14 @@
 
 \usage{
 Rdoc(title, author, email, revnumber = NULL, revdate = NULL,
-revremark = NULL, copyright = "cc-by", encoding = "utf-8", lang = "en",
-pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
-format = "html", theme = "SciViews", max.width = 720, width = "100\%",
-toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 3,
-numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
-align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
-SweaveOpts = list(prefix.string = "figures/fig", width = 7.2, height = 7.2,
-    pdf = TRUE), SweaveInit = { options(width = 90); options(SweaveHooks =
-    list(fig = function() par(col.lab = "#434366", col.main = "#434366")))}
+    revremark = NULL, copyright = "cc-by", encoding = "UTF-8", lang = "en",
+    pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
+    theme = "SciViews", max.width = 640, width = NULL,
+    toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 2,
+    numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
+    align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
+    SweaveInit = { options(width = 80); options(SweaveHooks = list(fig = function()
+        par(col.lab = "#434366", col.main = "#434366"))) }
 )
 }
 
@@ -44,7 +43,7 @@ SweaveOpts = list(prefix.string = "figures/fig", width = 7.2, height = 7.2,
     cc-by, John Does, 2013, or just the first part (cc-by) and the author and
     year will be appended automatically. If \code{NULL}, it is omitted. }
   \item{encoding}{ a character string with the encoding of your SciViews Rdoc.
-    It is not advised to change from the default, utf-8. Make sure you save
+    It is not advised to change from the default, UTF-8. Make sure you save
     your document in UTF-8 encoding before you process it! }
   \item{lang}{ the (main) language used in your SciViews Rdoc. By default, it is
     English (en), but Asciidoc can also use de, el, es, fr, hu, it, nl, pt, ru
@@ -55,11 +54,7 @@ SweaveOpts = list(prefix.string = "figures/fig", width = 7.2, height = 7.2,
     to use in the head section of the HTML document. If \code{NULL}, it is
     omitted. }
   \item{keywords}{ a character string with one or more keywords to use in the
-    head section of the HTML document. If \code{NULL}, it is omitted. }
-  \item{format}{ a character string with the format into which the Rdoc should
-    be converted. By default (\code{"html"}), an HTML document is compiled. Valid
-    formats are: html, html4, html5, slidy, slidy2, wordpress, docbook,
-    docbook45 and latex (see the AsciiDoc man page). } 
+    head section of the HTML document. If \code{NULL}, it is omitted. } 
   \item{theme}{ the theme to use with the Asciidoc HTML file. By default, it is
     \code{"SciViews"}. }
   \item{max.width}{ the maximum width of the page, in pixels or in percent.
@@ -76,7 +71,7 @@ SweaveOpts = list(prefix.string = "figures/fig", width = 7.2, height = 7.2,
     default (Table of Contents, or its translation in the main language of the
     SciViews Rdoc) is used. }
   \item{toclevels}{ how deep in title levels should the table of contents be
-    generated (1, 2, 3 or 4)? By default, it is 3. }
+    generated (1, 2, 3 or 4)? By default, it is 2. }
   \item{numbered}{ should the titles be numbered (\code{TRUE}, by default), or
     not (\code{FALSE})? }
   \item{data.uri}{ should figures, scripts and styles be embedded in the main
@@ -93,8 +88,6 @@ SweaveOpts = list(prefix.string = "figures/fig", width = 7.2, height = 7.2,
     \code{FALSE} by default. }
   \item{slidefontsizeadjust}{ adjustment of font size in slidy and slidy2
     documents. }
-  \item{SweaveOpts}{ options for Sweave. A reasonable default is provided.
-    See ?sweave. }
   \item{SweaveInit}{ code to be run in the init code chunk, related to sweave.
     Reasonable defaults are provided. See ?sweave. }
 }
