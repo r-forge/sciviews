@@ -31,12 +31,12 @@
 #
 # ***** END LICENSE BLOCK *****
 
-# Wiki components are switch back to R using !" again at the beginning of a line
+# Wiki chunks are switch back to R using !<<...>>=" at the beginning of a line
 
 family markup
 
 state in_wiki_default_start_of_line:
-/[!]"/ : paint(upto, M_CDATA), paint(include, M_TAGNAME), => IN_M_WIKI_STOP
+/[!]<<.*>>="/ : paint(upto, M_CDATA), paint(include, M_TAGNAME), => IN_M_WIKI_STOP
 
 state IN_M_WIKI_STOP:
 /^/ : paint(upto, M_CDATA), => IN_SSL_DEFAULT

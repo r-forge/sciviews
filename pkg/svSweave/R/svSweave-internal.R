@@ -11,18 +11,18 @@
 {
 	## Change the extension of a file
 	file <- sub("\\.[^\\.]*$", "", file)
-	return(paste(file, extension, sep = "."))
+	paste(file, extension, sep = ".")
 }
 
-.Rfile <- function ()
+.RdocFile <- function ()
 {
-	## Try to get Rfile from option or the command line
+	## Try to get RdocFile from option or the command line
 	## Note: the file from the command line is for #! scripts!
-	Rfile <- getOption("sv.Rfile", NULL)
-	if (is.null(Rfile)) Rfile <- commandArgs(TRUE)[1] # If #! script
-	if (!length(Rfile) || !file.exists(Rfile))
-		stop("Rfile not found (", Rfile, ")")
-	return(normalizePath(Rfile, winslash = "/"))
+	RdocFile <- getOption("Rdoc.file", NULL)
+	if (is.null(RdocFile)) RdocFile <- commandArgs(TRUE)[1] # If #! script
+	if (!length(RdocFile) || !file.exists(RdocFile))
+		stop("RdocFile not found (", RdocFile, ")")
+	return(normalizePath(RdocFile, winslash = "/"))
 	
 }
 
@@ -86,7 +86,8 @@
 		#pyVersion <- sub("^Python ", "",
 		#	system(paste('"', py, '" --version 2>&1', sep = ""), intern = TRUE))
 		pyVersion <- sub("^([^ ]+).*$", "\\1", system(paste('"', py,
-			'" -c "import sys; print sys.version"', sep = ""), intern = TRUE)[1])
+			'" -c "import sys; print sys.version"', sep = ""),
+			intern = TRUE)[1])
 		res <- try(suppressWarnings(compareVersion(pyVersion, "2.4") > 0),
 			silent = TRUE)
 		## If there is an error, by-pass version checking and just look if

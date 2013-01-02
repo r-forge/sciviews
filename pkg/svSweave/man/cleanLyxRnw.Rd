@@ -5,7 +5,8 @@
 \alias{knitLyxRnw}
 \alias{purlLyxRnw}
 
-\title{ Clean up, weave or tangle Sweave files produced by LyX with the SciViews Sweave module }
+\title{ Clean up, weave or tangle Sweave files produced by LyX with the SciViews
+  Sweave module }
 \description{
   These functions process .Rnw files produced by LyX and the SciViews Sweave
   module (not the standard Sweave module provided with LyX <= 2.0.0!)
@@ -50,10 +51,12 @@ purlLyxRnw(file, encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
 
 \value{
   \code{NULL}, these functions are invoked for their side effects. The function
-  \code{weaveLyxRnw()} uses the standard Sweave driver, while \code{knitLyxRnw()}
-  does the same, but using the knitr driver. Similarly, \code{purlLyxRnw()} is
-  the knitr counterpart of \code{tangleLyxRnw()} standard tangling function.
+  \code{weaveLyxRnw()} uses the standard Sweave driver, while
+  \code{knitLyxRnw()} does the same, but using the knitr driver. Similarly,
+  \code{purlLyxRnw()} is the knitr counterpart of \code{tangleLyxRnw()} standard
+  tangling function.
 }
+
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
 \keyword{ utilities }

@@ -5,7 +5,8 @@ export(cleanLyxRnw,
        purlLyxRnw,
        tangleLyxRnw,
        weaveLyxRnw,
-       RasciidocToRnw,
-       RasciidocConvert,
-       RasciidocThemes,
-       svBuild)
+       Rdoc,
+       RdocToRnw,
+       RdocConvert,
+       RdocThemes,
+       makeRdoc)

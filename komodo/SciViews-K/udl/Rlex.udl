@@ -2666,9 +2666,9 @@ state IN_SSL_DEFAULT:
 # assignations with '='). That is: arg/var = (but not var ==)
 /[$NMSTART](?=[$CS]*[$WS]*\=[^\=])/ : paint(upto, SSL_DEFAULT), => IN_SSL_ARGUMENT
 
-# Special case of SciViews::R("Main title") where we want to colorize
-# Main title as a R wiki M_PI element
-"SciViews::R" : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_DOCHEADER
+# Special case of svSweave::Rdoc("Main title") or Rdoc("Main title")
+# where we want to colorize main title as a Rdoc M_PI element
+"svSweave::Rdoc" : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_DOCHEADER
 
 # SSL_VARIABLE also colorizes namespaces ns in ns::fun() or ns:::fun()
 # So the SSL_VARIABLE style highlight essentially various pieces of

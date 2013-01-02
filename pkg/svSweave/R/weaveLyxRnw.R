@@ -1,4 +1,6 @@
 ## TODO: see the tables package for better looking tables, including in LaTeX!
+## TODO: merge both functions and use a tag in the document to decide
+##       if using sweave or knitr
 
 weaveLyxRnw <- function (file, driver = RweaveLatex(),
 syntax = getOption("SweaveSyntax"), encoding = "UTF-8", width = 80,

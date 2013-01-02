@@ -1,39 +1,154 @@
-## Routines to manage and convert SciViews R script to asciidoc-sweave
+## Routines to manage and convert SciViews Rdoc to asciidoc-sweave
 ## Copyright (c) 2012, Ph. Grosjean (phgrosjean@sciviews.org)
 ## Note: !"doc block" is managed by the SciViews version of `!`,
 ## otherwise it produces an error... So, you have to place require(SciViews)
-## in the initialisation block (second line) of the SciViews R script!
+## in the initialisation block (second line) of the SciViews Rdoc!
 
-RasciidocToRnw <- function (Rfile, RnwFile, encoding)
+Rdoc <- function (title, author, email, revnumber = NULL, revdate = NULL,
+revremark = NULL, copyright = "cc-by", encoding = "utf-8", lang = "en",
+pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
+format = "html", theme = "SciViews", max.width = 720, width = "100%",
+toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 3,
+numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
+align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
+SweaveOpts = list(prefix.string = "figures/fig", width = 7.2, height = 7.2, pdf = TRUE),
+SweaveInit = { options(width = 90); options(SweaveHooks = list(fig = function()
+par(col.lab = "#434366", col.main = "#434366")))}
+)
 {
-	## Converts a SciViews R script into an sweave document (.Rnw)
+	## Format AsciiDocsciidoc attributes
+	asciiAttr <- function (header = NULL, name, value) {
+		if (!length(value)) return(header)
+		paste0(header, ":", name, ": ", paste(value, collapse = ","), "\n")
+	}
 	
-	## If Rfile is missing, try to get it from option or the command line
-	if (missing(Rfile)) Rfile <- .Rfile()
+	## Title must be a single string
+	title <- as.character(title)[1]
+	if (!length(title))
+		stop("You must provide a title for your Rdoc")
+	
+	## Idem for author, but allow several names
+	## TODO: Allows for first middle last and must replace space inside items by _
+	author <- paste(author, collapse = ", ")
+	if (!length(author))
+		stop("You must provide at least one author for your Rdoc")
+	
+	## Check email
+	email <- as.character(email)[1]
+	if (!length(email) || !grepl("^.+@.+$", email))
+		stop("You must provide a correct email address for your Rdoc")
+	
+	## Compute revision field: [revnumber], [revdate]:\n[revremark]
+	if (length(revnumber))
+		revfield <- paste0(revfield, ", ") else revfield <- ""
+	if (!length(revdate)) revdate <- format(Sys.Date(), format = "%B %Y")
+	revfield <- paste0(revfield, revdate)
+	if (length(revremark))
+		revfield <- paste0(revfield, ":\n", paste(revremark, collapse = "\n"))
+		
+	## Create the Asciidoc header
+	header <- paste0("!\"\n",
+		"= ", title, "\n",
+		author, " <", email, ">\n",
+		revfield, "\n"
+	)
+	
+	## Rework copyright
+	if (length(copyright)) {
+		if (!grepl("^[^,]+,[^,]+,[ \t]*[0-9]{4}$", copyright)) {
+			year <- substring(revdate, nchar(revdate) - 3)
+			copyright <- paste0(copyright, ", ", author, ", ", year)
+		}
+		header <- asciiAttr(header, "copyright", copyright)
+	}
+	
+	## Add more attributes
+	header <- asciiAttr(header, "encoding", encoding)
+	header <- asciiAttr(header, "lang", lang)
+	header <- asciiAttr(header, "title", pagetitle)
+	header <- asciiAttr(header, "description", description)
+	header <- asciiAttr(header, "keywords", keywords)
+	header <- asciiAttr(header, "format", format)
+	header <- asciiAttr(header, "theme", theme)
+	header <- asciiAttr(header, "max-width", max.width)
+	header <- asciiAttr(header, "width", width)
+	
+	## How to format the toc?
+	toc <- switch(as.character(toc)[1],
+		top = ":toc:\n",
+		side = ":toc2:\n",
+		manual = ":toc:\n:toc-placement: manual\n",
+		none = ":toc!:\n",
+		stop("'toc' must be 'top', 'side', 'manual' or ''none'"))
+	header <- paste0(header, toc)
+	header <- asciiAttr(header, "toc-title", toc.title)
+	header <- asciiAttr(header, "toclevels", toclevels)
+	if (isTRUE(numbered)) header <- paste0(header, ":numbered:\n")
+	if (isTRUE(data.uri)) header <- paste0(header, ":data-uri:\n")
+	header <- asciiAttr(header, "frame", frame)
+	header <- asciiAttr(header, "grid", grid)
+	header <- asciiAttr(header, "align", align)
+	header <- asciiAttr(header, "halign", halign)
+	if (isTRUE(pygments)) header <- paste0(header, ":pygments:\n")
+	header <- asciiAttr(header, "slidefontsizeadjust", slidefontsizeadjust)
+	
+	## Rework SweaveOpts
+	if (length(SweaveOpts)) {
+		if (!is.list(SweaveOpts))
+			stop("'SweaveOpts' must be a named list or NULL")
+		SweaveOpts <- paste(names(SweaveOpts), SweaveOpts, sep = " = ",
+			collapse = ", ")
+		header <- paste0(header,
+			"\n//////////\n",
+			"\\SweaveOpts{", SweaveOpts, "}\n",
+			"//////////\n"				 
+		)
+	} else header <- paste0(header, "\n") # End of header section
+		
+	## Add SweaveInit chunk here... or !<<>>="
+	## TODO: allow for either require(SciViews), or a def of `!`
+	if (is.null(SweaveInit)) SweaveInit <- "" else
+		SweaveInit <- paste(deparse(substitute(SweaveInit)), collapse = "\n")
+	header <- paste0(header,
+		"!<<init, echo = FALSE, results = hide>>=\"\n",
+		"## SweaveInit code\n",
+		SweaveInit,
+		"\n## More initialization\n",
+		"require(\"SciViews\")\n"
+	)
+	invisible(header)
+}
+
+RdocToRnw <- function (RdocFile, RnwFile, encoding)
+{
+	## Converts a SciViews Rdoc into an sweave document (.Rnw)
+	
+	## If RdocFile is missing, try to get it from option or the command line
+	if (missing(RdocFile)) RdocFile <- .RdocFile()
 	
 	## Get RnwFile
-	if (missing(RnwFile)) RnwFile <- getOption("sv.RnwFile",
-		.fileExt(Rfile, "Rnw"))
+	if (missing(RnwFile)) RnwFile <- getOption("Rnw.file",
+		.fileExt(RdocFile, "Rnw"))
 	## Make sure it is not an old file at the end of the process that remains
 	unlink(RnwFile)
 
 	## Get encoding
-	if (missing(encoding)) encoding <- getOption("sv.encoding", "UTF-8")
+	if (missing(encoding)) encoding <- getOption("Rdoc.encoding", "UTF-8")
 		
-	## Read Rfile content
-	Rscript <- readLines(Rfile, encoding = encoding)
+	## Read RdocFile content
+	Rscript <- readLines(RdocFile, encoding = encoding)
 	l <- length(Rscript)
 	
-	## Detect doc chunks
-	start <- grepl('^!"@[ \t]*$', Rscript)
+	## Detect doc chunks (start with !", and end with !<<...>>=")
+	start <- grepl('^!"[ \t]*$', Rscript)
 	end <- grepl('^<<.*>>="[ \t]*$', Rscript)
 	## Must have at least one doc chunk and same number of starts and ends
 	nstart <- sum(start)
 	nend <- sum(end)
 	if (nstart < 1)
-		stop("Incorrect SciViews R script (it must contain at least one doc chunk)")
+		stop("Incorrect SciViews Rdoc (it must contain at least one doc chunk)")
 	if (sum(end) != nstart)
-		stop("Incorrect SciViews R script (", nstart, " doc chunk starts but ",
+		stop("Incorrect SciViews Rdoc (", nstart, " doc chunk starts but ",
 			nend, " ends)")
 	## Lines containing starts and ends
 	lstart <- (1:l)[start]
@@ -42,12 +157,14 @@ RasciidocToRnw <- function (Rfile, RnwFile, encoding)
 	cstart <- cumsum(start)
 	cend <- cumsum(end)
 	if (any(cend > cstart))
-		stop("Incorrect SciViews R script (inversion of start and end in one or more doc chunks)")
+		stop("Incorrect SciViews Rdoc",
+			 " (inversion of start and end in one or more doc chunks)")
 	
-	## Check that it is the SciViews R script file starts with #!
+	## Check that the SciViews Rdoc file starts with #!
 	if (!grepl("^#!", Rscript[1]))
-		stop("Incorrect SciViews R script (it must start with #!)")
+		stop("Incorrect SciViews Rdoc (it must start with #!)")
 	
+	## TODO: change this into a header constructor from svSweave::Rdoc()
 	## Locate the header, which is one or several lines of initialization R code
 	inHeader <- 2:(lstart[1] - 1)
 	
@@ -60,11 +177,18 @@ RasciidocToRnw <- function (Rfile, RnwFile, encoding)
 	## Convert \\ into \ inside doc blocks
 	Rscript[inDoc] <- gsub("\\\\\\\\", "\\\\", Rscript[inDoc])
 	
-	## Replace all doc chunk starters (!"@) by @
+	## Convert comments blocks using four or more #### by ////
+	Rscript[inDoc] <- gsub("^####+$", "////", Rscript[inDoc])
+	
+	## Convert line comments using ## by //
+	Rscript[inDoc] <- gsub("^##", "//", Rscript[inDoc])
+	
+	## Replace all doc chunk starters (!") by @
 	Rscript[start] <- "@"
 	
-	## Replace all doc chunk ends (<<.*>>=") by the same without trailing "
-	Rscript[end] <- sub('^(.*>>=)"[ \t]*$', "\\1", Rscript[end])
+	## Replace all doc chunk ends (!<<.*>>=") by the same without leading !
+	## and trailing "
+	Rscript[end] <- sub('!^(.*>>=)"[ \t]*$', "\\1", Rscript[end])
 	
 	## Polish the end of the document...
 	lastDoc <- lend[length(lend)]
@@ -99,32 +223,32 @@ RasciidocToRnw <- function (Rfile, RnwFile, encoding)
 	return(invisible(Rscript))
 }
 
-RasciidocConvert <- function (Rfile, theme, format, show.it, figsDir,
-keepRnwFile, keepTxtFile, encoding, asciidoc)
+RdocConvert <- function (RdocFile, theme, format, show.it, figs.dir,
+keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 {
-	## If Rfile is missing, try to get it from option or the command line
-	if (missing(Rfile)) Rfile <- .Rfile()
+	## If RdocFile is missing, try to get it from option or the command line
+	if (missing(RdocFile)) RdocFile <- .RdocFile()
 	
-	## RnwFile is either same place, same name as Rfile, or option sv.RnwFile
-	RnwFile <- getOption("sv.RnwFile", .fileExt(Rfile, "Rnw"))
+	## RnwFile is either same place, same name as RdocFile, or option Rnw.file
+	RnwFile <- getOption("Rnw.file", .fileExt(RdocFile, "Rnw"))
 
 	## TxtFile is from option, or from SciViews session directory structure
-	## or at the same location as the Rfile
-	TxtFile <- getOption("sv.TxtFile", .fileExt(Rfile, "txt"))
-	ReportDir <- .svSessionDirs(Rfile)$reportdir
+	## or at the same location as the RdocFile
+	TxtFile <- getOption("Txt.file", .fileExt(RdocFile, "txt"))
+	ReportDir <- .svSessionDirs(RdocFile)$reportdir
 	if (length(ReportDir)) {
 		TxtFile <- file.path(ReportDir, basename(TxtFile))
 	} else TxtFile <- TxtFile
 	## Make sure this is not an old file
 	unlink(TxtFile)
 	
-	## If figsDir is defined (default to 'figures'), make sure it exists
-	if (missing(figsDir)) figsDir <- getOption("sv.figsDir", "figures")
-	if (length(figsDir)) dir.create(file.path(dirname(TxtFile), figsDir),
+	## If figs.dir is defined (default to 'figures'), make sure it exists
+	if (missing(figs.dir)) figs.dir <- getOption("Rdoc.figs.dir", "figures")
+	if (length(figs.dir)) dir.create(file.path(dirname(TxtFile), figs.dir),
 		showWarnings = FALSE, recursive = TRUE)
 	
 	## If format is missing, try getting it from options(), or assume "html"
-	if (missing(format)) format <- getOption("sv.format", "html")
+	if (missing(format)) format <- getOption("Rdoc.format", "html")
 	## The resulting file extension depends on the format used
 	## Note that EndFile is always at same location as TxtFile
 	EndExt <- switch(format,
@@ -138,26 +262,29 @@ keepRnwFile, keepTxtFile, encoding, asciidoc)
 		docbook = "xml",
 		docbook45 = "xml",
 		latex = "tex",
-		stop("Unknown format, use html/html4/html5/slidy/slidy2/wordpress/docbook/latex")
+		stop("Unknown format,",
+			" use html/html4/html5/slidy/slidy2/wordpress/docbook/latex")
 		)
 	EndFile <- .fileExt(TxtFile, EndExt)
 		
 	## If theme is missing, try getting it from options()
-	if (missing(theme)) theme <- getOption("sv.theme", "sciviews")
+	if (missing(theme)) theme <- getOption("Rdoc.theme", "sciviews")
 	## If there is an initialization file for this theme, run it now
 	## TODO...
 		
 	## Do we show the resulting Html file in the current browser at the end?
 	## By default YES, unless in non-interactive mode
-	if (missing(show.it)) show.it <- getOption("sv.show.it", interactive())
+	if (missing(show.it)) show.it <- getOption("Rdoc.showIt", interactive())
 	
 	## Do we keep intermediary .Rnw and .txt files? Default to FALSE
-	if (missing(keepRnwFile)) keepRnwFile <- getOption("sv.keepRnwFile", FALSE)
-	if (missing(keepTxtFile)) keepTxtFile <- getOption("sv.keepTxtFile", FALSE)
+	if (missing(keep.RnwFile))
+		keep.RnwFile <- getOption("Rdoc.keep.RnwFile", FALSE)
+	if (missing(keep.TxtFile))
+		keep.TxtFile <- getOption("Rdoc.keep.TxtFile", FALSE)
 	
-	## Get encoding... should be UTF-8 for SciViews R scripts
+	## Get encoding... should be UTF-8 for SciViews Rdoc
 	## and make sure to configure the system as UTF-8 (except on Windows)
-	if (missing(encoding)) encoding <- getOption("sv.encoding", "UTF-8")
+	if (missing(encoding)) encoding <- getOption("Rdoc.encoding", "UTF-8")
 	if (toupper(encoding) == "UTF-8") {
 		if (.Platform$OS.type != "windows") {
 			## Make sure current locale is UTF-8
@@ -185,7 +312,7 @@ keepRnwFile, keepTxtFile, encoding, asciidoc)
 	
 	## Convert from Rscript to .Rnw file
 	cat("Creating R noweb file ", basename(RnwFile), "\n", sep = "")
-	RasciidocToRnw(Rfile = Rfile, RnwFile = RnwFile, encoding = encoding)
+	RdocToRnw(RdocFile = RdocFile, RnwFile = RnwFile, encoding = encoding)
 	if (!file.exists(RnwFile))
 		stop("Problems while creating the R noweb file(", RnwFile, ")")
 	
@@ -208,8 +335,8 @@ keepRnwFile, keepTxtFile, encoding, asciidoc)
 		setwd(odir)
 		unlink(RnwFile2)
 		## Possibly delete intermediary files
-		if (!isTRUE(keepRnwFile)) unlink(RnwFile)
-		if (!isTRUE(keepTxtFile)) unlink(TxtFile)	
+		if (!isTRUE(keep.RnwFile)) unlink(RnwFile)
+		if (!isTRUE(keep.TxtFile)) unlink(TxtFile)	
 	})
 	
 	## Sweave this document...
@@ -235,39 +362,40 @@ keepRnwFile, keepTxtFile, encoding, asciidoc)
 
 	## Do we view the resulting .html file?
 	if (isTRUE(show.it) && EndExt == "html") {
-		cat("Opening the formatted document", basename(EndFile), "in the Web browser\n")
+		cat("Opening the formatted document", basename(EndFile),
+			"in the Web browser\n")
 		browseURL(normalizePath(EndFile))
 	} else cat("Formatted document available at ", EndFile, "\n", sep = "")
 }
 
-RasciidocThemes <- function ()
+RdocThemes <- function ()
 {
 	themesDir <- file.path(dirname(system.file("asciidoc", "asciidoc.py",
 		package = "svSweave")), "themes")
 	c("classic", dir(themesDir, include.dirs = TRUE))
 }
 
-svBuild <- function (Rfile, encoding)
+makeRdoc <- function (RdocFile, encoding)
 {
-	## A function to run an a SciViews R script file, and that looks at the #!
+	## A function to run an a SciViews Rdoc file, and that looks at the #!
 	## line to determine what function to run for compiling the final document
 
-	## Check Rfile
-	if (missing(Rfile) || !length(Rfile)) stop("No file provided")
-	if (!file.exists(Rfile)) stop("Rfile not found (", Rfile, ")")
-	Rfile <- normalizePath(Rfile)
+	## Check RdocFile
+	if (missing(RdocFile) || !length(RdocFile)) stop("No file provided")
+	if (!file.exists(RdocFile)) stop("RdocFile not found (", RdocFile, ")")
+	RdocFile <- normalizePath(RdocFile)
 	
 	## Get encoding
-	if (missing(encoding)) encoding <- getOption("sv.encoding", "UTF-8")	
+	if (missing(encoding)) encoding <- getOption("Rdoc.encoding", "UTF-8")	
 	
 	## Check that it is a R script file (first line starting with #!)
-	Rscript <- readLines(Rfile, n = 1L, encoding = encoding)
+	Rscript <- readLines(RdocFile, n = 1L, encoding = encoding)
 	if (!grepl("^#!", Rscript))
-		stop("Incorrect SciViews R script (it must start with #!)")
+		stop("Incorrect SciViews Rdoc file (it must start with #!)")
 
-	## Decrypt first line to know what function to run to build this file
+	## Decrypt first line to know what function to run to make this file
 	cmd <- sub("^#!.+ -e[ \t]*(.+)$", "\\1", Rscript)
-	if (cmd == Rscript) stop("Malformed #! line in '", Rfile, "'")
+	if (cmd == Rscript) stop("Malformed #! line in '", RdocFile, "'")
 	
 	## Eliminate possible quotes around the command and trailing spaces
 	cmd <- sub("[ \t]+$", "", cmd)
@@ -276,9 +404,9 @@ svBuild <- function (Rfile, encoding)
 		cmdNoQuotes <- sub('^"(.+)"$', "\\1", cmd) # Double quotes
 	
 	## Pass the file name to the build procedure
-	ofile <- options(sv.Rfile = Rfile)$sv.Rfile
-	oencoding <- options(sv.encoding = encoding)$sv.encoding
-	on.exit(options(sv.Rfile = ofile, encoding = oencoding))
+	ofile <- options(Rdoc.file = RdocFile)$Rdoc.file
+	oencoding <- options(Rdoc.encoding = encoding)$Rdoc.encoding
+	on.exit(options(Rdoc.file = ofile, encoding = oencoding))
 	
 	## Run that command
 	cmd <- try(parse(text = cmdNoQuotes))
