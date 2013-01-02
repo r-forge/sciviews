@@ -12,8 +12,8 @@
   \tabular{ll}{
     Package: \tab svSweave\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-5\cr
-    Date: \tab 2012-08-15\cr
+    Version: \tab 0.9-6\cr
+    Date: \tab 2013-01-02\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples

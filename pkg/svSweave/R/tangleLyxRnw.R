@@ -1,3 +1,6 @@
+## TODO: merge both functions and use a tag in the document to decide
+##       if using sweave or knitr
+
 tangleLyxRnw <- function (file, driver = Rtangle(),
 syntax = getOption("SweaveSyntax"), encoding = "UTF-8", width = 80,
 useFancyQuotes = TRUE, annotate = TRUE, ...)

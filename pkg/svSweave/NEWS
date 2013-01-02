@@ -1,5 +1,13 @@
 = svSweave News
 
+== Changes in svSweave 0.9-6
+
+* Slight reworking of the Asciidoc-related function RdocXXX(). svBuild() is
+  renamed makeRdoc() to be more explicit.
+
+* Addition of Rdoc() function that creates an Asciidoc header.
+
+
 == Changes in svSweave 0.9-5
 
 * Now knitr can also be used to weave your documents (knitLyxRnw/purlLyxRnw).
