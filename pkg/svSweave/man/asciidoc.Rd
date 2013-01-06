@@ -60,7 +60,7 @@ makeRdoc(RdocFile, encoding)
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{Rdoc}} }
+\seealso{ \code{\link{RdocHeader}} }
 
 \keyword{ utilities }
 

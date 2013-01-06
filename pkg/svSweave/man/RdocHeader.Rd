@@ -1,5 +1,5 @@
-\name{Rdoc}
-\alias{Rdoc}
+\name{RdocHeader}
+\alias{RdocHeader}
 
 \title{ Create an Rdoc header to be processed with Asciidoc }
 \description{
@@ -13,7 +13,7 @@
 }
 
 \usage{
-Rdoc(title, author, email, revnumber = NULL, revdate = NULL,
+RdocHeader(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
     revremark = NULL, copyright = "cc-by", encoding = "UTF-8", lang = "en",
     pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
     theme = "SciViews", max.width = 640, width = NULL,
@@ -26,11 +26,14 @@ Rdoc(title, author, email, revnumber = NULL, revdate = NULL,
 }
 
 \arguments{
-  \item{title}{ a character string with the title of your SciViews Rdoc. }
+  \item{title}{ a character string with the title of your SciViews Rdoc. If you
+    want a document with no title, indicate \code{NULL} }
   \item{author}{ a character string with the name of the author. You can specify
     first [middle] [last], and each item cannot contain spaces (replace them
-    by underscores _). }
-  \item{email}{ a character string with a valid email address. }
+    by underscores _). Optional (use \code{NULL} for no authors displayed) }
+  \item{email}{ a character string with a valid email address. Optional (use
+    \code{NULL} for no email to be displayed). Note also that, if author is not
+    provided, email will never be displayed. }
   \item{revnumber}{ a character string with the revision number of your SciViews
     Rdoc. If \code{NULL}, it is omitted. }
   \item{revdate}{ a character string with the revision date of your SciViews

@@ -1,0 +1,49 @@
+= svSweave - To do list
+
+* Package svShiny code here + runExample()/runGist()
+
+* Use more sensible values for toc: if missing and no author/revfield => no toc.
+
+* A better management of theme: define one form html and one for slidy/slidy2.
+
+* With the shiny jslider, I would like to be able to move left cursor and keep
+  interval between left and right cursor constant... or, better, be able to drag
+  the interval between the two cursors.
+  
+* Make a better default_shiny.R page that lists all existing pages on the server
+
+* Rename xxx_shiny.R as xxx.Rdoc, simply?!
+
+* Make interface for writing SciViews R documents in Komodo/SciViews-K.
+
+* ascii() => view() + aware if ascii or latex and results=ascii/tex accordingly
+
+* Clean up the latex export filter and make a LyX export filter
+
+* Also allow to convert from LyX/LaTeX to Asciidoc
+
+* Enable timer events on the page server and daemonize it on Windows
+  (using Tcl loop)?
+  
+* A better logic for startPageServer() call, e.g., if the server does not run
+  and a page is created
+  
+* In non interactive mode, detect when the last client exit and quit then
+  also automatically, unles differently specified
+  
+* Allow for several author names
+
+* Numbered items for figures, tables, equations and listings using Asciidoc
+  replacement macros
+  
+* Save/reload pages installed on a server with R code
+
+* Eliminate footer for slidy2 (interferes with dynamic documents)
+
+* Allow to specify two themes: one for html, one for slidy/slidy2
+
+* A better uiSideBySide() system
+
+* Something similar to runExample() & runGist() in shiny
+
+* Move the definition of `!` here from SciViews? Or put in svMisc?
