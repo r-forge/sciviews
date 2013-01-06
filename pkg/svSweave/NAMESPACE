@@ -1,11 +1,12 @@
 import(utils, knitr, ascii)
+importFrom(svMisc, existsTemp)
 
 export(cleanLyxRnw,
        knitLyxRnw,
        purlLyxRnw,
        tangleLyxRnw,
        weaveLyxRnw,
-       Rdoc,
+       RdocHeader,
        RdocToRnw,
        RdocConvert,
        RdocThemes,

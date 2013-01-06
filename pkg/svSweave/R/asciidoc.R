@@ -4,109 +4,13 @@
 ## otherwise it produces an error... So, you have to place require(SciViews)
 ## in the initialisation block (second line) of the SciViews Rdoc!
 
-Rdoc <- function (title, author, email, revnumber = NULL, revdate = NULL,
-revremark = NULL, copyright = "cc-by", encoding = "UTF-8", lang = "en",
-pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
-theme = "SciViews", max.width = 640, width = NULL,
-toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 2,
-numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
-align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
-SweaveInit = { options(width = 80); options(SweaveHooks = list(fig = function()
-par(col.lab = "#434366", col.main = "#434366"))) }
-)
-{
-	## Format AsciiDocsciidoc attributes
-	asciiAttr <- function (header = NULL, name, value) {
-		if (!length(value)) return(header)
-		paste0(header, ":", name, ": ", paste(value, collapse = ","), "\n")
-	}
-	
-	## Title must be a single string
-	title <- as.character(title)[1]
-	if (!length(title))
-		stop("You must provide a title for your Rdoc")
-	
-	## Idem for author, but allow several names
-	author <- paste(author, collapse = ", ")
-	if (!length(author))
-		stop("You must provide at least one author for your Rdoc")
-	
-	## Check email
-	email <- as.character(email)[1]
-	if (!length(email) || !grepl("^.+@.+$", email))
-		stop("You must provide a correct email address for your Rdoc")
-	
-	## Compute revision field: [revnumber], [revdate]:\n[revremark]
-	if (length(revnumber))
-		revfield <- paste0("v", revnumber, ", ") else revfield <- ""
-	if (!length(revdate)) revdate <- format(Sys.Date(), format = "%B %Y")
-	revfield <- paste0(revfield, revdate)
-	if (length(revremark))
-		revfield <- paste0(revfield, ":\n", paste(revremark, collapse = "\n"))
-		
-	## Create the Asciidoc header
-	header <- paste0(
-		"= ", title, "\n",
-		author, " <", email, ">\n",
-		revfield, "\n"
-	)
-	
-	## Rework copyright
-	if (length(copyright)) {
-		if (!grepl("^[^,]+,[^,]+,[ \t]*[0-9]{4}$", copyright)) {
-			year <- substring(revdate, nchar(revdate) - 3)
-			copyright <- paste0(copyright, ", ", author, ", ", year)
-		}
-		header <- asciiAttr(header, "copyright", copyright)
-	}
-	
-	## Add more attributes
-	header <- asciiAttr(header, "encoding", encoding)
-	header <- asciiAttr(header, "lang", lang)
-	header <- asciiAttr(header, "title", pagetitle)
-	header <- asciiAttr(header, "description", description)
-	header <- asciiAttr(header, "keywords", keywords)
-	header <- asciiAttr(header, "theme", theme)
-	header <- asciiAttr(header, "max-width", max.width)
-	header <- asciiAttr(header, "width", width)
-	
-	## How to format the toc?
-	toc <- switch(as.character(toc)[1],
-		top = ":toc:\n",
-		side = ":toc2:\n",
-		manual = ":toc:\n:toc-placement: manual\n",
-		none = ":toc!:\n",
-		stop("'toc' must be 'top', 'side', 'manual' or ''none'"))
-	header <- paste0(header, toc)
-	header <- asciiAttr(header, "toc-title", toc.title)
-	header <- asciiAttr(header, "toclevels", toclevels)
-	if (isTRUE(numbered)) header <- paste0(header, ":numbered:\n")
-	if (isTRUE(data.uri)) header <- paste0(header, ":data-uri:\n")
-	header <- asciiAttr(header, "frame", frame)
-	header <- asciiAttr(header, "grid", grid)
-	header <- asciiAttr(header, "align", align)
-	header <- asciiAttr(header, "halign", halign)
-	if (isTRUE(pygments)) header <- paste0(header, ":pygments:\n")
-	header <- asciiAttr(header, "slidefontsizeadjust", slidefontsizeadjust)
-	header <- paste0(header, "\n") # End of header section
-	
-	## Run SweaveInit now
-	SweaveInit
-	## More initialization
-	req <- base::require
-	req("SciViews", quietly = TRUE, warn.conflicts = FALSE)
-	
-	## Print the header and return it invisibly
-	if (!interactive()) cat(header)
-	invisible(header)
-}
-
 RdocToRnw <- function (RdocFile, RnwFile, encoding)
 {
 	## Converts a SciViews Rdoc into an sweave document (.Rnw)
 	
 	## If RdocFile is missing, try to get it from option or the command line
 	if (missing(RdocFile)) RdocFile <- .RdocFile()
+	RdocFile <- normalizePath(RdocFile)
 	
 	## Get RnwFile
 	if (missing(RnwFile)) RnwFile <- getOption("Rnw.file",
@@ -146,7 +50,7 @@ RdocToRnw <- function (RdocFile, RnwFile, encoding)
 	if (!grepl("^#!", Rscript[1]))
 		stop("Incorrect SciViews Rdoc (it must start with #!)")
 	## Change this line into an init code chunk
-	Rscript[1] <- "<<init, echo=FALSE, results=ascii>>="
+	Rscript[1] <- "<<init, echo=FALSE, results=ascii, strip.white=false>>="
 	
 	## Doc chunks are lines where cstart > cend
 	inDoc <- cstart > cend
@@ -192,11 +96,13 @@ RdocToRnw <- function (RdocFile, RnwFile, encoding)
 	return(invisible(Rscript))
 }
 
+## TODO: use figs.dir!!!
 RdocConvert <- function (RdocFile, theme, format, show.it, figs.dir,
 keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 {
 	## If RdocFile is missing, try to get it from option or the command line
 	if (missing(RdocFile)) RdocFile <- .RdocFile()
+	RdocFile <- normalizePath(RdocFile)
 	
 	## RnwFile is either same place, same name as RdocFile, or option Rnw.file
 	RnwFile <- getOption("Rnw.file", .fileExt(RdocFile, "Rnw"))
@@ -213,8 +119,12 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	
 	## If figs.dir is defined (default to 'figures'), make sure it exists
 	if (missing(figs.dir)) figs.dir <- getOption("Rdoc.figs.dir", "figures")
-	if (length(figs.dir)) dir.create(file.path(dirname(TxtFile), figs.dir),
-		showWarnings = FALSE, recursive = TRUE)
+	if (length(figs.dir)) {
+		figs.dir <- file.path(dirname(TxtFile), figs.dir)
+		if (!file.exists(figs.dir)) {
+			dir.create(figs.dir, showWarnings = FALSE, recursive = TRUE)
+		} else figs.dir <- NULL # Avoid eliminating a dir that already exists!
+	}
 	
 	## If format is missing, try getting it from options(), or assume "html"
 	if (missing(format)) format <- getOption("Rdoc.format", "html")
@@ -288,25 +198,33 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	## Copy it to where the Txt file must be created...
 	if (dirname(TxtFile) != dirname(RnwFile)) {
 		RnwFile2 <- file.path(dirname(TxtFile), basename(RnwFile))
-		file.copy(RnwFile, RnwFile2)
-		if (!file.exists(RnwFile))
+		file.copy(RnwFile, RnwFile2, overwrite = TRUE)
+		if (!file.exists(RnwFile2))
 			stop("Problems while copying the R noweb file(", RnwFile, " to ",
 				dirname(TxtFile), ")")
+		unlink(RnwFile)
 	} else RnwFile2 <- RnwFile
 	
 	## Sweave that document to .txt file
-	## Note that the ascii package must be loaded first!
-	require(ascii, quietly = TRUE, warn.conflicts = FALSE)
+# No, we just import its namespace now
+#	## Note that the ascii package must be loaded first!
+#	require(ascii, quietly = TRUE, warn.conflicts = FALSE)
 	odir <- setwd(dirname(RnwFile2)) # Work now relative to destination file
+	## Also display warnings immediately
+	owarn <- options(warn = 1)
 	
 	## Make sure intermediary filles will be deleted on exit
 	on.exit({
 		setwd(odir)
-		unlink(RnwFile2)
 		## Possibly delete intermediary files
-		if (!isTRUE(keep.RnwFile)) unlink(RnwFile)
-		if (!isTRUE(keep.TxtFile)) unlink(TxtFile)	
-	})
+		if (!isTRUE(keep.RnwFile)) unlink(RnwFile2)
+		if (!isTRUE(keep.TxtFile)) unlink(TxtFile)
+		## If figs.dir is empty, delete it
+		if (length(figs.dir) && !length(dir(figs.dir, include.dirs = TRUE)))
+			unlink(figs.dir, recursive = TRUE)
+		## Restore warn option
+		options(owarn)
+	}, add = TRUE)
 	
 	## Sweave this document... (creating the TxtFile)
 	## Note: we change some default options here!
@@ -331,12 +249,17 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	## If there is a finalize code for this theme, run it now
 	## TODO...
 
+	## Check that the final file exists!
+	if (!file.exists(EndFile))
+		stop("Asciidoc was unable to format your document")
+	
 	## Do we view the resulting .html file?
 	if (isTRUE(show.it) && EndExt == "html") {
 		cat("Opening the formatted document", basename(EndFile),
 			"in the Web browser\n")
 		browseURL(normalizePath(EndFile))
 	} else cat("Formatted document available at ", EndFile, "\n", sep = "")
+	invisible(EndFile)
 }
 
 RdocThemes <- function ()
