@@ -1,0 +1,12 @@
+contract @activestate.com/koLinter?language=R;1 {E5B7415C-81C6-4185-8B53-B527193D251E}
+category category-komodo-linter R @activestate.com/koLinter?language=R;1
+component {E5B7415C-81C6-4185-8B53-B527193D251E} koRLinter.py
+category komodo-language R @activestate.com/koLanguage?language=R;1
+component {4cc23d3b-52e2-426d-8a22-6d7eb2ba81ae} koR_UDL_Language.py
+contract @activestate.com/koLanguage?language=R;1 {4cc23d3b-52e2-426d-8a22-6d7eb2ba81ae}
+category komodo-language Rwiki @activestate.com/koLanguage?language=Rwiki;1
+component {7de21e4c-23d3-513c-9b31-6e8dc4ab72bf} koRwiki_UDL_Language.py
+contract @activestate.com/koLanguage?language=Rwiki;1 {7de21e4c-23d3-513c-9b31-6e8dc4ab72bf}
+contract @sciviews.org/svRinterpreter;1 {2f89ed9d-6dda-9a4e-a78f-29e4838dcd08}
+component {2f89ed9d-6dda-9a4e-a78f-29e4838dcd08} svRinterpreter.js
+interfaces svIRinterpreter.xpt

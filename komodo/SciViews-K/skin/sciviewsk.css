@@ -331,3 +331,18 @@ treechildren::-moz-tree-image(LanguageR) {
   list-style-image: url("chrome://sciviewsk/skin/images/R.png");
 }
 
+/*.tab-icon {
+    display: none;
+}*/
+/*.tab-image-left {
+    background-image: url("chrome://famfamfamsilk/skin/icons/page.png") !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+#tabbed-view tabs > tab[label$=".R"] .tab-image-left {
+    background-image: url("chrome://sciviewsk/skin/images/R_doc.png") !important;
+}*/
+/* This does not work!
+#tabbed-view tabs > tab[label$=".R"] .tab-icon {
+    background-image: url("chrome://sciviewsk/skin/images/R_doc.png") !important;
+}*/
