@@ -80,7 +80,8 @@ svRinterpreter.prototype = {
 					var kvSvc = Components
 						.classes["@activestate.com/koViewService;1"]
 						.getService(Components.interfaces.koIViewService);
-					var ke = kvSvc.currentView.document.getView().scimoz;
+					//var ke = kvSvc.currentView.document.getView().scimoz;
+					var ke = kvSvc.currentView.koDoc.getView().scimoz;
 					try {
 						if (ke.callTipActive()) ke.callTipCancel();
 						ke.callTipShow(ke.anchor, tip.replace(/[\r\n]+/g, "\n"));
@@ -105,7 +106,8 @@ svRinterpreter.prototype = {
 		var kvSvc = Components
 			.classes["@activestate.com/koViewService;1"]
 			.getService(Components.interfaces.koIViewService);
-		var ke = kvSvc.currentView.document.getView().scimoz;
+		//var ke = kvSvc.currentView.document.getView().scimoz;
+		var ke = kvSvc.currentView.koDoc.getView().scimoz;
 		// Record current position (could change, because asynch trigger of autoC)
 		var lastPos = ke.anchor;
 		var cmd = 'completion("' + code + '", print = TRUE, types = "scintilla", field.sep = "?")';
@@ -164,9 +166,16 @@ svRinterpreter.prototype = {
 
 //// XPCOM registration of the class ///////////////////////////////////////////
 var components = [svRinterpreter];
-function NSGetModule (compMgr, fileSpec) {
-    return XPCOMUtils.generateModule(components);
-}
+// function NSGetModule (compMgr, fileSpec) {
+	// XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2
+	// XPCOMUtils.generateNSGetModule was introduced in Mozilla 1.9
+	if (XPCOMUtils.generateNSGetFactory) {
+		var NSGetFactory = XPCOMUtils.generateNSGetFactory(components);
+	} else {
+		var NSGetModule =  XPCOMUtils.generateNSGetModule(components);
+		//return XPCOMUtils.generateModule(components);
+	}
+//}
 
 
 //// Komodo logging service ////////////////////////////////////////////////////
@@ -181,7 +190,7 @@ function koLoggerException(e, msg, showMsg) {
 	koLogger.exception(e, msg);
 }
 
-//koLogger.setLevel(koLogging.DEBUG);
+koLogger.setLevel(koLogging.DEBUG);
 
 
 //// Komodo statusbar access ///////////////////////////////////////////////////
@@ -201,7 +210,8 @@ function clearCodeintelMessage () {
 		.classes["@mozilla.org/appshell/window-mediator;1"]
 		.getService(Components.interfaces.nsIWindowMediator)
 		.getMostRecentWindow("Komodo")
-		.document.getElementById('statusbar-message');
+//		.document.getElementById('statusbar-message');
+		.koDoc.getElementById('statusbar-message');
 	//messageWidget.setAttribute("category", sm.category);
 	//messageWidget.setAttribute("value", sm.msg);
 	//messageWidget.setAttribute("tooltiptext", sm.msg);
@@ -212,28 +222,53 @@ function clearCodeintelMessage () {
 
 
 //// Komodo preferences access /////////////////////////////////////////////////
-var prefsSvc = Components.classes["@activestate.com/koPrefService;1"]
-	.getService(Components.interfaces.koIPrefService);
-var prefs = prefsSvc.prefs;
-
-// Get a string preference, or default value
-function getPrefString (pref, def) {
-	if (prefs.hasStringPref(pref)) {
-		return(prefs.getStringPref(pref));
-	} else return(def);
+var prefset = Components.classes["@activestate.com/koPrefService;1"]
+	.getService(Components.interfaces.koIPrefService).prefs;
+	
+// Get a preference, or default value
+function getPref (prefName, defaultValue) {
+	var ret, typeName, type;
+	if (prefset.hasPref(prefName)) {
+		type = ['long', 'double', 'boolean', 'string']
+			.indexOf(prefset.getPrefType(prefName));
+		if (type == -1) return(undefined);
+		typeName = ['Long', 'Double', 'Boolean', 'String'][type];
+		ret = prefset['get' + typeName + 'Pref'](prefName);
+	} else ret = defaultValue;
+	return(ret);
 }
-
-// Set a string preference
-function setPrefString (pref, value, overwrite) {
-	if (overwrite == false & prefs.hasStringPref(pref)) return;
-	prefs.setStringPref(pref, value);
+	
+// Set a preference
+function setPref (prefName, value, overwrite, asInt) {
+	var typeName, type;
+	if (prefset.hasPref(prefName)) {
+		if (overwrite === false) return("");
+		type = prefset.getPrefType(prefName);
+	} else {
+		type = typeof(value);
+		if (type == 'number') type = asInt? "long" : "double";
+	}
+	type = ['double', 'long', 'boolean', 'string'].indexOf(type);
+	if (type == -1 || type == null) return(undefined);
+	typeName = ['Double', 'Long', 'Boolean', 'String'][type];
+	try {
+		prefset['set' + typeName + 'Pref'](prefName, value);
+	} catch (e) {
+		// If typeName is Long, try using Double instead
+		if (typeName == "Long") {
+			prefset['setDoublePref'](prefName, value);
+		} else { // Retry
+			prefset['set' + typeName + 'Pref'](prefName, value);
+		}
+	}
+	return(typeName);
 }
 
 
 //// R socket server ///////////////////////////////////////////////////////////
 if (typeof(sv) == "undefined") var sv = {};
-sv.clientType = getPrefString("sciviews.client.type", "socket");
-setPrefString("sciviews.client.currentType", sv.clientType, true);
+sv.clientType = getPref("sciviews.r.type", "http");
+setPref("sciviews.client.currentType", sv.clientType, true);
 
 // String converter used between Komodo and R (localeToCharset()[1] in R)
 var converter = Components
@@ -406,12 +441,13 @@ function rClientHttp(host, port, cmd, listener) {
 
 // Send an R command through the socket
 function rCommand(cmd, procfun) {
-	var host = getPrefString("sciviews.server.host", "127.0.0.1");
-	var port = getPrefString("sciviews.client.socket", "8888");
-	var clientType = getPrefString("sciviews.client.currentType", "socket");
+	var host = getPref("sciviews.r.host", "127.0.0.1");
+	var port = getPref("sciviews.r.port", 8888);
+	var clientType = getPref("sciviews.client.currentType", "http");
 	var id = "<<<id=" +
-		getPrefString("sciviews.client.id", "SciViewsK") + ">>>";
+		getPref("sciviews.client.id", "SciViewsK") + ">>>";
 	cmd = cmd.replace(/(\r?\n|\r)/g, "<<<n>>>"); // Replace CRLF
+	
 	var listener;
 	if (procfun == null) {	// Do nothing at the end
 		listener = { finished: function(data) {} }
@@ -441,4 +477,7 @@ function rCommand(cmd, procfun) {
 	}
 	return(res);
 }
-//Test: rCommand("<<<q>>>cat('library = '); str(library)");
+
+// Test...
+//rCommand("<<<h>>>cat('library = '); str(library)", function (data) alert(data));
+//rCommand("<<<q>>>cat('library = '); str(library)");

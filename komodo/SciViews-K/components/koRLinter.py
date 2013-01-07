@@ -146,7 +146,8 @@ Raise an exception if there is a problem.
                 result.lineStart = result.lineEnd = lineNo
                 result.columnStart = columnNo
                 # TODO: this sometimes raises an error!?
-                result.columnEnd = len(datalines[result.lineEnd-1]) + 1
+                #result.columnEnd = len(datalines[result.lineEnd-1]) + 1
+                result.columnEnd = len(datalines[result.lineEnd]) + 1
                 # Get the error message
                 if items[3]:
                     result.description = items[3]

@@ -47,3 +47,11 @@
 * Something similar to runExample() & runGist() in shiny
 
 * Move the definition of `!` here from SciViews? Or put in svMisc?
+
+* In shiny, when ui.R or server.R is updated, the app is also updated. Do the
+  same here?
+  
+* Add an option(dynamic.trace = TRUE) to trace calls to dynamicXXX() functions.
+
+* In presentation or screencast mode: have a series of premared snippets to help
+  construct the SciViews Rdoc in live.

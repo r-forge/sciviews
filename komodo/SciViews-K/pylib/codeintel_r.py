@@ -64,9 +64,9 @@ try:
 except ImportError:
     _xpcom_ = False
 
-#####from xpcom import components
-#####R = components.classes["@sciviews.org/svRinterpreter;1"].\
-#####    getService(components.interfaces.svIRinterpreter)
+from xpcom import components
+R = components.classes["@sciviews.org/svRinterpreter;1"].\
+    getService(components.interfaces.svIRinterpreter)
 
 
 #---- Globals
@@ -74,7 +74,7 @@ except ImportError:
 lang = "R"
 log = logging.getLogger("codeintel.r")
 #log.setLevel(logging.WARNING)
-#log.setLevel(logging.DEBUG)
+log.setLevel(logging.DEBUG)
 
 # These keywords and builtin functions are copied from "Rlex.udl".
 # Reserved keywords
@@ -2719,8 +2719,34 @@ class RLexer(UDLLexer):
 #
 # See other lang_*.py and codeintel_*.py files in your Komodo installation for
 # examples of usage.
-class RLangIntel(LangIntel):
+
+# PhG: replaced by:
+#class RLangIntel(LangIntel):
+class RLangIntel(LangIntel, ParenStyleCalltipIntelMixin, ProgLangTriggerIntelMixin):
     lang = lang
+
+    # PhG: added
+    # Used by ProgLangTriggerIntelMixin.preceding_trg_from_pos()
+    trg_chars = tuple('$@[( ')
+    calltip_trg_chars = tuple('(,')
+    
+    # named styles used by the class
+    whitespace_style = SCE_UDL_SSL_DEFAULT
+    operator_style   = SCE_UDL_SSL_OPERATOR
+    identifier_style = SCE_UDL_SSL_IDENTIFIER
+    keyword_style    = SCE_UDL_SSL_WORD
+    variable_style   = SCE_UDL_SSL_VARIABLE
+    string_style     = SCE_UDL_SSL_STRING
+    comment_styles   = (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK)
+    comment_styles_or_whitespace = comment_styles + (whitespace_style, )
+    word_styles      = ( variable_style, identifier_style, keyword_style)
+
+    type_sep = u'\u001e'
+    pathsep = os.sep + ("" if(os.altsep is None) else os.altsep)
+
+
+    koPrefs = components.classes["@activestate.com/koPrefService;1"] \
+        .getService(components.interfaces.koIPrefService).prefs
 
     ##
     # Implicit codeintel triggering event, i.e. when typing in the editor.
@@ -2730,7 +2756,7 @@ class RLangIntel(LangIntel):
     # @param implicit {bool} Automatically called, else manually called?
     #
     def trg_from_pos(self, buf, pos, implicit=True, DEBUG=False, ac=None):
-        #DEBUG = True
+        DEBUG = True
         if pos < 1:
             return None
 
@@ -2741,7 +2767,67 @@ class RLangIntel(LangIntel):
         style = accessor.style_at_pos(last_pos)
         if DEBUG:
             print "trg_from_pos: char: %r, style: %d" % (char, accessor.style_at_pos(last_pos), )
-        if style in (SCE_UDL_SSL_WORD, SCE_UDL_SSL_IDENTIFIER):
+        
+        # PhG: next paragraph replaced by...
+        #if style in (SCE_UDL_SSL_WORD, SCE_UDL_SSL_IDENTIFIER):
+        #    # Functions/builtins completion trigger.
+        #    start, end = accessor.contiguous_style_range_from_pos(last_pos)
+        #    if DEBUG:
+        #        print "identifier style, start: %d, end: %d" % (start, end)
+        #    # Trigger when two characters have been typed.
+        #    if (last_pos - start) == 1:
+        #        if DEBUG:
+        #            print "triggered:: complete identifiers"
+        #        return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
+        #                       start, implicit,
+        #                       word_start=start, word_end=end)
+        if char == " " and (not (style in (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK))):
+            # Look the char just before all spaces, tabs or carriage return
+            # We do not trigger it if we are in a comment!
+            p = last_pos-1
+            min_p = max(0, p-500)      # Don't bother looking more than 500 chars
+            if DEBUG:
+                print "Checking char just before spaces"
+            while p >= min_p:
+                #accessor.style_at_pos(p) in jsClassifier.comment_styles:
+                ch = accessor.char_at_pos(p)
+                st = accessor.style_at_pos(p)
+                p -= 1
+                if (not (ch in " \t\v\r\n")) and \
+                (not (st in (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK))):
+                    break
+            if ch == ",":
+                # Calculate a completion list for function arguments
+                if DEBUG:
+                    print "triggered:: complete arguments"
+                return Trigger(self.lang, TRG_FORM_CPLN, "arguments",
+                               pos, implicit)
+            elif ch == "=":
+                # TODO: Try to provide correct completion for function arguments
+                if DEBUG:
+                    print "triggered:: complete identifiers"
+                return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
+                               pos, implicit)
+            return None
+        if char == '$' or char == '@':
+            # Variable completion trigger.
+            if DEBUG:
+                print "triggered:: complete variables"
+            return Trigger(self.lang, TRG_FORM_CPLN, "variables",
+                           pos, implicit)
+        elif char == '[':
+            # Quoted variable completion trigger.
+            if DEBUG:
+                print "triggered:: complete quoted variables"
+            return Trigger(self.lang, TRG_FORM_CPLN, "quotevariables",
+                           pos, implicit)            
+        elif char == '(' or char == ',':
+            # Function calltip trigger.
+            if DEBUG:
+                print "triggered:: function calltip"
+            return Trigger(self.lang, TRG_FORM_CALLTIP,
+                           "call-signature", pos, implicit)
+        elif style in (SCE_UDL_SSL_WORD, SCE_UDL_SSL_IDENTIFIER):
             # Functions/builtins completion trigger.
             start, end = accessor.contiguous_style_range_from_pos(last_pos)
             if DEBUG:
@@ -2751,8 +2837,8 @@ class RLangIntel(LangIntel):
                 if DEBUG:
                     print "triggered:: complete identifiers"
                 return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
-                               start, implicit,
-                               word_start=start, word_end=end)
+                               start, implicit)
+        
         return None
 
     ##
@@ -2764,8 +2850,8 @@ class RLangIntel(LangIntel):
     #
     def preceding_trg_from_pos(self, buf, pos, curr_pos,
                                preceding_trg_terminators=None, DEBUG=False):
-        #DEBUG = True
-        if pos < 1:
+        DEBUG = True
+        if pos < 3:
             return None
 
         # accessor {codeintel2.accessor.Accessor} - Examine text and styling.
@@ -2776,14 +2862,78 @@ class RLangIntel(LangIntel):
         if DEBUG:
             print "pos: %d, curr_pos: %d" % (pos, curr_pos)
             print "char: %r, style: %d" % (char, style)
-        if style in (SCE_UDL_SSL_WORD, SCE_UDL_SSL_IDENTIFIER):
+        
+        # PhG: next paragraph replaced by...
+        #if style in (SCE_UDL_SSL_WORD, SCE_UDL_SSL_IDENTIFIER):
+        #    # Functions/builtins completion trigger.
+        #    start, end = accessor.contiguous_style_range_from_pos(last_pos)
+        #    if DEBUG:
+        #        print "triggered:: complete identifiers"
+        #    return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
+        #                   start, implicit=False,
+        #                   word_start=start, word_end=end)
+        
+        if char == " " and (not (style in (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK))):
+            # Look the char just before all spaces, tabs or carriage return
+            # We do not trigger it if we are in a comment!
+            p = last_pos-1
+            min_p = max(0, p-500)      # Don't bother looking more than 500 chars
+            if DEBUG:
+                print "Checking char just before spaces"
+            while p >= min_p:
+                #accessor.style_at_pos(p) in jsClassifier.comment_styles:
+                ch = accessor.char_at_pos(p)
+                st = accessor.style_at_pos(p)
+                p -= 1
+                if (not (ch in " \t\v\r\n")) and \
+                (not (st in (SCE_UDL_SSL_COMMENT, SCE_UDL_SSL_COMMENTBLOCK))):
+                    break
+            if ch == ",":
+                # Calculate a completion list for function arguments
+                if DEBUG:
+                    print "triggered:: complete arguments"
+                return Trigger(self.lang, TRG_FORM_CPLN, "arguments",
+                               pos, implicit=False)
+            elif ch == "=":
+                # TODO: Try to provide correct completion for function arguments
+                if DEBUG:
+                    print "triggered:: complete identifiers"
+                return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
+                               pos, implicit=False)
+            return None
+        if char == '$'or char == '@':
+            return Trigger(self.lang, TRG_FORM_CPLN, "variables",
+                            pos, implicit=False)
+        elif char == '[':
+            return Trigger(self.lang, TRG_FORM_CPLN, "quotevariables",
+                            pos, implicit=False)
+        elif char == '(' or char == ',':
+            # Function calltip trigger.
+            if DEBUG:
+                print "triggered:: function calltip"
+            return Trigger(self.lang, TRG_FORM_CALLTIP,
+                           "call-signature", pos, implicit=False)
+        elif style in (SCE_UDL_SSL_VARIABLE, ):
+            start, end = accessor.contiguous_style_range_from_pos(last_pos)
+            if DEBUG:
+                print "triggered:: complete variables"
+            return Trigger(self.lang, TRG_FORM_CPLN, "variables",
+                           start+1, implicit=False)
+        elif style in (SCE_UDL_SSL_WORD, SCE_UDL_SSL_IDENTIFIER):
             # Functions/builtins completion trigger.
             start, end = accessor.contiguous_style_range_from_pos(last_pos)
             if DEBUG:
                 print "triggered:: complete identifiers"
             return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
-                           start, implicit=False,
-                           word_start=start, word_end=end)
+                           start, implicit=False)
+        else:
+            # Functions/builtins completion trigger.
+            start, end = accessor.contiguous_style_range_from_pos(last_pos)
+            if DEBUG:
+                print "triggered:: complete identifiers"
+            return Trigger(self.lang, TRG_FORM_CPLN, "identifiers",
+                           start, implicit=False)
+        
         return None
 
     ##
@@ -2799,20 +2949,110 @@ class RLangIntel(LangIntel):
         ctlr.start(buf, trg)
 
         if trg.id == (self.lang, TRG_FORM_CPLN, "identifiers"):
-            word_start = trg.extra.get("word_start")
-            word_end = trg.extra.get("word_end")
-            if word_start is not None and word_end is not None:
-                # Only return keywords that start with the given 2-char prefix.
-                prefix = buf.accessor.text_range(word_start, word_end)[:2]
-                cplns = [x for x in keywords if x.startswith(prefix)]
-                cplns = [("keyword", x) for x in sorted(cplns, cmp=CompareNPunctLast)]
-                ctlr.set_cplns(cplns)
-                ctlr.done("success")
-                return
+# First, check if there is an abbreviation
+            
+# TODO: convert this into Python and integrate
+#            		var ke = ko.views.manager.currentView.scimoz;
+#		var sel = ke.selText;
+#		if (sv.abbrev.callTipActive & ke.callTipActive()) { ke.callTipCancel(); }
+#		// Only activate tip if current selection is empty!
+#		if (sel == "") {
+#			var trig = ko.interpolate.getWordUnderCursor(ke);
+#			var snip = sv.abbrev.findAbbrevSnippet(trig);
+#			if(snip) {
+#				var tip = snip.value;
+#				tip = tip.replace("!@#_anchor", "");
+#				tip = tip.replace("!@#_currentPos", "");
+#				ke.callTipShow(ke.anchor, "Meta+T expands:\n" + tip);
+#				sv.abbrev.callTipActive = true;
+#			}
+#		}
+#	} catch(e) { log.exception(e); }   
+            # Return all known keywords and builtins.
+            #ctlr.set_cplns(self._get_all_known_identifiers(buf))
+            start, end = buf.accessor.contiguous_style_range_from_pos(pos)
+            self._autocomplete(buf, start, end)
+            ctlr.done("success")
+            return
+            
+            
+#            word_start = trg.extra.get("word_start")
+#            word_end = trg.extra.get("word_end")
+#            if word_start is not None and word_end is not None:
+#                # Only return keywords that start with the given 2-char prefix.
+#                prefix = buf.accessor.text_range(word_start, word_end)[:2]
+#                cplns = [x for x in keywords if x.startswith(prefix)]
+#                cplns = [("keyword", x) for x in sorted(cplns, cmp=CompareNPunctLast)]
+#                ctlr.set_cplns(cplns)
+#                ctlr.done("success")
+#                return
+        
+        #PhG: added!
+        if trg.id == (self.lang, TRG_FORM_CPLN, "variables"):
+            # Find all variables in the current file, complete using them.
+            #ctlr.set_cplns(self._get_all_variables_in_buffer(buf))
+            self._autocomplete(buf, pos, pos)
+            ctlr.done("success")
+            return
+
+        if trg.id == (self.lang, TRG_FORM_CPLN, "quotevariables"):
+            # Find all variables in the current file, complete using them.
+            #ctlr.set_cplns(self._get_all_variables_in_buffer(buf))
+            self._autocomplete(buf, pos, pos)
+            ctlr.done("success")
+            return
+        
+        if trg.id == (self.lang, TRG_FORM_CPLN, "arguments"):
+            # Return all arguments of current function.
+            #ctlr.set_cplns(self._get_all_known_arguments(buf))
+            self._autocomplete(buf, pos, pos)
+            ctlr.done("success")
+            return
+
+        if trg.id == (self.lang, TRG_FORM_CALLTIP, "call-signature"):
+            # Get function calltip.
+            working_text = buf.accessor.text_range(max(0, pos-500), pos)
+            complete_zone = buf.accessor.text_range(pos, pos)
+            calltip = R.calltip(working_text)
+            # This is done asynchronously by the R.calltip() function
+            #if calltip:
+            #    ctlr.set_calltips([calltip])
+            ctlr.done("success")
+            return
+        # PhG: ennd of additions
 
         ctlr.error("Unknown trigger type: %r" % (trg, ))
         ctlr.done("error")
+        
 
+    # PhG: added...
+        ##
+    # Internal functions
+    #
+
+    def _autocomplete(self, buf, start, end):
+        # Get autocompletion list.
+        # TODO: a more sensible way to get the piece of code to complete!
+        working_text = buf.accessor.text_range(max(0, start-200), end)
+        complete_zone = buf.accessor.text_range(start, end)
+        complete = R.complete(working_text)
+        return complete
+    
+    # Not used for R autocomplete, but good to keep
+    #def _get_all_variables_in_buffer(self, buf):
+    #    all_variables = set()
+    #    for token in buf.accessor.gen_tokens():
+    #        if token.get('style') == SCE_UDL_SSL_VARIABLE:
+    #            all_variables.add(token.get('text')[0:])
+    #    return [("variable", x) for x in sorted(all_variables, cmp=CompareNPunctLast)]
+
+    #_identifier_cplns = None
+    #def _get_all_known_identifiers(self, buf):
+    #    if RLangIntel._identifier_cplns is None:
+    #        cplns = [("keyword", x) for x in keywords]
+    #        cplns += [("function", x) for x in builtins]
+    #        RLangIntel._identifier_cplns = sorted(cplns, cmp=CompareNPunctLast, key=operator.itemgetter(1))
+    #    return RLangIntel._identifier_cplns
 
 #---- Buffer class
 
@@ -2849,13 +3089,17 @@ class RBuffer(UDLBuffer):
     #m_lang = "XML"
     #css_lang = "CSS"
     #csl_lang = "JavaScript"
-    ssl_lang = "Rd"
+    m_lang = "Rwiki"
+    ssl_lang = "R"
     #tpl_lang = "Rd"
 
     cb_show_if_empty = True
 
     # Close the completion dialog when encountering any of these chars.
-    cpln_stop_chars = "_ ()*-=+<>{}[]^&|;:'\",?~`!@#%\\/"
+    #PhG: changed...
+    #cpln_stop_chars = "_ ()*-=+<>{}[]^&|;:'\",?~`!@#%\\/"
+    cpln_fillup_chars = "\t" #"~`!$@#%^&*()-=+{}[]|\\;:'\",<>?/\t\n\r"
+    cpln_stop_chars = "~`!$@#%^&*()-=+{}[]|\\;:'\",<>?/ "
 
 
 #---- CILE Driver class

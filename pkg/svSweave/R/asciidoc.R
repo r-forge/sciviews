@@ -206,9 +206,8 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	} else RnwFile2 <- RnwFile
 	
 	## Sweave that document to .txt file
-# No, we just import its namespace now
-#	## Note that the ascii package must be loaded first!
-#	require(ascii, quietly = TRUE, warn.conflicts = FALSE)
+	## Note that the ascii package must be loaded first!
+	require(ascii, quietly = TRUE, warn.conflicts = FALSE)
 	odir <- setwd(dirname(RnwFile2)) # Work now relative to destination file
 	## Also display warnings immediately
 	owarn <- options(warn = 1)
