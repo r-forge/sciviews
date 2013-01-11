@@ -1,15 +1,16 @@
-Package: svSweave
+Package: svDoc
 Type: Package
 Version: 0.9-7
 Date: 2013-01-11
-Title: SciViews GUI API - Sweave functions
+Title: SciViews GUI API - svDoc functions
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))
 Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
-Depends: R (>= 2.6.0), knitr
+Depends: R (>= 2.6.0), svMisc, ascii
 Imports: utils
-Description: Supporting functions for the GUI API (Sweave functions)
-License: GPL-2
+SystemRequirements: Python (>= 2.4) to run Asciidoc (http://www.python.org/)
+Description: Supporting functions for the GUI API (SciViews documents management)
+License: file LICENSE
 URL: http://www.sciviews.org/SciViews-R
 BugReports: https://r-forge.r-project.org/tracker/?group_id=194

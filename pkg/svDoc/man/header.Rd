@@ -15,8 +15,8 @@
 \usage{
 header(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
     revremark = NULL, copyright = "cc-by", encoding = "UTF-8", lang = "en",
-    pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
-    theme = "SciViews", max.width = 640, width = NULL,
+    pagetitle = NULL, description = "SciViews document", keywords = NULL,
+    theme = "sciviews", max.width = 640, width = NULL,
     toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 2,
     numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
     align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
@@ -101,7 +101,7 @@ header(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{RdocToRnw}} }
+\seealso{ \code{\link{svDocToRnw}} }
 
 \examples{
 ## A minimal svDoc contained in a string:

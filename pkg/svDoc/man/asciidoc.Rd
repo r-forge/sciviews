@@ -1,8 +1,8 @@
 \name{asciidoc}
-\alias{RdocToRnw}
-\alias{RdocConvert}
-\alias{RdocThemes}
-\alias{makeRdoc}
+\alias{svDocToRnw}
+\alias{svDocConvert}
+\alias{svDocThemes}
+\alias{render...}
 
 \title{ Transform SciViews docs into R noweb or HTML files }
 \description{
@@ -13,15 +13,15 @@
 }
 
 \usage{
-RdocToRnw(RdocFile, RnwFile, encoding)
-RdocConvert(RdocFile, theme, format, show.it, figs.dir, keep.RnwFile,
+svDocToRnw(svDocFile, RnwFile, encoding)
+svDocConvert(svDocFile, theme, format, show.it, figs.dir, keep.RnwFile,
     keep.TxtFile, encoding, asciidoc)
-RdocThemes()
-makeRdoc(RdocFile, encoding)
+svDocThemes()
+render...(svDocFile, encoding)
 }
 
 \arguments{
-  \item{RdocFile}{ a character string corresponding to the path to a SciViews
+  \item{svDocFile}{ a character string corresponding to the path to a SciViews
     doc file to be converted. }
   \item{RnwFile}{ idem, but the R noweb file to create. Default to same file,
     but with \code{.Rnw} extension. }
@@ -46,11 +46,11 @@ makeRdoc(RdocFile, encoding)
 }
 
 \value{
-  The text of the R noweb data is returned invisibly by \code{RdocToRnw()}.
-  \code{NULL} is returned by \code{RdocConvert()} (this function is invoked for
-  its side effect. \code{RdocThemes()} returns the list of themes
-  available for your HTML documents. Finally, \code{makeRdoc()} is a convenient
-  function to automatically build a report from a SciViews Rdoc.
+  The text of the R noweb data is returned invisibly by \code{svDocToRnw()}.
+  \code{NULL} is returned by \code{svDocConvert()} (this function is invoked for
+  its side effect). \code{svDocThemes()} returns the list of themes
+  available for your HTML documents. Finally, \code{render...()} is a convenient
+  function to automatically build a SciViews document.
 }
 
 \details{

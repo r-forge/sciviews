@@ -10,14 +10,21 @@ useFancyQuotes = TRUE, ...)
 	##> R -e svSweave::weaveLyxRnw(\"$$i\"[,driver=highlight::HighlightWeaveLatex()]) -q --vanilla
 
 	## Switch encoding (we do work with UTF-8 by default)
-	options(encoding = encoding)
+	oenc <- options(encoding = encoding)
+	on.exit(options(encooding = oenc))
 	Sys.setlocale("LC_CTYPE", "UTF-8")
 
 	## By default, use fancy quotes
-	options(useFancyQuotes = useFancyQuotes)
-
+	ofc <- options(useFancyQuotes = useFancyQuotes)
+	on.exit(options(useFancyQuotes = ofc), add = TRUE)
+	
 	## Set default width for text to a reasonable value
-	options(width = width)
+	owidth <- options(width = width)
+	on.exit(options(width = owidth), add = TRUE)
+
+	## Issue warnings immediately
+	owarn <- options(warn = 1)
+	on.exit(options(warn = owarn), add = TRUE)
 
 	## Process 'file'
 	if (!file.exists(file)) {
@@ -30,7 +37,7 @@ useFancyQuotes = TRUE, ...)
 			sink(type = "message")
 			sink()
 			try(cat(readLines("/tmp/.lyxSweave.log"), sep = "\n"), silent = TRUE)
-		})
+		}, add = TRUE)
 		con <- file("/tmp/.lyxSweave.log", open = "wt")
 		sink(con)
 		sink(con, type = "message")
@@ -51,14 +58,21 @@ useFancyQuotes = TRUE, ...)
 	##> R -e svSweave::knitLyxRnw(\"$$i\") -q --vanilla
 
 	## Switch encoding (we do work with UTF-8 by default)
-	options(encoding = encoding)
+	oenc <- options(encoding = encoding)
+	on.exit(options(encooding = oenc))
 	Sys.setlocale("LC_CTYPE", "UTF-8")
 
 	## By default, use fancy quotes
-	options(useFancyQuotes = useFancyQuotes)
-
+	ofc <- options(useFancyQuotes = useFancyQuotes)
+	on.exit(options(useFancyQuotes = ofc), add = TRUE)
+	
 	## Set default width for text to a reasonable value
-	options(width = width)
+	owidth <- options(width = width)
+	on.exit(options(width = owidth), add = TRUE)
+
+	## Issue warnings immediately
+	owarn <- options(warn = 1)
+	on.exit(options(warn = owarn), add = TRUE)
 
 	## Process 'file'
 	if (!file.exists(file)) {
@@ -71,7 +85,7 @@ useFancyQuotes = TRUE, ...)
 			sink(type = "message")
 			sink()
 			try(cat(readLines("/tmp/.lyxSweave.log"), sep = "\n"), silent = TRUE)
-		})
+		}, add = TRUE)
 		con <- file("/tmp/.lyxSweave.log", open = "wt")
 		sink(con)
 		sink(con, type = "message")

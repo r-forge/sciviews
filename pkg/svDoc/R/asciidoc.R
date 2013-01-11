@@ -1,40 +1,40 @@
-## Routines to manage and convert SciViews Rdoc to asciidoc-sweave
+## Routines to manage and convert SciViews svDoc to asciidoc-sweave
 ## Copyright (c) 2012, Ph. Grosjean (phgrosjean@sciviews.org)
-## Note: !"doc block" is managed by the SciViews version of `!`,
+## Note: !!"doc block" is managed by the SciViews version of `!`,
 ## otherwise it produces an error... So, you have to place require(SciViews)
 ## in the initialisation block (second line) of the SciViews Rdoc!
 
-RdocToRnw <- function (RdocFile, RnwFile, encoding)
+svDocToRnw <- function (svDocFile, RnwFile, encoding)
 {
-	## Converts a SciViews Rdoc into an sweave document (.Rnw)
+	## Converts a SciViews doc into an sweave document (.Rnw)
 	
-	## If RdocFile is missing, try to get it from option or the command line
-	if (missing(RdocFile)) RdocFile <- .RdocFile()
-	RdocFile <- normalizePath(RdocFile)
+	## If svDocFile is missing, try to get it from option or the command line
+	if (missing(svDocFile)) svDocFile <- .svDocFile()
+	svDocFile <- normalizePath(svDocFile)
 	
 	## Get RnwFile
 	if (missing(RnwFile)) RnwFile <- getOption("Rnw.file",
-		.fileExt(RdocFile, "Rnw"))
+		.fileExt(svDocFile, "Rnw"))
 	## Make sure it is not an old file at the end of the process that remains
 	unlink(RnwFile)
 
 	## Get encoding
-	if (missing(encoding)) encoding <- getOption("Rdoc.encoding", "UTF-8")
+	if (missing(encoding)) encoding <- getOption("svDoc.encoding", "UTF-8")
 		
-	## Read RdocFile content
-	Rscript <- readLines(RdocFile, encoding = encoding)
+	## Read svDocFile content
+	Rscript <- readLines(svDocFile, encoding = encoding)
 	l <- length(Rscript)
 	
-	## Detect doc chunks (start with !", and end with !<<...>>=")
-	start <- grepl('^!"[ \t]*$', Rscript)
+	## Detect doc chunks (start with !!", and end with !<<...>>=")
+	start <- grepl('^!!"[ \t]*$', Rscript)
 	end <- grepl('^<<.*>>="[ \t]*$', Rscript)
 	## Must have at least one doc chunk and same number of starts and ends
 	nstart <- sum(start)
 	nend <- sum(end)
 	if (nstart < 1)
-		stop("Incorrect SciViews Rdoc (it must contain at least one doc chunk)")
+		stop("Incorrect SciViews doc (it must contain at least one doc chunk)")
 	if (sum(end) != nstart)
-		stop("Incorrect SciViews Rdoc (", nstart, " doc chunk starts but ",
+		stop("Incorrect SciViews doc (", nstart, " doc chunk starts but ",
 			nend, " ends)")
 	## Lines containing starts and ends
 	lstart <- (1:l)[start]
@@ -43,16 +43,16 @@ RdocToRnw <- function (RdocFile, RnwFile, encoding)
 	cstart <- cumsum(start)
 	cend <- cumsum(end)
 	if (any(cend > cstart))
-		stop("Incorrect SciViews Rdoc",
-			 " (inversion of start and end in one or more doc chunks)")
+		stop("Incorrect SciViews doc",
+			 " (inversion of start and end in one or more text chunks)")
 	
-	## Check that the SciViews Rdoc file starts with #!
+	## Check that the SciViews doc file starts with #!
 	if (!grepl("^#!", Rscript[1]))
-		stop("Incorrect SciViews Rdoc (it must start with #!)")
+		stop("Incorrect SciViews doc (it must start with #!)")
 	## Change this line into an init code chunk
-	Rscript[1] <- "<<init, echo=FALSE, results=ascii, strip.white=false>>="
+	Rscript[1] <- "<<header, echo=FALSE, results=ascii, strip.white=false>>="
 	
-	## Doc chunks are lines where cstart > cend
+	## Text chunks are lines where cstart > cend
 	inDoc <- cstart > cend
 	
 	## Convert \" into " inside doc blocks
@@ -97,20 +97,21 @@ RdocToRnw <- function (RdocFile, RnwFile, encoding)
 }
 
 ## TODO: use figs.dir!!!
-RdocConvert <- function (RdocFile, theme, format, show.it, figs.dir,
+svDocConvert <- function (svDocFile, theme, format, show.it, figs.dir,
 keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 {
-	## If RdocFile is missing, try to get it from option or the command line
-	if (missing(RdocFile)) RdocFile <- .RdocFile()
-	RdocFile <- normalizePath(RdocFile)
+	## If svDocFile is missing, try to get it from option or the command line
+	if (missing(svDocFile)) svDocFile <- .svDocFile()
+	svDocFile <- normalizePath(svDocFile)
 	
-	## RnwFile is either same place, same name as RdocFile, or option Rnw.file
-	RnwFile <- getOption("Rnw.file", .fileExt(RdocFile, "Rnw"))
+	## RnwFile is either same place, same name as svDocFile, or option Rnw.file
+	RnwFile <- getOption("Rnw.file", .fileExt(svDocFile, "Rnw"))
 
+	## TODO: use .adoc instead as extention!!!
 	## TxtFile is from option, or from SciViews session directory structure
-	## or at the same location as the RdocFile
-	TxtFile <- getOption("Txt.file", .fileExt(RdocFile, "txt"))
-	ReportDir <- .svSessionDirs(RdocFile)$reportdir
+	## or at the same location as the svDocFile
+	TxtFile <- getOption("Txt.file", .fileExt(svDocFile, "txt"))
+	ReportDir <- .svSessionDirs(svDocFile)$reportdir
 	if (length(ReportDir)) {
 		TxtFile <- file.path(ReportDir, basename(TxtFile))
 	} else TxtFile <- TxtFile
@@ -118,7 +119,7 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	unlink(TxtFile)
 	
 	## If figs.dir is defined (default to 'figures'), make sure it exists
-	if (missing(figs.dir)) figs.dir <- getOption("Rdoc.figs.dir", "figures")
+	if (missing(figs.dir)) figs.dir <- getOption("svDoc.figs.dir", "figures")
 	if (length(figs.dir)) {
 		figs.dir <- file.path(dirname(TxtFile), figs.dir)
 		if (!file.exists(figs.dir)) {
@@ -127,7 +128,7 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	}
 	
 	## If format is missing, try getting it from options(), or assume "html"
-	if (missing(format)) format <- getOption("Rdoc.format", "html")
+	if (missing(format)) format <- getOption("svDoc.format", "html")
 	## The resulting file extension depends on the format used
 	## Note that EndFile is always at same location as TxtFile
 	EndExt <- switch(format,
@@ -147,23 +148,23 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	EndFile <- .fileExt(TxtFile, EndExt)
 		
 	## If theme is missing, try getting it from options()
-	if (missing(theme)) theme <- getOption("Rdoc.theme", "sciviews")
+	if (missing(theme)) theme <- getOption("svDoc.theme", "sciviews")
 	## If there is an initialization file for this theme, run it now
 	## TODO...
 		
 	## Do we show the resulting Html file in the current browser at the end?
 	## By default YES, unless in non-interactive mode
-	if (missing(show.it)) show.it <- getOption("Rdoc.show.it", interactive())
+	if (missing(show.it)) show.it <- getOption("svDoc.show.it", interactive())
 	
 	## Do we keep intermediary .Rnw and .txt files? Default to FALSE
 	if (missing(keep.RnwFile))
-		keep.RnwFile <- getOption("Rdoc.keep.RnwFile", FALSE)
+		keep.RnwFile <- getOption("svDoc.keep.RnwFile", FALSE)
 	if (missing(keep.TxtFile))
-		keep.TxtFile <- getOption("Rdoc.keep.TxtFile", FALSE)
+		keep.TxtFile <- getOption("svDoc.keep.TxtFile", FALSE)
 	
-	## Get encoding... should be UTF-8 for SciViews Rdoc
+	## Get encoding... should be UTF-8 for usual SciViews doc
 	## and make sure to configure the system as UTF-8 (except on Windows)
-	if (missing(encoding)) encoding <- getOption("Rdoc.encoding", "UTF-8")
+	if (missing(encoding)) encoding <- getOption("svDoc.encoding", "UTF-8")
 	if (toupper(encoding) == "UTF-8") {
 		if (.Platform$OS.type != "windows") {
 			## Make sure current locale is UTF-8
@@ -176,7 +177,7 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	
 	## Get asciidoc Python script
 	if (missing(asciidoc)) asciidoc <- getOption("asciidoc",
-		system.file("asciidoc", "asciidoc.py", package = "svSweave",
+		system.file("asciidoc", "asciidoc.py", package = "svDoc",
 		mustWork = TRUE))
 	
 	## We need also Python >= version 2.4
@@ -191,7 +192,7 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	
 	## Convert from Rscript to .Rnw file
 	cat("Creating R noweb file ", basename(RnwFile), "\n", sep = "")
-	RdocToRnw(RdocFile = RdocFile, RnwFile = RnwFile, encoding = encoding)
+	svDocToRnw(svDocFile = svDocFile, RnwFile = RnwFile, encoding = encoding)
 	if (!file.exists(RnwFile))
 		stop("Problems while creating the R noweb file(", RnwFile, ")")
 	
@@ -261,37 +262,37 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	invisible(EndFile)
 }
 
-RdocThemes <- function ()
+svDocThemes <- function ()
 {
 	themesDir <- file.path(dirname(system.file("asciidoc", "asciidoc.py",
-		package = "svSweave")), "themes")
+		package = "svDoc")), "themes")
 	c("classic", dir(themesDir, include.dirs = TRUE))
 }
 
-makeRdoc <- function (RdocFile, encoding)
+render... <- function (svDocFile, encoding)
 {
-	## A function to run an a SciViews Rdoc file, and that looks at the #!
+	## A function to run an a SciViews doc file, and that looks at the #!
 	## line to determine what function to run for compiling the final document
 
-	## If RdocFile is missing, try to get it from option or the command line
-	if (missing(RdocFile)) RdocFile <- .RdocFile()
+	## If svDocFile is missing, try to get it from option or the command line
+	if (missing(svDocFile)) svDocFile <- .svDocFile()
 	
-	## Check RdocFile
-	if (missing(RdocFile) || !length(RdocFile)) stop("No file provided")
-	if (!file.exists(RdocFile)) stop("RdocFile not found (", RdocFile, ")")
-	RdocFile <- normalizePath(RdocFile)
+	## Check svDocFile
+	if (missing(svDocFile) || !length(svDocFile)) stop("No file provided")
+	if (!file.exists(svDocFile)) stop("svDocFile not found (", svDocFile, ")")
+	svocFile <- normalizePath(svDocFile)
 	
 	## Get encoding
-	if (missing(encoding)) encoding <- getOption("Rdoc.encoding", "UTF-8")	
+	if (missing(encoding)) encoding <- getOption("svDoc.encoding", "UTF-8")	
 	
 	## Check that it is a R script file (first line starting with #!)
-	Rscript <- readLines(RdocFile, n = 1L, encoding = encoding)
+	Rscript <- readLines(svDocFile, n = 1L, encoding = encoding)
 	if (!grepl("^#!", Rscript))
-		stop("Incorrect SciViews Rdoc file (it must start with #!)")
+		stop("Incorrect SciViews doc file (it must start with #!)")
 
 	## Decrypt first line to know what function to run to make this file
 	cmd <- sub("^#!.+ -e[ \t]*(.+)$", "\\1", Rscript)
-	if (cmd == Rscript) stop("Malformed #! line in '", RdocFile, "'")
+	if (cmd == Rscript) stop("Malformed #! line in '", svDocFile, "'")
 	
 	## Eliminate possible quotes around the command and trailing spaces
 	cmd <- sub("[ \t]+$", "", cmd)
@@ -300,9 +301,9 @@ makeRdoc <- function (RdocFile, encoding)
 		cmdNoQuotes <- sub('^"(.+)"$', "\\1", cmd) # Double quotes
 	
 	## Pass the file name to the build procedure
-	ofile <- options(Rdoc.file = RdocFile)$Rdoc.file
-	oencoding <- options(Rdoc.encoding = encoding)$Rdoc.encoding
-	on.exit(options(Rdoc.file = ofile, encoding = oencoding))
+	ofile <- options(svDoc.file = svDocFile)$svDoc.file
+	oencoding <- options(svDoc.encoding = encoding)$svDoc.encoding
+	on.exit(options(svDoc.file = ofile, encoding = oencoding))
 	
 	## Run that command
 	cmd <- try(parse(text = cmdNoQuotes))

@@ -1,0 +1,7 @@
+= svDoc News
+
+== Changes in svDoc 0.9-7
+
+This is the first version of this package, collecting functions that manage
+SciViews documents and Asciidoc features here, from svSweave 0.9-6, initially.
+Name of many function are adapted to the new context.
