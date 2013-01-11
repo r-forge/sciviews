@@ -2,8 +2,8 @@
 
 header <- function (title, author = NULL, email = NULL, revnumber = NULL,
 revdate = NULL, revremark = NULL, copyright = "cc-by", encoding = "UTF-8",
-lang = "en", pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
-theme = "SciViews", max.width = 640, width = NULL,
+lang = "en", pagetitle = NULL, description = "SciViews document", keywords = NULL,
+theme = "sciviews", max.width = 640, width = NULL,
 toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 2,
 numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
 align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
@@ -11,7 +11,7 @@ SweaveInit = { options(width = 80); options(SweaveHooks = list(fig = function()
 par(col.lab = "#434366", col.main = "#434366"))) }
 )
 {
-	## Format AsciiDocsciidoc attributes
+	## Format Asciidoc attributes
 	asciiAttr <- function (header = NULL, name, value) {
 		if (!length(value)) return(header)
 		paste0(header, ":", name, ": ", paste(value, collapse = ","), "\n")
@@ -95,7 +95,7 @@ par(col.lab = "#434366", col.main = "#434366"))) }
 	if (isTRUE(pygments)) header <- paste0(header, ":pygments:\n")
 	header <- asciiAttr(header, "slidefontsizeadjust", slidefontsizeadjust)
 	## Are we currently building a dynamic document?
-	if (svMisc::existsTemp(".build__dynamic__Rdoc__"))
+	if (svMisc::existsTemp(".build__dynamic__svDoc__"))
 		header <- paste0(header, ":dynamic:\n")
 	header <- paste0(header, "\n") # End of header section
 	

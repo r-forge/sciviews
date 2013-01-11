@@ -1,5 +1,13 @@
 = svSweave News
 
+== Changes in svSweave 0.9-7
+
+* All Asciidoc-related items are now moved to svDoc package.
+
+* Weaving and tangling are now done with options(warn = 1) for immediate issue
+  of warnings.
+
+
 == Changes in svSweave 0.9-6
 
 * Slight reworking of the Asciidoc-related function RdocXXX(). svBuild() is

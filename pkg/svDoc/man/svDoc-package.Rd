@@ -1,16 +1,16 @@
-\name{svSweave-package}
-\alias{svSweave-package}
-\alias{svSweave}
+\name{svDoc-package}
+\alias{svDoc-package}
+\alias{svDoc}
 \docType{package}
 
-\title{ SciViews GUI API - Sweave functions }
+\title{ SciViews GUI API - SciVews document management }
 \description{
-  The SciViews svSweave package provides additional function to use Sweave with
-  LyX and SciViews-LyX.
+  The SciViews svDoc package provides additional function to combine Sweave,
+  Asciidoc and Shiny to make flexible and dynamic documents.
 }
 \details{
   \tabular{ll}{
-    Package: \tab svSweave\cr
+    Package: \tab svDoc\cr
     Type: \tab Package\cr
     Version: \tab 0.9-7\cr
     Date: \tab 2013-01-11\cr
@@ -28,4 +28,4 @@
 \keyword{ package }
 \keyword{ utilities }
 
-\concept{ GUI API sweave LyX litterate programming }
+\concept{ GUI API sweave Asciidoc litterate programming with Shiny widgets }

@@ -5,7 +5,7 @@
 	if (!is.null(py)) options(python = py)
 }
 
-.packageName <- "svSweave"
+.packageName <- "svDoc"
 
 .fileExt <- function (file, extension)
 {
@@ -14,15 +14,15 @@
 	paste(file, extension, sep = ".")
 }
 
-.RdocFile <- function ()
+.svDocFile <- function ()
 {
-	## Try to get RdocFile from option or the command line
+	## Try to get svDocFile from option or the command line
 	## Note: the file from the command line is for #! scripts!
-	RdocFile <- getOption("Rdoc.file", NULL)
-	if (is.null(RdocFile)) RdocFile <- commandArgs(TRUE)[1] # If #! script
-	if (!length(RdocFile) || !file.exists(RdocFile))
-		stop("RdocFile not found (", RdocFile, ")")
-	return(normalizePath(RdocFile, winslash = "/"))
+	svDocFile <- getOption("svDoc.file", NULL)
+	if (is.null(svDocFile)) svDocFile <- commandArgs(TRUE)[1] # If #! script
+	if (!length(svDocFile) || !file.exists(svDocFile))
+		stop("svDocFile not found (", svDocFile, ")")
+	return(normalizePath(svDocFile, winslash = "/"))
 	
 }
 
