@@ -4,9 +4,9 @@
 \alias{RdocThemes}
 \alias{makeRdoc}
 
-\title{ Transform SciViews Rdocs into R noweb or HTML files }
+\title{ Transform SciViews docs into R noweb or HTML files }
 \description{
-  SciViews Rdocs are R-compatible scripts that embed Sweave code and doc
+  SciViews docs are R-compatible scripts that embed Sweave code and doc
   blocks to format text between R chunks. These functions convert such scripts
   into R noweb files that can be processed by Sweave, or in the case of
   Asciidoc version, into HTML files after running Sweave and Asciidoc.
@@ -22,7 +22,7 @@ makeRdoc(RdocFile, encoding)
 
 \arguments{
   \item{RdocFile}{ a character string corresponding to the path to a SciViews
-    Rdoc file to be converted. }
+    doc file to be converted. }
   \item{RnwFile}{ idem, but the R noweb file to create. Default to same file,
     but with \code{.Rnw} extension. }
   \item{encoding}{ the encoding of the .R and .Rnw files. It is \code{UTF-8} by
@@ -60,7 +60,7 @@ makeRdoc(RdocFile, encoding)
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{RdocHeader}} }
+\seealso{ \code{\link{header}} }
 
 \keyword{ utilities }
 

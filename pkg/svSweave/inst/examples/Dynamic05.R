@@ -1,6 +1,6 @@
-#! /usr/bin/Rscript -e 'svSweave::RdocConvert()'
-svSweave::RdocHeader("Dynamic R document - Sliders", toc = "none")
-!"
+#! /usr/bin/Rscript -e svDoc::render...
+svDoc::header("Dynamic R document - Sliders")
+!!"
 <<server, eval = FALSE, echo = FALSE>>="
 ## Define server logic for slider examples
 dynamicServer({
@@ -20,7 +20,7 @@ dynamicServer({
 		sliderValues()
 	})
 })
-!"
+!!"
 <<ui, echo = FALSE, results = ascii>>="
 ## What to display in dynamic mode?
 asciiDynamic({
@@ -55,6 +55,6 @@ asciiDynamic({
 ## What to display in static mode?
 asciiStatic(uiP(strong(
 	"This application works only in dynamic mode through the shiny server!")))
-!"
+!!"
 NOTE: //This is a reimplementation of **`05_sliders'** shiny example as a **SciViews R script**.//
 <<>>="

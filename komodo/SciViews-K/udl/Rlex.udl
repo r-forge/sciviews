@@ -2648,7 +2648,7 @@ state IN_SSL_DEFAULT:
 
 # ----------- Entering Comments ---------- #
 
-# This is shebang line or the R wiki construct used for R output
+# This is the R wiki construct used for R output
 /^#!/ : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_OUTPUT
 
 # One-line comments end at end-of-line
@@ -2666,9 +2666,11 @@ state IN_SSL_DEFAULT:
 # assignations with '='). That is: arg/var = (but not var ==)
 /[$NMSTART](?=[$CS]*[$WS]*\=[^\=])/ : paint(upto, SSL_DEFAULT), => IN_SSL_ARGUMENT
 
-# Special case of svSweave::RdocHeader("Main title")
-# where we want to colorize main title as a Rdoc M_PI element
-"svSweave::RdocHeader" : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_DOCHEADER
+# Special case of svDoc::header("Main title", ...;)
+# where we want to colorize main title as a svDoc M_PI element
+"svDoc::header" : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_DOCHEADER
+
+# TO BE ELIMINATED!/[ \t]*->[ \t\r\n]*svDoc::header/ : paint(upto, SSL_DEFAULT), paint(include, SSL_REGEX), => IN_SSL_DOCHEADER
 
 # SSL_VARIABLE also colorizes namespaces ns in ns::fun() or ns:::fun()
 # So the SSL_VARIABLE style highlight essentially various pieces of
@@ -2715,7 +2717,7 @@ state IN_SSL_DEFAULT:
 /[$OP]/ : paint(upto, SSL_DEFAULT), redo, => IN_SSL_OP1
 
 
-#### The special SciViews::R() header ##########################################
+#### The special svDoc::header() ##########################################
 state IN_SSL_DOCHEADER:
 # We enter the doc header construct => must have an opening brace
 /[$WS]+/ : #stay, spaces allowed here
@@ -2725,8 +2727,12 @@ state IN_SSL_DOCHEADER:
 state IN_SSL_DOCHEADER2:
 /[$WS]+/ : #stay, spaces allowed here
 # Enter string mode for main title
-/[^"]/ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT # Should never occur
-'"' : paint(upto, SSL_DEFAULT), paint(include, SSL_STRING), => IN_SSL_DOCTITLE
+/[^"]/ : paint(upto, SSL_DEFAULT), redo => IN_SSL_DEFAULT
+'"' : paint(upto, SSL_DEFAULT), paint(include, SSL_STRING), => IN_SSL_STARTDOCTITLE
+
+state IN_SSL_STARTDOCTITLE:
+'= ' : paint(upto, SSL_STRING), paint(include, M_TAGNAME), => IN_SSL_DOCTITLE
+/./ : paint(upto, SSL_STRING), redo => IN_SSL_DOCTITLE
 
 state IN_SSL_DOCTITLE:
 '"' : paint(upto, M_PI), paint(include, SSL_STRING), => IN_SSL_DEFAULT
@@ -2775,7 +2781,7 @@ state IN_SSL_NAMESPACE:
 
 
 ##### Comments #################################################################
-# This is used in R Wiki to denote R output
+# This is used in svDoc to denote R output
 state IN_SSL_OUTPUT: # SSL_COMMENTBLOCK not different from SSL_COMMENT
 #/[\r\n]/ : paint(upto, SSL_COMMENTBLOCK), => IN_SSL_DEFAULT
 /[\r\n]/ : paint(upto, SSL_REGEX), => IN_SSL_DEFAULT # Use SSL_STRING instead

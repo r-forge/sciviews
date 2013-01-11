@@ -15,7 +15,6 @@
 #
 # Contributor(s):
 #   Philippe Grosjean
-#   ActiveState Software Inc (code inspired from)
 #
 # Alternatively, the contents of this file may be used under the terms of
 # either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -31,9 +30,45 @@
 #
 # ***** END LICENSE BLOCK *****
 
-# R switches to wiki block using !!" at the beginning of a line
+# Special treatment for the #! (shebang) first line
 
-family ssl
+family csl
+initial IN_CSL_DEFAULT
 
-state IN_SSL_DEFAULT:
-/^!!"/ :  paint(upto, SSL_DEFAULT), paint(include, M_TAGNAME) => IN_M_WIKI_START
+family csl # client-side language
+sublanguage Rshebang
+
+# We have to specify the min and max styles we'll be referring to
+# Here are the available styles (see include/Scintilla.iface):
+# Template: client-side language  # Start at 30
+#SCE_UDL_CSL_DEFAULT=30
+#SCE_UDL_CSL_COMMENT=31
+#SCE_UDL_CSL_COMMENTBLOCK=32
+#SCE_UDL_CSL_NUMBER=33
+#SCE_UDL_CSL_STRING=34
+#SCE_UDL_CSL_WORD=35
+#SCE_UDL_CSL_IDENTIFIER=36
+#SCE_UDL_CSL_OPERATOR=37
+#SCE_UDL_CSL_REGEX=38
+start_style CSL_DEFAULT
+end_style CSL_REGEX
+
+# Set the basic patterns we'll be using for styling transitions.
+pattern WS = '\s\t\r\n'                 # inside cset, whitespace
+
+################ Transition ################
+
+state IN_CSL_DEFAULT:
+/^#!/ :  paint(upto, CSL_DEFAULT), paint(include, CSL_REGEX), => IN_CSL_SHEBANG
+/./ : paint(upto, CSL_DEFAULT), redo => IN_SSL_DEFAULT
+
+# The whole line is shebang command
+state IN_CSL_SHEBANG:
+/[\r\n]/ : paint(upto, CSL_REGEX), => IN_SSL_DEFAULT
+#/[\r\n]/ : paint(upto, CSL_REGEX), => IN_CSL_SECOND_LINE
+
+## Transition to R code: about anything... except a "string" which could be svDoc title
+state IN_CSL_SECOND_LINE:
+/[$WS]+/ : #stay, spaces allowed here
+# TO BE ELIMINATED!? '"' : paint(upto, CSL_DEFAULT), paint(include, M_TAGNAME), => IN_SSL_STARTDOCTITLE
+/./ : paint(upto, CSL_DEFAULT), redo => IN_SSL_DEFAULT

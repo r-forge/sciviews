@@ -55,3 +55,6 @@
 
 * In presentation or screencast mode: have a series of premared snippets to help
   construct the SciViews Rdoc in live.
+
+* To use Ubuntu and Ubuntu mono on a HTML page, add at the beginning og head section:
+  <link href='http://fonts.googleapis.com/css?family=Ubuntu:400,400italic,700,700italic|Ubuntu+Mono:400,400italic,700,700italic&subset=latin,greek,latin-ext' rel='stylesheet' type='text/css'>

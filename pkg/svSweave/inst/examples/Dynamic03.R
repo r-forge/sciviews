@@ -1,6 +1,6 @@
-#! /usr/bin/Rscript -e 'svSweave::RdocConvert()'
-svSweave::RdocHeader("Dynamic R document - Reactivity", toc = "none")
-!"
+#! /usr/bin/Rscript -e svDoc::render...
+svDoc::header("Dynamic R document - Reactivity")
+!!"
 <<server, eval = FALSE, echo = FALSE>>="
 ## Define server logic required to summarize and view the selected dataset
 dynamicServer({
@@ -48,7 +48,7 @@ dynamicServer({
 		head(datasetInput(), n = input$obs)
 	})
 })
-!"
+!!"
 <<ui, echo = FALSE, results = ascii>>="
 ## What to display in dynamic mode?
 asciiDynamic({
@@ -79,6 +79,6 @@ asciiDynamic({
 ## What to display in static mode
 asciiStatic(uiP(strong(
 	"This application works only in dynamic mode through the shiny server!")))
-!"
+!!"
 NOTE: //This is a reimplementation of **`03_reactivity'** shiny example as a **SciViews R script**.//
 <<>>="

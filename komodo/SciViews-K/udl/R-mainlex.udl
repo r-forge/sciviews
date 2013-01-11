@@ -48,10 +48,11 @@ family markup
 initial IN_M_DEFAULT
 # Null-transition to get into SSL state
 state IN_M_DEFAULT:
-/./ : redo, => IN_SSL_DEFAULT
+/./ : redo, => IN_CSL_DEFAULT
 
 ################ Language Definition ################
 
+include "Rshebang.udl"
 include "R2wiki.udl"
 include "wiki2R.udl"
 include "Rlex.udl"

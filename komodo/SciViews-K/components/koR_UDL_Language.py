@@ -130,14 +130,14 @@ cube(a$x)
 plot(y ~ x, data = a, col = 'blue', main = "Plot of \\"a\\"\\0")
 a$y <- NULL; a
 
-!"
+!!"
 == Wiki block
 
 * Item 1,
 * Item 2.
 
 This is a paragraph of **bold** and //italic// text.
-!"
+<<>>="
 """
 
     ## PhG: what's this??? Everything is commented for now

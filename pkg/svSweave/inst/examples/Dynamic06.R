@@ -1,6 +1,6 @@
-#! /usr/bin/Rscript -e 'svSweave::RdocConvert()'
-svSweave::RdocHeader("Dynamic R document - Tabsets", toc = "none")
-!"
+#! /usr/bin/Rscript -e svDoc::render...
+svDoc::header("Dynamic R document - Tabsets")
+!!"
 <<server, eval = FALSE, echo = FALSE>>="
 ## Define server logic for random distribution application
 dynamicServer({
@@ -36,7 +36,7 @@ dynamicServer({
 		data.frame(x = data())
 	})  
 })
-!"
+!!"
 <<ui, echo = FALSE, results = ascii>>="
 ## What to display in dynamic mode?
 asciiDynamic({
@@ -63,6 +63,6 @@ asciiDynamic({
 ## What to display in static mode?
 asciiStatic(uiP(strong(
 	"This application works only in dynamic mode through the shiny server!")))
-!"
+!!"
 NOTE: //This is a reimplementation of **`06_tabsets'** shiny example as a **SciViews R script**//
 <<>>="

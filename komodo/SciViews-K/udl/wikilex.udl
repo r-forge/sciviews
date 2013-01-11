@@ -36,6 +36,36 @@
 family markup
 sublanguage Rwiki
 
+# Possible styles
+#SCE_UDL_M_STAGO
+#    Start-tag-open character, as in "<"
+#SCE_UDL_M_TAGNAME
+#    The name immediately after a tag-open character.
+#SCE_UDL_M_TAGSPACE
+#    White-space in start-tags, end-tags, and empty tags.
+#SCE_UDL_M_ATTRNAME
+#    Attribute names in start-tags.
+#SCE_UDL_M_OPERATOR
+#    Operator characters, which is essentially just the '=' in attribute assignments in start-tags.
+#SCE_UDL_M_STAGC
+#    Start-tag-close character (">")
+#SCE_UDL_M_EMP_TAGC
+#    Tag-close sequence for an empty start-tag ("/>")
+#SCE_UDL_M_STRING
+#    String attribute values in start-tags
+#SCE_UDL_M_ETAGO
+#    End-tag-open character ("</")
+#SCE_UDL_M_ETAGC
+#    End-tag-close character (">"). Distinguished from an "STAGC" only by context.
+#SCE_UDL_M_ENTITY
+#    A complete entity reference, from the leading "&" through the closing ";".
+#SCE_UDL_M_PI
+#    Processing instructions, including the leading XML declaration, from the leading "<?" through the closing "?>".
+#SCE_UDL_M_CDATA
+#    CDATA marked sections.
+#SCE_UDL_M_COMMENT
+#    SGML comments.
+
 state IN_M_WIKI_START
 /^/ : => in_wiki_default_start_of_line
 /./: redo, => in_wiki_default_on_line

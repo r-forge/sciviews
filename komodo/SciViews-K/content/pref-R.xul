@@ -233,6 +233,12 @@
 							tooltip="Currently only local connection is allowed"
 							disabled="false"/>
 					</row>
+					<row align="center">
+						<label value="Page server port #:" control="sciviews.r.page.port" />
+						<textbox id="sciviews.r.page.port" pref="true" width="50" />
+						<label value=" " />
+						<label value=" " />
+					</row>
 				</rows>
 			</grid>
 			

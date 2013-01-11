@@ -516,6 +516,15 @@ function OnPreferencePageOK (prefset) {
 			prefset.setDoublePref("sciviews.r.port", rPort);
 		}
 		// TODO: shouldn't we test for rPort too?
+		var rPagePort = parseInt(document
+			.getElementById('sciviews.r.page.port').value);
+		// Allow for both a long or a double for sciviews.r.page.port
+		try {
+			prefset.setLongPref("sciviews.r.page.port", rPagePort);
+		} catch (e) {
+			prefset.setDoublePref("sciviews.r.page.port", rPagePort);
+		}
+		// TODO: shouldn't we test for rPagePort too?
 		// Check if selected item is different from current sv.clientType
 		// and if R is running
 		if (rType != sv.clientType && sv.r.test()) {
