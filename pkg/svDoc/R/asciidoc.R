@@ -97,7 +97,7 @@ svDocToRnw <- function (svDocFile, RnwFile, encoding)
 }
 
 ## TODO: use figs.dir!!!
-svDocConvert <- function (svDocFile, theme, format, show.it, figs.dir,
+svDocRender <- function (svDocFile, theme, format, show.it, figs.dir,
 keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 {
 	## If svDocFile is missing, try to get it from option or the command line
@@ -128,6 +128,7 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	}
 	
 	## If format is missing, try getting it from options(), or assume "html"
+	## TODO: get it from the document itself!!!
 	if (missing(format)) format <- getOption("svDoc.format", "html")
 	## The resulting file extension depends on the format used
 	## Note that EndFile is always at same location as TxtFile
@@ -280,7 +281,7 @@ render... <- function (svDocFile, encoding)
 	## Check svDocFile
 	if (missing(svDocFile) || !length(svDocFile)) stop("No file provided")
 	if (!file.exists(svDocFile)) stop("svDocFile not found (", svDocFile, ")")
-	svocFile <- normalizePath(svDocFile)
+	svDocFile <- normalizePath(svDocFile)
 	
 	## Get encoding
 	if (missing(encoding)) encoding <- getOption("svDoc.encoding", "UTF-8")	
@@ -305,7 +306,18 @@ render... <- function (svDocFile, encoding)
 	oencoding <- options(svDoc.encoding = encoding)$svDoc.encoding
 	on.exit(options(svDoc.file = ofile, encoding = oencoding))
 	
-	## Run that command
-	cmd <- try(parse(text = cmdNoQuotes))
-	if (!inherits(cmd, "try-error")) eval(cmd, envir = parent.frame())
+	## If the command is me (svDoc::render...), then call svDocRender()
+	if (cmdNoQuotes == "svDoc::render...") {
+		svDocRender()
+	} else {
+		## Run that command, first replacing svDoc::render... by svDocRender
+		cmdNoQuotes <- gsub("svDoc::render\\.\\.\\.", "svDoc::svDocRender",
+			cmdNoQuotes)
+		cmd <- try(parse(text = cmdNoQuotes))
+		if (!inherits(cmd, "try-error")) eval(cmd, envir = parent.frame())
+	}
 }
+
+class(render...) <- c("renderer", "function")
+
+print.renderer <- function (x, ...) unclass(x)()

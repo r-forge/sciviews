@@ -3,7 +3,7 @@
 header <- function (title, author = NULL, email = NULL, revnumber = NULL,
 revdate = NULL, revremark = NULL, copyright = "cc-by", encoding = "UTF-8",
 lang = "en", pagetitle = NULL, description = "SciViews document", keywords = NULL,
-theme = "sciviews", max.width = 640, width = NULL,
+format = NULL, theme = "sciviews", max.width = 640, width = NULL,
 toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 2,
 numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
 align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
@@ -22,7 +22,7 @@ par(col.lab = "#434366", col.main = "#434366"))) }
 	
 	## Title must be a single string and start with '= '
 	if (length(title)) header <- paste0(as.character(title)[1], "\n")
-	if (substring("= ", 1, 2) != "= ") header <- paste("=", header)
+	if (substring(header, 1, 2) != "= ") header <- paste("=", header)
 	
 	## Idem for author, but allow several names
 	if (length(author)) {
@@ -72,6 +72,7 @@ par(col.lab = "#434366", col.main = "#434366"))) }
 	header <- asciiAttr(header, "title", pagetitle)
 	header <- asciiAttr(header, "description", description)
 	header <- asciiAttr(header, "keywords", keywords)
+	header <- asciiAttr(header, "format", format)
 	header <- asciiAttr(header, "theme", theme)
 	header <- asciiAttr(header, "max-width", max.width)
 	header <- asciiAttr(header, "width", width)
