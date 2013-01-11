@@ -156,12 +156,16 @@ div.content + div.title {
 div.sidebarblock > div.content {
   background: #ffffee;
   border: 1px solid silver;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
   padding: 0.5em;
 }
 
 div.listingblock > div.content {
   border: 1px solid silver;
   background: #f4f4f4;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
   padding: 0.5em;
 }
 
@@ -343,7 +347,7 @@ body {
   font-family:  "Ubuntu Mono", Consolas, "Andale Mono", "Courier New", monospace;
   color: #004400;
   max-width: 50em;
-  font-size: 1.1em;
+  font-size: 1.1em !important;
   line-height: 1.2em;
 }
 

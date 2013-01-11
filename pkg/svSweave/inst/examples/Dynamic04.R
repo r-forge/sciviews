@@ -1,6 +1,6 @@
-#! /usr/bin/Rscript -e 'svSweave::RdocConvert()'
-svSweave::RdocHeader("Dynamic R document - Miles Per Gallon", toc = "none")
-!"
+#! /usr/bin/Rscript -e svDoc::render...
+svDoc::header("Dynamic R document - Miles Per Gallon")
+!!"
 <<server, eval = FALSE, echo = FALSE>>="
 require(datasets)
 
@@ -31,7 +31,7 @@ dynamicServer({
             outline = input$outliers, col = "cornsilk")
 	})
 })
-!"
+!!"
 <<ui, echo = FALSE, results = ascii>>="
 ## What to display in dynamic mode?
 asciiDynamic({
@@ -52,6 +52,6 @@ asciiDynamic({
 ## What to display in static mode?
 asciiStatic(uiP(strong(
 	"This application works only in dynamic mode through the shiny server!")))
-!"
+!!"
 NOTE: //This is a reimplementation of **`04_mpg'** shiny example as a **SciViews R script**.//
 <<>>="

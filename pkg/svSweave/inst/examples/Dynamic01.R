@@ -1,6 +1,6 @@
-#! /usr/bin/Rscript -e 'svSweave::RdocConvert()'
-svSweave::RdocHeader("Dynamic R document - Hello Shiny!")
-!"
+#! /usr/bin/Rscript -e svDoc::render...
+svDoc::header("Dynamic R document - Hello Shiny!")
+!!"
 <<server, eval = FALSE, echo = FALSE>>="
 ## The code to generate our dynamic elements on the page
 dynamicServer({
@@ -14,10 +14,10 @@ dynamicServer({
 	output$distPlot <- dynamicPlot({
         ## Generate an rnorm distribution and plot it
 		dist <- rnorm(input$obs)
-		hist(dist, col = "cornsilk")
+		hist(dist, col = "red") #"cornsilk")
 	})  
 })
-!"
+!!"
 <<ui, echo = FALSE, results = ascii>>="
 ## What to display in dynamic mode?
 asciiDynamic({
@@ -31,6 +31,6 @@ asciiDynamic({
 ## What to display in static mode?
 asciiStatic(uiP(strong(
 	"This application works only in dynamic mode through the shiny server!")))
-!"
+!!"
 NOTE: //This is a reimplementation of **`01_hello'** shiny example as a **SciViews R script**.//
 <<>>="

@@ -5,7 +5,7 @@
 * Slight reworking of the Asciidoc-related function RdocXXX(). svBuild() is
   renamed makeRdoc() to be more explicit.
 
-* Addition of RdocHeader() function that creates an Asciidoc header.
+* Addition of header() function that creates an Asciidoc header.
 
 * Addition of dynamic R document features, using a customized shiny engine.
 

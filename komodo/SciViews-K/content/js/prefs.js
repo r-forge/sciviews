@@ -35,6 +35,7 @@ if (sv.prefs === undefined) sv.prefs = {};
 		"sciviews.ko.port": 7052,
 		"sciviews.r.type": "http",
 		"sciviews.r.port": 8888,
+		"sciviews.r.page.port": 7680,
 		"sciviews.r.host": "127.0.0.1",
 		"sciviews.r.interpreter": "",
 		"sciviews.r.args": "--quiet",

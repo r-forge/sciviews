@@ -1,19 +1,19 @@
-\name{RdocHeader}
-\alias{RdocHeader}
+\name{header}
+\alias{header}
 
-\title{ Create an Rdoc header to be processed with Asciidoc }
+\title{ Create a svDoc header to be processed with Asciidoc }
 \description{
-  SciViews R docs have a couple of obligatory first lines. After one line
+  SciViews docs have a couple of obligatory first lines. After one line
   specifying how to process the document if it is made executables
-  (\code{#! /usr/bin/Rscript -e 'svSweave::makeRdoc()'}), one must call
+  (\code{#! /usr/bin/Rscript -e svDoc::render...}), one must call
   \code{Rdoc()} to create a correct header to be processed by Asciidoc and
   Sweave. Usually, you follow this instruction by \code{require(SciViews)},
-  which you need to deal with doc chunks (\code{!"... !<<>>="}), and you start
+  which you need to deal with doc chunks (\code{!!"... !<<>>="}), and you start
   then the document with a doc chunk (usually with the abstract). See example.
 }
 
 \usage{
-RdocHeader(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
+header(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
     revremark = NULL, copyright = "cc-by", encoding = "UTF-8", lang = "en",
     pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
     theme = "SciViews", max.width = 640, width = NULL,
@@ -26,7 +26,7 @@ RdocHeader(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
 }
 
 \arguments{
-  \item{title}{ a character string with the title of your SciViews Rdoc. If you
+  \item{title}{ a character string with the title of your SciViews doc. If you
     want a document with no title, indicate \code{NULL} }
   \item{author}{ a character string with the name of the author. You can specify
     first [middle] [last], and each item cannot contain spaces (replace them
@@ -35,9 +35,9 @@ RdocHeader(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
     \code{NULL} for no email to be displayed). Note also that, if author is not
     provided, email will never be displayed. }
   \item{revnumber}{ a character string with the revision number of your SciViews
-    Rdoc. If \code{NULL}, it is omitted. }
+    doc. If \code{NULL}, it is omitted. }
   \item{revdate}{ a character string with the revision date of your SciViews
-    Rdoc. It must be Month Year format, e.g., \code{January 2013}. From a Date
+    doc. It must be Month Year format, e.g., \code{January 2013}. From a Date
     object, you got the right format using \code{format(myDate, format = '\%B \%Y')}.
     If \code{NULL}, current date is used. }
   \item{revremark}{ a character string with one or more sentences describing the
@@ -45,10 +45,10 @@ RdocHeader(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
   \item{copyright}{ a character string with either a complete copyright like
     cc-by, John Does, 2013, or just the first part (cc-by) and the author and
     year will be appended automatically. If \code{NULL}, it is omitted. }
-  \item{encoding}{ a character string with the encoding of your SciViews Rdoc.
+  \item{encoding}{ a character string with the encoding of your SciViews doc.
     It is not advised to change from the default, UTF-8. Make sure you save
     your document in UTF-8 encoding before you process it! }
-  \item{lang}{ the (main) language used in your SciViews Rdoc. By default, it is
+  \item{lang}{ the (main) language used in your SciViews doc. By default, it is
     English (en), but Asciidoc can also use de, el, es, fr, hu, it, nl, pt, ru
     or uk. }
   \item{pagetitle}{ a character string with the title that should appear in the
@@ -104,7 +104,7 @@ RdocHeader(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
 \seealso{ \code{\link{RdocToRnw}} }
 
 \examples{
-## A minimal Rdoc contained in a string:
+## A minimal svDoc contained in a string:
 ## TODO...
 }
 

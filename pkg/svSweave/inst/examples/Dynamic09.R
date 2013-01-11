@@ -1,6 +1,6 @@
-#! /usr/bin/Rscript -e 'svSweave::RdocConvert()'
-svSweave::RdocHeader("Dynamic R document - CSV Viewer")
-!"
+#! /usr/bin/Rscript -e svDoc::render...
+svDoc::header("Dynamic R document - CSV Viewer")
+!!"
 <<server, eval = FALSE, echo = FALSE>>="
 dynamicServer({
 	output$contents <- dynamicTable({
@@ -21,7 +21,7 @@ dynamicServer({
 			quote = input$quote)
 	})
 })
-!"
+!!"
 <<ui, echo = FALSE, results = ascii>>="
 ## What to display in dynamic mode?
 asciiDynamic({
@@ -57,6 +57,6 @@ asciiDynamic({
 ## What to display in static mode?
 asciiStatic(uiP(strong(
 	"This application works only in dynamic mode through the shiny server!")))
-!"
+!!"
 NOTE: //This is a reimplementation of **`09_upload'** shiny example as a **SciViews R script**.//
 <<>>="

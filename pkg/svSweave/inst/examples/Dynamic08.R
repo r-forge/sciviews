@@ -1,6 +1,6 @@
-#! /usr/bin/Rscript -e 'svSweave::RdocConvert()'
-svSweave::RdocHeader("Dynamic R document - HTML UI", toc = "none")
-!"
+#! /usr/bin/Rscript -e svDoc::render...
+svDoc::header("Dynamic R document - HTML UI")
+!!"
 <<server, eval = FALSE, echo = FALSE>>="
 ## Define server logic for random distribution application
 dynamicServer({
@@ -40,7 +40,7 @@ dynamicServer({
 		data.frame(x = data())
 	})
 })
-!"
+!!"
 <<ui, echo = FALSE, results = ascii>>="
 ## We can completely define the UI in HTML inside a passthrough block
 ## This allows us the see how input and output widgets are defined in the page
@@ -70,6 +70,6 @@ cat('
 	<div id="table" class="shiny-html-output"></div>
 +++++++++++
 ')
-!"
+!!"
 NOTE: //This is a reimplementation of **`08_html'** shiny example as a **SciViews R script**.//
 <<>>="

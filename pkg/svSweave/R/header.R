@@ -1,6 +1,6 @@
 ## Create an Asciidoc header according to these items
 
-RdocHeader <- function (title, author = NULL, email = NULL, revnumber = NULL,
+header <- function (title, author = NULL, email = NULL, revnumber = NULL,
 revdate = NULL, revremark = NULL, copyright = "cc-by", encoding = "UTF-8",
 lang = "en", pagetitle = NULL, description = "SciViews Rdoc", keywords = NULL,
 theme = "SciViews", max.width = 640, width = NULL,
@@ -20,8 +20,9 @@ par(col.lab = "#434366", col.main = "#434366"))) }
 	## Create the Asciidoc header
 	header <- character(0)
 	
-	## Title must be a single string
-	if (length(title)) header <- paste0("= ", as.character(title)[1], "\n")
+	## Title must be a single string and start with '= '
+	if (length(title)) header <- paste0(as.character(title)[1], "\n")
+	if (substring("= ", 1, 2) != "= ") header <- paste("=", header)
 	
 	## Idem for author, but allow several names
 	if (length(author)) {
@@ -31,7 +32,7 @@ par(col.lab = "#434366", col.main = "#434366"))) }
 		if (length(email)) {
 			email <- as.character(email)[1]
 			if (!grepl("^.+@.+$", email))
-				stop("You must provide a correct email address for your Rdoc")
+				stop("You must provide a correct email address for your svDoc")
 			header <- paste0(header, author, " <", email, ">\n")
 		} else {
 			header <- paste0(header, author, "\n")	
@@ -100,7 +101,7 @@ par(col.lab = "#434366", col.main = "#434366"))) }
 	
 	## Run SweaveInit now
 	SweaveInit
-	## More initialization (make sure svSweave is attached)
+	## More initialization (make sure svDoc and SciViews are attached)
 	req <- base::require
 	req("svSweave", quietly = TRUE, warn.conflicts = FALSE)
 	
