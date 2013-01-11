@@ -1,8 +1,9 @@
 \name{asciidoc}
 \alias{svDocToRnw}
-\alias{svDocConvert}
+\alias{svDocRender}
 \alias{svDocThemes}
 \alias{render...}
+\alias{print.renderer}
 
 \title{ Transform SciViews docs into R noweb or HTML files }
 \description{
@@ -14,10 +15,11 @@
 
 \usage{
 svDocToRnw(svDocFile, RnwFile, encoding)
-svDocConvert(svDocFile, theme, format, show.it, figs.dir, keep.RnwFile,
+svDocRender(svDocFile, theme, format, show.it, figs.dir, keep.RnwFile,
     keep.TxtFile, encoding, asciidoc)
 svDocThemes()
 render...(svDocFile, encoding)
+\method{print}{renderer}(x, \dots)
 }
 
 \arguments{
@@ -43,14 +45,20 @@ render...(svDocFile, encoding)
     end? }
   \item{asciidoc}{ path to the asciidoc Python script; By default, the version
     included in this package is used. }
+  \item{x}{ a renderer object. }
+  \item{\dots}{ further arguments passed to the \code{print()} method (not used
+    yet). }
 }
 
 \value{
   The text of the R noweb data is returned invisibly by \code{svDocToRnw()}.
-  \code{NULL} is returned by \code{svDocConvert()} (this function is invoked for
+  \code{NULL} is returned by \code{svDocRender()} (this function is invoked for
   its side effect). \code{svDocThemes()} returns the list of themes
   available for your HTML documents. Finally, \code{render...()} is a convenient
-  function to automatically build a SciViews document.
+  function to automatically build a SciViews document. It is also a renderer
+  object with a \code{print()} method that indeed runs it. So, you can type
+  just \code{render...} and it has the same effect as \code{render...()} at the
+  prompt or as a command to Rscript (useful to simplify scripting of svDoc).
 }
 
 \details{

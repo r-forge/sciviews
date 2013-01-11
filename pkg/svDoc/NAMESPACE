@@ -3,6 +3,8 @@ importFrom(svMisc, existsTemp)
 
 export(header,
        render...,
+       svDocRender,
        svDocToRnw,
-       svDocConvert,
        svDocThemes)
+
+S3method(print, renderer)

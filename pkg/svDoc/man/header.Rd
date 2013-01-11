@@ -16,7 +16,7 @@
 header(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
     revremark = NULL, copyright = "cc-by", encoding = "UTF-8", lang = "en",
     pagetitle = NULL, description = "SciViews document", keywords = NULL,
-    theme = "sciviews", max.width = 640, width = NULL,
+    format = NULL, theme = "sciviews", max.width = 640, width = NULL,
     toc = c("top", "side", "manual", "none"), toc.title = NULL, toclevels = 2,
     numbered = TRUE, data.uri = TRUE, frame = "topbot", grid = "rows",
     align = "center", halign = "center", pygments = FALSE, slidefontsizeadjust = 0,
@@ -57,7 +57,11 @@ header(title, author = NULL, email = NULL, revnumber = NULL, revdate = NULL,
     to use in the head section of the HTML document. If \code{NULL}, it is
     omitted. }
   \item{keywords}{ a character string with one or more keywords to use in the
-    head section of the HTML document. If \code{NULL}, it is omitted. } 
+    head section of the HTML document. If \code{NULL}, it is omitted. }
+  \item{format}{ export format to use. Either \code{"html"}, \code{"html4"},
+    \code{"html5"}, \code{"slidy"}, \code{"wordpress"}, \code{"docbook"},
+    \code{"docbook45"}, or \code{"latex"}
+    (see the AsciiDoc man page). }
   \item{theme}{ the theme to use with the Asciidoc HTML file. By default, it is
     \code{"SciViews"}. }
   \item{max.width}{ the maximum width of the page, in pixels or in percent.
