@@ -166,7 +166,7 @@ file.encoding = "", template = NULL, replace = FALSE, wait = FALSE)
 			Sys.sleep(0.3)         # Wait for 0.3 sec
 		}
 	}
-	return(invisible(editor))
+	invisible(editor)
 } 
 
 .fileEditRgui <- function (file, title = file, wait = FALSE) 
@@ -202,5 +202,5 @@ file.encoding = "", template = NULL, replace = FALSE, wait = FALSE)
 			Sys.sleep(0.3)         # Wait for 0.3 sec
 	}
 
-	return(invisible(editor))
+	invisible(editor)
 } 

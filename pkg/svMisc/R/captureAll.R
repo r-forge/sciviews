@@ -1,7 +1,8 @@
 ## Inspired by 'capture.output' and utils:::.try_silent
 ## Requires: R >= 2.13.0 [??]
-`captureAll` <- function (expr, split = TRUE, echo = TRUE, file = NULL,
-markStdErr = FALSE) {
+captureAll <- function (expr, split = TRUE, echo = TRUE, file = NULL,
+markStdErr = FALSE)
+{
 	if (!is.expression(expr))
 		if (is.na(expr)) return(NA) else
 		stop("expr must be an expression or NA")

@@ -5,8 +5,9 @@
 	return(parseText(text))
 }
 
-`parseText` <- function (text, firstline = 1, srcfilename = NULL,
-encoding = "unknown") {
+parseText <- function (text, firstline = 1, srcfilename = NULL,
+encoding = "unknown")
+{
 	## Parse R instructions provided as a string and return the expression if it
 	## is correct, or a 'try-error' object if it is an incorrect code, or NA if
 	## the (last) instruction is incomplete
@@ -23,14 +24,12 @@ encoding = "unknown") {
 		## Check if this is incomplete code
 		msg <- conditionMessage(res)
 		
+		## Incomplete string
+		if (regexpr(gettext("INCOMPLETE_STRING", domain = "R"), msg) > 0)
+			return(NA)
+		## Incomplete instruction
 		if (regexpr(gettext("end of input", domain = "R"), msg) > 0)
 			return(NA)	
-		## TODO: this is from SciViews-K-dev,... but does not seem to work?!
-		#rxUEOI <- sprintf(gsub("%d", "\\\\d+", gettext("%s%d:%d: %s",
-		#	domain = "R")), if (getOption("keep.source")) "<text>:" else "",
-		#	gettextf("unexpected %s", gettext("end of input", domain = "R"),
-		#	domain = "R"))
-		#if (regexpr(rxUEOI, msg, perl = TRUE) == 1) return(NA)
 		
 		## This should be incorrect R code
 		## Rework the message a little bit... keep line:col position in front
@@ -63,5 +62,5 @@ encoding = "unknown") {
 		attr(res, 'error') <- err
 	}
 
-    return(res)
+    res
 }

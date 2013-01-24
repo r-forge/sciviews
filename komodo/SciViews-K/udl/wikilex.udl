@@ -75,7 +75,7 @@ state in_wiki_default_start_of_line:
 '##': paint(upto, M_CDATA), paint(include, M_COMMENT), => in_wiki_have_comment
 
 # This is for the item list
-'- ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+# NO'- ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '* ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '*** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
@@ -88,7 +88,7 @@ state in_wiki_default_start_of_line:
 '... ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '.... ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '..... ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
-/[1-9]\. /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/[1-9][0-9]?\. /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 /[a-z]\. /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 /[A-Z]\. /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 /[ivx]+\) /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
@@ -126,9 +126,7 @@ state in_wiki_default_on_line:
 # Line break with +
 / \+$/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_start_of_line
 /$/: => in_wiki_default_start_of_line
-# We don't want to transit to italic stage for URLs like http://xxx
-"://": #stay
-"//" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_italic
+",," : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_italic
 "**" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_bold
 ## TODO: use a different language here... may be latex or latexequation?
 "+++$$" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_equation
@@ -193,10 +191,9 @@ state in_wiki_have_comment:
 #{{{ in-line things
 state in_wiki_italic:
 # We don't want to transit from italic stage for URLs like http://xxx
-"://": #stay
-/!\/+/: #stay
+/!,,/: #stay
 ## TODO: allow for other in-line things inside this!
-"//" : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
+",," : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
 state in_wiki_bold:
 /!\**/: #stay

@@ -20,5 +20,5 @@ browse = TRUE, msg = browse, ...)
 			cat(gettext("The results page should open in your browser shortly\n"))
 		}
 	}
-	return(invisible(searchURL))
+	invisible(searchURL)
 }

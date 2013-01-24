@@ -6,7 +6,7 @@ addItems <- function (x, y, use.names = TRUE, replace = TRUE)
 	} else {
 		res <- sort(unique(res))
 	}
-	return(res)
+	res
 }
 
 addActions <- function (obj = ".svActions", text = NULL, code = NULL,
@@ -36,7 +36,7 @@ state = NULL, options = NULL, replace = TRUE)
 
 	## Reassign the modified values
 	assignTemp(obj, dat)
-	return(invisible(dat))
+	invisible(dat)
 }
 
 addIcons <- function (obj = ".svIcons", icons, replace = TRUE)
@@ -61,7 +61,7 @@ addIcons <- function (obj = ".svIcons", icons, replace = TRUE)
 
 	## Reassign the modified values
 	assignTemp(obj, icn)
-	return(invisible(icn))
+	invisible(icn)
 }
 
 addMethods <- function (methods)
@@ -70,5 +70,5 @@ addMethods <- function (methods)
 	met <- getOption("svGUI.methods")
 	if (!is.null(met)) methods <- addItems(met, methods, use.names = FALSE)
 	options(svGUI.methods = sort(methods))
-	return(invisible(methods))
+	invisible(methods)
 }

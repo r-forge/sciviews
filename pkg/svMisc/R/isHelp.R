@@ -16,6 +16,6 @@ isHelp <- function (topic, package = NULL, lib.loc = NULL)
     encoding <- "UTF-8"
     tools::Rd2ex(utils:::.getHelpFile(file), tf)
     if (!file.exists(tf)) {
-        return(c(help = TRUE, example = FALSE))
-    } else return(c(help = TRUE, example = TRUE))
+        c(help = TRUE, example = FALSE)
+    } else c(help = TRUE, example = TRUE)
 }

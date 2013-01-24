@@ -2,7 +2,7 @@ clipsource <- function (primary = TRUE, ...)
 {
 	## Deprecated, in favor of sourceClipboard
 	.Deprecated("sourceClipboard")
-	return(sourceClipboard(primary = primary, ...))
+	sourceClipboard(primary = primary, ...)
 }
 
 sourceClipboard <- function (primary = TRUE, ...)
@@ -22,6 +22,5 @@ sourceClipboard <- function (primary = TRUE, ...)
 	}
 	on.exit(close(data))
 	## Invoke source() with the data from the clipboard
-	res <- source(data, ...)
-	return(invisible(res))
+	invisible(source(data, ...))
 }

@@ -7,5 +7,5 @@ isSDI <- function ()
 	# First, is it Rgui?
 	if (!isRgui()) return(FALSE)
     # RGui SDI mode: returns "R Console", in MDI mode: returns "RGui"
-    if (getIdentification() == "R Console") return(TRUE) else return(FALSE)
+    if (getIdentification() == "R Console") TRUE else FALSE
 }

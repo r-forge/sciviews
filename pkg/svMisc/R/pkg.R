@@ -4,6 +4,7 @@ r <- function (...) {
 	return(pkg(...))
 }
 
+## TODO: name this package() instead???
 pkg <- function (..., warn = TRUE)
 {
 	## A multiple require proceeding as silently as possible
@@ -28,5 +29,5 @@ pkg <- function (..., warn = TRUE)
 				paste(bads, collapse = ", "), "!\n")
 		}
 	}
-	return(invisible(check))
+	invisible(check)
 }
