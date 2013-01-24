@@ -22,5 +22,5 @@ argsTip <- function (name, only.args = FALSE, width = getOption("width"))
 	## Reflow the tip
 	if (!is.null(width))
 		res <- paste(strwrap(res, width = width, exdent = 4), collapse = "\n")
-	return(res)
+	res
 }

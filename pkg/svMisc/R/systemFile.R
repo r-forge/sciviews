@@ -1,13 +1,13 @@
 Sys.tempdir <- function ()
 {
 	.Deprecated("systemDir")
-	return(systemDir("sysTemp"))
+	systemDir("sysTemp")
 }
 
 Sys.userdir <- function ()
 {
 	.Deprecated("systemDir")
-	return(systemDir("user"))
+	systemDir("user")
 }
 
 systemFile <- function (..., exec = FALSE, package = NULL, lib.loc = NULL)
@@ -27,7 +27,7 @@ systemFile <- function (..., exec = FALSE, package = NULL, lib.loc = NULL)
 		file <- file.path(file)
 		if (file_test("-f", file)) res <- normalizePath(file) else res <- ""
 	}
-	return(res)
+	res
 }
 
 systemDir <- function (..., exec = FALSE, package = NULL, lib.loc = NULL)
@@ -71,5 +71,5 @@ systemDir <- function (..., exec = FALSE, package = NULL, lib.loc = NULL)
 				res[i] <- getDir(which[i])
 		}
 	}
-	return(res)
+	res
 }

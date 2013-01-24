@@ -1,12 +1,5 @@
-batch <- function (  # A test batch process...
-	### This batch process runs fakeProc() on ten files,
-	### we want a complete and readable log of the whole process at the end!
-items,	##<< a list of items to process with \code{fun}
-fun,	##<< the function to be run in batch mode
-...,	##<< further arguments passed to the process function
-show.progress = !isAqua() && !isJGR(),	##<< whether we display a progression message
-suppress.messages = show.progress,	##<< do we suppress simple messages?
-verbose = TRUE)	##<< display start and end messages
+batch <- function (items, fun, ...,	show.progress = !isAqua() && !isJGR(),
+suppress.messages = show.progress, verbose = TRUE)
 {
 	if (!is.function(fun)) stop("'fun' must be a function")
 	
@@ -27,7 +20,7 @@ verbose = TRUE)	##<< display start and end messages
 	if (!isTRUE(as.logical(show.progress)))
 		progress <- function (...) return() # Fake progress() function
 	if (!isTRUE(as.logical(suppress.messages)))
-		suppressMessages <- function (x) return(x) # Fake suppressMessages() function
+		suppressMessages <- function (x) return(x) # Fake suppressMessages() fun
 	
 	## Run fun() for each item
 	flush.console()
@@ -43,7 +36,5 @@ verbose = TRUE)	##<< display start and end messages
 	## Record .last.batch variable in TempEnv
 	lastBatch <- structure(sum(ok, na.rm = TRUE) == n, items = items, ok = ok)
 	assignTemp(".last.batch", lastBatch)
-	return(invisible(lastBatch))
-	### returns invisibly \code{TRUE} if all files were processed succesfully,
-	### otherwise, return \code{FALSE} invisibly
+	invisible(lastBatch)
 }

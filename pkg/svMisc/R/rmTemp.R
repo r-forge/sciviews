@@ -11,5 +11,5 @@ rmTemp <- function (x)
 			envir = TempEnv()), silent = TRUE)
 		if (!exst || inherits(res0, "try-error")) res[i] <- FALSE
 	}
-	return(invisible(res))
+	invisible(res)
 }

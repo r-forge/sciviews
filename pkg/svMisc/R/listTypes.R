@@ -23,5 +23,5 @@ listTypes <- function (method, class = "default", strict = FALSE)
 		## Sort the final list and eliminate duplicated items
 		List <- sort(unique(List))
 	}
-	return(List)
+	List
 }

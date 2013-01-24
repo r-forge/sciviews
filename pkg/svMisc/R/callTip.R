@@ -63,5 +63,5 @@ description = FALSE, methods = FALSE, width = getOption("width"))
 				sep = "")
 		}
 	}
-	return(ctip)
+	ctip
 }

@@ -1,5 +1,45 @@
 = svDoc - To do list
 
+* Add and support a syntax for line break (and page break?)
+
+* Check styles for paragraphs
+
+* Change syntax for onm code
+
+* Use only one # at the beginning of a line for wiki comments???
+
+* Numbered figures, tables, equations and listings
+
+* Check syntax highlighting for image:filename[caption] and image::filename[caption]
+
+* Check target, link, and link to external files for syntax
+
+* Support for equal signs at the end of titles too
+
+* Support for block elements, including listing, litera, sidebar, quote, example
+  with styles
+  
+* Full support for table formatting
+
+* &&&1+1&&& for inline R expression \Sexpr{...}.
+
+* Support for special inline stiles like variable, code, package, command,
+   menu item, file, program
+
+* Support for replacepent for R, SciViews, LyX, LaTeX, ...
+
+* Support for level 1 & 2 undelined titles (=== and ---, respectively)
+
+* Support for horizontal line => ???
+
+* Support for include::filename[]
+
+* Something else for italic than //italic//
+
+* Support for ((footnote)) instead of footnote:[footnote text]
+
+* Check support for labelled lists using ::, ;;, :::, :::: (:::::)?
+
 * Use format provided by the svDoc header, if not provided
 
 * Allow compiling docs without #! and/or svDoc::header()!

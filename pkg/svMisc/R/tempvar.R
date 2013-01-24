@@ -5,5 +5,5 @@ tempvar <- function (pattern = ".var")
 		var <- paste(pattern, as.integer(runif(1) * 100000), sep = "")
 		if (!exists(var, where = 1, inherits = TRUE)) break()
 	}
-	return(var)
+	var
 }

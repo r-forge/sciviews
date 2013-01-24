@@ -9,41 +9,41 @@ guiCmd <- function (command, ...)
 guiLoad <- function (...)
 {
 	## Ask the GUI client to select a .Rdata file to load()
-	return(guiCmd("load", ...))
+	guiCmd("load", ...)
 }
 
 guiSource <- function (...)
 {
 	## Ask the GUI client to select a .R file to source()
-	return(guiCmd("source", ...))  # TODO: should use sys.source() here
+	guiCmd("source", ...)  # TODO: should use sys.source() here
 }
 
 guiSave <- function (...)
 {
 	## Ask the GUI client for a file where to save some data
-	return(guiCmd("save", ...))
+	guiCmd("save", ...)
 }
 
 guiImport <- function (...)
 {
 	## Ask the client to display a dialog for importing some data
-	return(guiCmd("import", ...))
+	guiCmd("import", ...)
 }
 
 guiExport <- function (...)
 {
 	## Ask the client to display a dialog for exporting some data
-	return(guiCmd("export", ...))
+	guiCmd("export", ...)
 }
 
 guiReport <- function (...)
 {
 	## Ask the client to display a dialog for reporting data (send a view...)
-	return(guiCmd("report", ...))
+	guiCmd("report", ...)
 }
 
 guiSetwd <- function (...)
 {
 	## Ask the GUI client to select a directory to set as active
-	return(guiCmd("setwd", ...))
+	guiCmd("setwd", ...)
 }

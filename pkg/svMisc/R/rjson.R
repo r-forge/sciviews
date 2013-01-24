@@ -121,7 +121,7 @@ toRjson <- function (x, attributes = FALSE)
 	#res <- sub("^list\\(", "hash(", res)
 	
 	## Return  the no quoted results
-	return(noquote(res))
+	noquote(res)
 }
 
 evalRjson <- function (rjson) {
@@ -142,7 +142,7 @@ evalRjson <- function (rjson) {
 	## argument (being the RJSOn object converted to R)
 	
 	## We need first to convert all ':=' into '='
-	return(eval(parse(text = gsub(":=", "=", rjson, fixed = TRUE))))
+	eval(parse(text = gsub(":=", "=", rjson, fixed = TRUE)))
 }
 
 # Simple JSON for lists containing character strings
@@ -159,5 +159,5 @@ listToJson <- function (x) {
 				quote = '"'), ":", x, sep = ""), collapse = ","), "}", sep = "")
 		}
 	}
-	return(x)
+	x
 }

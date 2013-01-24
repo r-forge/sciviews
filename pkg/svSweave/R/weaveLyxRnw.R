@@ -11,20 +11,20 @@ useFancyQuotes = TRUE, ...)
 
 	## Switch encoding (we do work with UTF-8 by default)
 	oenc <- options(encoding = encoding)
-	on.exit(options(encooding = oenc))
+	on.exit(options(oenc))
 	Sys.setlocale("LC_CTYPE", "UTF-8")
 
 	## By default, use fancy quotes
 	ofc <- options(useFancyQuotes = useFancyQuotes)
-	on.exit(options(useFancyQuotes = ofc), add = TRUE)
+	on.exit(options(ofc), add = TRUE)
 	
 	## Set default width for text to a reasonable value
 	owidth <- options(width = width)
-	on.exit(options(width = owidth), add = TRUE)
+	on.exit(options(owidth), add = TRUE)
 
 	## Issue warnings immediately
 	owarn <- options(warn = 1)
-	on.exit(options(warn = owarn), add = TRUE)
+	on.exit(options(owarn), add = TRUE)
 
 	## Process 'file'
 	if (!file.exists(file)) {
@@ -59,20 +59,20 @@ useFancyQuotes = TRUE, ...)
 
 	## Switch encoding (we do work with UTF-8 by default)
 	oenc <- options(encoding = encoding)
-	on.exit(options(encooding = oenc))
+	on.exit(options(oenc))
 	Sys.setlocale("LC_CTYPE", "UTF-8")
 
 	## By default, use fancy quotes
 	ofc <- options(useFancyQuotes = useFancyQuotes)
-	on.exit(options(useFancyQuotes = ofc), add = TRUE)
+	on.exit(options(ofc), add = TRUE)
 	
 	## Set default width for text to a reasonable value
 	owidth <- options(width = width)
-	on.exit(options(width = owidth), add = TRUE)
+	on.exit(options(owidth), add = TRUE)
 
 	## Issue warnings immediately
 	owarn <- options(warn = 1)
-	on.exit(options(warn = owarn), add = TRUE)
+	on.exit(options(owarn), add = TRUE)
 
 	## Process 'file'
 	if (!file.exists(file)) {

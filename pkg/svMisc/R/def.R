@@ -1,12 +1,12 @@
 def <- function (value, default = "", mode = "character", length.out = NULL)
 {
 	## Ensure we got a value of a given mode, and if not, use default
-	## If length.out is provided, make sure that the returned vector has that length
-	## (if needed, cut or recycle 'value')
+	## If length.out is provided, make sure that the returned vector has
+	## that length (if needed, cut or recycle 'value')
 
 	## If either NULL or something of length == 0 is in 'value', then,
 	## return default
-	if (is.null(value) || length(value) == 0) value <- default
+	if (!length(value)) value <- default
 
 	## Coerce to mode...
 	res <- switch(as.character(mode[1]),
@@ -26,5 +26,5 @@ def <- function (value, default = "", mode = "character", length.out = NULL)
 			length.out <- round(as.numeric(length.out[1]))
 		res <- rep(res, length.out = length.out)
 	}
-	return(res)
+	res
 }

@@ -123,5 +123,5 @@ pattern = NULL, group = NULL, sep = "\t", path = NULL, regenerate = FALSE)
 	CmdFun <- getTemp(".guiObjBrowse", mode = "function")
     if (!is.null(CmdFun)) CmdFun(id = id, data = Data)
 	## Return the data invisibly
-	return(invisible(Data))
+	invisible(Data)
 }

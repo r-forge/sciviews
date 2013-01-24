@@ -7,5 +7,5 @@ TempEnv <- function ()
         rm(TempEnv)
         pos <- match("TempEnv", search())
     }
-    return(pos.to.env(pos))
+    pos.to.env(pos)
 }

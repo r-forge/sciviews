@@ -163,7 +163,7 @@ write.objList <- function (x, path, sep = "\t", ...)
 		attr(x, "envir"), attr(x, "all.names"), attr(x, "pattern"),
 		attr(x, "group")), file = ParsF, append = FALSE)
 
-	return(invisible(ListF))
+	invisible(ListF)
 }
 
 print.objList <- function (x, sep = NA, eol = "\n",
@@ -196,7 +196,7 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 				eol = eol, quote = FALSE)
 		}
 	}
-	return(invisible(x))
+	invisible(x)
 }
 
 ## Called by objList() when object is provided
@@ -237,7 +237,7 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 	if (!is.null(ret))
 		names(ret) <- c("Name", "Full.name", "Dims/default", "Group", "Class",
 			"Recursive")
-	return(ret)
+	ret
 }
 
 # Called by .lsObj for functions
@@ -271,7 +271,7 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 	}))
 
 	ret <- data.frame(itemnames, fullnames, ret, stringsAsFactors = FALSE)
-	return(ret)
+	ret
 }
 
 ## Called by .lsObj in S4 case
@@ -285,7 +285,7 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 	ret <- t(sapply(itemnames, function (i) .objDescr(slot(obj, i))))
 
 	ret <- data.frame(itemnames, fullnames, ret, stringsAsFactors = FALSE)
-	return(ret)
+	ret
 }
 
 ## Returns a *character* vector with elements: dims, mode, class, rec(ursive)
@@ -293,8 +293,8 @@ header = !attr(x, "all.info"), raw.output = !is.na(sep), ...)
 	d <- dim(x)
 	if (is.null(d)) d <- length(x)
 
-	return(c(dims = paste(d, collapse = "x"),
+	c(dims = paste(d, collapse = "x"),
 		mode = mode(x), class = class(x)[1],
 		rec = mode(x) == "S4" || is.function(x) ||
-		(is.recursive(x) && !is.language(x) && sum(d) != 0)))
+		(is.recursive(x) && !is.language(x) && sum(d) != 0))
 }
