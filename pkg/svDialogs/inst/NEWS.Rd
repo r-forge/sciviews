@@ -4,10 +4,12 @@
 \section{Changes in version 0.9-54}{
 	\itemize{
 		\item{ Dependencies to tcltk and svMisc are eliminated.
-		Consequently, all functions that depend on Tcl/Tk are eliminated
-		too. It concerns \code{guiDlg()}, \code{guiDlgFunction()} and
-		other associated methods or functions. The new \code{dlgForm()}
-		function should be used instead. }
+		    Consequently, all functions that depend on Tcl/Tk are eliminated
+		    too. It concerns \code{guiDlg()}, \code{guiDlgFunction()} and
+		    other associated methods or functions. The new \code{dlgForm()}
+		    function should be used instead. }
+		\item{ Temporary objects are now saved in SciViews:TempEnv instead of
+		    TempEnv. }
 	}
 }
 
