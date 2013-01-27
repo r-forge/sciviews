@@ -23,12 +23,16 @@
 cleanLyxRnw(RnwCon, RnwCon2 = RnwCon, encoding = "UTF-8")
 
 weaveLyxRnw(file, driver = RweaveLatex(), syntax = getOption("SweaveSyntax"),
-    encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
-knitLyxRnw(file, encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
+    encoding = "UTF-8", width = 80, useFancyQuotes = TRUE,
+    logFile = file.path(tempdir(), ".lyxSweave.log"), \dots)
+knitLyxRnw(file, encoding = "UTF-8", width = 80, useFancyQuotes = TRUE,
+    logFile = file.path(tempdir(), ".lyxSweave.log"), \dots)
 
 tangleLyxRnw(file, driver = Rtangle(), syntax = getOption("SweaveSyntax"),
-    encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, annotate = TRUE, \dots)
-purlLyxRnw(file, encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
+    encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, annotate = TRUE,
+    logFile = file.path(tempdir(), ".lyxSweave.log"), \dots)
+purlLyxRnw(file, encoding = "UTF-8", width = 80, useFancyQuotes = TRUE,
+    logFile = file.path(tempdir(), ".lyxSweave.log"), \dots)
 }
 
 \arguments{
@@ -44,17 +48,20 @@ purlLyxRnw(file, encoding = "UTF-8", width = 80, useFancyQuotes = TRUE, \dots)
     string with its name,  see \code{?Sweave} }
   \item{width}{ the width used for outputs, 80 characters by default }
   \item{useFancyQuotes}{ do we use fancy quotes in R outputs? }
-  \item{annotate}{ is the R code extracted from the .Rnw file annotated? } 
+  \item{annotate}{ is the R code extracted from the .Rnw file annotated? }
+  \item{logFile}{ the file to use to log results of weaving/tangling the document }
   \item{\dots}{ further arguments passed to the driver's setup function of
     \code{Sweave()} or \code{Stangle()} }
 }
 
 \value{
-  \code{NULL}, these functions are invoked for their side effects. The function
-  \code{weaveLyxRnw()} uses the standard Sweave driver, while
-  \code{knitLyxRnw()} does the same, but using the knitr driver. Similarly,
-  \code{purlLyxRnw()} is the knitr counterpart of \code{tangleLyxRnw()} standard
-  tangling function.
+  For \code{cleanLyxRnw()}, a list for Sweave options found in the document;
+  \code{NULL} for the other functions: these functions are invoked for their
+  side effects. The function \code{weaveLyxRnw()} uses the standard Sweave
+  driver (but it uses knitr for LyX documents that use the SciViews Knitr
+  module), while \code{knitLyxRnw()} does the same, but using the knitr driver.
+  Similarly, \code{purlLyxRnw()} is the knitr counterpart of
+  \code{tangleLyxRnw()} standard tangling function.
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
