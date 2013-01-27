@@ -90,8 +90,8 @@ findGeneric <- utils:::findGeneric
 			type <- "namespace"
 			res <- search()
 			res[!(res %in% c(".GlobalEnv", "package:tcltk", "package:utils",
-				"komodoConnection", "package:methods", "TempEnv", "Autoloads",
-				"package:base"))]
+				"komodoConnection", "package:methods", "SciViews;TempEnv",
+				"Autoloads", "package:base"))]
 	   }, library = {
 			type <- "module"
 			unique(unlist(lapply(.libPaths(), dir), use.names = FALSE))

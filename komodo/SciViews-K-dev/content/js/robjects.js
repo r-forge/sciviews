@@ -145,8 +145,9 @@ sv.rbrowser = {};
 		'formula'];
 
 	// Used in .contextOnShow
-	var nonDetachable = [".GlobalEnv", "TempEnv", "package:svGUI",
-		"package:svMisc", "package:svSocket", "package:svGUI", "package:base"];
+	var nonDetachable = [".GlobalEnv", "SciViews:TempEnv", "tools:RGUI",
+		"package:svGUI", "package:svMisc", "package:svSocket", "package:svGUI",
+		"package:base"];
 
 	// Reference to parent object for private functions
 	var _this = this;
@@ -992,7 +993,7 @@ this.removeSelected = function (doRemove) {
 
 		switch (type) {
 		case "environment":
-			if (name != ".GlobalEnv" && name != "TempEnv")
+			if (name != ".GlobalEnv" && name != "Sciviews:TempEnv")
 				envToDetach.push(name);
 			break;
 		case "object":
@@ -1490,7 +1491,7 @@ this.packageListKeyEvent = function (event) {
 		var listItem = listbox.selectedItem;
 		var pkg = listItem.getAttribute("label");
 
-		if (pkg == ".GlobalEnv" || pkg == "TempEnv") return;
+		if (pkg == ".GlobalEnv" || pkg == "SciViews:TempEnv") return;
 
 		sv.r.evalCallback(
 			'tryCatch(detach("' + pkg.addslashes() +
