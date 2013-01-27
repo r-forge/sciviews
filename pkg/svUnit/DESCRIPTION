@@ -1,7 +1,7 @@
 Package: svUnit
 Type: Package
-Version: 0.7-10
-Date: 2012-03-31
+Version: 0.7-11
+Date: 2013-01-27
 Title: SciViews GUI API - Unit testing
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))

@@ -428,9 +428,9 @@ msg = "")
     pos <-  match("SciViews:TempEnv", search())
     if (is.na(pos)) { # Must create it
         `SciViews:TempEnv` <- list()
-        attach(`Sciviews:TempEnv`, pos = length(search()) - 1)
-        rm(`Sciviews:TempEnv`)
-        pos <- match("Sciviews:TempEnv", search())
+        attach(`SciViews:TempEnv`, pos = length(search()) - 1)
+        rm(`SciViews:TempEnv`)
+        pos <- match("SciViews:TempEnv", search())
     }
     return(pos.to.env(pos))
 }

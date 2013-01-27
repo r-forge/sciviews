@@ -1,5 +1,16 @@
 = svGUI News
 
+== Changes in svGUI 0.9-54
+
+* The package now store temporary data in SciViews:TempEnv instead of TempEnv
+  and it needs svMisc >= 0.9-68.
+
+
+== Changes in svGUI 0.9-53
+
+* Minor tweaking of the internal code.
+
+
 == Changes in svGUI 0.9-52
 
 * R 2.15.0 complains about argument partial match in print.gui():
