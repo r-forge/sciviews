@@ -6,6 +6,8 @@
   that depend on Tcl/Tk are eliminated too. It concerns guiDlg(),
   guiDlgFunction() and other associated methods or functions. The new dlgForm()
   function should be used instead.
+  
+* Temporary objects are now saved in SciViews:TempEnv instead of TempEnv.
 
 
 == Changes in svDialogs 0.9-53
