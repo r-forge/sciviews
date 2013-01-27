@@ -54,8 +54,9 @@ sv.robjects = {};
 		'formula'];
 
 	// Used in .contextOnShow
-	var nonDetachable = [".GlobalEnv", "TempEnv", "package:svKomodo",
-		"package:svMisc", "package:svSocket", "package:svHttp", "package:base"];
+	var nonDetachable = [".GlobalEnv", "SciViews:TempEnv", "tools:RGUI",
+		"package:svKomodo", "package:svMisc", "package:svSocket",
+		"package:svHttp", "package:base"];
 
 	// Reference to parent object for private functions
 	var _this = this;
@@ -1035,7 +1036,7 @@ sv.robjects = {};
 
 			switch (type) {
 			 case "environment":
-				if (name != ".GlobalEnv" && name != "TempEnv")
+				if (name != ".GlobalEnv" && name != "SciViews:TempEnv")
 					envToDetach.push(name);
 				break;
 			 case "object":
@@ -1596,7 +1597,7 @@ sv.robjects = {};
 			var listItem = listbox.selectedItem;
 			var pkg = listItem.getAttribute("label");
 
-			if (pkg == ".GlobalEnv" || pkg == "TempEnv" || pkg == "Autoloads")
+			if (pkg == ".GlobalEnv" || pkg == "SciViews:TempEnv" || pkg == "Autoloads")
 				return;
 
 			sv.r.evalCallback(

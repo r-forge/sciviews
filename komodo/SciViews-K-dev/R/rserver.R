@@ -58,9 +58,9 @@ tcl <- tcltk::tcl
 
 `TempEnv` <- function() {
 	srch <- search()
-    if (is.na(match("TempEnv", srch)))
-        attach(NULL, name = "TempEnv", pos = length(srch) - 1L)
-    as.environment("TempEnv")
+    if (is.na(match("SciViews:TempEnv", srch)))
+        attach(NULL, name = "SciViews:TempEnv", pos = length(srch) - 1L)
+    as.environment("SciViews:TempEnv")
 }
 
 `assignTemp` <- function (x, value, replace.existing = TRUE)
