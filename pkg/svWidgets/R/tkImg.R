@@ -6,7 +6,7 @@ tkImgAdd <- function (file, type = "gif", update = FALSE)
 		stop("Only 'gif' images currently supported!")
 	if (!file.exists(file))
 		stop("File '", file, "' not found!")
-	## Load the image and assign it to an item to the .guiImgs object in TempEnv
+	## Load the image and assign it to an item of .guiImgs in SciViews:TempEnv
 	.guiImgs <- getTemp(".guiImgs")
 	if (is.null(.guiImgs)) {
 		.guiImgs <- list()
@@ -27,7 +27,7 @@ tkImgAdd <- function (file, type = "gif", update = FALSE)
 	tcl("image", "create", "photo", Image, file = file)
 
 	.guiImgs[[Iname]] <- Image
-	## Reassign .guiImgs to TempEnv
+	## Reassign .guiImgs to SciViews:TempEnv
 	assignTemp(".guiImgs", .guiImgs)
 	return(invisible(Iname))
 }
@@ -43,7 +43,7 @@ tkImgDel <- function (image)
 	tcl("image", "delete", Image)
 	## Eliminate it from the list in .guiImgs
 	.guiImgs[[image]] <- NULL
-	## Reassign .guiImgs to TempEnv
+	## Reassign .guiImgs to SciViews:TempEnv
 	assignTemp(".guiImgs", .guiImgs)
 	## Indicate that the image is actually deleted
 	return(invisible(TRUE))

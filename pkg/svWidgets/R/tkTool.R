@@ -15,7 +15,7 @@ tkToolAdd <- function (toolbar, side = "top")
 	Tname <- basename(toolbar)
 	## Get the name of the parent
 	Pname <- dirname(toolbar)
-	## Look if the parent exists (must be in .guiTools in TempEnv)
+	## Look if the parent exists (must be in .guiTools in SciViews:TempEnv)
 	.guiTools <- getTemp(".guiTools")
 	## Do not create the toolbar if it already exists
 	if (toolbar %in% names(.guiTools))
@@ -55,14 +55,14 @@ tkToolAdd <- function (toolbar, side = "top")
 	} else {
         .guiTools[[Pname]]$Items <- rbind(items, entry)
 	}
-	## Update the TempEnv version of .guiTools
+	## Update the SciViews:TempEnv version of .guiTools
 	assignTemp(".guiTools", .guiTools)
 	return(invisible(toolbar))
 }
 
 tkToolAddItem <- function (toolbar, item, action, image = "", options = "")
 {
-	## Look if the toolbar exists (must be in .guiTools in TempEnv)
+	## Look if the toolbar exists (must be in .guiTools in Sciviews:TempEnv)
 	.guiTools <- getTemp(".guiTools")
 	Tl <- .guiTools[[toolbar]]
 	if (is.null(Tl))
@@ -120,7 +120,7 @@ tkToolAddItem <- function (toolbar, item, action, image = "", options = "")
 		.guiTools[[toolbar]]$Items <- entry
 	else
         .guiTools[[toolbar]]$Items <- rbind(items, entry)
-	## Update the TempEnv version of .guiTools
+	## Update the SciViews:TempEnv version of .guiTools
 	assignTemp(".guiTools", .guiTools)
 	return(invisible(itempath))
 }
@@ -137,7 +137,7 @@ tkToolAddItem <- function (toolbar, item, action, image = "", options = "")
 
 tkToolDelItem <- function (toolbar, item)
 {
-	## Look if the toolbar exists (must be in .guiTools in TempEnv)
+	## Look if the toolbar exists (must be in .guiTools in SciViews:TempEnv)
 	.guiTools <- getTemp(".guiTools")
 	Tl <- .guiTools[[toolbar]]
 	if (is.null(Tl)) return(invisible(FALSE))
@@ -155,7 +155,7 @@ tkToolDelItem <- function (toolbar, item)
 	## Eliminate that entry from .guiTools
 	Items <- Items[-Pos, ]
 	.guiTools[[toolbar]]$Items <- Items
-	## Update the TempEnv version of .guiTools
+	## Update the SciViews:TempEnv version of .guiTools
 	assignTemp(".guiTools", .guiTools)
 	return(invisible(TRUE))
 }
@@ -163,7 +163,7 @@ tkToolDelItem <- function (toolbar, item)
 tkToolDel <- function (toolbar)
 {
 	## Delete a whole toolbar
-	## Look if the toolbar exists (must be in .guiTools in TempEnv)
+	## Look if the toolbar exists (must be in .guiTools in Sciviews:TempEnv)
 	.guiTools <- getTemp(".guiTools")
 	Tl <- .guiTools[[toolbar]]
 	if (is.null(Tl)) return(invisible())
@@ -181,7 +181,7 @@ tkToolDel <- function (toolbar)
 	Pos <- which(Items$name == basename(toolbar))
 	if (length(Pos) > 0) Items <- Items[-Pos, ]
 	.guiTools[[dirname(toolbar)]]$Items <- Items
-	## Update the TempEnv version of .guiTools
+	## Update the SciViews:TempEnv version of .guiTools
 	assignTemp(".guiTools", .guiTools)
 	return(invisible(TRUE))
 }
@@ -189,7 +189,7 @@ tkToolDel <- function (toolbar)
 tkToolChangeItem <- function (toolbar, item, action = "", options = "")
 {
 	## The Tk version of ToolChangeItem()
-	## Look if the toolbar exists (must be in .guiTools in TempEnv)
+	## Look if the toolbar exists (must be in .guiTools in SciViews:TempEnv)
 	.guiTools <- getTemp(".guiTools")
 	Tl <- .guiTools[[toolbar]]
 	if (is.null(Tl)) return(invisible(FALSE))
@@ -219,7 +219,7 @@ tkToolChangeItem <- function (toolbar, item, action = "", options = "")
 		Items$action[Pos] <- action
 	}
 	.guiTools[[toolbar]]$Items <- Items
-	## Update the TempEnv version of .guiTools
+	## Update the SciViews:TempEnv version of .guiTools
 	assignTemp(".guiTools", .guiTools)
 	return(invisible(TRUE))
 }
@@ -227,7 +227,7 @@ tkToolChangeItem <- function (toolbar, item, action = "", options = "")
 tkToolStateItem <- function (toolbar, item, active = TRUE)
 {
 	## The Tk version of ToolStateItem()
-	## Look if the toolbar exists (must be in .guiTools in TempEnv)
+	## Look if the toolbar exists (must be in .guiTools in SciViews:TempEnv)
 	.guiTools <- getTemp(".guiTools")
 	Tl <- .guiTools[[toolbar]]
 	if (is.null(Tl)) return(invisible())
@@ -248,7 +248,7 @@ tkToolStateItem <- function (toolbar, item, active = TRUE)
 tkToolInvoke <- function (toolbar, item)
 {
 	## Given a toolbar and an item in this toolbar, trigger the item action
-	## Look if the toolbar exists (must be in .guiTools in TempEnv)
+	## Look if the toolbar exists (must be in .guiTools in SciViews:TempEnv)
 	.guiTools <- getTemp(".guiTools")
 	Tl <- .guiTools[[toolbar]]
 	if (is.null(Tl)) return(invisible(FALSE))

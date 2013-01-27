@@ -29,7 +29,7 @@ pkgManDescribe <- function (pkgName, print.it = TRUE)
 
 pkgManGetMirrors <- function ()
 {
-	## Cache the list of CRAN mirrors in TempEnv
+	## Cache the list of CRAN mirrors in SciViews:TempEnv
 	tmpVar <- "pkgMan.CRANmirrors"
 	if (existsTemp(tmpVar)) {
 		mirrors <- getTemp(tmpVar)

@@ -1,7 +1,7 @@
 guiCmd <- function (command, ...)
 {
     ## This function sends a command to the GUI client
-    ## The actual code is a custom function named .guiCmd in TempEnv
+    ## The actual code is a custom function named .guiCmd in SciViews:TempEnv
 	CmdFun <- getTemp(".guiCmd", mode = "function")
     if (!is.null(CmdFun)) return(CmdFun(command, ...)) else return(NULL)
 }

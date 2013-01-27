@@ -87,7 +87,7 @@ sep = "\t", path = NULL)
 				objType <- "environment"
 				req <- getOption("required.environments")
 				if (is.null(req))  # Use list of known sensible environments
-					req <- c("TempEnv", "RcmdrEnv", "Autoloads", "tools:RGUI")
+					req <- c("SciViews:TempEnv", "RcmdrEnv", "Autoloads", "tools:RGUI")
 				detachable <- !(envir %in% req)
 				if (detachable) state <- "" else state <- " (d)"
 				objPar <- detachable
@@ -203,7 +203,8 @@ sep = "\t", path = NULL)
 		}
 	}  # Done (menu construction)
 
-	## Possibly call a custom function .objMenu() in TempEnv to finalize the menu
+	## Possibly call a custom function .objMenu() in SciViews:TempEnv
+	## to finalize the menu
 	## Depending on objType, we send something we already calculated to avoid
 	## doing it twice:
 	## objType   -> objPar

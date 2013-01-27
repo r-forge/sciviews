@@ -25,7 +25,7 @@ addMethods(methods)
   \item{use.names}{ use names of items to determine which one is unique,
     otherwise, the selection is done on the items themselves. }
   \item{replace}{ do we replace existing items in 'x'? }
-  \item{obj}{ the name of the object in \code{TempEnv()} to manipulate. }
+  \item{obj}{ the name of the object in \code{SciViews:TempEnv} to manipulate. }
   \item{text}{ the text of actions to add (label on first line, tip on other
     lines). }
   \item{code}{ the R code of actions to add. }

@@ -47,7 +47,8 @@ ImgReadPackage(package, subdir = "gui", type = "gif", imgtype = "tkImage")
 
 \details{
   These functions care about (un)loading image resources. A list of these
-  resources is maintained in '.guiImgs' located in the 'TempEnv' environment.
+  resources is maintained in '.guiImgs' located in the \code{SciViews:TempEnv}
+  environment.
 }
 
 \value{
@@ -56,7 +57,7 @@ ImgReadPackage(package, subdir = "gui", type = "gif", imgtype = "tkImage")
   \code{ImgDel()} returns invisibly \code{TRUE} if the resource is found and
     deleted, \code{FALSE} otherwise.
   \code{ImgNames()} return the list of all images registered in .guiImgs in the
-    'TempEnv' environment.
+    \code{SciViews:TempEnv} environment.
   \code{ImgRead()} and \code{ImgReadPackage()} return invisibly the list of
     image files that are imported as resources.
 }

@@ -101,7 +101,7 @@ function with a 'try-error' class, so that it can be processed by the caller)
 
 * Correction of a bug in the first example of koCmd()
 
-* guiInstall() now creates a hook to koCmd(): .koCmd() in TempEnv environment
+* guiInstall() now creates a hook to koCmd(): .koCmd() in SciViews:TempEnv
 
 
 == Changes in svGUI 0.9-40

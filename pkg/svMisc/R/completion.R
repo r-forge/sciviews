@@ -118,8 +118,8 @@ max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 				} else packs <- .find.multiple(funs)
 				desc.fun <- rep("", length(packs))
 				## Do not try to find description for functions in those envs
-				isPack <- !packs %in% c("", ".GlobalEnv", "TempEnv", "Autoloads",
-					"tools:RGUI")
+				isPack <- !packs %in% c("", ".GlobalEnv", "SciViews:TempEnv",
+					"Autoloads", "tools:RGUI")
 				## The following code is too slow for many function
 				## (it takes 6-7sec for the 1210 base:::XXXX functions)
 				## So, do it only if less than max.fun

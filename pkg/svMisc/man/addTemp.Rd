@@ -3,8 +3,9 @@
 
 \title{ Add data to an item in a temporary list variable }
 \description{
-  The function adds data to an item in a list variable located in TempEnv,
-  an environment dedicated to temporary variables (especially useful for GUIs).
+  The function adds data to an item in a list variable located in
+  SciViews:TempEnv, an environment dedicated to temporary variables (especially
+  useful for GUIs).
 }
 
 \usage{

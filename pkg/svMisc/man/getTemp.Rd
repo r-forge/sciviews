@@ -1,10 +1,10 @@
 \name{getTemp}
 \alias{getTemp}
 
-\title{ Get a temporary variable from the TempEnv environment }
+\title{ Get a temporary variable from the SciViews:TempEnv environment }
 \description{
-  The function gets a variable, or an item in a list variable from TempEnv, an
-  environment dedicated to temporary variables.
+  The function gets a variable, or an item in a list variable from
+  SciViews:TempEnv, an environment dedicated to temporary variables.
 }
 \usage{
 getTemp(x, default = NULL, mode = "any", item = NULL)
@@ -26,7 +26,7 @@ getTemp(x, default = NULL, mode = "any", item = NULL)
 
 \value{
   The content of the variable, of the item, or the default value if the variable
-  or item is not found in TempEnv, or of the wrong mode.
+  or item is not found in SciViews:TempEnv, or of the wrong mode.
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }

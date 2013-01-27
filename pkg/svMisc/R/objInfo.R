@@ -8,7 +8,7 @@ path = NULL)
 	if (is.numeric(envir)) envir <- search()[envir[1]]
 	envir <- as.character(envir)[1]
 
-	## Possibly call a custom function .objInfo() in TempEnv
+	## Possibly call a custom function .objInfo() in SciViews:TempEnv
 	CmdFun <- getTemp(".objInfo", mode = "function")
     if (!is.null(CmdFun)) {  # We call a custom function
 		Info <- CmdFun(id = id, envir = envir, object = object)
@@ -16,7 +16,7 @@ path = NULL)
 		Info <- switch(envir,
 			.GlobalEnv = paste(c("Global environment\n", capture.output(gc())),
 				collapse = "\n"),
-			TempEnv = "SciViews temporary variables environment",
+			`SciViews:TempEnv` = "SciViews temporary variables environment",
 			RcmdrEnv = "R Commander temporary variables environment",
 			`tools:RGUI` = "R.app tools environment",
 			Autoloads = "R autoloading objects environment",

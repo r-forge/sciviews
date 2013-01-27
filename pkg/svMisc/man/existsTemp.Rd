@@ -1,9 +1,9 @@
 \name{existsTemp}
 \alias{existsTemp}
 
-\title{ Determine if a variable exists in TempEnv }
+\title{ Determine if a variable exists in SciViews:TempEnv }
 \description{
-  Does a variable exist in the TempEnv environment?
+  Does a variable exist in the SciViews:TempEnv environment?
 }
 \usage{
 existsTemp(x, mode = "any")
@@ -15,8 +15,8 @@ existsTemp(x, mode = "any")
 }
 
 \value{
-  \code{TRUE} if the variable exists in TempEnv (and is of the correct mode),
-  \code{FALSE} otherwise.
+  \code{TRUE} if the variable exists in SciViews:TempEnv (and is of the correct
+  mode), \code{FALSE} otherwise.
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }

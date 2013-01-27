@@ -32,16 +32,16 @@ guiSource(\dots)
 
 \value{
   The result of the command if it succeed, or \code{NULL} if the command cannot
-  be run (i.e., \code{.guiCmd()} is not defined in \code{TempEnv}).
+  be run (i.e., \code{.guiCmd()} is not defined in \code{SciViews:TempEnv}).
 }
 
 \details{
-  You must define a function \code{.guiCmd()} in the \code{TempEnv} environment
-  that will take first argument as the name of the command to execute (like
-  \code{source}, \code{save}, \code{import}, etc), and \dots with arguments to
-  the command to send. Depending on your GUI, you should have code that
-  delegates the GUI elements (ex: display a dialog asking for a .Rdata file to
-  source) and then, execute the command in R with the selected file as
+  You must define a function \code{.guiCmd()} in the \code{SciViews:TempEnv}
+  environment that will take first argument as the name of the command to
+  execute (like \code{source}, \code{save}, \code{import}, etc), and \dots with
+  arguments to the command to send. Depending on your GUI, you should have code
+  that delegates the GUI elements (ex: display a dialog asking for a .Rdata file
+  to source) and then, execute the command in R with the selected file as
   attribute.
 }
 

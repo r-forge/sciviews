@@ -59,7 +59,8 @@ MenuReadPackage(package, subdir = "gui", file = "Menus.txt")
 \details{
   These functions care about creating, deleting and managing custom menus.
   Informations and handles to the various menus created with these functions
-  are stored in the .guiMenus variable, located in the 'TempEnv' environment.
+  are stored in the .guiMenus variable, located in the \code{SciViews:TempEnv}
+  environment.
 }
 
 \value{
@@ -68,7 +69,7 @@ MenuReadPackage(package, subdir = "gui", file = "Menus.txt")
   \code{MenuDel()} and \code{MenuDelItem()} return invisibly \code{TRUE} if the
     resource is found and deleted, \code{FALSE} otherwise.
   \code{MenuNames()} returns the list of all menus registered in .guiMenus in
-    the 'TempEnv' environment.
+    the \code{SciViews:TempEnv} environment.
   \code{MenuInvoke()} returns invisibly \code{TRUE} if the menu item was
     invoked, \code{FALSE} otherwise.
   \code{MenuRead()} and \code{MenuReadPackage()} return invisibly the list of

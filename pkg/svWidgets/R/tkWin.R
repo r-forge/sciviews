@@ -34,7 +34,7 @@ bind.delete = TRUE, ...)
 tkWinDel <- function (window)
 {
 	## Same action as tkdestroy(), but cares about deleting relating resources
-	## (i.e., in .guiXXX in 'TempEnv')
+	## (i.e., in .guiXXX in Sciviews:TempEnv)
     win <- WinGet(window)
 	if (is.null(win)) return(invisible(FALSE))	# window does not exist
     ## Delete it from the windows list

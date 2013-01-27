@@ -58,7 +58,8 @@ ToolReadPackage(package, subdir = "gui", file = "Tools.txt")
 \details{
   These functions care about creating, deleting and managing custom toolbars.
   Informations and handles to the various toolbars created with these functions
-  are stored in the .guiTools variable, located in the 'TempEnv' environment.
+  are stored in the .guiTools variable, located in the \code{SciViews:TempEnv}
+  environment.
 
   Use 'Img' resources to load images to display in the toolbuttons.
 }
@@ -69,7 +70,7 @@ ToolReadPackage(package, subdir = "gui", file = "Tools.txt")
   \code{ToolDel()} and \code{ToolDelItem()} return invisibly \code{TRUE} if the
     resource is found and deleted, \code{FALSE} otherwise.
   \code{ToolNames()} returns the list of all toolbars registered in .guiTools in
-    the 'TempEnv' environment.
+    the \code{SciViews:TempEnv} environment.
   \code{ToolInvoke()} returns invisibly \code{TRUE} if the toolbutton was
     invoked, \code{FALSE} otherwise.
   \code{ToolRead()} and \code{ToolReadPackage()} return invisibly the list of

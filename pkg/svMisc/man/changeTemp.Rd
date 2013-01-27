@@ -3,7 +3,7 @@
 
 \title{ Change an item in a temporary list variable }
 \description{
-  The function changes an item in a list variable located in TempEnv,
+  The function changes an item in a list variable located in SciViews:TempEnv,
   an environment dedicated to temporary variables (especially useful for GUIs).
 }
 

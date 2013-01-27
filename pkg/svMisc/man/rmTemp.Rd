@@ -1,9 +1,9 @@
 \name{rmTemp}
 \alias{rmTemp}
 
-\title{ Remove one or several temporary variable(s) from the TempEnv environment }
+\title{ Remove one or several temporary variable(s) from the SciViews:TempEnv environment }
 \description{
-  The function removes one or more variable(s) from TempEnv.
+  The function removes one or more variable(s) from SciViews:TempEnv.
 }
 
 \usage{
@@ -12,7 +12,7 @@ rmTemp(x)
 
 \arguments{
   \item{x}{ the name of the variable (character string), or a vector of
-    characters with the name of all variables to remove from TempEnv. }
+    characters with the name of all variables to remove from SciViews:TempEnv. }
 }
 
 \value{
@@ -21,7 +21,8 @@ rmTemp(x)
 }
 
 \section{Warning}{
-  This command issues no error message if variable(s) do not exist in TempEnv!
+  This command issues no error message if variable(s) do not exist in
+  SciViews:TempEnv!
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }

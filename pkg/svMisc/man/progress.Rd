@@ -42,10 +42,11 @@ progress(value, max.value = NULL, progress.bar = FALSE, char = "|",
   The function uses backspace (\\8) to erase characters at the console.
   
   With \code{gui = TRUE}, the function looks for all functions defined in the
-  '.progress' list located in 'TempEnv' environment. Each function is executed
-  in turn with following call: \code{theGUIfunction(value, max.value)}. You are
-  responsible to create \code{theGUIfunction()} and to add it as an element in
-  the .progress list in TempEnv. See also example (5) hereunder.
+  '.progress' list located in \code{SciViews:TempEnv} environment. Each function
+  is executed in turn with following call: \code{theGUIfunction(value, max.value)}.
+  You are responsible to create \code{theGUIfunction()} and to add it as an
+  element in the .progress list in \code{SciViews:TempEnv}. See also example (5)
+  hereunder.
   
   If your GUI display of the progression offers the possibility to stop
   calculation (for instance, using a 'Cancel' button), you are responsible to

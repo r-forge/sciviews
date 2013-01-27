@@ -1,5 +1,12 @@
 = svMisc News
 
+== Changes in svMisc 0.9-28
+
+* The temporary environment that TempEnv() attaches to the search path is now
+  called 'SciViews:TempEnv' instead of simply 'TempEnv' to avoid potential
+  conflicts with other packages in CRAN.
+
+
 == Changes in svMisc 0.9-67
 
 * Added the fileEdit() function.

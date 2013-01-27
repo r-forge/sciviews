@@ -28,7 +28,7 @@ guiAsk(x) <- value
 
 \arguments{
   \item{gui.name}{ the name of the GUI. It is also the name of the object stored
-    in TempEnv where you can access it. Although not required,
+    in SciViews:TempEnv where you can access it. Although not required,
     you are better to use short, syntactically correct names. }
   \item{widgets}{ the list of widgets that GUI uses, listed in a priority
     order. }
@@ -53,7 +53,7 @@ guiAsk(x) <- value
   \code{guiChange()}, \code{guiWidgets(agui) <- value} or
   \code{guiAsk(agui) <- value}. For \code{guiRemove()}, \code{TRUE} if an object
   was removed, or \code{FALSE} if the object was not there, invisibly. For
-  \code{guiList()}, the list of current 'gui' objects in TempEnv, or a
+  \code{guiList()}, the list of current 'gui' objects in SciViews:TempEnv, or a
   zero-length character if none (should not happen, since \code{.GUI}, the
   default GUI, cannot be removed).
 }
@@ -63,7 +63,7 @@ guiAsk(x) <- value
 \seealso{ \code{\link{gui}}, \code{\link{setUI}}, \code{\link{dontAsk}} }
 
 \examples{
-## A 'gui' object named .GUI is automatically created in TempEnv
+## A 'gui' object named .GUI is automatically created in SciViews:TempEnv
 guiList()
 
 ## Create a new GUI object to manage a separate GUI in the same R session

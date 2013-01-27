@@ -759,7 +759,7 @@ menuDelItem <- function (menuname, itemname)
 ## This holds the custom menu structure in an R object
 .Rmenu <- function ()
 {
-	## The custom R menu is cached in a Rmenu object in TempEnv
+	## The custom R menu is cached in a Rmenu object in SciViews:TempEnv
 	return(.getTemp("Rmenu", default = list(), mode = "list"))
 }
 
@@ -891,7 +891,7 @@ menuDelItem <- function (menuname, itemname)
 
 .unixMenuSave <- function (mnu, file = TRUE)
 {
-	## Save the menu structure in both Rmenu object in TempEnv and in a file
+	## Save the menu structure in Rmenu object in SciViews:TempEnv and in a file
 	## mnu is either a list of lists with menu entries, or NULL to delete all
 	## custom menus
 	.assignTemp("Rmenu", mnu)
