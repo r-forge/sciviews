@@ -2,7 +2,7 @@
 
 == Changes in svIDE 0.9-50
 
-* Addition of a pcakge man page.
+* Addition of a pckage man page.
 
 * Source is deprecated in favor of sourceFormat().
 

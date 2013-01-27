@@ -1,7 +1,7 @@
 Package: svGUI
 Type: Package
-Version: 0.9-53
-Date: 2012-03-31
+Version: 0.9-54
+Date: 2013-01-27
 Title: SciViews GUI API - Functions to manage GUIs
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))
