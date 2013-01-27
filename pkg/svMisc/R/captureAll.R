@@ -77,15 +77,15 @@ markStdErr = FALSE)
 			## => unsplit temporarily, and print twice instead!
 			#print(res$value)
 			
-			if (split == TRUE) {
+			if (split) {
 				sink(type = "message")
 				sink(type = "output")
 				## Print first to the console
-				try(print(res$value))
+				try(print(res$value), silent = TRUE)
 				sink(tconn, type = "message")
 				sink(tconn, type = "output", split = FALSE)
 				## Print a second time to the connection
-				try(print(res$value))
+				try(print(res$value), silent = TRUE)
 				## Resink with split = TRUE
 				sink(type = "message")
 				sink(type = "output")
