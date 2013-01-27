@@ -11,8 +11,8 @@
   \tabular{ll}{
     Package: \tab svWidgets\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-42\cr
-    Date: \tab 2012-03-31\cr
+    Version: \tab 0.9-43\cr
+    Date: \tab 2013-01-27\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples
