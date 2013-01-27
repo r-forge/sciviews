@@ -24,7 +24,7 @@ sendSocketClients(text, sockets = "all", serverport = 8888)
 
 \seealso{ \code{\link{closeSocketClients}}, \code{\link{processSocket}} }
 
-\example{
+\examples{
 \dontrun{
 ## Start an R process (R#1) and make it a server
 require(svSocket)
