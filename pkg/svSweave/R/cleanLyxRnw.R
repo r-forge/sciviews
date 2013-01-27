@@ -1,5 +1,8 @@
 cleanLyxRnw <- function (RnwCon, RnwCon2 = RnwCon, encoding = "UTF-8")
 {
+	## By default, it is supposed to be a Sweave document
+	opts <- list(kind = "Sweave")
+	
 	## Run in LyX as the Sweave copier using something like:
 	##> R -e svSweave::cleanLyxRnw(\"$$i\",\"$$o\") -q --vanilla --slave
 	
@@ -10,6 +13,9 @@ cleanLyxRnw <- function (RnwCon, RnwCon2 = RnwCon, encoding = "UTF-8")
 	## Read the data in the Rnw file
 	Rnw <- readLines(RnwCon, encoding = encoding)
 
+	## Is it a knitr document?
+	if (any(grepl("\\%Sweave-kind=knitr", Rnw))) opts$kind <- "Knitr"
+	
 	## If the Rnw file is produced with LyX and SciViews Sweave module, chunks are
 	## separated by \rchunk{<<[pars]>>= ... @}
 
@@ -27,8 +33,10 @@ cleanLyxRnw <- function (RnwCon, RnwCon2 = RnwCon, encoding = "UTF-8")
 	chunk <- parts %% 2 > 0 	# R chunks are odd parts
 
 	## Do we need to change something?
-	if (!any(chunk))
-		return(writeLines(Rnw, RnwCon2))
+	if (!any(chunk)) {
+		writeLines(Rnw, RnwCon2)
+		return(invisible(opts))
+	}
 
 	## Eliminate empty strings not followed by empty strings inside chunks
 	Rnw[chunk & Rnw == "" & Rnw != c(Rnw[-1], " ")] <- NA
@@ -45,5 +53,8 @@ cleanLyxRnw <- function (RnwCon, RnwCon2 = RnwCon, encoding = "UTF-8")
 
 	## Write the result to the new .Rnw file
 	## TODO: test useBytes = TRUE!
-	return(writeLines(Rnw, RnwCon2, useBytes = TRUE))
+	writeLines(Rnw, RnwCon2, useBytes = TRUE)
+	
+	## Invisibly return opts
+	invisible(opts)
 }

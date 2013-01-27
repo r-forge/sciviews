@@ -1,7 +1,7 @@
 Package: svSweave
 Type: Package
-Version: 0.9-7
-Date: 2013-01-11
+Version: 0.9-8
+Date: 2013-01-27
 Title: SciViews GUI API - Sweave functions
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))

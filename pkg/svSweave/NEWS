@@ -1,5 +1,15 @@
 = svSweave News
 
+== Changes in svSweave 0.9-8
+
+* weaveLyxRnw(), knitLyxRnw(), tangleLyxRnw() and purlLyxRnw() now have a
+  new argument logFile, indicating which log file to use.
+  
+* cleanLyxRnw() now detects if the SciViews Knitr LyX module is used, and it
+  automatically switches to knitr to knit or purl the document in weaveLyxRnw()
+  and tangleLyxRnw().
+
+
 == Changes in svSweave 0.9-7
 
 * All Asciidoc-related items are now moved to svDoc package.

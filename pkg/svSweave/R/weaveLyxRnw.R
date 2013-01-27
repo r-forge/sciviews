@@ -1,13 +1,11 @@
 ## TODO: see the tables package for better looking tables, including in LaTeX!
-## TODO: merge both functions and use a tag in the document to decide
-##       if using sweave or knitr
 
 weaveLyxRnw <- function (file, driver = RweaveLatex(),
 syntax = getOption("SweaveSyntax"), encoding = "UTF-8", width = 80,
-useFancyQuotes = TRUE, ...)
+useFancyQuotes = TRUE, logFile = file.path(tempdir(), ".lyxSweave.log"), ...)
 {
 	## Run in LyX as the Sweave -> LaTex (from Sweave|pdflatex|plain) converter:
-	##> R -e svSweave::weaveLyxRnw(\"$$i\"[,driver=highlight::HighlightWeaveLatex()]) -q --vanilla
+	##> R -e svSweave::weaveLyxRnw(\"$$i\",log=\"/tmp/.lyxSweave.log\"[,driver=highlight::HighlightWeaveLatex()]) -q --vanilla
 
 	## Switch encoding (we do work with UTF-8 by default)
 	oenc <- options(encoding = encoding)
@@ -31,31 +29,38 @@ useFancyQuotes = TRUE, ...)
 		stop("You must provide the name of an existing .Rnw file to process!")
 	} else {
 		## Redirect output
-		unlink("/tmp/.lyxSweave.log")
+		unlink(logFile)
 		on.exit({
-			## Echo results
 			sink(type = "message")
 			sink()
-			try(cat(readLines("/tmp/.lyxSweave.log"), sep = "\n"), silent = TRUE)
+			## Echo results
+			try(cat(readLines(logFile), sep = "\n"), silent = TRUE)
 		}, add = TRUE)
-		con <- file("/tmp/.lyxSweave.log", open = "wt")
+		con <- file(logFile, open = "wt")
 		sink(con)
 		sink(con, type = "message")
 		cat("Weaving ", basename(file), " ...\n", sep = "")
 		
 		## Clean the R noweb file
-		cleanLyxRnw(file, encoding = encoding)
+		opts <- cleanLyxRnw(file, encoding = encoding)
 		
-		## Weave the file
-		Sweave(file, driver = driver, syntax = syntax, ...)
+		## Weave or Knit the file
+		if (!is.list(opts) || !length(opts$kind))
+			stop("no Sweave kind defined (must be Sweave or Knitr)")
+		cat("Processing the document using ", opts$kind, "\n", sep = "")
+		switch(opts$kind,
+			Sweave = Sweave(file, driver = driver, syntax = syntax, ...),
+			Knitr = knit(file, ...),
+			stop("Wrong kind of Sweave document: '", opts$kind, "'")
+		)	
 	}
 }
 
 knitLyxRnw <- function (file, encoding = "UTF-8", width = 80,
-useFancyQuotes = TRUE, ...)
+useFancyQuotes = TRUE, logFile = file.path(tempdir(), ".lyxSweave.log"), ...)
 {
 	## Run in LyX as the Sweave -> LaTex (from Sweave|pdflatex|plain) converter:
-	##> R -e svSweave::knitLyxRnw(\"$$i\") -q --vanilla
+	##> R -e svSweave::knitLyxRnw(\"$$i\",log=\"/tmp/.lyxSweave.log\") -q --vanilla
 
 	## Switch encoding (we do work with UTF-8 by default)
 	oenc <- options(encoding = encoding)
@@ -79,14 +84,14 @@ useFancyQuotes = TRUE, ...)
 		stop("You must provide the name of an existing .Rnw file to process!")
 	} else {
 		## Redirect output
-		unlink("/tmp/.lyxSweave.log")
+		unlink(logFile)
 		on.exit({
-			## Echo results
 			sink(type = "message")
 			sink()
-			try(cat(readLines("/tmp/.lyxSweave.log"), sep = "\n"), silent = TRUE)
+			## Echo results
+			try(cat(readLines(logFile), sep = "\n"), silent = TRUE)
 		}, add = TRUE)
-		con <- file("/tmp/.lyxSweave.log", open = "wt")
+		con <- file(logFile, open = "wt")
 		sink(con)
 		sink(con, type = "message")
 		cat("Weaving ", basename(file), " with knitr...\n", sep = "")
