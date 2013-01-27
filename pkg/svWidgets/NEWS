@@ -1,5 +1,11 @@
 = svWidgets News
 
+== Changes in svWidgets 0.9-43
+
+* Temporary objects are now stored in SciViews:TempEnv instead of TempEnv, and
+  version 0.9-68 or higher of svMisc is required.
+
+
 == Changes in svWidgets 0.9-42
 
 * Corrected a warning about argument partial matching in ToolRead() with
