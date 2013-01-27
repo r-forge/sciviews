@@ -43,7 +43,7 @@ WinNames()
 
 \details{
   The list of windows and pointers to their handles are stored in '.guiWins'
-  in the 'TempEnv' environnement.
+  in the \code{SciViews:TempEnv} environnement.
 }
 
 \value{

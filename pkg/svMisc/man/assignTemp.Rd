@@ -1,10 +1,10 @@
 \name{assignTemp}
 \alias{assignTemp}
 
-\title{ Assign a temporary variable in the TempEnv environment }
+\title{ Assign a temporary variable in the SciViews:TempEnv environment }
 \description{
-  The function assigns a variable to TempEnv, an environment dedicated to
-  temporary variables (especially useful for GUIs).
+  The function assigns a variable to SciViews:TempEnv, an environment dedicated
+  to temporary variables (especially useful for GUIs).
 }
 
 \usage{

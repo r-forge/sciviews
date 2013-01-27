@@ -8,11 +8,11 @@ guiChange <- function (gui.name = ".GUI", widgets = c("nativeGUI", "textCLI"),
 reset = FALSE, ask)
 {
 	gui.name <- as.character(gui.name)[1]
-	## Do the object already exists in TempEnv?
+	## Do the object already exists in SciViews:TempEnv?
 	if (exists(gui.name, envir = .TempEnv(), inherits = FALSE)) {
 		guiObj <- get(gui.name, envir = .TempEnv(), inherits = FALSE)
 		if (!is.gui(guiObj))
-			stop("'gui.name' must be a character string naming a 'gui' object in TempEnv")
+			stop("'gui.name' must be a character string naming a 'gui' object in SciViews:TempEnv")
 		guiWidgets(guiObj, reset = reset) <- widgets
 		if (isTRUE(reset)) {
 			## Make sure name is correct
@@ -20,7 +20,7 @@ reset = FALSE, ask)
 			## Use default for ask, if not provided
 			if (missing(ask)) guiObj$ask <- NULL
 		}
-	} else { # Create a new 'gui' object in TempEnv
+	} else { # Create a new 'gui' object in SciViews:TempEnv
 		if (is.na(gui.name))
 			stop("Wrong 'gui.name', provide a length 1 character string")
 		guiObj <- new.env(parent = .GlobalEnv)
@@ -54,7 +54,7 @@ guiRemove <- function (gui.name)
 	return(invisible(TRUE))	
 }
 
-## List all GUI objects found in TempEnv
+## List all GUI objects found in SciViews:TempEnv
 guiList <- function ()
 {
 	lst <- ls(envir = .TempEnv(), all.names = TRUE)
@@ -112,7 +112,7 @@ guiAsk <- function (gui.or.name, ask)
 				stop("'gui' object '", gui.or.name, "' not found")
 			guiObj <- get(gui.or.name, envir = .TempEnv(), inherits = FALSE)
 			if (!is.gui(guiObj))
-				stop("'gui.or.name' must be a 'gui' object in TempEnv or its name")
+				stop("'gui.or.name' must be a 'gui' object in SciViews:TempEnv or its name")
 		}
 
 		## Query or set guiObj$ask

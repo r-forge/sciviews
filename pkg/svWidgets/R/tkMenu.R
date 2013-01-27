@@ -20,7 +20,7 @@ tkMenuAdd <- function (menu, tearoff = FALSE)
 	Mname <- basename(menu)
 	## Get the name of the parent
 	Pname <- dirname(menu)
-	## Look if the parent exists (must be in .guiMenus in TempEnv)
+	## Look if the parent exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	## If .guiMenus was not there, create it
 	if (is.null(.guiMenus)) {
@@ -73,7 +73,7 @@ tkMenuAdd <- function (menu, tearoff = FALSE)
 		.guiMenus[[Pname]]$Items <- entry
 	else
         .guiMenus[[Pname]]$Items <- rbind(items, entry)
-	## Update the TempEnv version of .guiMenus
+	## Update the SciViews:TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
 	return(invisible(menu))
 }
@@ -88,7 +88,7 @@ tkMenuItemCall <- function (expr) {
 
 tkMenuAddItem <- function (menu, item, action, image = "", accel = "", options = "")
 {	
-	## Look if the menu exists (must be in .guiMenus in TempEnv)
+	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
 	if (is.null(M)) {
@@ -162,14 +162,14 @@ tkMenuAddItem <- function (menu, item, action, image = "", accel = "", options =
 		.guiMenus[[menu]]$Items <- entry
 	else
         .guiMenus[[menu]]$Items <- rbind(items, entry)
-	## Update the TempEnv version of .guiMenus
+	## Update the SciViews:TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
 	return(invisible(item))
 }
 
 tkMenuDelItem <- function (menu, item)
 {
-	## Look if the menu exists (must be in .guiMenus in TempEnv)
+	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
 	if (is.null(M)) return(invisible(FALSE))
@@ -185,7 +185,7 @@ tkMenuDelItem <- function (menu, item)
 	## Eliminate that entry from .guiMenus
 	Items <- Items[Items$name != item, ]
 	.guiMenus[[menu]]$Items <- Items
-	## Update the TempEnv version of .guiMenus
+	## Update the SciViews:TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
 	return(invisible(TRUE))
 }
@@ -193,7 +193,7 @@ tkMenuDelItem <- function (menu, item)
 tkMenuDel <- function (menu)
 {
 	## Delete a whole menu and all submenus
-	## Look if the menu exists (must be in .gui.Menus in TempEnv)
+	## Look if the menu exists (must be in .gui.Menus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
 	if (is.null(M)) return(invisible(FALSE))
@@ -217,7 +217,7 @@ tkMenuDel <- function (menu)
 		}
 		.guiMenus[[dMenus[i]]] <- NULL  # Eliminate the entry
 	}
-	## Update the TempEnv version of .guiMenus
+	## Update the SciViews:TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
 	return(invisible(TRUE))
 }
@@ -225,7 +225,7 @@ tkMenuDel <- function (menu)
 tkMenuChangeItem <- function (menu, item, action = "", options = "")
 {
 	## The Tk version of MenuChangeItem()
-	## Look if the menu exists (must be in .guiMenus in TempEnv)
+	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
 	if (is.null(M)) return(invisible(FALSE))
@@ -253,7 +253,7 @@ tkMenuChangeItem <- function (menu, item, action = "", options = "")
 		## Update .guiMenus
 		Items$action[Pos + 1] <- action
 		.guiMenus[[menu]]$Items <- Items
-		## Update the TempEnv version of .guiMenus
+		## Update the SciViews:TempEnv version of .guiMenus
 		assignTemp(".guiMenus", .guiMenus)
 		return(invisible(TRUE))
 	}
@@ -262,7 +262,7 @@ tkMenuChangeItem <- function (menu, item, action = "", options = "")
 tkMenuStateItem <- function (menu, item, active = TRUE)
 {
 	## The Tk version of MenuStateItem()
-	## Look if the menu exists (must be in .guiMenus in TempEnv)
+	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
 	if (is.null(M)) return(invisible(FALSE))  # If menu does not exists!
@@ -282,7 +282,7 @@ tkMenuStateItem <- function (menu, item, active = TRUE)
 tkMenuInvoke <- function (menu, item)
 {
 	## Given a menu and an item in this menu, trigger the item action
-	## Look if the menu exists (must be in .guiMenus in TempEnv)
+	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
 	if (is.null(M)) return(invisible(FALSE))

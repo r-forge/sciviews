@@ -10,8 +10,8 @@
 \section{Changes in version 0.9-57}{
 	\itemize{
     \item{ svKomodo creates now at loading a \code{.Last.sys()} function in
-		 \code{TempEnv} indicating to Komodo Edit that R has quit. This is required
-		 to update R menus there. }
+		 \code{SciViews:TempEnv} indicating to Komodo Edit that R has quit. This
+		 is required to update R menus there. }
 	
 		\item{ The SciViews-K configuration file is not saved from here anymore
 			(CRAN now does not accept packages that write files elsewhere than in R

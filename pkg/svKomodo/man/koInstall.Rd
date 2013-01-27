@@ -4,8 +4,9 @@
 
 \title{ Install and uninstall hooks for communicating with Komodo Edit/IDE }
 \description{
-  Install functions in TempEnv and callbacks required to communicate with Komodo
-  Edit with the SciViews-K extension (see http://www.sciviews.org/SciViews-K).
+  Install functions in SciViews:TempEnv and callbacks required to communicate
+  with Komodo Edit with the SciViews-K extension
+  (see http://www.sciviews.org/SciViews-K).
 }
 \usage{
 koInstall()

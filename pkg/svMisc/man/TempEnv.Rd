@@ -4,8 +4,8 @@
 \title{ Get an environment dedicated to temporary variables (and create it if
   needed) }
 \description{
-  This function creates and returns the reference to a TempEnv environment
-  located just before \code{Autoloads} on the search path.
+  This function creates and returns the reference to a SciViews:TempEnv
+  environment located just before \code{Autoloads} on the search path.
 }
 
 \usage{
@@ -13,7 +13,7 @@ TempEnv()
 }
 
 \value{
-  TempEnv (an environment object)
+  SciViews:TempEnv (an environment object)
 }
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }

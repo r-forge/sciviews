@@ -5,7 +5,7 @@ objSearch <- function(sep = "\t", path = NULL, compare = TRUE)
 		oldSearch <- getTemp(".guiObjSearchCache", default = "")
 		## Compare both versions
 		if (length(Search) != length(oldSearch) || !all(Search == oldSearch)) {
-			## Keep a copy of the last version in TempEnv
+			## Keep a copy of the last version in SciViews:TempEnv
 			assignTemp(".guiObjSearchCache", Search)
 			Changed <- TRUE
 		} else Changed <- FALSE

@@ -33,7 +33,7 @@ suppress.messages = show.progress, verbose = TRUE)
 	progress(n + 1, n) # Cancel progression message
 	if (verbose) message("Processed successfully ", sum(ok, na.rm = TRUE),
 		" items on ", n, " (see .last.batch)")
-	## Record .last.batch variable in TempEnv
+	## Record .last.batch variable in SciViews:TempEnv
 	lastBatch <- structure(sum(ok, na.rm = TRUE) == n, items = items, ok = ok)
 	assignTemp(".last.batch", lastBatch)
 	invisible(lastBatch)

@@ -127,7 +127,7 @@ path = NULL, compare = TRUE, ...)
 		allList <- getTemp(".guiObjListCache", default = list())
 
 		if (identical(res, allList[[id]])) Changed <- FALSE else {
-			## Keep a copy of the last version in TempEnv
+			## Keep a copy of the last version in SciViews:TempEnv
 			allList[[id]] <- res
 			assignTemp(".guiObjListCache", allList)
 		}

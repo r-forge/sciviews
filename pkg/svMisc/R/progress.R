@@ -92,8 +92,8 @@ init = (value == 0), console = TRUE, gui = TRUE)
 	}
 
 	## An additional, graphical display of progression may be implemented too
-	## using custom functions as items in .progress in TempEnv... Here we look
-	## for and trigger them...
+	## using custom functions as items in .progress in SciViews:TempEnv...
+	## Here we look for and trigger them...
 	if (gui && length(CmdProgress) > 1) {
 		## Execute each item of the list that is a function
 		for (i in 1:length(CmdProgress))

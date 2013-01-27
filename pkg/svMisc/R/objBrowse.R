@@ -85,7 +85,7 @@ pattern = NULL, group = NULL, sep = "\t", path = NULL, regenerate = FALSE)
 		ParsChanged <- TRUE
 		Pars$group <- as.character(group[1])
 	}
-	## Write a cached version of these parameters in TempEnv
+	## Write a cached version of these parameters in SciViews:TempEnv
 	allPars <- getTemp(".guiObjParsCache", default = list())
 	allPars[[id]] <- Pars
 	assignTemp(".guiObjParsCache", allPars)

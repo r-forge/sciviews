@@ -334,14 +334,14 @@
 
 		## Create a .Last.sys function that clears some variables in .GlobalEnv
 		## and then, switch to R.initdir before closing R. The function is
-		## stored in TempEnv()
+		## stored in SciViews:TempEnv
 		assignTemp(".Last.sys", function () {
 			## Eliminate some known hidden variables from .GlobalEnv to prevent
 			## saving them in the .RData file
 			if (exists(".required", envir = .GlobalEnv, inherits = FALSE))
 				rm(list = ".required", envir = .GlobalEnv, inherits = FALSE)
-			## Note: .SciViewsReady is now recorded in TempEnv() instead of
-			## .GlobalEnv, but we leave this code for old workspaces...
+			## Note: .SciViewsReady is now recorded in SciViews:TempEnv instead
+			## of .GlobalEnv, but we leave this code for old workspaces...
 			if (exists(".SciViewsReady", envir = .GlobalEnv, inherits = FALSE))
 				rm(list = ".SciViewsReady", envir = .GlobalEnv, inherits = FALSE)
 			## If a R.initdir is defined, make sure to switch to it, so that
