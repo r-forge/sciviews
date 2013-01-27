@@ -1,5 +1,17 @@
 = svKomodo News
 
+== Change in svKomodo 0.9-59
+
+* R is now configured to be used with SciViews Komodo (Komodo Edit + SciViews-K)
+  when the package is attached. It was previously configured when it was loaded.
+  
+* Temporary objects are now stored in SciViews:TempEnv instead of TempEnv and
+  consequently, svMisc >= 0.9-68 is needed.
+  
+* Further protection before looking for komodo with locate: (1) if locate is not
+  there, do not try to use it, and (2) do not use it on Mac OS X.
+
+
 == Changes in svKomodo 0.9-58
 
 * The package was not loading correctly when not on .libPaths. Fixed.
