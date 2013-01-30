@@ -1,7 +1,7 @@
 Package: svSocket
 Type: Package
-Version: 0.9-54
-Date: 2013-01-27
+Version: 0.9-55
+Date: 2013-01-28
 Title: SciViews GUI API - R Socket Server
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"),
