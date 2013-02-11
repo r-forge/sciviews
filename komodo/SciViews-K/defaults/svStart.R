@@ -556,7 +556,7 @@ skip = NULL)
 					} else browseURL(url, browser = browser2)
 				}
 			}
-			option(editor2 = getOption("editor"))
+			options(editor2 = getOption("editor"))
 			options(editor = Komodo, browser = svBrowser, pager = svPager)
 		} else {
 			Komodo <- NULL
