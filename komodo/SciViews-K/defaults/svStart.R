@@ -8,6 +8,7 @@
 ## Version 0.9.25, 2011-12-28 modified by Ph. Grosjean
 ## Version 0.9.27, 2012-04-22 modified by Ph. Grosjean
 ## Version 0.9.28, 2012-12-17 modified by Ph. Grosjean
+## Version 0.9.29, 2013-02-08 modified by Ph. Grosjean (don't use locate on the Mac)
 
 ## TODO: also use value in koDebug to debug server from within R!
 ## TODO: use the mechanism of startHttpServer() to retrieve default config
@@ -441,11 +442,22 @@ skip = NULL)
 				debugMsg("which", "returned", Komodo)
 			}
 
+			isMac <- function () (grepl("^mac", .Platform$pkgType))
 			if (length(Komodo) == 0 || Komodo == "") {
-				Komodo <- system(paste("locate --basename -e --regex ^komodo$",
-					"| grep -vF 'INSTALLDIR' | grep -F 'bin/komodo'",
-					"| tail --lines=1"), intern = TRUE, ignore.stderr = TRUE)
-				debugMsg("locate komodo", "returned", Komodo)
+				if (!isMac()) {
+					isLocate <- suppressWarnings(length(system('which locate',
+						intern = TRUE)) > 0)
+					if (!isLocate) { # locate is not there
+						Komodo <- NULL
+					} else {
+						Komodo <- try(suppressWarnings(system(paste(
+							"locate --basename -e --regex ^komodo$",
+							"| grep -vF 'INSTALLDIR' | grep -F 'bin/komodo'",
+							"| tail --lines=1"), intern = TRUE, ignore.stderr = TRUE)),
+							silent = TRUE)
+						debugMsg("locate komodo", "returned", Komodo)
+					}
+				} else Komodo <- NULL
 			}
 
 		} else { # Windows
@@ -468,7 +480,7 @@ skip = NULL)
 					key <- "Applications\\komodo.exe\\shell\\open\\command"
 					Komodo <-
 						tryCatch(readRegistry(key, hive = "HCR")[["(Default)"]],
-						error = err.null)
+							error = err.null)
 					if (!is.null(Komodo))
 						Komodo <- sub(" *\\\"%[1-9\\*].*$", "", Komodo)
 				}
@@ -493,34 +505,59 @@ skip = NULL)
 			debugMsg("Komodo path is:", Komodo)
 		}
 
-		if (!is.null(Komodo) && Komodo != "" && file.exists(Komodo)) {
+		if (length(Komodo) && Komodo != "" && file.exists(Komodo)) {
 			## Change the editor and the pager to Komodo
+			options(pager2 = getOption("pager"))
 			## A custom pager consists in displaying the file in Komodo
 			svPager <- function (files, header, title, delete.file) {
 				require(svKomodo)
 				files <- gsub("\\", "\\\\", files[1], fixed = TRUE)
-				koCmd(sprintf('sv.r.pager("%s", "%s")', files, title))
-				if (delete.file) {
-					cmd <- paste('window.setTimeout("try { ',
-						'sv.tools.file.getfile(\\"%s\\").remove(false); } ',
-						'catch(e) {}", 10000);', sep = "")
-					koCmd(sprintf(cmd, files));
+				res <- tryCatch(koCmd(sprintf('sv.r.pager("%s", "%s")', files, title)),
+					error = function (e) return(FALSE))
+				if (res == FALSE) {
+					## Try using pager2 instead
+					pager2 <- getOption("pager2")
+					if (is.null(pager2)) {
+						stop("You must start Komodo Edit for displaying this file!")
+					} else if (is.function(pager2)) {
+						pager2(files = files, header = header, title = title,
+							delete.file = delete.file)
+					} else {
+						## Replacement for the following line of code to avoid
+						## using .Internal()
+						#.Internal(file.show(files, header, title, delete.file, pager2))
+						file.show(files, header = header, title = title,
+							delete.file = delete.file, pager = pager2)						
+					}
+				} else {
+					if (delete.file) {
+						cmd <- paste('window.setTimeout("try { ',
+							'sv.tools.file.getfile(\\"%s\\").remove(false); } ',
+							'catch(e) {}", 10000);', sep = "")
+						koCmd(sprintf(cmd, files))
+					}
 				}
 			}
 
+			options(browser2 = getOption("browser"))
 			svBrowser <- function (url) {
 				require(svKomodo)
 				url <- gsub("\\", "\\\\", url, fixed = TRUE)
 				## If the URL starts with '/', I could safely assume a file path
 				## on Unix or Mac and prepend 'file://'
 				url <- sub("^/", "file:///", url)
-				koCmd(sprintf("sv.command.openHelp(\"%s\")", url))
+				res <- tryCatch(koCmd(sprintf("sv.command.openHelp(\"%s\")", url)),
+					error = function (e) return(FALSE))
+				if (res == FALSE) {
+					## Try using browser2 instead
+					browser2 <- getOption("browser2")
+					if (is.null(browser2)) {
+						stop("You must start Komodo Edit for browsing files")
+					} else browseURL(url, browser = browser2)
+				}
 			}
-			## The current SciViews-K help window in Komodo is buggy
-			## it let's Komodo crash on closing, and probably causes
-			## other problems => for now, just use the default browser!
-			#options(editor = Komodo, browser = svBrowser, pager = svPager)
-			options(editor = Komodo)
+			option(editor2 = getOption("editor"))
+			options(editor = Komodo, browser = svBrowser, pager = svPager)
 		} else {
 			Komodo <- NULL
 			cat("R cannot find Komodo.", file = stderr())
@@ -590,7 +627,7 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 }
 
 		## Change the working directory to the provided directory
-		setwd(getOption("R.initdir"))
+		try(setwd(getOption("R.initdir")), silent = TRUE)
 
 		## Create a .Last.sys function that clears some variables in .GlobalEnv
 		## and then, switch to R.initdir before closing R. The function is
@@ -621,7 +658,7 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 		if (!"--vanilla" %in% args && !"--no-restore" %in% args &&
 			!"--no.restore-data" %in% args) {
 				if (file.exists(".RData")) {
-					load(".RData")
+					load(".RData", envir = .GlobalEnv)
 					msg2 <- append(msg2, "data loaded")
 				} else {
 					msg2 <- append(msg2, "no data")
@@ -644,7 +681,7 @@ if (compareVersion(rVersion, "2.11.0") < 0) {
 			msg2 <- append(msg2, "data and history not loaded")
 		}
 
-		cat(msg, " (", paste(msg2, collapse=", "),  ")", "\n",
+		cat(msg, " (", paste(msg2, collapse = ", "),  ")", "\n",
 			sep = "", file = stderr())
 
 		## Do we reactivate Komodo now?
