@@ -158,17 +158,19 @@
 		}
 		
 		if (length(Komodo) == 0 || Komodo == "") {
-			isLocate <- suppressWarnings(length(system('which locate',
-					intern = TRUE)) > 0)
-			if (!isLocate || isMac()) { # locate is not there or Mac OS X
-				Komodo <- NULL
-			} else {
-				Komodo <- try(suppressWarnings(system(
-					"locate --basename -e --regex ^komodo$ | grep -vF 'INSTALLDIR' | grep -F 'bin/komodo' | tail --lines=1",
-					intern = TRUE, ignore.stderr = TRUE)), silent = TRUE)
-				if (inherits(Komodo, "try-error")) Komodo <- NULL
-				#debugMsg("locate komodo", "returned", Komodo)
-			}
+			if (!isMac()) {
+				isLocate <- suppressWarnings(length(system('which locate',
+						intern = TRUE)) > 0)
+				if (!isLocate) { # locate is not there
+					Komodo <- NULL
+				} else {
+					Komodo <- try(suppressWarnings(system(
+						"locate --basename -e --regex ^komodo$ | grep -vF 'INSTALLDIR' | grep -F 'bin/komodo' | tail --lines=1",
+						intern = TRUE, ignore.stderr = TRUE)), silent = TRUE)
+					if (inherits(Komodo, "try-error")) Komodo <- NULL
+					#debugMsg("locate komodo", "returned", Komodo)
+				}
+			} else Komodo <- NULL
 		}
 		## Just to avoid warnings while compiling outside of Windows...
 		readRegistry <- function() return()

@@ -1,8 +1,14 @@
 \name{NEWS}
 \title{NEWS file for the svKomodo package}
 
+\section{Changes in version 0.9-60}{
+  \itemize{
+    \item{ You must start Komodo Edit for browsing files. }
+  }
+}
+
 \section{Changes in version 0.9-59}{
-	\itemize{
+  \itemize{
     \item{ R is now configured to be used with SciViews Komodo (Komodo Edit +
 	    SciViews-K) when the package is attached. It was previously configured
 		when it was loaded. }
@@ -15,21 +21,21 @@
 }
 
 \section{Changes in version 0.9-58}{
-	\itemize{
+  \itemize{
     \item{ The package was not loading correctly when not on \code{.libPaths}. Fixed. }
   }
 }
 
 \section{Changes in version 0.9-57}{
-	\itemize{
+  \itemize{
     \item{ svKomodo creates now at loading a \code{.Last.sys()} function in
-		 \code{SciViews:TempEnv} indicating to Komodo Edit that R has quit. This
-		 is required to update R menus there. }
+      \code{SciViews:TempEnv} indicating to Komodo Edit that R has quit. This
+      is required to update R menus there. }
 	
-		\item{ The SciViews-K configuration file is not saved from here anymore
-			(CRAN now does not accept packages that write files elsewhere than in R
-			temp dir). This configuration file is now created by the SciViews-K Komodo
-			plugin, in \preformatted{svStart.R}. }
+    \item{ The SciViews-K configuration file is not saved from here anymore
+      (CRAN now does not accept packages that write files elsewhere than in R
+      temp dir). This configuration file is now created by the SciViews-K Komodo
+      plugin, in \preformatted{svStart.R}. }
   }
 }
 

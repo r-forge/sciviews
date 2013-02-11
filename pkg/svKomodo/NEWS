@@ -1,6 +1,11 @@
 = svKomodo News
 
-== Change in svKomodo 0.9-59
+== Changes in svKomodo 0.9-60
+
+* .onAttach() is reworked for not issuing warning messages in Mac OS X.
+
+
+== Changes in svKomodo 0.9-59
 
 * R is now configured to be used with SciViews Komodo (Komodo Edit + SciViews-K)
   when the package is attached. It was previously configured when it was loaded.
