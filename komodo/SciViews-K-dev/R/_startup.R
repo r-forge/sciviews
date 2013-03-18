@@ -86,6 +86,8 @@ with(as.environment("komodoConnection"), {
 		#sys.source("rserver.R", envir = env)
 	} else{
 		lapply(src, sys.source, envir = env, keep.source = FALSE)
+		
+		#NOTE PhG: .find.package becomes find.package in R 3.0.0
 		if(length(.find.package("compiler", quiet = TRUE))) {
 			for(fun in ls(env)) if(exists(fun, env, mode = "function"))
 					assign(fun, compiler::cmpfun(get(fun, env),

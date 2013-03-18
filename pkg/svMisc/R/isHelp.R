@@ -3,7 +3,8 @@ isHelp <- function (topic, package = NULL, lib.loc = NULL)
 	## Code taken from example(), but here we don't run the example!
 	topic <- substitute(topic)
     if (!is.character(topic))  topic <- deparse(topic)[1L]
-    pkgpaths <- .find.package(package, lib.loc, verbose = FALSE)
+    
+	pkgpaths <- find.package(package, lib.loc, verbose = FALSE)
     file <- utils:::index.search(topic, pkgpaths, TRUE)
     if (!length(file)) return(c(help = FALSE, example = FALSE))
     

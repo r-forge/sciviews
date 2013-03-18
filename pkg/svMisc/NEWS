@@ -1,5 +1,10 @@
 = svMisc News
 
+== Changes in svMisc 0.9-29
+
+* isHelp() now uses find.package() instead of the deprecated .find.package().
+
+
 == Changes in svMisc 0.9-28
 
 * The temporary environment that TempEnv() attaches to the search path is now
