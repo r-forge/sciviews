@@ -803,7 +803,7 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 	this.serverConfig = function () {
 		var serverStatus = " (stopped)"
 		if (_this.serverIsStarted) serverStatus = " (started)"
-		var port = sv.prefs.getPort("sciviews.ko.port", 7052);
+		var port = sv.prefs.getPref("sciviews.ko.port", 7052);
 		if (_this.serverIsLocal) {
 			return("Local " + sv.serverType + " server on port " +
 				port + serverStatus);
