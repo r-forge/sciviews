@@ -133,6 +133,7 @@ pkgManSetCRANMirror <- function (url)
 
 pkgManInstall <- function (pkgs, install.deps = FALSE, ask = TRUE)
 {
+	## TODO: avoid using ::: !
 	dep <- suppressMessages(utils:::getDependencies(pkgs,
 		available = getTemp('avpkg.list')))
 	msg <- status <- ""

@@ -904,7 +904,7 @@ sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 	// If level < 4 => default document = .R
 	// If level < 3 => set reload documents
 	// set coloration of variables in R format
-	// If level < 4 => do not load startu page
+	// If level < 4 => do not load startup page
 	// Show line number => not before level 3
 	
 	// Simplify Scintilla... must be done for each buffer

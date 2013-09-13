@@ -1,5 +1,6 @@
 ### Removes errors concerning a file or a set of files from the list of errors
 ### Romain Francois <francoisromain@free.fr>
+## TODO: avoid using ::: everywhere here!!!
 resetErrors <- function (file = NULL, pattern = NULL)
 {
 	if (!is.null(file)) {

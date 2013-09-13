@@ -1,3 +1,4 @@
+## TODO: avoid using ::: at several places here!
 lintDescription <- function (descfile, txt = readLines(descfile))
 {  
 	txt <- unlist(strsplit(txt, "\\\n"))

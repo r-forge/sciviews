@@ -1,3 +1,4 @@
+## TODO: avoid using ::: at several places here!
 lintNamespace <- function (namespace, checkPackages = TRUE)
 {
 	resetErrors(file = namespace)

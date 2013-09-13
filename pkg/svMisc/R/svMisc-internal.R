@@ -17,7 +17,8 @@
 				## internal R.app if internal.if.possible is TRUE
 				## First check if 'edit' is there
 				## (open files in TextWrangler or BBEdit)
-				if (length(system("which edit", intern = TRUE))) {
+				if (length(suppressWarnings(system("which edit",
+					intern = TRUE)))) {
 					fEdit <- "textwrangler"
 				} else { # Fall back to the default text editor
 					## Note: use "open -e -n -W \"%s\"" to force use of TextEdit
@@ -26,9 +27,11 @@
 			} else { # This is unix
 				## First check if gedit or kate is there... This is different
 				## from file.edit() and editor that looks directly to EDITOR!
-				if (length(system("which gedit", intern = TRUE))) {
+				if (length(suppressWarnings(system("which gedit",
+					intern = TRUE)))) {
 					fEdit <- "gedit"
-				} else if (length(system("which kate", intern = TRUE))) {
+				} else if (length(suppressWarnings(system("which kate",
+					intern = TRUE)))) {
 					fEdit <- "kate"
 				} else { # Fall back to something that is likely to be installed
 					## Look id EDITOR or VISUAL environment variable is defined

@@ -1,3 +1,4 @@
+## TODO: avoid using ::: everywhere here!!!
 completeCode <- function (...)
 {
 	out <- completion(..., min.length = 1)

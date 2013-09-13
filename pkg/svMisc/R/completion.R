@@ -65,6 +65,7 @@ max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 
 			## Deal with argument completions (ending with " = ")
 			if (length(test.arg <- grep(" = ", completions))) {
+				## TODO: avoid using ::: here!
 				fun <- utils:::.CompletionEnv[["fguess"]]
 				ret[test.arg, "context"] <- fun
 				ret[test.arg, "desc"] <- descArgs(fun,
@@ -82,7 +83,7 @@ max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 					package = pack)
 			}
 
-			## Deal with completions with "@" (excluding things like base:::$)
+			## Deal with completions with "@" (excluding things like base::$)
 			if (length(test.slot <- grep("[^:]@", completions))) {
 				elements <- completions[test.slot]
 				object <- gsub("@.*$", "", completions)[1]
@@ -121,7 +122,7 @@ max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 				isPack <- !packs %in% c("", ".GlobalEnv", "SciViews:TempEnv",
 					"Autoloads", "tools:RGUI")
 				## The following code is too slow for many function
-				## (it takes 6-7sec for the 1210 base:::XXXX functions)
+				## (it takes 6-7sec for the 1210 base::XXXX functions)
 				## So, do it only if less than max.fun
 				## Note, without descriptions, it takes 0.3sec on my MacBook Pro
 				if (length(isPack) < max.fun)
@@ -196,6 +197,7 @@ max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 	} else dblBrackets <- FALSE
 	
 	## Save funarg.suffix and use " = " locally
+	## TODO: do not use ::: here!
 	ComplEnv <- utils:::.CompletionEnv
 	opts <- ComplEnv$options
 	funarg.suffix <- opts$funarg.suffix
@@ -207,11 +209,13 @@ max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 	ComplEnv$options <- opts
 
 	## Calculate completion with standard R completion tools
+	## TODO: do not use ::: here!
 	utils:::.assignLinebuffer(code)
 	utils:::.assignEnd(pos)
 	utils:::.guessTokenFromLine()
 	## The standard utils:::.completeToken() is replaced by our own version:
 	.completeTokenExt()
+	## TODO: do not use ::: here!
 	completions <- utils:::.retrieveCompletions()
 	triggerPos <- pos - ComplEnv[["start"]]
 	token <- ComplEnv[["token"]]
@@ -295,6 +299,7 @@ max.fun = 100, skip.used.args = TRUE, sep = "\n", field.sep = "\t")
 ## (checked equivalent with R 2.11.1)
 ## Only difference: it also gets current arguments list (if applicable).
 ## They are assigned to utils:::.CompletionEnv$funargs
+## TODO: avoid using ::: in the code of a package!
 .inFunctionExt <-
 function (line = utils:::.CompletionEnv[["linebuffer"]],
 cursor = utils:::.CompletionEnv[["start"]])
