@@ -3,6 +3,35 @@
 	## Look for a suitable python executable
 	py <- .python()
 	if (!is.null(py)) options(python = py)
+		
+	## Add an svDoc function to the R http daemon server to process svDoc pages
+	e <- get(".httpd.handlers.env", envir = asNamespace("tools"),
+		inherits = FALSE)
+	e[["svDoc"]] <- function (path, query, body, ...) {
+		## Avoid partial argument match (cf warnings with ascii functions)!
+		partmatch <- getOption("warnPartialMatchArgs")
+		on.exit(options(warnPartialMatchArgs = partmatch))
+		options(warnPartialMatchArgs = FALSE)
+	
+		## Analyze the query: command + callback
+		#cat(query, "\n", sep = " -- ")
+		file <- sub("^file://", "", query[1])
+		file <- sub("\\.html$", ".R", file)
+		#cat(file, "\n")
+		## Note: we don't use extra arguments yet!
+
+		## Not needed here?
+		## Strings are supposed to be send in UTF-8 format
+		#Encoding(file) <- "UTF-8"
+		#file <- enc2native(file)
+
+		## Process the file and return the resulting HTML content
+		res <- capture.output(endFile <- svDoc::svDocRender(file, show.it = FALSE))
+		## TODO: put this is Komodo command output if possible!
+		catKoOutput <- cat # Currently, we just cat() to the R console
+		catKoOutput(paste(res, collapse = "\n"), "\n")
+		list(payload = paste(readLines(endFile), collapse = "\n"))
+	}
 }
 
 .packageName <- "svDoc"

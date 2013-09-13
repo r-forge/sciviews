@@ -1,5 +1,12 @@
 = svDoc News
 
+== Changes in svDoc 0.9-8
+
+* svDoc documents can now be processed through an URL pointing to the internal R
+  HTTP server. This is useful to, say, previewing svDocs in Komodo Edit with the
+  SciViews-K plugin version 0.9.30 or higher.
+
+
 == Changes in svDoc 0.9-7
 
 This is the first version of this package, collecting functions that manage

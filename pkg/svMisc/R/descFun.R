@@ -20,6 +20,7 @@ descFun <- function (fun, package, lib.loc = NULL)
 		file <- as.character(file)
 		if (length(file) > 0) {
 			## Read the Rd file and get the title section out of it
+			## TODO: avoid this!
 			Rdoc <- utils:::.getHelpFile(file[1L])
 			## Look for the \title tag
 			j <- 0
@@ -53,7 +54,8 @@ descArgs <- function (fun, args = NULL, package = NULL, lib.loc = NULL)
     if (!file.exists(paste(RdDB, "rdx", sep=".")))
     	return(character(length(args)))
     
-    rd <- tools:::fetchRdDB(RdDB, basename(file))
+    ## TODO: avoid this!
+	rd <- tools:::fetchRdDB(RdDB, basename(file))
     
     ## This is not exported from tools
     RdTags <- function (Rd) {

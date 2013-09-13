@@ -1,4 +1,4 @@
-## Inspired by 'capture.output' and utils:::.try_silent
+## Inspired by 'capture.output' and the old .try_silent in utils package
 ## Requires: R >= 2.13.0 [??]
 captureAll <- function (expr, split = TRUE, echo = TRUE, file = NULL,
 markStdErr = FALSE)

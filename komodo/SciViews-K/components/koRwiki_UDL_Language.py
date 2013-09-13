@@ -115,7 +115,7 @@ class KoRwikiLanguage(KoUDLLanguage):
     
     sample = """== A h2 title
     
-A  paragraph of text with **bold** and //italic// text...
+A  paragraph of text with **bold** and ,,italic,, text...
 
 * Item 1,
 * Item 2

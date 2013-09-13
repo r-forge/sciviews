@@ -147,30 +147,30 @@ submenu=_Help
 	separator
 	
 	item=FAQ on R
-	cmd=R -e 'utils:::RShowDoc("R-FAQ")'
+	cmd=R -e 'utils::RShowDoc("R-FAQ")'
 	
 	submenu=_Manuals (in PDF)
 		
 		item=An introduction to R
-		cmd=R -e 'utils:::RShowDoc("R-intro")'
+		cmd=R -e 'utils::RShowDoc("R-intro")'
 		
 		item=R Reference Manual
 		cmd=R -e 'system2(getOption("pdfviewer"), shQuote(file.path(R.home("doc"), "manual", "refman.pdf")), wait = FALSE)'
 		
 		item=R Data Import/Export
-		cmd=R -e 'utils:::RShowDoc("R-data")'
+		cmd=R -e 'utils::RShowDoc("R-data")'
 		
 		item=R Language Definition
-		cmd=R -e 'utils:::RShowDoc("R-lang")'
+		cmd=R -e 'utils::RShowDoc("R-lang")'
 		
 		item=Writing R Extensions
-		cmd=R -e 'utils:::RShowDoc("R-exts")'
+		cmd=R -e 'utils::RShowDoc("R-exts")'
 		
 		item=R Internals
-		cmd=R -e 'utils:::RShowDoc("R-ints")'
+		cmd=R -e 'utils::RShowDoc("R-ints")'
 		
 		item=R Installation and Administration
-		cmd=R -e 'utils:::RShowDoc("R-admin")'
+		cmd=R -e 'utils::RShowDoc("R-admin")'
 		
 		item=Sweave User
 		cmd=R -e 'system2(getOption("pdfviewer"), shQuote(system.file("doc", "Sweave.pdf", package = "utils")), wait = FALSE)'
