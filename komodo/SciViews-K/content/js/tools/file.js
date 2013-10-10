@@ -169,7 +169,10 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 				// If above fails, try Komodo directories too:
 				var dirs = Components.classes['@activestate.com/koDirs;1']
 					.getService(Components.interfaces.koIDirs);
-				if (dirs.propertyIsEnumerable(dirName))
+				//PhG: this does not work any more on Komodo 8, but commenting
+				// out this line leads to undefined as answer in case of a
+				// wrong item => should be OK.
+				//if (dirs.propertyIsEnumerable(dirName))
 				file = dirs[dirName];
 			}
 		} catch(e) {}

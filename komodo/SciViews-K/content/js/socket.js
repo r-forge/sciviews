@@ -219,7 +219,10 @@ if (typeof(sv.socket) == 'undefined') sv.socket = {};
 			var httpRequest, url;
 			httpRequest = new XMLHttpRequest();
 			httpRequest.onprogress = function () {
-				sv.r.print(httpRequest.responseText, false, false, false);
+				// This would allow to get results chunk by chunks... but have
+				// to check echo first and to disable second output in
+				// onreadystatechange!
+				//sv.r.print(httpRequest.responseText, false, false, false);
 			};
 			httpRequest.onreadystatechange = function () {
 				try {

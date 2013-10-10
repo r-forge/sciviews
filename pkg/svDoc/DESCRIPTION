@@ -1,7 +1,7 @@
 Package: svDoc
 Type: Package
-Version: 0.9-8
-Date: 2013-08-22
+Version: 0.9-9
+Date: 2013-09-21
 Title: SciViews GUI API - svDoc functions
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))
