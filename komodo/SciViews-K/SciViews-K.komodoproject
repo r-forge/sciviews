@@ -17,7 +17,7 @@
 </macro>
 <macro async="0" icon="chrome://famfamfamsilk/skin/icons/brick.png" id="a2c99057-bcb3-43d5-8284-66628a53eadb" idref="fd57ad7e-32b5-46a5-8b5a-36f513b953ad" keyboard_shortcut="" language="JavaScript" name="extension_lib" rank="100" trigger="trigger_postopen" trigger_enabled="0">
 </macro>
-<preference-set idref="6200c0ed-45ec-4f46-a159-284803d65c04">
+<preference-set idref="6200c0ed-45ec-4f46-a159-284803d65c04" id="project" preftype="project">
   <boolean id="configured">1</boolean>
   <boolean id="editUseLinting">1</boolean>
   <string relative="path" id="import_dirname"></string>

@@ -1,5 +1,10 @@
 = svDoc News
 
+== Changes in svDoc 0.9-9
+
+* Detection of python, internal function .python(), sometimes failed. Corrected.
+
+
 == Changes in svDoc 0.9-8
 
 * svDoc documents can now be processed through an URL pointing to the internal R

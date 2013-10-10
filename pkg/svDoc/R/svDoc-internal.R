@@ -108,7 +108,8 @@
 	## Try getting a valid python executable, with version at least min.version
 	.pyCheck <- function (py, min.version = min.version) {
 		if (Sys.which(paste('"', py, '"', sep = "")) == "")
-			return(FALSE) # Not found
+			if (Sys.which(py) == "") # Quoted command sometimes fails
+				return(FALSE) # Not found
 		## Check version...
 		## The following is obvious, but does not work in Rterm.exe (stdout is
 		## *not* redirected to stdin there!)

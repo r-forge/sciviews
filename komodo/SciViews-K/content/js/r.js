@@ -168,8 +168,10 @@ sv.r.test = function sv_RTest (showVersion /*= false*/, testVersion /*= false*/,
 			return(true);
 		}
 	} catch (e) {
+		// PhG: this happens when Komodo Edit is still loading...
+		// Thus, set ShowMessage to false!
 		sv.log.exception(e, "Unknown error while testing R"
-			+ " sv.r.test():\n\n (" + e + ")", true);
+			+ " sv.r.test():\n\n (" + e + ")", false);
 		return(false);
 	}
 }

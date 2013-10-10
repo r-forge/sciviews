@@ -9,6 +9,7 @@
 ## Version 0.9.27, 2012-04-22 modified by Ph. Grosjean
 ## Version 0.9.28, 2012-12-17 modified by Ph. Grosjean
 ## Version 0.9.29, 2013-02-08 modified by Ph. Grosjean (don't use locate on the Mac)
+## Version 0.9.31, 2013-10-10 modified by Ph. Grosjean (pkg binaires v2 & v3)
 
 ## TODO: also use value in koDebug to debug server from within R!
 ## TODO: use the mechanism of startHttpServer() to retrieve default config
@@ -36,6 +37,14 @@ skip = NULL)
 	## Needed later for tryCatch'ing:
 	err.null <- function (e) return(NULL)
 
+	## With a switch to R v. 3.0.0, we now have two binaries: one for v2 and
+	## one for version 3. For now, maintain both into separate dirs!
+	if (.Platform$pkgType == "win.binary") {
+		if (R.version$major < 3) {
+			pkg.dir <- file.path(pkg.dir, "v2")
+		} else pkg.dir <- file.path(pkg.dir, "v3")
+	}
+	
 	## If minVersion not provided, get it from packages in 'default' directory
 	pkg.extpat <- switch(.Platform$pkgType, win.binary = "zip", "tar\\.gz")
 	pkgFiles <- dir(pkg.dir, pattern = paste("^.*_[0-9\\.\\-]+\\.", pkg.extpat,
@@ -299,7 +308,7 @@ skip = NULL)
 				## in R 2.10.1 under Mac OS X when the path to the package has
 				## spaces. Also, correct a bug here when installing package
 				## from a repository where we are not supposed to prepend a
-				## path! Copy the dfile temporarily to the temp dir
+				## path! Copy the file temporarily to the temp dir
 				sourcefile <- file.path(pkg.dir, pkgFile)
 				file <- file.path(tempdir(), pkgFile)
 				repos <- NULL
