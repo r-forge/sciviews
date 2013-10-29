@@ -470,7 +470,7 @@ sv.r.source = function (what) {
 		if (!view) return(false); // No current view, do nothing!
 		view.setFocus();
 		var scimoz = view.scimoz;
-		var doc = view.document;
+		var doc = view.koDoc; // Was document in pre-Ko7
 
 		var file;
 // FIXME: (sometimes?) doc is not defined in ko7!

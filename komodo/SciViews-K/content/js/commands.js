@@ -495,8 +495,8 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 
         function _isRCurLanguage () {
             var view = ko.views.manager.currentView;
-            if (!view || !view.document) return(false);
-            return(view.document.language == "R");
+            if (!view || !view.koDoc) return(false); // Was view.document in pre-Ko7
+            return(view.koDoc.language == "R"); // Was view.document in pre-Ko7
         }
 
         function _hasSelection () {
