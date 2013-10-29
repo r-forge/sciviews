@@ -848,13 +848,13 @@ sv.askUI = function (change /* = true*/) {
 
 sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 	// Don't use with Komodo < 6 (ko.toolbox2 is not defined there)
-	if ((ko.toolbox2 === undefined)) {
+	if (!(ko.toolbox2 === undefined)) {
 		try {
 			sv.toggleById("r_uilevel", true);
 			// The toolbar is wrong because it is a toolbar in Komodo 5,
 			// but a toolbaritem in Komodo 6... Fix this now!
-			var Rtoolbaritem = document.getElementById("RToolbar");
-			var Rtoolbar = document.createElement("toolbar");
+			var Rtoolbaritem = document.getElementById("RToolbar");			
+			var Rtoolbar = document.createElement("toolbar")
 			Rtoolbar.setAttribute("class", "chromeclass-toolbar");
 			Rtoolbaritem.setAttribute("id", "OldRToolbar");
 			Rtoolbar.setAttribute("id", "RToolbar");
@@ -866,14 +866,25 @@ sv.reworkUI = function (level /*= sciviews.uilevel pref*/) {
 			Rtoolbar.setAttribute("tooltiptext", "R Toolbar");
 			Rtoolbar.setAttribute("mode", "icons");
 			Rtoolbar.setAttribute("insertbefore", "toolsToolbar");
+			
+			// In Ko8, there is now a toolbaritem level
+			RtoolbarWrapper = document.createElement("toolbaritem");
+			Rtoolbar.appendChild(RtoolbarWrapper);
+			
 			var tb = Rtoolbaritem.firstChild;
+			tb.setAttribute("class", tb.getAttribute("class") + " first-child");
+			RtoolbarWrapper.appendChild(tb);
+			tb = Rtoolbaritem.firstChild;
 			while (tb) {
-				Rtoolbar.appendChild(tb);
+				RtoolbarWrapper.appendChild(tb);
 				tb = Rtoolbaritem.firstChild;
 			}
+			RtoolbarWrapper.lastChild.setAttribute("class",
+				RtoolbarWrapper.lastChild.getAttribute("class") + " last-child");
+			RtoolbarWrapper.setAttribute("class", "has-children");
 			Rtoolbaritem.parentNode.replaceChild(Rtoolbar, Rtoolbaritem);
-		} catch (e) { }
-		return;
+		} catch (e) {  }
+		//return;
 	}
 	
 	// Retrieve or ask the desired uilevel

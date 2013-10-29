@@ -475,7 +475,7 @@
 				class="stop-icon"
 				observes="cmd_svREscape"
 				label="&rEscape;" />
-			 <toolbarseparator/>
+			<!-- <toolbarseparator/> -->
 			 <toolbarbutton buttonstyle="pictures"
 				id="r_load_df_tool"
 				tooltiptext="&rLoadDF;"
@@ -497,7 +497,7 @@
 				class="r-active-lm-icon"
 				observes="cmd_svRActiveLM"
 				label="&rActiveLM;" />
-			 <toolbarseparator/>
+			<!-- <toolbarseparator/> -->
 			 <toolbarbutton buttonstyle="pictures"
 				id="r_help_context_tool"
 				tooltiptext="&rHelpContext;"

@@ -25,7 +25,7 @@ svDocToRnw <- function (svDocFile, RnwFile, encoding)
 	Rscript <- readLines(svDocFile, encoding = encoding)
 	l <- length(Rscript)
 	
-	## Detect doc chunks (start with !!", and end with !<<...>>=")
+	## Detect doc chunks (start with !!", and end with <<...>>=")
 	start <- grepl('^!!"[ \t]*$', Rscript)
 	end <- grepl('^<<.*>>="[ \t]*$', Rscript)
 	## Must have at least one doc chunk and same number of starts and ends
