@@ -61,5 +61,5 @@ path = NULL)
     if (!is.null(CmdFun)) CmdFun(id = id, data = Info)
 
 	## Return the info tooltip invisibly
-	return(invisible(Info))
+	invisible(Info)
 }

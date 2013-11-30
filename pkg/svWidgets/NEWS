@@ -1,5 +1,14 @@
 = svWidgets News
 
+== Changes in svWidgets 0.9-44
+
+* In order to conform to camelcase convention, ImgXXX() functions are renamed
+  imgXXX(). Also argument 'imgtype' is renamed 'img.type'.
+  
+* Idem for MenuXXX(), ToolsXXX() and WinXXX() functions that become menuXXX(),
+  toolsXXX() and winXXX(), respectively.
+
+
 == Changes in svWidgets 0.9-43
 
 * Temporary objects are now stored in SciViews:TempEnv instead of TempEnv, and

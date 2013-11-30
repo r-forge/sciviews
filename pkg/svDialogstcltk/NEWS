@@ -1,5 +1,10 @@
 = svDialogstcltk News
 
+== Changes in svDialogstcltk 0.9-4
+
+* Removed svDialogs in Enhances field, because already in Depends.
+
+
 == Changes in svDialogstcltk 0.9-3
 
 * NEWS file reworked to support new Rd format.

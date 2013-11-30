@@ -1,5 +1,11 @@
 = svTools News
 
+== Change in svTools 0.9-4
+
+* Internal change: tools:::file_path_as_absolute() changed to
+  tools::file_path_as_absolute().
+
+
 == Changes in svTools 0.9-3
 
 * Fixed a bug in lint() that prevented to retrieve warnings from codetools 0.2-8

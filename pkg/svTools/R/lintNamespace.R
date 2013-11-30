@@ -5,7 +5,7 @@ lintNamespace <- function (namespace, checkPackages = TRUE)
 	if (isTRUE(checkPackages)) allpacks <- .packages(all.available = TRUE)  
 	## Look for the 'object is not subsettable' error
 	test <- try(tools:::.check_namespace(
-		dirname(tools:::file_path_as_absolute(namespace))), silent = TRUE)
+		dirname(tools::file_path_as_absolute(namespace))), silent = TRUE)
 	if (inherits(test, "try-error")) {
 		if (regexpr("object is not subsettable", test) > 0) {
 			lengths <- sapply(p, length)

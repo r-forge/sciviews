@@ -2,62 +2,62 @@ print.guiImg <- function (x, ...)
 {
 	cat("A SciViews GUI image object:", "\n")
 	print(unclass(x))
-	return(invisible(x))
+	invisible(x)
 }
 
-ImgAdd <- function (file, type = "gif", imgtype = "tkImage", update = FALSE, ...)
+imgAdd <- function (file, type = "gif", img.type = "tkImage",
+update = FALSE, ...)
 {
-	res <- switch(imgtype,
+	invisible(switch(img.type,
 		tkImage = tkImgAdd(file = file, type = type, update = update),
-		stop("Unrecognized image type '", imgtype, "'"))
-	return(invisible(res))
+		stop("Unrecognized image type '", img.type, "'")))
 }
 
-ImgDel <- function (image)
+imgDel <- function (image)
 {
-    res <- switch(ImgType(image),
-		tkImage = tkImgDel(image))
-	return(invisible(res))
+    invisible(switch(imgType(image),
+		tkImage = tkImgDel(image)))
 }
 
-ImgGet <- function (image)
+imgGet <- function (image)
 {
 	## Get the image
-    return(getTemp(".guiImgs")[[image]])
+    getTemp(".guiImgs")[[image]]
 }
 
-ImgType <- function (image, warn = TRUE)
+imgType <- function (image, warn = TRUE)
 {
 	## Get the type of image
-	if (regexpr("^[$]Tk[.]", image) > 0) return("tkImage") else {
-        if (warn) warning("Unrecognized image type for ", image)
-		return(NA)
+	if (regexpr("^[$]Tk[.]", image) > 0) {
+		res <- "tkImage"
+	} else {
+		if (warn) warning("Unrecognized image type for ", image)
+		res <- NA
 	}
+	res
 }
 
-ImgNames <- function ()
+imgNames <- function ()
 {
 	## List all available images
     res <- names(getTemp(".guiImgs"))
 	if (is.null(res)) res <- character(0)
-	return(res)
+	res
 }
 
-ImgRead <- function (dir, type = "gif", imgtype = "tkImage")
+imgRead <- function (dir, type = "gif", img.type = "tkImage")
 {
-	## Depending on 'imgtype', we call a different function
-	res <- switch(imgtype,
+	## Depending on 'img.type', we call a different function
+	invisible(switch(img.type,
 		tkImage = tkImgRead(dir = dir, type = type),
-		stop("Unrecognized image type '", imgtype, "'"))
-	return(invisible(res))
+		stop("Unrecognized image type '", img.type, "'")))
 }
 
-ImgReadPackage <- function (package, subdir = "gui", type = "gif",
-imgtype = "tkImage")
+imgReadPackage <- function (package, subdir = "gui", type = "gif",
+img.type = "tkImage")
 {
 	## Create image resources by reading a series of image files from the 'gui'
 	## subdirectory of a package
 	dir <- system.file(subdir, package = package)
-	res <- ImgRead(dir = dir, type = type, imgtype = imgtype)
-	return(invisible(res))
+	invisible(imgRead(dir = dir, type = type, img.type = img.type))
 }

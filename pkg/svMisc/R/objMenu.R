@@ -232,5 +232,5 @@ sep = "\t", path = NULL)
     if (!is.null(CmdFun)) CmdFun(id = id, data = popup)
 
 	## Return the menu specification invisibly
-	return(invisible(popup))
+	invisible(popup)
 }

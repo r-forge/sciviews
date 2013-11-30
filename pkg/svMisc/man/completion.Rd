@@ -88,8 +88,7 @@ completion(code, pos = nchar(code), min.length = 2, print = FALSE,
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> & Kamil Barton }
 
-\seealso{ \code{\link{CompletePlus}}, \code{\link{CallTip}},
-  \code{\link[utils]{rc.settings}}. }
+\seealso{ \code{\link[utils]{rc.settings}}. }
 
 \examples{
 ## a data.frame

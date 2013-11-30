@@ -1,8 +1,8 @@
 \name{Win}
-\alias{WinAdd}
-\alias{WinDel}
-\alias{WinGet}
-\alias{WinNames}
+\alias{winAdd}
+\alias{winDel}
+\alias{winGet}
+\alias{winNames}
 \alias{print.guiWin}
 
 \title{ Manipulate Windows }
@@ -13,11 +13,11 @@
   These functions manage windows and ease their clean creation and destruction.
 }
 \usage{
-WinAdd(name = "win1", type = "tkWin", parent = .TkRoot, title = NULL,
+winAdd(name = "win1", type = "tkWin", parent = .TkRoot, title = NULL,
     pos = NULL, bind.delete = TRUE, \dots)
-WinDel(window)
-WinGet(window)
-WinNames()
+winDel(window)
+winGet(window)
+winNames()
 
 \method{print}{guiWin}(x, \dots)
 }
@@ -33,7 +33,7 @@ WinNames()
     negative values place the window relative to the right or bottom side of the
     screen. Specifying \code{NULL} (by default) allows for automatic placement
     of the window. }
-  \item{bind.delete}{ do we automatically bind \code{WinDel()} to the windows
+  \item{bind.delete}{ do we automatically bind \code{winDel()} to the windows
     delete event (strongly advised for correct housekeeping)? }
   \item{\dots}{ additional options to pass to the window creator, or the print()
     method. }
@@ -47,16 +47,16 @@ WinNames()
 }
 
 \value{
-  \code{WinAdd()} and \code{WinGet()} return the handle to the window (invisibly
-    for \code{WinAdd()}.
-  \code{WinNames()} return the list of all windows registered in .guiWins.
-  \code{WinDel()} returns invisibly \code{TRUE} if the window is found and
+  \code{winAdd()} and \code{winGet()} return the handle to the window (invisibly
+    for \code{winAdd()}.
+  \code{winNames()} return the list of all windows registered in .guiWins.
+  \code{winDel()} returns invisibly \code{TRUE} if the window is found and
     deleted, \code{FALSE} otherwise.
 }
 
 \author{ Philippe Grosjean }
 
-\seealso{ \code{\link{tkWinAdd}}, \code{\link{MenuReadPackage}} }
+\seealso{ \code{\link{tkWinAdd}}, \code{\link{menuReadPackage}} }
 
 \examples{
 \dontrun{
@@ -64,12 +64,12 @@ WinNames()
 ## into an interactive R session with the tcltk package loaded
 
 ## Creating and destroying a Tk window and inspecting the list
-WinNames()
-WinAdd("tt", title = "My win", pos ="-40+20")
-WinNames()
-tkwm.deiconify(WinGet("tt")) # Standard tcltk functions on the window
-WinDel("tt")
-WinNames()
+winNames()
+winAdd("tt", title = "My win", pos ="-40+20")
+winNames()
+tkwm.deiconify(winGet("tt")) # Standard tcltk functions on the window
+winDel("tt")
+winNames()
 }
 }
 

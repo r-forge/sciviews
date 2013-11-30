@@ -1,39 +1,39 @@
 \name{Menu}
-\alias{MenuAdd}
-\alias{MenuAddItem}
-\alias{MenuDel}
-\alias{MenuDelItem}
-\alias{MenuNames}
-\alias{MenuInvoke}
-\alias{MenuItems}
-\alias{MenuType}
-\alias{MenuChangeItem}
-\alias{MenuStateItem}
-\alias{MenuRead}
-\alias{MenuReadPackage}
+\alias{menuAdd}
+\alias{menuAddItem}
+\alias{menuDel}
+\alias{menuDelItem}
+\alias{menuNames}
+\alias{menuInvoke}
+\alias{menuItems}
+\alias{menuType}
+\alias{menuChangeItem}
+\alias{menuStateItem}
+\alias{menuRead}
+\alias{menuReadPackage}
 \alias{print.guiMenu}
 
 \title{ Conveniently manipulate menus, whatever the window }
 \description{
   These functions provide an unifying way of dealing with menus in R.
-  It is ispired from the winMenuXXX() functions under Windows that allow
+  It is inspired from the winMenuXXX() functions under Windows that allow
   easy manipulation of custom menus in Rgui.exe. Currently, they support all
   the functionnalities of winMenuXXX() functions and they bring a convenient
   similar layer on top of Tk menus to manipulate them in a similar way.
 }
 \usage{
-MenuAdd(menu, \dots)
-MenuAddItem(menu, item, action, image = "", accel = "", options = "")
-MenuDel(menu)
-MenuDelItem(menu, item)
-MenuNames()
-MenuItems(menu)
-MenuType(menu, warn = TRUE)
-MenuInvoke(menu, item)
-MenuChangeItem(menu, item, action = "", options = "")
-MenuStateItem(menu, item, active = TRUE)
-MenuRead(file = "Menus.txt")
-MenuReadPackage(package, subdir = "gui", file = "Menus.txt")
+menuAdd(menu, \dots)
+menuAddItem(menu, item, action, image = "", accel = "", options = "")
+menuDel(menu)
+menuDelItem(menu, item)
+menuNames()
+menuItems(menu)
+menuType(menu, warn = TRUE)
+menuInvoke(menu, item)
+menuChangeItem(menu, item, action = "", options = "")
+menuStateItem(menu, item, active = TRUE)
+menuRead(file = "Menus.txt")
+menuReadPackage(package, subdir = "gui", file = "Menus.txt")
 
 \method{print}{guiMenu}(x, \dots)
 }
@@ -50,8 +50,8 @@ MenuReadPackage(package, subdir = "gui", file = "Menus.txt")
   \item{active}{ do we enable or disable the menu item? }
   \item{file}{ a file containing menu specifications to read. }
   \item{package}{ name of a package from where to load menu specifications. }
-  \item{subdir}{ subdirectory in the package where the menu specifications are stored.
-	By default, it is the "gui" subdirectory. }
+  \item{subdir}{ subdirectory in the package where the menu specifications are
+    stored. By default, it is the "gui" subdirectory. }
   \item{x}{ an object of class 'guiMenu'. }
   \item{\dots}{ further arguments passed to the function. }
 }
@@ -64,21 +64,21 @@ MenuReadPackage(package, subdir = "gui", file = "Menus.txt")
 }
 
 \value{
-  \code{MenuAdd()} and \code{MenuAddItem()} return the handle to the newly
+  \code{menuAdd()} and \code{menuAddItem()} return the handle to the newly
     created menu/menu item invisibly.
-  \code{MenuDel()} and \code{MenuDelItem()} return invisibly \code{TRUE} if the
+  \code{menuDel()} and \code{menuDelItem()} return invisibly \code{TRUE} if the
     resource is found and deleted, \code{FALSE} otherwise.
-  \code{MenuNames()} returns the list of all menus registered in .guiMenus in
+  \code{menuNames()} returns the list of all menus registered in .guiMenus in
     the \code{SciViews:TempEnv} environment.
-  \code{MenuInvoke()} returns invisibly \code{TRUE} if the menu item was
+  \code{menuInvoke()} returns invisibly \code{TRUE} if the menu item was
     invoked, \code{FALSE} otherwise.
-  \code{MenuRead()} and \code{MenuReadPackage()} return invisibly the list of
+  \code{menuRead()} and \code{menuReadPackage()} return invisibly the list of
     menus that are imported and created.
 }
 
 \author{ Philippe Grosjean }
 
-\seealso{ \code{\link{tkMenuAdd}}, \code{\link{ImgReadPackage}} }
+\seealso{ \code{\link{tkMenuAdd}}, \code{\link{imgReadPackage}} }
 
 \examples{
 \dontrun{
@@ -89,58 +89,58 @@ MenuReadPackage(package, subdir = "gui", file = "Menus.txt")
 
 ### Under RGui and Windows only! ###
 ## Create menus in Rgui, using a specification file
-MenuReadPackage("svWidgets")
-MenuNames()
-(MenuItems("$ConsoleMain/Testit"))
+menuReadPackage("svWidgets")
+menuNames()
+(menuItems("$ConsoleMain/Testit"))
 
 ## Create menus manually in Rgui
-MenuAdd("$ConsoleMain/Testit2")
-MenuAddItem("$ConsoleMain/Testit2", "Trial", "ls()")
-MenuNames()
-(MenuItems("$ConsoleMain/Testit2"))
-MenuStateItem("$ConsoleMain/Testit2", "Trial", FALSE)
-MenuStateItem("$ConsoleMain/Testit2", "Trial", TRUE)
-## Buggy? -> MenuChangeItem("$ConsoleMain/Testit2", "Trial", "search()")
-(MenuItems("$ConsoleMain/Testit2"))
+menuAdd("$ConsoleMain/Testit2")
+menuAddItem("$ConsoleMain/Testit2", "Trial", "ls()")
+menuNames()
+(menuItems("$ConsoleMain/Testit2"))
+menuStateItem("$ConsoleMain/Testit2", "Trial", FALSE)
+menuStateItem("$ConsoleMain/Testit2", "Trial", TRUE)
+## Buggy? -> menuChangeItem("$ConsoleMain/Testit2", "Trial", "search()")
+(menuItems("$ConsoleMain/Testit2"))
 
 
 ### Under any system supporting Tcl/Tk ###
 ## Create and manipulate Tk menus
-WinAdd("tt", title = "A Tk window with menus", pos ="-40+20")
-MenuAdd("$Tk.tt/Misc")
-MenuNames()
-(MenuItems("$Tk.tt/Misc"))  # Still nothing in it
-MenuAddItem("$Tk.tt/Misc", "List &variables", "print(ls(envir = .GlobalEnv))")
-MenuAddItem("$Tk.tt/Misc", "Say &yo!", "cat('yo!\n')")
+winAdd("tt", title = "A Tk window with menus", pos ="-40+20")
+menuAdd("$Tk.tt/Misc")
+menuNames()
+(menuItems("$Tk.tt/Misc"))  # Still nothing in it
+menuAddItem("$Tk.tt/Misc", "List &variables", "print(ls(envir = .GlobalEnv))")
+menuAddItem("$Tk.tt/Misc", "Say &yo!", "cat('yo!\n')")
 
-MenuDelItem("$Tk.tt/Misc", "Say &yo!")
-MenuAddItem("$Tk.tt/Misc", "-")
-MenuAddItem("$Tk.tt/Misc", "&Say yo! twice", "cat('yo! yo!\n')")
-(MenuItems("$Tk.tt/Misc"))
+menuDelItem("$Tk.tt/Misc", "Say &yo!")
+menuAddItem("$Tk.tt/Misc", "-")
+menuAddItem("$Tk.tt/Misc", "&Say yo! twice", "cat('yo! yo!\n')")
+(menuItems("$Tk.tt/Misc"))
 
-ImgReadPackage("svWidgets")  # Make sure images are loaded
-MenuAdd("$Tk.tt/Misc/Sub&Menu")
-MenuAddItem("$Tk.tt/Misc/Sub&Menu", "T&rial", "cat('Trial trigerred!\n')")
-MenuAddItem("$Tk.tt/Misc", "Tria&l2", "cat('Trial with image and accel!\n')",
+imgReadPackage("svWidgets")  # Make sure images are loaded
+menuAdd("$Tk.tt/Misc/Sub&Menu")
+menuAddItem("$Tk.tt/Misc/Sub&Menu", "T&rial", "cat('Trial trigerred!\n')")
+menuAddItem("$Tk.tt/Misc", "Tria&l2", "cat('Trial with image and accel!\n')",
 	image = "$Tk.butOpen", accel = "Ctrl+T")
-MenuNames()
-(MenuItems("$Tk.tt/Misc"))
-MenuStateItem("$Tk.tt/Misc", "Tria&l2", FALSE)
-MenuStateItem("$Tk.tt/Misc", "Tria&l2", TRUE)
-MenuStateItem("$Tk.tt/Misc", "Sub&Menu", FALSE)
-MenuStateItem("$Tk.tt/Misc", "Sub&Menu", TRUE)
-MenuChangeItem("$Tk.tt/Misc", "Tria&l2", options = "underline = 1")
+menuNames()
+(menuItems("$Tk.tt/Misc"))
+menuStateItem("$Tk.tt/Misc", "Tria&l2", FALSE)
+menuStateItem("$Tk.tt/Misc", "Tria&l2", TRUE)
+menuStateItem("$Tk.tt/Misc", "Sub&Menu", FALSE)
+menuStateItem("$Tk.tt/Misc", "Sub&Menu", TRUE)
+menuChangeItem("$Tk.tt/Misc", "Tria&l2", options = "underline = 1")
 ## This is the way to change binding
-tkbind(WinGet("tt"), "<Control-r>", function() MenuInvoke("$Tk.tt/Misc", "Tria&l2"))
-MenuChangeItem("$Tk.tt/Misc", "Tria&l2", action = 'cat("new action for Tria&l2!\n")')
-MenuInvoke("$Tk.tt/Misc", "Tria&l2")
-(MenuItems("$Tk.tt/Misc"))
-MenuDelItem("$Tk.tt/Misc", "Tria&l2")
-MenuDel("$Tk.tt/Misc")
-MenuNames()
+tkbind(WinGet("tt"), "<Control-r>", function() menuInvoke("$Tk.tt/Misc", "Tria&l2"))
+menuChangeItem("$Tk.tt/Misc", "Tria&l2", action = 'cat("new action for Tria&l2!\n")')
+menuInvoke("$Tk.tt/Misc", "Tria&l2")
+(menuItems("$Tk.tt/Misc"))
+menuDelItem("$Tk.tt/Misc", "Tria&l2")
+menuDel("$Tk.tt/Misc")
+menuNames()
 ## The following command generates an error!
-(MenuItems("$Tk.tt/Misc"))
-WinDel("tt")
+(menuItems("$Tk.tt/Misc"))
+winDel("tt")
 }
 }
 

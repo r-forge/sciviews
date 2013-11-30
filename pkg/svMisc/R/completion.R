@@ -1,29 +1,4 @@
 ## TODO: activate rc.settings(ipck = TRUE) and rc.settings(files = TRUE)
-
-Complete <- function (code, print = FALSE, types = c("default", "scintilla"),
-addition = FALSE, skip.used.args = TRUE, sep = "\n", type.sep = "?")
-{
-	.Deprecated("completion")
-	completion(code, print = print, types = types, addition = addition,
-		skip.used.args = skip.used.args, sep = sep, field.sep = type.sep)
-}
-
-CompletePlus <- function (linebuffer, cursorPosition = nchar(linebuffer),
-minlength = 2, simplify = FALSE, types = c("arguments", "functions", "packages"))
-{
-	.Deprecated("completion")
-	res <- completion(linebuffer, pos = cursorPosition, min.length = minlength,
-		print = FALSE, what = types, types = NA, addition = FALSE,
-		sort = FALSE, description = TRUE, max.fun = 10000,
-		skip.used.args = FALSE, field.sep = "\t")
-	if (is.character(res) && length(res) && res == "") return(NULL) else {
-		if (isTRUE(simplify)) {
-			cat(apply(res[, c("completion", "context", "desc")], 1, paste,
-				collapse = "\t"), sep = "\n")
-		} else return(res)
-	}
-}
-
 completion <- function (code, pos = nchar(code), min.length = 2,
 print = FALSE, types = c("default", "scintilla"), addition = FALSE, sort = TRUE,
 what = c("arguments", "functions", "packages"), description = FALSE,

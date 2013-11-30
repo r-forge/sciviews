@@ -1,11 +1,11 @@
 \name{Img}
-\alias{ImgAdd}
-\alias{ImgDel}
-\alias{ImgGet}
-\alias{ImgNames}
-\alias{ImgType}
-\alias{ImgRead}
-\alias{ImgReadPackage}
+\alias{imgAdd}
+\alias{imgDel}
+\alias{imgGet}
+\alias{imgNames}
+\alias{imgType}
+\alias{imgRead}
+\alias{imgReadPackage}
 \alias{print.guiImg}
 
 \title{ Manipulate image resources for the GUIs }
@@ -17,14 +17,14 @@
 }
 
 \usage{
-ImgAdd(file, type = "gif", imgtype = "tkImage", update = FALSE, \dots)
-ImgDel(image)
-ImgGet(image)
-ImgNames()
-ImgType(image, warn = TRUE)
+imgAdd(file, type = "gif", img.type = "tkImage", update = FALSE, \dots)
+imgDel(image)
+imgGet(image)
+imgNames()
+imgType(image, warn = TRUE)
 
-ImgRead(dir, type = "gif", imgtype = "tkImage")
-ImgReadPackage(package, subdir = "gui", type = "gif", imgtype = "tkImage")
+imgRead(dir, type = "gif", img.type = "tkImage")
+imgReadPackage(package, subdir = "gui", type = "gif", img.type = "tkImage")
 
 \method{print}{guiImg}(x, \dots)
 }
@@ -32,7 +32,7 @@ ImgReadPackage(package, subdir = "gui", type = "gif", imgtype = "tkImage")
 \arguments{
   \item{file}{ image file from where to download the resource. }
   \item{type}{ type of image. Currently, only 'gif' is supported. }
-  \item{imgtype}{ the type of image resource to create. Currently, only
+  \item{img.type}{ the type of image resource to create. Currently, only
     'tkImage' is supported and it is a Tcl/Tk resource. }
   \item{update}{ do we update an already loaded image resource, or not? }
   \item{image}{ Name of an image. }
@@ -52,41 +52,41 @@ ImgReadPackage(package, subdir = "gui", type = "gif", imgtype = "tkImage")
 }
 
 \value{
-  \code{ImgAdd()} and \code{ImgGet()} return the handle to the newly created
-    image (invisibly for the \code{ImgAdd()}).
-  \code{ImgDel()} returns invisibly \code{TRUE} if the resource is found and
+  \code{imgAdd()} and \code{imgGet()} return the handle to the newly created
+    image (invisibly for the \code{imgAdd()}).
+  \code{imgDel()} returns invisibly \code{TRUE} if the resource is found and
     deleted, \code{FALSE} otherwise.
-  \code{ImgNames()} return the list of all images registered in .guiImgs in the
+  \code{imgNames()} return the list of all images registered in .guiImgs in the
     \code{SciViews:TempEnv} environment.
-  \code{ImgRead()} and \code{ImgReadPackage()} return invisibly the list of
+  \code{imgRead()} and \code{imgReadPackage()} return invisibly the list of
     image files that are imported as resources.
 }
 
 \author{ Philippe Grosjean }
 
-\seealso{ \code{\link{ToolAdd}} }
+\seealso{ \code{\link{toolAdd}} }
 
 \examples{
 \dontrun{
 ## These cannot be run by examples() but should be OK when pasted
 ## into an interactive R session with the tcltk package loaded
 
-ImgNames()
-myImg <- ImgAdd(system.file("gui", "logoSciViews.gif", package = "svWidgets"))
+imgNames()
+myImg <- imgAdd(system.file("gui", "logoSciViews.gif", package = "svWidgets"))
 myImg  # Note that $Tk. is prepended to the name!
-ImgNames()
-ImgType(myImg)
+imgNames()
+imgType(myImg)
 ## Place that logo in a Tk window
-timg <- WinAdd("timg", title = "A Tk window with image", pos ="-40+20")
-labImg <- tklabel(timg, image = ImgGet(myImg), bg = "white")
+timg <- winAdd("timg", title = "A Tk window with image", pos ="-40+20")
+labImg <- tklabel(timg, image = imgGet(myImg), bg = "white")
 tkpack(labImg)
 ## When the image resource is deleted, it is not displayed any more (no error)
-ImgDel(myImg)
-ImgNames()
-WinDel("timg")
+imgDel(myImg)
+imgNames()
+winDel("timg")
 ## To read all image resources at once (place this in .Lib.first())
-ImgReadPackage("svWidgets")
-ImgNames()
+imgReadPackage("svWidgets")
+imgNames()
 rm(myImg)
 }
 }

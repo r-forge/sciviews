@@ -5,9 +5,9 @@
 \title{ Conveniently manipulate Tk windows }
 \description{
   These functions provide an easy way to create and manipulate Tk windows
-  under R. Note that the corresponding \code{WinXXX()} function also manipulate
+  under R. Note that the corresponding \code{winXXX()} function also manipulate
   Tk windows the same way, but are capable of manipulating other windows as
-  well (in the future). One should, thus, preferably use \code{WinXXX()}!
+  well (in the future). One should, thus, preferably use \code{winXXX()}!
 }
 \usage{
 tkWinAdd(name = "win1", parent = .TkRoot, title = NULL, pos = NULL,
@@ -31,7 +31,7 @@ tkWinDel(window)
 }
 
 \details{
-  Do not use these functions directly. Prefer the corresponding \code{WinXXX()}
+  Do not use these functions directly. Prefer the corresponding \code{winXXX()}
   functions that will call them if Tk windows are concerned.
 }
 
@@ -43,7 +43,7 @@ tkWinDel(window)
 
 \author{ Philippe Grosjean }
 
-\seealso{ \code{\link{WinAdd}} }
+\seealso{ \code{\link{winAdd}} }
 
 \keyword{ utilities }
 

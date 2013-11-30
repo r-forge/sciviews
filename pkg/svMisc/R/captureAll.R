@@ -220,5 +220,5 @@ markStdErr = FALSE)
 	## Make sure last line ends up with \n
 	l <- length(rval)
 	if (l) rval[l] <- paste(rval[l], "\n", sep = "")
-	return(rval)
+	rval
 }

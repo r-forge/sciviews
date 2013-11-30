@@ -1,15 +1,3 @@
-Sys.tempdir <- function ()
-{
-	.Deprecated("systemDir")
-	systemDir("sysTemp")
-}
-
-Sys.userdir <- function ()
-{
-	.Deprecated("systemDir")
-	systemDir("user")
-}
-
 systemFile <- function (..., exec = FALSE, package = NULL, lib.loc = NULL)
 {
 	## First look if exec is TRUE

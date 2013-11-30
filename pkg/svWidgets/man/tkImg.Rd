@@ -24,7 +24,7 @@ tkImgRead(dir, type = "gif")
 
 \details{
   These functions should not be called directly, but by means of
-  \code{ImgAdd()}, \code{ImgDel()} or \code{ImgRead()}.
+  \code{imgAdd()}, \code{imgDel()} or \code{imgRead()}.
 }
 
 \value{
@@ -37,7 +37,7 @@ tkImgRead(dir, type = "gif")
 
 \author{ Philippe Grosjean }
 
-\seealso{ \code{\link{ImgAdd}}, \code{\link{ImgDel}}, \code{\link{ImgRead}} }
+\seealso{ \code{\link{imgAdd}}, \code{\link{imgDel}}, \code{\link{imgRead}} }
 
 \keyword{ utilities }
 

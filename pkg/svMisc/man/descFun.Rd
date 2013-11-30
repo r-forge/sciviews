@@ -38,7 +38,7 @@ descArgs(fun, args = NULL, package = NULL, lib.loc = NULL)
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{CompletePlus}} }
+\seealso{ \code{\link{completion}} }
 
 \examples{
 descFun("ls", "base")

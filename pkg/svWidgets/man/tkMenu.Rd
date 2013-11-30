@@ -12,9 +12,9 @@
 \title{ Conveniently manipulate Tk menus }
 \description{
   These functions provide an easy way to create and manipulate Tk menus
-  under R. Note that the corresponding \code{MenuXXX()} function also manipulate
+  under R. Note that the corresponding \code{menuXXX()} function also manipulate
   Tk menus the same way, but are capable of manipulating other menus as well.
-  One should, thus, preferably use \code{MenuXXX()}!
+  One should, thus, preferably use \code{menuXXX()}!
 }
 \usage{
 tkMenuAdd(menu, tearoff = FALSE)
@@ -42,7 +42,7 @@ tkMenuItemCall(expr)
 }
 
 \details{
-  Do not use these functions directly. Prefer the corresponding \code{MenuXXX()}
+  Do not use these functions directly. Prefer the corresponding \code{menuXXX()}
   functions that will call them if Tk menus or menu items are provided.
 }
 
@@ -63,7 +63,7 @@ tkMenuItemCall(expr)
 
 \author{ Philippe Grosjean }
 
-\seealso{ \code{\link{MenuAdd}} }
+\seealso{ \code{\link{menuAdd}} }
 
 \keyword{ utilities }
 

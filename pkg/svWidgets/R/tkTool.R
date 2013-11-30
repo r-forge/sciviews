@@ -2,11 +2,16 @@ tkToolItems <- function (toolbar)
 {
 	T <- getTemp(".guiTools")[[toolbar]]
 	if (is.null(T))
-		stop("unable to retrieve items for ", toolbar, "\n(toolbar ", toolbar, " does not exist)")
+		stop("unable to retrieve items for ", toolbar, "\n(toolbar ", toolbar,
+			" does not exist)")
 	Titems <- T$Items
-	if (is.null(Titems)) res <- character(0) else res <- as.character(Titems$action)
+	if (is.null(Titems)) {
+		res <- character(0)
+	} else {
+		res <- as.character(Titems$action)
+	}
 	if (length(res) > 0) names(res) <- Titems$name
-	return(res)
+	res
 }
 
 tkToolAdd <- function (toolbar, side = "top")
@@ -22,14 +27,16 @@ tkToolAdd <- function (toolbar, side = "top")
 		stop("toolbar ", toolbar, " already exists!")
 	Parent <- .guiTools[[Pname]]
 	if (is.null(Parent)) {
-        ## If base toolbar is a "root", try to create the corresponding Tk toolbar area
+        ## If base toolbar is a "root", try to create the corresponding
+		## Tk toolbar area
         if (regexpr("/", Pname) < 0) {
 			## Get the name of the Tk window that hosts the menu
 			TkWinName <- sub("^[$]Tk[.]", "", Pname)
 			## Look if such a Tk window is recorded in .guiWins
-			TkWin <- WinGet(TkWinName)
+			TkWin <- winGet(TkWinName)
 			if (is.null(TkWin))
-				stop("toolbar does not exist, and the parent Tk window cannot be found!")
+				stop("toolbar does not exist, ",
+					"and the parent Tk window cannot be found!")
 			## Create the toolbar
             Parent <- ttkframe(TkWin)
 			tkpack(Parent, side = side, anchor = "w")
@@ -37,7 +44,7 @@ tkToolAdd <- function (toolbar, side = "top")
 			.guiTools[[Pname]] <- Parent
 		} else stop("unable to add toolbar\n(base toolbar does not exists)")
 	}
-	## Check that the name is not already used (for a toolbar entry, for instance)
+	## Check that the name is not already used (e.g., for a toolbar entry)
     items <- Parent$Items
     if (!is.null(items) && Tname %in% items$name)
 		stop("the toolbar name is already used in this toolbar!")
@@ -57,7 +64,7 @@ tkToolAdd <- function (toolbar, side = "top")
 	}
 	## Update the SciViews:TempEnv version of .guiTools
 	assignTemp(".guiTools", .guiTools)
-	return(invisible(toolbar))
+	invisible(toolbar)
 }
 
 tkToolAddItem <- function (toolbar, item, action, image = "", options = "")
@@ -87,14 +94,13 @@ tkToolAddItem <- function (toolbar, item, action, image = "", options = "")
 		tkgrid(but, row = 0, column = n, sticky = "nsew")
 		action <- "[separator]"
 		options <- 'orient = "vertical"'
-	} else {  # This is a tool button
-		
+	} else {  # This is a tool button	
 		## Rework options
 ### TODO: I need to deal with options!
 		##if (options == "") opts <- "" else opts <- paste(",", options)
 		## Do we have to add an image to the tool button?
 		if (image != "") {
-			Img <- ImgGet(image)
+			Img <- imgGet(image)
 			but <- ttkbutton(Tl, text = item, image = as.character(Img),
 				compound = "image", style = "Toolbutton",
 				command = .actionWrapper(action))
@@ -116,13 +122,14 @@ tkToolAddItem <- function (toolbar, item, action, image = "", options = "")
 	entry <- data.frame(name = I(item), action = I(action), image = I(image),
 		options = I(options), pos = n)
 	items <- .guiTools[[toolbar]]$Items
-	if (is.null(items))
+	if (is.null(items)) {
 		.guiTools[[toolbar]]$Items <- entry
-	else
+	} else {
         .guiTools[[toolbar]]$Items <- rbind(items, entry)
+	}
 	## Update the SciViews:TempEnv version of .guiTools
 	assignTemp(".guiTools", .guiTools)
-	return(invisible(itempath))
+	invisible(itempath)
 }
 
 .actionWrapper <- function (action)

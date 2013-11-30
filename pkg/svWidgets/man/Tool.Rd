@@ -1,16 +1,16 @@
 \name{Tool}
-\alias{ToolAdd}
-\alias{ToolAddItem}
-\alias{ToolDel}
-\alias{ToolDelItem}
-\alias{ToolNames}
-\alias{ToolInvoke}
-\alias{ToolItems}
-\alias{ToolType}
-\alias{ToolChangeItem}
-\alias{ToolStateItem}
-\alias{ToolRead}
-\alias{ToolReadPackage}
+\alias{toolAdd}
+\alias{toolAddItem}
+\alias{toolDel}
+\alias{toolDelItem}
+\alias{toolNames}
+\alias{toolInvoke}
+\alias{toolItems}
+\alias{toolType}
+\alias{toolChangeItem}
+\alias{toolStateItem}
+\alias{toolRead}
+\alias{toolReadPackage}
 \alias{print.guiTool}
 
 \title{ Conveniently manipulate toolbars, whatever the window }
@@ -20,18 +20,18 @@
   graphical toolboxes could be supported too in the future.
 }
 \usage{
-ToolAdd(toolbar, side = "top")
-ToolAddItem(toolbar, item, action, image = "", options = "")
-ToolDel(toolbar)
-ToolDelItem(toolbar, item)
-ToolNames()
-ToolItems(toolbar)
-ToolType(toolbar, warn = TRUE)
-ToolInvoke(toolbar, item)
-ToolChangeItem(toolbar, item, action = "", options = "")
-ToolStateItem(toolbar, item, active = TRUE)
-ToolRead(file = "Tools.txt")
-ToolReadPackage(package, subdir = "gui", file = "Tools.txt")
+toolAdd(toolbar, side = "top")
+toolAddItem(toolbar, item, action, image = "", options = "")
+toolDel(toolbar)
+toolDelItem(toolbar, item)
+toolNames()
+toolItems(toolbar)
+toolType(toolbar, warn = TRUE)
+toolInvoke(toolbar, item)
+toolChangeItem(toolbar, item, action = "", options = "")
+toolStateItem(toolbar, item, active = TRUE)
+toolRead(file = "Tools.txt")
+toolReadPackage(package, subdir = "gui", file = "Tools.txt")
 
 \method{print}{guiTool}(x, \dots)
 }
@@ -61,25 +61,25 @@ ToolReadPackage(package, subdir = "gui", file = "Tools.txt")
   are stored in the .guiTools variable, located in the \code{SciViews:TempEnv}
   environment.
 
-  Use 'Img' resources to load images to display in the toolbuttons.
+  Use 'img' resources to load images to display in the toolbuttons.
 }
 
 \value{
-  \code{ToolAdd()}, \code{ToolAddItem()} return the handle to the newly created
+  \code{toolAdd()}, \code{toolAddItem()} return the handle to the newly created
     toolbar or toolbutton invisibly.
-  \code{ToolDel()} and \code{ToolDelItem()} return invisibly \code{TRUE} if the
+  \code{toolDel()} and \code{toolDelItem()} return invisibly \code{TRUE} if the
     resource is found and deleted, \code{FALSE} otherwise.
-  \code{ToolNames()} returns the list of all toolbars registered in .guiTools in
+  \code{toolNames()} returns the list of all toolbars registered in .guiTools in
     the \code{SciViews:TempEnv} environment.
-  \code{ToolInvoke()} returns invisibly \code{TRUE} if the toolbutton was
+  \code{toolInvoke()} returns invisibly \code{TRUE} if the toolbutton was
     invoked, \code{FALSE} otherwise.
-  \code{ToolRead()} and \code{ToolReadPackage()} return invisibly the list of
+  \code{toolRead()} and \code{toolReadPackage()} return invisibly the list of
     toolbars that are imported and created.
 }
 
 \author{ Philippe Grosjean }
 
-\seealso{ \code{\link{tkToolAdd}}, \code{\link{ImgReadPackage}} }
+\seealso{ \code{\link{tkToolAdd}}, \code{\link{imgReadPackage}} }
 
 \examples{
 \dontrun{
@@ -87,34 +87,34 @@ ToolReadPackage(package, subdir = "gui", file = "Tools.txt")
 ## into an interactive R session with the tcltk package loaded
 ## Run these commands one at a time
 
-WinAdd("tt", title = "A Tk window with toolbars", pos ="-40+20")
-ImgReadPackage("svWidgets")     # Make sure images are loaded
+winAdd("tt", title = "A Tk window with toolbars", pos ="-40+20")
+imgReadPackage("svWidgets")     # Make sure images are loaded
 ## Create a toolbar and populate it
-ToolAdd("$Tk.tt/Main")
-ToolNames()
-(ToolItems("$Tk.tt/Main"))   # Still nothing in it
-ToolAddItem("$Tk.tt/Main", "List variables",
+toolAdd("$Tk.tt/Main")
+toolNames()
+(toolItems("$Tk.tt/Main"))   # Still nothing in it
+toolAddItem("$Tk.tt/Main", "List variables",
     action = "print(ls(envir = .GlobalEnv))", image = "$Tk.butCopy")
-ToolAddItem("$Tk.tt/Main", "Say yo!", action = "cat('yo!\n')")
-ToolAddItem("$Tk.tt/Main", "-")
-ToolAddItem("$Tk.tt/Main", "Search",
+toolAddItem("$Tk.tt/Main", "Say yo!", action = "cat('yo!\n')")
+toolAddItem("$Tk.tt/Main", "-")
+toolAddItem("$Tk.tt/Main", "Search",
     action = "print(search())", image = "$Tk.butPaste")
-(ToolItems("$Tk.tt/Main"))
+(toolItems("$Tk.tt/Main"))
 ## Change state of buttons in the toolbar
-ToolStateItem("$Tk.tt/Main", "Search", FALSE)
-ToolStateItem("$Tk.tt/Main", "Search", TRUE)
-ToolStateItem("$Tk.tt/Main", "Say yo!", FALSE)
-ToolStateItem("$Tk.tt/Main", "Say yo!", TRUE)
+toolStateItem("$Tk.tt/Main", "Search", FALSE)
+toolStateItem("$Tk.tt/Main", "Search", TRUE)
+toolStateItem("$Tk.tt/Main", "Say yo!", FALSE)
+toolStateItem("$Tk.tt/Main", "Say yo!", TRUE)
 ## Invoke a button
-ToolInvoke("$Tk.tt/Main", "Say yo!")
+toolInvoke("$Tk.tt/Main", "Say yo!")
 ## Remove a button and add another one (always at the end!)
-ToolDelItem("$Tk.tt/Main", "Say yo!")
-ToolAddItem("$Tk.tt/Main", "Say yo! twice", "cat('yo! yo!\n')")
-(ToolItems("$Tk.tt/Main"))
-ToolDel("$Tk.tt/Main")
-ToolNames()
-(ToolItems("$Tk.tt/Main"))
-WinDel("tt")
+toolDelItem("$Tk.tt/Main", "Say yo!")
+toolAddItem("$Tk.tt/Main", "Say yo! twice", "cat('yo! yo!\n')")
+(toolItems("$Tk.tt/Main"))
+toolDel("$Tk.tt/Main")
+toolNames()
+(toolItems("$Tk.tt/Main"))
+winDel("tt")
 }
 }
 
