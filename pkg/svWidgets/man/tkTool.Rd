@@ -11,10 +11,10 @@
 \title{ Conveniently manipulate Tk toolbars }
 \description{
   These functions provide an easy way to create and manipulate Tk toolbars
-  under R. Note that the corresponding \code{ToolXXX()} function also manipulate
+  under R. Note that the corresponding \code{toolXXX()} function also manipulate
   Tk toolbars the same way, but are capable of manipulating other toolbars as
   well (not currently, but that could be implemented in the future). One should,
-  thus, preferably use \code{ToolXXX()}!
+  thus, preferably use \code{toolXXX()}!
 }
 
 \usage{
@@ -41,7 +41,7 @@ tkToolInvoke(toolbar, item)
 }
 
 \details{
-  Do not use these functions directly. Prefer the corresponding \code{ToolXXX()}
+  Do not use these functions directly. Prefer the corresponding \code{toolXXX()}
   functions that will call them if Tk toolbars or toolbutton are provided.
 }
 
@@ -58,7 +58,7 @@ tkToolInvoke(toolbar, item)
 
 \author{ Philippe Grosjean }
 
-\seealso{ \code{\link{ToolAdd}} }
+\seealso{ \code{\link{toolAdd}} }
 
 \keyword{ utilities }
 

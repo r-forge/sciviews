@@ -1,11 +1,4 @@
-r <- function (...) {
-	.Deprecated("pkg")
-	## r() was not informative enough and is used also in other packages (Distr)
-	return(pkg(...))
-}
-
-## TODO: name this package() instead???
-pkg <- function (..., warn = TRUE)
+package <- function (..., warn = TRUE)
 {
 	## A multiple require proceeding as silently as possible
 	## Suppress packages messages as much as possible

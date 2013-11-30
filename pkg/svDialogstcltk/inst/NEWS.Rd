@@ -1,7 +1,12 @@
 \name{NEWS}
 \title{NEWS file for the svDialogstcltk package}
+\section{Changes in version 0.9-4}{
+	\itemize{
+    \item{ Removed svDialogs in Enhances field, because already in Depends. }
+  }
+}
 
-\section{Changes in version 0.9-2}{
+\section{Changes in version 0.9-3}{
 	\itemize{
     \item{ NEWS file reworked to support new Rd format. }
   }

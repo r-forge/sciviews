@@ -1,5 +1,5 @@
-\name{pkg}
-\alias{pkg}
+\name{package}
+\alias{package}
 
 \title{ A very silent and multipackage require() function }
 \description{
@@ -8,7 +8,7 @@
   at least one loading fails, a short message is printed.
 }
 \usage{
-    pkg(..., warn = TRUE)
+    package(..., warn = TRUE)
 }
 
 \arguments{
@@ -30,9 +30,9 @@
 
 \examples{
 ## This should work...
-if (all(pkg("tools", "methods"))) cat("Fine!\n")
+if (all(package("tools", "methods"))) cat("Fine!\n")
 ## ... but this not
-if (!all(pkg("tools", "badname", warn = FALSE))) cat("Not fine!\n")
+if (!all(package("tools", "badname", warn = FALSE))) cat("Not fine!\n")
 }
 
 \keyword{ utilities }

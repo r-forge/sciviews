@@ -1,10 +1,3 @@
-clipsource <- function (primary = TRUE, ...)
-{
-	## Deprecated, in favor of sourceClipboard
-	.Deprecated("sourceClipboard")
-	sourceClipboard(primary = primary, ...)
-}
-
 sourceClipboard <- function (primary = TRUE, ...)
 {
 	## Source data from the clipboard, manage clipboard correctly depending

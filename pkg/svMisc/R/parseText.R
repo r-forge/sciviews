@@ -1,10 +1,3 @@
-`Parse` <- function (text)
-{
-	## Deprecated, in favor of parseText()
-	.Deprecated("parseText")
-	return(parseText(text))
-}
-
 parseText <- function (text, firstline = 1, srcfilename = NULL,
 encoding = "unknown")
 {

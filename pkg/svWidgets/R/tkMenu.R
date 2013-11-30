@@ -11,7 +11,7 @@ tkMenuItems <- function (menu)
 		res <- as.character(Mitems$action)
 	}
 	if (length(res) > 0) names(res) <- Mitems$name
-	return(res)
+	res
 }
 
 tkMenuAdd <- function (menu, tearoff = FALSE)
@@ -37,9 +37,10 @@ tkMenuAdd <- function (menu, tearoff = FALSE)
 			## Get the name of the Tk window that hosts the menu
 			TkWinName <- sub("^[$]Tk[.]", "", Pname)
 			## Look if such a Tk window is recorded in .gui.Wins
-			TkWin <- WinGet(TkWinName)
+			TkWin <- winGet(TkWinName)
 			if (is.null(TkWin))
-				stop("menu does not exist, and the parent Tk window cannot be found!")
+				stop("menu does not exist, ",
+					 "and the parent Tk window cannot be found!")
 			## Create the menu
 			Parent <- tkmenu(TkWin)
 			tkconfigure(TkWin, menu = Parent)
@@ -69,13 +70,14 @@ tkMenuAdd <- function (menu, tearoff = FALSE)
 	if (tearoff) options <- "tearoff = TRUE" else options <- "tearoff = FALSE"
 	entry <- data.frame(name = I(Mname), action = I("[menu]"), image = (""),
 		accel = I(""), options = I(options))
-	if (is.null(items))
+	if (is.null(items)) {
 		.guiMenus[[Pname]]$Items <- entry
-	else
+	} else {
         .guiMenus[[Pname]]$Items <- rbind(items, entry)
+	}
 	## Update the SciViews:TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
-	return(invisible(menu))
+	invisible(menu)
 }
 
 tkMenuItemCall <- function (expr) {
@@ -83,10 +85,11 @@ tkMenuItemCall <- function (expr) {
 	text <- head(deparse(substitute(expr))[-1], -1)
 	cat(">> ", text, "\n")
 	timestamp(text, prefix = "", suffix = "") # Was: .Internal(addhistory(text))
-	return(eval(expr, envir = parent.frame()))
+	eval(expr, envir = parent.frame())
 }
 
-tkMenuAddItem <- function (menu, item, action, image = "", accel = "", options = "")
+tkMenuAddItem <- function (menu, item, action, image = "", accel = "",
+options = "")
 {	
 	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
@@ -117,13 +120,13 @@ tkMenuAddItem <- function (menu, item, action, image = "", accel = "", options =
 			Uopt <- ", underline = 0"
 			lbl <- item
 		} else {
-			Uopt <- paste(", underline =", Under - 1)  # Tk starts numbering at 0
+			Uopt <- paste(", underline =", Under - 1) # Tk starts numbering at 0
 			lbl <- sub("&", "", item)
 		}
 		## Do we have to add an image to the menu?
 		if (image != "") {
 			## Look if the image resource is available
-			Img <- ImgGet(image)
+			Img <- imgGet(image)
 			if (!is.null(Img)) {
 				Iopt <- paste(", image = '", as.character(Img), "'", sep ="")
 			} else Iopt <- ""
@@ -150,21 +153,22 @@ tkMenuAddItem <- function (menu, item, action, image = "", accel = "", options =
 		## Rework options
 		if (options == "") opts <- "" else opts <- paste(",", options)
 		cmd <- paste('tkadd(M, "command", label = "', lbl,
-			'", command = function() tkMenuItemCall( { ', action, ' } ) , compound = "left"',
-			Iopt, Aopt, Uopt, opts, ')', sep = "")
+			'", command = function() tkMenuItemCall( { ', action,
+			' } ) , compound = "left"', Iopt, Aopt, Uopt, opts, ')', sep = "")
 		eval(parse(text = cmd))
 	}
 	## Register this menu entry in .guiMenus
 	entry <- data.frame(name = I(item), action = I(action), image = I(image),
 		accel = I(accel), options = I(options))
 	items <- .guiMenus[[menu]]$Items
-	if (is.null(items))
+	if (is.null(items)) {
 		.guiMenus[[menu]]$Items <- entry
-	else
+	} else {
         .guiMenus[[menu]]$Items <- rbind(items, entry)
+	}
 	## Update the SciViews:TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
-	return(invisible(item))
+	invisible(item)
 }
 
 tkMenuDelItem <- function (menu, item)
@@ -172,11 +176,13 @@ tkMenuDelItem <- function (menu, item)
 	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
-	if (is.null(M)) return(invisible(FALSE))
+	if (is.null(M))
+		return(invisible(FALSE))
 	## Look if the item exists
 	Items <- M$Items
 	Pos <- which(Items$name == item) - 1  # Because Tk menu indices start at 0
-	if (length(Pos) == 0) return(invisible())
+	if (length(Pos) == 0)
+		return(invisible())
 	## Check that this item is not a submenu (must use tkMenuDel() instead)
 	if (Items$action[Pos + 1] == "[menu]")
 		stop("item ", item, " is a submenu. Use tkMenuDel() instead!")
@@ -187,7 +193,7 @@ tkMenuDelItem <- function (menu, item)
 	.guiMenus[[menu]]$Items <- Items
 	## Update the SciViews:TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
-	return(invisible(TRUE))
+	invisible(TRUE)
 }
 
 tkMenuDel <- function (menu)
@@ -196,7 +202,8 @@ tkMenuDel <- function (menu)
 	## Look if the menu exists (must be in .gui.Menus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
-	if (is.null(M)) return(invisible(FALSE))
+	if (is.null(M))
+		return(invisible(FALSE))
 	## Look at all submenus to delete
 	Menus <- names(.guiMenus)
 	Mmatch <- (substr(Menus, 1, nchar(menu)) == menu)
@@ -219,7 +226,7 @@ tkMenuDel <- function (menu)
 	}
 	## Update the SciViews:TempEnv version of .guiMenus
 	assignTemp(".guiMenus", .guiMenus)
-	return(invisible(TRUE))
+	invisible(TRUE)
 }
 
 tkMenuChangeItem <- function (menu, item, action = "", options = "")
@@ -228,11 +235,13 @@ tkMenuChangeItem <- function (menu, item, action = "", options = "")
 	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
-	if (is.null(M)) return(invisible(FALSE))
+	if (is.null(M))
+		return(invisible(FALSE))
 	## Look if the item exists
 	Items <- M$Items
 	Pos <- which(Items$name == item) - 1  # Because Tk menu indices start at 0
-	if (length(Pos) == 0) return(invisible())
+	if (length(Pos) == 0)
+		return(invisible())
 	## Check that this item is not a submenu or a separator
 	Act <- Items$action[Pos + 1]
 	if (Act == "[separator]")
@@ -265,18 +274,20 @@ tkMenuStateItem <- function (menu, item, active = TRUE)
 	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
-	if (is.null(M)) return(invisible(FALSE))  # If menu does not exists!
+	if (is.null(M))
+		return(invisible(FALSE))  # If menu does not exists!
 	## Look if the item exists
 	Items <- M$Items
 	Pos <- which(Items$name == item) - 1  # Because Tk menu indices start at 0
-	if (length(Pos) == 0) return(invisible())
+	if (length(Pos) == 0)
+		return(invisible())
 	## Check that this item is not a separator
 	if (Items$action[Pos + 1] == "[separator]")
 		stop("item ", item, " is a separator; its state cannot be changed!")
 	## Set state for that entry
 	State <- if (active) "normal" else "disabled"
 	tkentryconfigure(M, Pos, state = State)
-	return(invisible(active))
+	invisible(active)
 }
 
 tkMenuInvoke <- function (menu, item)
@@ -285,12 +296,14 @@ tkMenuInvoke <- function (menu, item)
 	## Look if the menu exists (must be in .guiMenus in SciViews:TempEnv)
 	.guiMenus <- getTemp(".guiMenus")
 	M <- .guiMenus[[menu]]
-	if (is.null(M)) return(invisible(FALSE))
+	if (is.null(M))
+		return(invisible(FALSE))
 	## Look if the item exists
 	Items <- M$Items
 	Pos <- which(Items$name == item) - 1  # Because Tk menu indices start at 0
-	if (length(Pos) == 0) return(invisible())
+	if (length(Pos) == 0)
+		return(invisible())
 	## Invoke this menu entry
 	tcl(M, "invoke", Pos)
-	return(invisible(TRUE))
+	invisible(TRUE)
 }

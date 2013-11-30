@@ -2,7 +2,7 @@
 
 * Make all these S3 objects and use methods add, addItem, del, delItem, ...
 
-* Instead of Img object, use the key-value equivalent of gWidgets => define
+* Instead of img object, use the key-value equivalent of gWidgets => define
   image resources in a graphical toolkit independent way.
 
 * In the list of windows (.guiWin), include also RGui windows (console, graphs,

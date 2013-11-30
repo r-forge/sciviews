@@ -1,18 +1,24 @@
 = svMisc News
 
-== Changes in svMisc 0.9-29
+== Changes in svMisc 0.9-70
+
+* Deprecated functions Args(), CallTip(), clipsource(), Complete(),
+  CompletePlus(), getEnvironment(), Parse(), r(), Sys.tempdir(), Sys.userdir()
+  are now defunct and eliminated from the package.
+  
+* Function pkg() is renamed package().
+
+
+== Changes in svMisc 0.9-69
 
 * On Mac OS X >= 10.7, the package could not load because of a warning
   (converted into an error) in .onLoad(). Solved. (thanks Travis Porco for bug
   report).
 
-
-== Changes in svMisc 0.9-29
-
 * isHelp() now uses find.package() instead of the deprecated .find.package().
 
 
-== Changes in svMisc 0.9-28
+== Changes in svMisc 0.9-68
 
 * The temporary environment that TempEnv() attaches to the search path is now
   called 'SciViews:TempEnv' instead of simply 'TempEnv' to avoid potential

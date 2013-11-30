@@ -2,45 +2,42 @@ print.guiMenu <- function (x, ...)
 {
 	cat("A SciViews GUI menu object:", "\n")
 	print(unclass(x))
-	return(invisible(x))
+	invisible(x)
 }
 
-MenuAdd <- function (menu, ...)
+menuAdd <- function (menu, ...)
 {
-	res <- switch(MenuType(menu),
+	invisible(switch(menuType(menu),
 		winMenu = if (isRgui()) winMenuAdd(menu),
-		tkMenu = tkMenuAdd(menu, ...))
-	return(invisible(res))
+		tkMenu = tkMenuAdd(menu, ...)))
 }
 
-MenuAddItem <- function (menu, item, action, image = "", accel = "", options = "")
+menuAddItem <- function (menu, item, action, image = "", accel = "",
+options = "")
 {
-	res <- switch(MenuType(menu),
+	invisible(switch(menuType(menu),
 		winMenu = if (isRgui()) {
 			winMenuAddItem(menu, item, action);
 			if (options == 'state = "disable"')
 				winMenuStateItem(menu, item, FALSE) },
-		tkMenu = tkMenuAddItem(menu, item, action, image, accel, options))
-	return(invisible(res))
+		tkMenu = tkMenuAddItem(menu, item, action, image, accel, options)))
 }
 
-MenuDel <- function (menu)
+menuDel <- function (menu)
 {
-    res <- switch(MenuType(menu),
+    invisible(switch(menuType(menu),
 		winMenu = if (isRgui()) winMenuDel(menu),
-		tkMenu = tkMenuDel(menu))
-	return(invisible(res))
+		tkMenu = tkMenuDel(menu)))
 }
 
-MenuDelItem <- function (menu, item)
+menuDelItem <- function (menu, item)
 {
-    res <- switch(MenuType(menu),
+    invisible(switch(menuType(menu),
 		winMenu = if (isRgui()) winMenuDelItem(menu, item),
-		tkMenu = tkMenuDelItem(menu, item))
-	return(invisible(res))
+		tkMenu = tkMenuDelItem(menu, item)))
 }
 
-MenuNames <- function ()
+menuNames <- function ()
 {
 	res <- character(0)
 	if (isRgui()) res <- winMenuNames()
@@ -50,56 +47,57 @@ MenuNames <- function ()
 	res <- c(res, names(getTemp(".guiMenus")))
 	## Eliminate toplevel entries
     if (length(res) > 0) res <- res[regexpr("/", res) > 0]
-	return(res)
+	res
 }
 
-MenuItems <- function (menu)
+menuItems <- function (menu)
 {
-    res <- switch(MenuType(menu),
+    switch(menuType(menu),
 		winMenu = if (isRgui()) winMenuItems(menu),
 		tkMenu = tkMenuItems(menu))
-	return(res)
 }
 
-MenuType <- function (menu, warn = TRUE)
+menuType <- function (menu, warn = TRUE)
 {
 	## Given a menu, return its type ("winMenu", "tkMenu", NA)
-	if (regexpr("^[$]Console(Main|Popup)/", menu) > 0) return("winMenu") else
-	if (regexpr("^[$]Graph[0-9]+(Main|Popup)/", menu) > 0) return("winMenu") else
-	if (regexpr("^[$]Tk[.].+/", menu) > 0) return("tkMenu") else {
-        if (warn) warning("Unrecognized menu type for ", menu)
-		return(NA)
+	if (regexpr("^[$]Console(Main|Popup)/", menu) > 0) {
+		res <- "winMenu"
+	} else if (regexpr("^[$]Graph[0-9]+(Main|Popup)/", menu) > 0) {
+		res <- "winMenu"
+	} else if (regexpr("^[$]Tk[.].+/", menu) > 0) {
+		res <- "tkMenu"
+	} else {
+		if (warn) warning("Unrecognized menu type for ", menu)
+		res <- NA
 	}
+	res
 }
 
-MenuChangeItem <- function (menu, item, action = "", options = "")
+menuChangeItem <- function (menu, item, action = "", options = "")
 {
 	## Change action or options for menu entries
-	res <- switch(MenuType(menu),
+	invisible(switch(menuType(menu),
 		winMenu = if (isRgui()) winMenuChangeItem(menu, item, action, options),
-		tkMenu = tkMenuChangeItem(menu, item, action, options))
-	return(invisible(res))
+		tkMenu = tkMenuChangeItem(menu, item, action, options)))
 }
 
-MenuStateItem <- function (menu, item, active = TRUE)
+menuStateItem <- function (menu, item, active = TRUE)
 {
 	## Activate/inactivate menu entries
-	res <- switch(MenuType(menu),
+	invisible(switch(menuType(menu),
 		winMenu = if (isRgui()) winMenuStateItem(menu, item, active),
-		tkMenu = tkMenuStateItem(menu, item, active))
-	return(invisible(res))
+		tkMenu = tkMenuStateItem(menu, item, active)))
 }
 
-MenuInvoke <- function (menu, item)
+menuInvoke <- function (menu, item)
 {
 	## Trigger a menu entry by code
-	res <- switch(MenuType(menu),
+	invisible(switch(menuType(menu),
 		winMenu = if (isRgui()) winMenuInvoke(menu, item),
-		tkMenu = tkMenuInvoke(menu, item))
-	return(invisible(res))
+		tkMenu = tkMenuInvoke(menu, item)))
 }
 
-MenuRead <- function (file = "Menus.txt")
+menuRead <- function (file = "Menus.txt")
 {
 	## Read a menu from a file
     M <- scan(file, character(0), sep = "\n", comment.char = "#", quiet = TRUE)
@@ -148,8 +146,11 @@ MenuRead <- function (file = "Menus.txt")
 			## Decrypt lastentry to get image, item & accel ([image]item\taccel)
 			lastentry <- strsplit(lastentry, "\t")[[1]]
 			item <- sub("^[[][a-zA-Z0-9 ._-]+[]]", "", lastentry[1])
-			if (item == lastentry[1]) image <- "" else {
-				image <- sub("^[[]([a-zA-Z0-9 ._-]+)[]].+$", "\\1", lastentry[1])
+			if (item == lastentry[1]) {
+				image <- ""
+			} else {
+				image <- sub("^[[]([a-zA-Z0-9 ._-]+)[]].+$", "\\1",
+					lastentry[1])
 				## Since these are Tk images resources, I have to prefix '$Tk.'
 				image <- paste("$Tk.", image, sep = "")
 			}
@@ -173,17 +174,17 @@ MenuRead <- function (file = "Menus.txt")
 	for (i in 1:N) {
 		action <- L$action[i]
 		if (action == "[menu]") {  # Create a menu
-			MenuAdd(menu = L$menu[i])
+			menuAdd(menu = L$menu[i])
 		} else {  # Create a menu entry
-			MenuAddItem(menu = L$menu[i], item = L$item[i], action = L$action[i],
+			menuAddItem(menu = L$menu[i], item = L$item[i], action = L$action[i],
 				image = L$image[i], accel = L$accel[i], options = L$options[i])
 		}
 	}
 
-	return(invisible(L))
+	invisible(L)
 }
 
-MenuReadPackage <- function (package, subdir = "gui", file = "Menus.txt")
+menuReadPackage <- function (package, subdir = "gui", file = "Menus.txt")
 {
 	## Create menus using a menu definition file located in a R package
 	dir <- system.file(subdir, package = package)
@@ -195,6 +196,5 @@ MenuReadPackage <- function (package, subdir = "gui", file = "Menus.txt")
 	if (!file.exists(File))
 		stop("'", file, "' not found in '", dir, "'!")
 	## Read the menu file
-	res <- MenuRead(File)
-	return(invisible(res))
+	invisible(menuRead(File))
 }

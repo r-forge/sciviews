@@ -44,8 +44,7 @@ sep = "+++")
 {	
 	if (is.character(file) && regexpr('^rwd:', file) > 0)
 		file <- sub('^rwd:', getwd(), file)
-	## TODO: avoid using ::: here!
-	file <- tools:::file_path_as_absolute(file)
+	file <- tools::file_path_as_absolute(file)
 	
 	old.op <- options(encoding = encoding)
 	on.exit(options(old.op))

@@ -98,7 +98,7 @@ write.objList(x, path, sep = "\t", \dots)
 \author{Philippe Grosjean (\email{phgrosjean@sciviews.org}) and
   Kamil Barton (\email{kbarton@zbs.bialowieza.pl})}
 
-\seealso{ \code{\link{Complete}}, \code{\link{CallTip}} }
+\seealso{ \code{\link{completion}}, \code{\link{callTip}} }
 
 \examples{
 ## Create various context menus

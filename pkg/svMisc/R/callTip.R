@@ -1,8 +1,3 @@
-CallTip <- function (code, only.args = FALSE, location = FALSE) {
-	.Deprecated("callTip")
-	return(callTip(code, only.args = only.args, location = location))
-}
-
 callTip <- function (code, only.args = FALSE, location = FALSE,
 description = FALSE, methods = FALSE, width = getOption("width"))
 {

@@ -5,7 +5,7 @@ resetErrors <- function (file = NULL, pattern = NULL)
 {
 	if (!is.null(file)) {
 		svTools.env$.errors <- svTools.env$.errors[!svTools.env$.errors$file
-			%in% sapply(file, tools:::file_path_as_absolute), , drop = FALSE]
+			%in% sapply(file, tools::file_path_as_absolute), , drop = FALSE]
 	} else if (!is.null(pattern) && any(regexpr(pattern,
 		basename(svTools.env$.errors$file)) > 0)) {
 		svTools.env$.errors <- svTools.env$.errors[regexpr(pattern,
@@ -24,7 +24,7 @@ addError <- function (file, line = 1, column = 1, message = "", type = "error")
 		"message", "type") %in% colnames(file))) {
 		d <- file
 	} else {
-		d <- data.frame(file = tools:::file_path_as_absolute(file), line = line, 
+		d <- data.frame(file = tools::file_path_as_absolute(file), line = line, 
 			column = column, message = message, type = type,
 			stringsAsFactors = FALSE)
 	}
@@ -39,7 +39,7 @@ getErrors <- function (file = NULL, pattern = NULL)
 	if (!is.null(pattern) && any(regexpr(pattern, out$file) > 0))
 		out <- out[regexpr(pattern, basename(out$file)) > 0, ]
 	if (!is.null(file))
-		out <- out[out$file == tools:::file_path_as_absolute(file), ]
+		out <- out[out$file == tools::file_path_as_absolute(file), ]
 	if (!is.null(out) && nrow(out)) {
 		out <- out[order(out$file, out$line), ]
 		out$line <- as.integer(out$line)

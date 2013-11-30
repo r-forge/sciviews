@@ -12,8 +12,8 @@
   \tabular{ll}{
     Package: \tab svTools\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-3\cr
-    Date: \tab 2012-12-29\cr
+    Version: \tab 0.9-4\cr
+    Date: \tab 2012-11-30\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples

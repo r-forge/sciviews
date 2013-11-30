@@ -1,7 +1,8 @@
 winMenuChangeItem <- function (menu, item, action, options = "")
 {
 ### TODO: this is buggy under R 2.2.0! Recheck for latest R version
-	if (action == "") return(invisible())
+	if (action == "")
+		return(invisible())
 	if (!isRgui())
 		stop("This function can only be used with Rgui under Windows!")
 	## First check if the entry exists
@@ -10,7 +11,8 @@ winMenuChangeItem <- function (menu, item, action, options = "")
 	if (!item %in%  names(winMenuItems(menu)))
 		stop("item '", item, "' does not exist!")
 	if (action == "enable" || action == "disable")
-		stop("Use 'winMenuStateItem()' instead to enable/disable winMenu entries!")
+		stop("Use 'winMenuStateItem()' instead ",
+			"to enable/disable winMenu entries!")
 	winMenuAddItem(menu, item, action)
 	if (options != "") {
 		res <- switch(options,
@@ -19,7 +21,7 @@ winMenuChangeItem <- function (menu, item, action, options = "")
 			warning("'options = ", options, "' is not supported")
 		)
 	}
-	return(invisible(TRUE))
+	invisible(TRUE)
 }
 
 winMenuStateItem <- function (menu, item, active = TRUE)
@@ -34,7 +36,7 @@ winMenuStateItem <- function (menu, item, active = TRUE)
 	## Enable/disable the entry
 	cmd <- if (active) "enable" else "disable"
 	winMenuAddItem(menu, item, cmd)
-	return(invisible(TRUE))
+	invisible(TRUE)
 }
 
 winMenuInvoke <- function (menu, item)
@@ -50,6 +52,5 @@ winMenuInvoke <- function (menu, item)
 	timestamp(action, prefix = "", suffix = "", quiet = TRUE)
 	## and execute it in .GlobalEnv
 	eval(parse(text = action), envir = .GlobalEnv)
-
-	return(invisible(TRUE))
+	invisible(TRUE)
 }

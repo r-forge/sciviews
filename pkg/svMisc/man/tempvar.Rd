@@ -21,7 +21,7 @@ tempvar(pattern = ".var")
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{Sys.tempdir}} }
+\seealso{ \code{\link{systemDir}}, \code{\link{systemFile}} }
 
 \examples{
 tempvar()

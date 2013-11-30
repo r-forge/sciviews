@@ -87,7 +87,7 @@ listToJson(x)
 
 \author{ Philippe Grosjean <phgrosjean@sciviews.org> }
 
-\seealso{ \code{\link{Parse}} }
+\seealso{ \code{\link{parseText}} }
 
 \examples{
 ## A complex R object

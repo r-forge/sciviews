@@ -14,10 +14,12 @@ bind.delete = TRUE, ...)
 		tkdestroy(win)
 		stop("A problem occured while creating the window!")
 	} else class(win) <- c("tkguiWin", "guiWin", "gui", class(win))
-	if (!is.null(title)) tktitle(win) <- title[1]
+	if (!is.null(title))
+		tktitle(win) <- title[1]
 	## Possibly position the window
-	if (!is.null(pos)) tkwm.geometry(win, pos)
-    if (bind.delete) {
+	if (!is.null(pos))
+		tkwm.geometry(win, pos)
+    if (isTRUE(bind.delete)) {
 		## Define action when clicking on 'X'
 		##tkbind(win "<Destroy>", function() {tkWinDel(name); tkdestroy(win)})
 		tkwm.protocol(win, "WM_DELETE_WINDOW", function() tkWinDel(name))
@@ -28,15 +30,16 @@ bind.delete = TRUE, ...)
 	## Record the window in the list
 	.guiWins[[name]] <- win
 	assignTemp(".guiWins", .guiWins)
-	return(win)
+	win
 }
 
 tkWinDel <- function (window)
 {
 	## Same action as tkdestroy(), but cares about deleting relating resources
 	## (i.e., in .guiXXX in SciViews:TempEnv)
-    win <- WinGet(window)
-	if (is.null(win)) return(invisible(FALSE))	# window does not exist
+    win <- winGet(window)
+	if (is.null(win))
+		return(invisible(FALSE))	# window does not exist
     ## Delete it from the windows list
 	.guiWins <- getTemp(".guiWins")
 	.guiWins[[window]] <- NULL
@@ -48,5 +51,5 @@ tkWinDel <- function (window)
 	## ...
 	assignTemp(".guiWins", .guiWins)
 	tkdestroy(win)  # Actually destroy the window
-	return(invisible(TRUE))
+	invisible(TRUE)
 }

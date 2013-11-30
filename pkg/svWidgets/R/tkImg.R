@@ -18,7 +18,7 @@ tkImgAdd <- function (file, type = "gif", update = FALSE)
 	Iname <- paste("$Tk.", Iname, sep = "")
 	## If that name already exists, do nothing, except if we ask to update it
 	if (Iname %in% names(.guiImgs)) {
-		if (update) {
+		if (isTRUE(update)) {
 			## Delete the image to recreate it with new resource
 			tcl("image", "delete", Iname)
 		} else return(invisible(Iname))	# Do nothing
@@ -29,7 +29,7 @@ tkImgAdd <- function (file, type = "gif", update = FALSE)
 	.guiImgs[[Iname]] <- Image
 	## Reassign .guiImgs to SciViews:TempEnv
 	assignTemp(".guiImgs", .guiImgs)
-	return(invisible(Iname))
+	invisible(Iname)
 }
 
 tkImgDel <- function (image)
@@ -37,7 +37,8 @@ tkImgDel <- function (image)
 	## Delete a tk image ressource from the list
 	.guiImgs <- getTemp(".guiImgs")
 	## Is the image there?
-	if (!image %in% names(.guiImgs)) return(invisible(FALSE))
+	if (!image %in% names(.guiImgs))
+		return(invisible(FALSE))
 	## Delete the image
 	Image <- .guiImgs[[image]]
 	tcl("image", "delete", Image)
@@ -46,7 +47,7 @@ tkImgDel <- function (image)
 	## Reassign .guiImgs to SciViews:TempEnv
 	assignTemp(".guiImgs", .guiImgs)
 	## Indicate that the image is actually deleted
-	return(invisible(TRUE))
+	invisible(TRUE)
 }
 
 tkImgRead <- function (dir, type = "gif")
@@ -60,7 +61,9 @@ tkImgRead <- function (dir, type = "gif")
 		stop("only type = 'gif' is currently supported")
 	pattern <- "[.][gG][iI][fF]$"
 	files <- list.files(dir, pattern = pattern, full.names = TRUE)
-	if (length(files) == 0) return(invisible())
-	for (i in 1:length(files)) tkImgAdd(files[i], type = type)
-	return(invisible(files))
+	if (length(files) == 0)
+		return(invisible())
+	for (i in 1:length(files))
+		tkImgAdd(files[i], type = type)
+	invisible(files)
 }

@@ -1,8 +1,3 @@
-Args <- function (name, only.args = FALSE) {
-	.Deprecated("argsTip")
-	return(argsTip(name, only.args = only.args, width = NULL))
-}
-
 argsTip <- function (name, only.args = FALSE, width = getOption("width"))
 {
 	## TODO: handle primitives and S3/S4 methods for generic functions

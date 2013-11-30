@@ -51,7 +51,7 @@ pkgManSetCRANMirror(url)
 
 \author{ Kamil Barton <kamil.barton@uni-wuerzburg.de> }
 
-\seealso{ \code{\link{pkg}} }
+\seealso{ \code{\link{package}} }
 
 \keyword{ utilities }
 

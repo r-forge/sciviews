@@ -1,7 +1,7 @@
 Package: svWidgets
 Type: Package
-Version: 0.9-43
-Date: 2013-01-27
+Version: 0.9-44
+Date: 2013-11-30
 Title: SciViews GUI API - Widgets & Windows
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))
