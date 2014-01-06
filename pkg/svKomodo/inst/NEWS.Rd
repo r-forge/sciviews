@@ -1,9 +1,16 @@
 \name{NEWS}
 \title{NEWS file for the svKomodo package}
 
+\section{Changes in version 0.9-61}{
+  \itemize{
+    \item{ Simplification of internal code to get Komodo location. It does not require
+        a specific version of \code{locate} on Unix/Linux any more. }
+  }
+}
+
 \section{Changes in version 0.9-60}{
   \itemize{
-    \item{ You must start Komodo Edit for browsing files. }
+    \item{ \code{.onAttach()} is reworked for not issuing warning messages in Mac OS X. }
   }
 }
 
