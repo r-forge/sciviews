@@ -8,8 +8,8 @@
 		where <- grepl(regexp, args)
 		if (any(where)) {
 			arg <- rev(args[where])[1]
-			return(sub(regexp, "", arg))
-		} else return(NULL)
+			sub(regexp, "", arg)
+		} else NULL
 	}
 	
 	## For those items not defined yet
@@ -148,7 +148,7 @@
 	if (Sys.getenv("koAppFile") != "") {
 		Komodo <- Sys.getenv("koAppFile")
 	} else Komodo <- ""
-	#if (Komodo != "") debugMsg("path to Komodo was passed in environment")
+	
 	if (.Platform$OS.type == "unix") {
 		if (Komodo == "")
 			Komodo <- "/usr/local/bin/komodo"  # Default location
@@ -166,7 +166,7 @@
 			
 			err.null <- function (e) return(NULL)
 			## On Windows, 'komodo' should be enough
-			## But for reasons that escape me, Komodo seems to stip off its
+			## But for reasons that escape me, Komodo seems to strip off its
 			## own directory from the path variable. So, I have to restore
 			## it from the Windows registry :-(
 
@@ -199,9 +199,7 @@
 						"komodo.exe", fsep = "\\"))
 				}
 			}
-			#debugMsg("Komodo searched for in registry in", key)
 		}
-		#debugMsg("Komodo path is:", Komodo)
 	}
 
 	if (length(Komodo) && Komodo != "" && file.exists(Komodo)) {
@@ -221,9 +219,6 @@
 					pager2(files = files, header = header, title = title,
 						delete.file = delete.file)
 				} else {
-					## Replacement for the following line of code to avoid
-					## using .Internal()
-					#.Internal(file.show(files, header, title, delete.file, pager2))
 					file.show(files, header = header, title = title,
 						delete.file = delete.file, pager = pager2)
 				}
@@ -272,18 +267,15 @@
 
 	## Make sure we use HTML help (required for Alt-F1 and Alt-Shift-F1)
 	## to display R help in Komodo Edit
-	## (in Windows, chmhelp is the default up to R 2.9.2)
-	##Old code: if (.Platform$OS.type == "windows") options(chmhelp = FALSE)
-	##Old code: options(htmlhelp = TRUE)
-	## In R 2.10, help system is completely changed
 	options(help_type = "html")
 	## Make sure the help server is started
-	## TODO: how to get it without using ::: ?
-	if (tools:::httpdPort == 0L)
-			tools::startDynamicHelp()
+	port <- try(tools::startDynamicHelp(), silent = TRUE)
+	if (inherits(port, "try-error")) {
+		## Dynamic help is already started
+		port <- getNamespace("tools")$httpdPort
+	}
 	## Record the home page for the help server in an option
-	## TODO: idem here!
-	options(helphome = paste("http://127.0.0.1:", tools:::httpdPort,
+	options(helphome = paste("http://127.0.0.1:", port,
 		"/doc/html/index.html", sep = ""))
 
 	## I need to get the help file URL, but help() does not provide it any
@@ -295,16 +287,14 @@
 		htmlfile <- basename(file)
 		if (length(file) > 1) {
 			## If more then one topic is found
-			## TODO: avoid using ::: here!
-			return(paste("http://127.0.0.1:", tools:::httpdPort,
-				"/library/NULL/help/", attr(x,"topic"), sep = ""))
+			paste("http://127.0.0.1:", getNamespace("tools")$httpdPort,
+				"/library/NULL/help/", attr(x,"topic"), sep = "")
 		} else {
 			if(substring(htmlfile, nchar(htmlfile) -4) != ".html")
 				htmlfile <- paste(htmlfile, ".html", sep="")
-			## TODO: avoid using ::: here!
-			return(paste("http://127.0.0.1:", tools:::httpdPort,
+			paste("http://127.0.0.1:", getNamespace("tools")$httpdPort,
 			"/library/", basename(dirname(dirname(file))),
-			"/html/", htmlfile, sep = ""))
+			"/html/", htmlfile, sep = "")
 		}
 	})
 
@@ -473,7 +463,7 @@
 	#if (!is.null(serve) && "package:svSocket" %in% search())
 	#	stopSocketServer(port = as.integer(serve)[1])
 	koUninstall()
-	## Remove the SciViews tesk callback manager
+	## Remove the SciViews task callback manager
 	try(removeTaskCallback("SV-taskCallbackManager"), silent = TRUE)
 	try(rmTemp(".svTaskCallbackManager"), silent = TRUE)
 }
