@@ -1,6 +1,14 @@
 \name{NEWS}
 \title{NEWS file for the svKomodo package}
 
+\section{Changes in version 0.9-62}{
+  \itemize{
+    \item{ Author field rebuild in DESCRIPTION file }
+    \item{ \code{.onAttach()} reworked to eliminate \code{:::} (not allowed by CRAN) }
+  }
+}
+
+
 \section{Changes in version 0.9-61}{
   \itemize{
     \item{ Simplification of internal code to get Komodo location. It does not require
