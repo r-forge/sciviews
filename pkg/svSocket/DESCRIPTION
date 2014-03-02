@@ -1,6 +1,6 @@
 Package: svSocket
 Type: Package
-Version: 0.9-56
+Version: 0.9-57
 Date: 2014-03-02
 Title: SciViews GUI API - R Socket Server
 Author: Philippe Grosjean [aut, cre],
