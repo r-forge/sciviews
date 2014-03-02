@@ -5,6 +5,8 @@
 * Internal change: tools:::file_path_as_absolute() changed to
   tools::file_path_as_absolute().
 
+* Reworked other uses of :::.
+
 
 == Changes in svTools 0.9-3
 

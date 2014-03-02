@@ -1,13 +1,13 @@
-## TODO: avoid using ::: everywhere here!!!
 completeCode <- function (...)
 {
+	utilsNS <- getNamespace("utils")
 	out <- completion(..., min.length = 1)
 	if (is.null(out)) {
 		out <- matrix("", ncol = 4, nrow = 0) 
-		token <- utils:::.guessTokenFromLine()
+		token <- utilsNS$.guessTokenFromLine()
 	} else {
 		token <- attr(out, "token")
-		if (is.null(token)) token <- utils:::.guessTokenFromLine()
+		if (is.null(token)) token <- utilsNS$.guessTokenFromLine()
 		types <- rep("function", nrow(out))
 		completions <- out[, 1]
 		types[regexpr("= *$", completions) > 0] <- "argument"
@@ -16,7 +16,7 @@ completeCode <- function (...)
 		out <- cbind(out, types)[order(types), , drop = FALSE]
 	}
 	
-	fun <- utils:::inFunction()
+	fun <- utilsNS$inFunction()
   	if (length(fun) && !is.na(fun)) {
 		tooltip <- callTip(fun)
   	} else {
