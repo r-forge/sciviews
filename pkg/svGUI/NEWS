@@ -1,5 +1,10 @@
 = svGUI News
 
+== Changes in svGUI 0.9-55
+
+* Author and Authors@R fields reworked in the DESCRIPTION file.
+
+
 == Changes in svGUI 0.9-54
 
 * The package now store temporary data in SciViews:TempEnv instead of TempEnv

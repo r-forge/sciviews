@@ -70,28 +70,28 @@ window. }
 ## 1) A simple progress indicator in percent
 for (i in 0:101) {
 	progress(i)
-	Sys.sleep(0.05)
+	Sys.sleep(0.01)
 	if (i == 101) cat("Done!\n")
 }
 
 ## 2) A progress indicator with 'x on y'
 for (i in 0:31) {
 	progress(i, 30)
-	Sys.sleep(0.2)
+	Sys.sleep(0.02)
 	if (i == 31) cat("Done!\n")
 }
 
 ## 3) A progress bar in percent
 for (i in 0:101) {
 	progress(i, progress.bar = TRUE)
-	Sys.sleep(0.05)
+	Sys.sleep(0.01)
 	if (i == 101) cat("Done!\n")
 }
 
 ## 4) A progress indicator with 'x on y'
 for (i in 0:21) {
 	progress(i, 20, progress.bar = TRUE)
-	Sys.sleep(0.2)
+	Sys.sleep(0.03)
 	if (i == 21) cat("Done!\n")
 }
 
@@ -144,7 +144,7 @@ if (require(tcltk)) {
     ## Test it...
     for (i in 0:101) {
     	progress(i) # Could also set console = FALSE for using the GUI only
-    	Sys.sleep(0.1)
+    	Sys.sleep(0.05)
     	## The code to stop long calc when user presses "Cancel"
     	if (existsTemp("guiProgressCancel")) {
     	    progress(101, console = FALSE) # Make sure to clean up everything

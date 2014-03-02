@@ -8,6 +8,8 @@
 * Idem for MenuXXX(), ToolsXXX() and WinXXX() functions that become menuXXX(),
   toolsXXX() and winXXX(), respectively.
 
+* Reworked Author fiel in the DESCRIPTION file.
+
 
 == Changes in svWidgets 0.9-43
 

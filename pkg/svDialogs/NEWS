@@ -1,5 +1,9 @@
 = svDialogs News
 
+== Changes in scDialogs 0.9-55
+
+* Rework of Author and Authors@R fileds in the DESCRIPTION file.
+
 == Changes in scDialogs 0.9-54
 
 * Dependencies to tcltk and svMisc are eliminated. Consequently, all functions

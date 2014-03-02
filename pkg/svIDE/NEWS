@@ -1,5 +1,10 @@
 = svIDE News
 
+== Changes in svIDE 0.9-51
+
+* Rework of the Author and Athours@R fields in the DESCRIPTION file.
+
+
 == Changes in svIDE 0.9-50
 
 * Addition of a pckage man page.
