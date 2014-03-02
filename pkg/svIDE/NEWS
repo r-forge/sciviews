@@ -1,5 +1,12 @@
 = svIDE News
 
+== Changes in svIDE 0.9-52
+
+* createCallTipFile(), guiiCallTip() & guiComplete() adapted to new functions
+  names in svMisc (CallTip -> callTip & Complete -> completion). Man pages are
+  also adapted accordingly.
+
+
 == Changes in svIDE 0.9-51
 
 * Rework of the Author and Athours@R fields in the DESCRIPTION file.
