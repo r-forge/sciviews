@@ -1,4 +1,4 @@
-importFrom(utils, capture.output)
+importFrom(utils, capture.output, rc.settings)
 import(svMisc)
 
 export(koInstall,

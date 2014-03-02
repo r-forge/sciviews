@@ -114,6 +114,10 @@
 	## Make sure config is OK
 	.loadSvOptions()
 	
+	## Check that usually inactivated rc.settings are set
+	assignTemp(".old.rc.settings", rc.settings())
+	rc.settings(ipck = TRUE)
+	
 	## Create our SciViews task callback manager
 	## Should eliminate this???
 	## PhG: inactivated for now, because it makes problems in R!!!
@@ -466,6 +470,11 @@
 	## Remove the SciViews task callback manager
 	try(removeTaskCallback("SV-taskCallbackManager"), silent = TRUE)
 	try(rmTemp(".svTaskCallbackManager"), silent = TRUE)
+	
+	## Restore rc.settings
+	settings <- getTemp(".old.rc.settings", rc.settings())
+	do.call("rc.settings", as.list(settings))
+	rmTemp(".old.rc.settings")
 }
 
 .packageName <- "svKomodo"

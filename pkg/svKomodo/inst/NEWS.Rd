@@ -5,6 +5,8 @@
   \itemize{
     \item{ Author field rebuild in DESCRIPTION file }
     \item{ \code{.onAttach()} reworked to eliminate \code{:::} (not allowed by CRAN) }
+	\item{ \code{utils::rc.settings} are adjusted in \code{.onAttach()} and
+	  restored in \code{.onUnload()} }
   }
 }
 
