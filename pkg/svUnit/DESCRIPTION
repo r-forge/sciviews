@@ -3,9 +3,9 @@ Type: Package
 Version: 0.7-11
 Date: 2013-01-27
 Title: SciViews GUI API - Unit testing
+Author: Philippe Grosjean [aut, cre]
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"))
-Author: Philippe Grosjean
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 Depends: R (>= 1.9.0)
 Suggests: svGUI, datasets, utils, XML

@@ -1,4 +1,3 @@
-## TODO: avoid using ::: at several places here!
 lintDescription <- function (descfile, txt = readLines(descfile))
 {  
 	txt <- unlist(strsplit(txt, "\\\n"))
@@ -89,14 +88,15 @@ lintDescription <- function (descfile, txt = readLines(descfile))
 				message = "the `Date`field should be in format yyyy-mm-dd")
 	}
 	
-### TODO: check OS_type that can olny be unix or windows
+### TODO: check OS_type that can only be unix or windows
   
 	## Check the dependencies
 ### FIXME: all the stuff below comes from tools, I need to figure out what to do with it
-	db <- tools:::.read_description(descfile)
-	depends <- tools:::.get_requires_from_package_db(db, "Depends")
-	imports <- tools:::.get_requires_from_package_db(db, "Imports")
-	suggests <- tools:::.get_requires_from_package_db(db, "Suggests")
+	toolsNS <- getNamespace("tools")
+	db <- toolsNS$.read_description(descfile)
+	depends <- toolsNS$.get_requires_from_package_db(db, "Depends")
+	imports <- toolsNS$.get_requires_from_package_db(db, "Imports")
+	suggests <- toolsNS$.get_requires_from_package_db(db, "Suggests")
 	reqs <- unique(c(depends, imports,
 		if (!identical(as.logical(Sys.getenv("_R_CHECK_FORCE_SUGGESTS_")), 
 		FALSE)) suggests))
@@ -108,7 +108,7 @@ lintDescription <- function (descfile, txt = readLines(descfile))
 	}
 	installed <- sub("_.*", "", installed)
 	reqs <- reqs[!reqs %in% installed]
-	stdPkgNames <- tools:::.get_standard_package_names()
+	stdPkgNames <- toolsNS$.get_standard_package_names()
 	m <- reqs %in% stdPkgNames$stubs
 	if (length(reqs[!m])) 
 		addErr(line = grep("^(Depends|Suggests|Enhances)", txt), 

@@ -1,13 +1,14 @@
 Package: svTools
 Type: Package
 Version: 0.9-4
-Date: 2013-11-30
+Date: 2014-03-02
 Title: SciViews GUI API - Tools (wrapper for packages tools and codetools)
+Author: Philippe Grosjean [aut, cre],
+  Romain Francois [aut]
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
   email = "phgrosjean@sciviews.org"),
   person("Romain", "Francois", role = "aut",
   email = "romain@r-enthusiasts.com"))
-Author: Philippe Grosjean and Romain Francois
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 Depends: R (>= 2.6.0)
 Imports: utils, tools, codetools, svMisc
