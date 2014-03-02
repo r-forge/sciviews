@@ -5,8 +5,8 @@ isHelp <- function (topic, package = NULL, lib.loc = NULL)
     if (!is.character(topic))  topic <- deparse(topic)[1L]
     
 	pkgpaths <- find.package(package, lib.loc, verbose = FALSE)
-    ## TODO: avoid using :::
-	file <- utils:::index.search(topic, pkgpaths, TRUE)
+	utilsNS <- getNamespace("utils")
+	file <- utilsNS$index.search(topic, pkgpaths, TRUE)
     if (!length(file)) return(c(help = FALSE, example = FALSE))
     
 	packagePath <- dirname(dirname(file))
@@ -16,8 +16,7 @@ isHelp <- function (topic, package = NULL, lib.loc = NULL)
     tf <- tempfile("Rex")
 	on.exit(unlink(tf))
     encoding <- "UTF-8"
-    ## TODO: avoid using :::
-	tools::Rd2ex(utils:::.getHelpFile(file), tf)
+	tools::Rd2ex(utilsNS$.getHelpFile(file), tf)
     if (!file.exists(tf)) {
         c(help = TRUE, example = FALSE)
     } else c(help = TRUE, example = TRUE)

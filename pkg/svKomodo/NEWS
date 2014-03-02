@@ -6,6 +6,8 @@
 
 * .onAttach() reworked to eliminate ::: (not allowed by CRAN)
 
+* utils::rc.settings are adjusted in .onAttach() and restored in .onUnload()
+
 
 == Changes in svKomodo 0.9-61
 

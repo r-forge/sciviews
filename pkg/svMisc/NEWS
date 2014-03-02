@@ -8,6 +8,8 @@
   
 * Function pkg() is renamed package().
 
+* Reworked code that was using :::.
+
 
 == Changes in svMisc 0.9-69
 

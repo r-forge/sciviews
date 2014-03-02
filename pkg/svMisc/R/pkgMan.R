@@ -23,8 +23,8 @@ pkgManDescribe <- function (pkgName, print.it = TRUE)
 	if (isTRUE(print.it)) {
 		write.dcf(as.data.frame.list(desc[!sapply(desc, is.na)],
 			optional = TRUE), width = Inf)
-		return(invisible(desc))
-	} else return(desc)
+		invisible(desc)
+	} else desc
 }
 
 pkgManGetMirrors <- function ()
@@ -93,7 +93,6 @@ sep = ";", eol = "\t\n") {
 		imax <- nrow(avpkg.list)
 		idx <- seq(imax)
 	}
-	#browser()
 	assignTemp('avpkg.pattern', pattern)
 
 	if (page == "next") {
@@ -133,8 +132,7 @@ pkgManSetCRANMirror <- function (url)
 
 pkgManInstall <- function (pkgs, install.deps = FALSE, ask = TRUE)
 {
-	## TODO: avoid using ::: !
-	dep <- suppressMessages(utils:::getDependencies(pkgs,
+	dep <- suppressMessages(getNamespace("utils")$getDependencies(pkgs,
 		available = getTemp('avpkg.list')))
 	msg <- status <- ""
 	if (!isTRUE(ask) && (isTRUE(install.deps) || all(dep %in% pkgs))) {
@@ -147,10 +145,8 @@ pkgManInstall <- function (pkgs, install.deps = FALSE, ask = TRUE)
 			"This will install packages: %s and %s.",
 		), paste(sQuote(dep[-l]), collapse = ", "), sQuote(dep[l]))
 		status <- "question"
-
 	}
-	return(list(packages = dep, message = msg, status = status))
-	#return(invisible(dep))
+	list(packages = dep, message = msg, status = status)
 }
 
 pkgManRemove <- function (pkgName)
@@ -170,10 +166,10 @@ pkgManRemove <- function (pkgName)
 		pkglib <- normalizePath(file.path(pkgpath, ".."))
 		if (file.access(pkglib, 2) == 0) {
 			remove.packages(pkgName, lib = pkglib)
-			return(TRUE)
+			TRUE
 		} else {
 			#warning("No sufficient access rights to library", sQuote(pkglib))
-			return(FALSE)
+			FALSE
 		}
 	}, simplify = FALSE)
 }
@@ -192,7 +188,7 @@ pkgManDetach <- function (pkgName)
 			if (packSearchName %in% search())
 				detach(packSearchName, character.only = TRUE, unload = TRUE)
 			if(pkgName %in% loadedNamespaces()) unloadNamespace(pkgName)
-			return(TRUE)
+			TRUE
 		}, error = function(e) { conditionMessage(e) })
 	}, simplify = FALSE)
 }
