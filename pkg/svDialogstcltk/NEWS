@@ -4,6 +4,8 @@
 
 * Removed svDialogs in Enhances field, because already in Depends.
 
+* Rework of Author and Authors@R fields in the DESCRIPTION file.
+
 
 == Changes in svDialogstcltk 0.9-3
 

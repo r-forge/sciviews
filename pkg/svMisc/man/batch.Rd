@@ -35,7 +35,7 @@ batch(items, fun, ..., show.progress = !isAqua() && !isJGR(),
 fakeProc <- function (file) {
     message("Processing ", file, "...")
     flush.console()
-    Sys.sleep(1)
+    Sys.sleep(0.5)
     if (runif(1) > 0.7) { # Fails
         warning("fakeProc was unable to process ", file)
         return(invisible(FALSE))
