@@ -11,7 +11,7 @@ location = FALSE)
     width <- as.integer(width[1])
 
     ## Get the call tip
-	ctip <- CallTip(code, only.args = onlyargs, location = location)
+	ctip <- callTip(code, only.args = onlyargs, location = location)
 
     ## Possibly break long lines at reasonables widths
     if (onlyargs) Exdent <- 0 else Exdent <- 4
@@ -48,7 +48,7 @@ function (code, file = NULL, sep = "|")
     sep = sep[1]
 
     # Get the completion list
-	clist <- Complete(code, sep = sep)
+	clist <- completion(code, sep = sep)
 
 	# Copy the result to a Tcl variable
     .Tcl(paste("set ::SciViewsR_Complete {", clist, "}", sep = ""))

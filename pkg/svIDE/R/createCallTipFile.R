@@ -9,7 +9,7 @@ field.sep = "=", only.args = FALSE, return.location = FALSE)
 
 	## For each keyword, write a line in the file with keyword=calltip
     for (key in keys) {
-        ctip <- CallTip(key, only.args = only.args)
+        ctip <- callTip(key, only.args = only.args)
         if (ctip != "") {
             if (return.location == TRUE) {
 				## Get the package from where it is located and append it

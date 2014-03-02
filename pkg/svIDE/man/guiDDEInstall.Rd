@@ -42,7 +42,7 @@ guiComplete(code, file = NULL, sep = "|")
        then that IDE is automatically started afterward.
 }
 
-\seealso{ \code{\link[svMisc]{CallTip}}, \code{\link[svMisc]{Complete}} }
+\seealso{ \code{\link[svMisc]{callTip}}, \code{\link[svMisc]{completion}} }
 
 \examples{
 \dontrun{
