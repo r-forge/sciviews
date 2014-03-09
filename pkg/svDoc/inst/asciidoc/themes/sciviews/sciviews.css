@@ -94,7 +94,7 @@ pre {
 }
 
 #email {
-  font-size: 0.9em;
+  font-size: 0.5em;
 }
 
 #footer {
@@ -168,6 +168,48 @@ div.listingblock > div.content {
   border-radius: 3px;
   padding: 0.5em;
 }
+/* This is supposed to add line numbering... but it does not work!  
+  counter-reset: line-numbering;
+  white-space: pre;
+  overflow-x: auto;
+  word-break: inherit;
+  word-wrap: inherit;
+}
+
+div.listingblock > div.content a::before {
+  content: counter(line-numbering);
+  counter-increment: line-numbering;
+  padding-right: 1em; /* space after numbers */
+/*  width: 25px;
+  text-align: right;
+  opacity: 0.7;
+  display: inline-block;
+  color: #aaa;
+  background: #eee;
+  margin-right: 16px;
+  padding: 2px 10px;
+  font-size: 13px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+div.listingblock > div.content a:first-of-type::before {
+  padding-top: 10px;
+}
+
+div.listingblock > div.content a:last-of-type::before {
+  padding-bottom: 10px;
+}
+
+div.listingblock > div.content a:only-of-type::before {
+  padding: 10px;
+}
+*/
+
 
 div.quoteblock {
   padding-left: 2.0em;
@@ -347,8 +389,15 @@ body {
   font-family:  "Ubuntu Mono", Consolas, "Andale Mono", "Courier New", monospace;
   color: #004400;
   max-width: 50em;
-  font-size: 1.1em !important;
-  line-height: 1.2em;
+  font-size: 1em !important;
+  line-height: 1.1em;
+}
+
+.monospaced, tt {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
 }
 
 div.listingblock > div.content {

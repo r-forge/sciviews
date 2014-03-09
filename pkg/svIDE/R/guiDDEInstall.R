@@ -1,7 +1,7 @@
 guiCallTip <- function (code, file = NULL, onlyargs = FALSE, width = 60,
 location = FALSE)
 {
-    ## This is an interface to CallTip for external programs
+    ## This is an interface to callTip() for external programs
     ## Clear ::SciViewsR_CallTip
     .Tcl("set ::SciViewsR_CallTip {}")
 
@@ -39,7 +39,7 @@ location = FALSE)
 "guiComplete" <-
 function (code, file = NULL, sep = "|")
 {
-    # This is an interfacte to Complete for external programs
+    # This is an interfacte to completion() for external programs
     # Clear ::SciViewsR_Complete
     .Tcl("set ::SciViewsR_Complete {}")
 
