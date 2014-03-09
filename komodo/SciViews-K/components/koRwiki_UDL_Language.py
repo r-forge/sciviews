@@ -62,7 +62,7 @@ class KoRwikiLanguage(KoUDLLanguage):
     # ------------ Commenting Controls ------------ #
     
     commentDelimiterInfo = {
-        "line": [ "#", ],
+        "line": [ "//", ],
     }
     
     # ------------ Indentation Controls ------------ #
@@ -115,7 +115,7 @@ class KoRwikiLanguage(KoUDLLanguage):
     
     sample = """== A h2 title
     
-A  paragraph of text with **bold** and ,,italic,, text...
+A  paragraph of text with **bold** and __italic_ text...
 
 * Item 1,
 * Item 2

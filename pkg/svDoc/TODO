@@ -4,7 +4,7 @@
 
 * Check styles for paragraphs
 
-* Change syntax for onm code
+* Change syntax for owm code
 
 * Use only one # at the beginning of a line for wiki comments???
 
@@ -16,7 +16,7 @@
 
 * Support for equal signs at the end of titles too
 
-* Support for block elements, including listing, litera, sidebar, quote, example
+* Support for block elements, including listing, literal, sidebar, quote, example
   with styles
   
 * Full support for table formatting
@@ -26,7 +26,7 @@
 * Support for special inline stiles like variable, code, package, command,
    menu item, file, program
 
-* Support for replacepent for R, SciViews, LyX, LaTeX, ...
+* Support for replacement for R, SciViews, LyX, LaTeX, ...
 
 * Support for level 1 & 2 undelined titles (=== and ---, respectively)
 

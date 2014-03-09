@@ -7,6 +7,7 @@
 svDocToRnw <- function (svDocFile, RnwFile, encoding)
 {
 	## Converts a SciViews doc into an sweave document (.Rnw)
+	## with Asciidoc formatting (also convert markdown to Asccidoc)
 	
 	## If svDocFile is missing, try to get it from option or the command line
 	if (missing(svDocFile)) svDocFile <- .svDocFile()
@@ -55,17 +56,151 @@ svDocToRnw <- function (svDocFile, RnwFile, encoding)
 	## Text chunks are lines where cstart > cend
 	inDoc <- cstart > cend
 	
+	#### Conversion markdown into asciidoc formattings
+	#### Titles
+	## Asciidoc does not support H6. Transform it into block .title
+#	Rscript[inDoc] <- sub('^######[ \t]*([^#]+)#*$', '.\\1', Rscript[inDoc])
+#	## H1 -> H5: markdown to Asciidoc
+#	Rscript[inDoc] <- sub('^#####[ \t]*([^#]+)#*$', '===== \\1', Rscript[inDoc])
+#	Rscript[inDoc] <- sub('^####[ \t]*([^#]+)#*$', '==== \\1', Rscript[inDoc])
+#	Rscript[inDoc] <- sub('^###[ \t]*([^#]+)#*$', '=== \\1', Rscript[inDoc])
+#	Rscript[inDoc] <- sub('^##[ \t]*([^#]+)#*$', '== \\1', Rscript[inDoc])
+#	Rscript[inDoc] <- sub('^#[ \t]*([^#]+)#*$', '= \\1', Rscript[inDoc])
+#	## TODO: make sure we have same number of chars for ==== and ---- underlined titles
+	
+	## Markdown version of *italic* and __bold__: done in asciidoc.conf
+	## Markdown strikethrough ~~text~~ also done in asciidoc.conf
+	## Super^script^and sub~script~ is identical between extended markdown
+	## and asciidoc, but support also <sub>...</sub> and <super>...</super>
+#	Rscript[inDoc] <- gsub('</?sub>', '~', Rscript[inDoc])
+#	Rscript[inDoc] <- gsub('</?super>', '~', Rscript[inDoc])
+	## Note super^script without terminating ^ like in first  .Rmd version NOT supported!
+	## Terminate unterminated superscripts (markdown compatible) and subscripts
+	## NO! It is too much error-prone!!!
+	#Rscript[inDoc] <- gsub('\\^([^^ \t\r\n]+)\\^?([ \t\r\n])', '^\\1^\\2', Rscript[inDoc])
+	#Rscript[inDoc] <- gsub('\\~([^~ \t\r\n]+)~?([ \t\r\n])', '~\\1~\\2', Rscript[inDoc])
+	
+	## Convert markdown style force line break (2 or more space or 1
+	## or more tabs at the end of line) into asciidoc break (space +)
+	## TODO: may be use this, but not in passthrough or listing or literal blocks!
+#	Rscript[inDoc] <- gsub("(  |\t)[ \t]*$", " +", Rscript[inDoc])
+	
+	## Make sure rulers are on their own line
+	## --- or - - - or *** or * * * or ___
+	## Note: if using ---, *** or ___: do not support more than three items!
+	## This is to avoid clash with listing, sidebar and quoted blocks, respectively!
+#	Rscript[inDoc] <- sub('^[ /t]*[-*_]{3}[ /t]*$', "'''", Rscript[inDoc])
+#	Rscript[inDoc] <- sub('^[ /t]*(- ){2,}-[ /t]*$', "'''", Rscript[inDoc])
+#	Rscript[inDoc] <- sub('^[ /t]*(\\* ){2,}\\*[ /t]*$', "'''", Rscript[inDoc])
+	## Format page break...not needed, since not defined in markdown?
+	#Rscript[inDoc] <- sub('^[ /t]*<{3,}[ /t]*$', '\n<<<\n', Rscript[inDoc])
+	
+	## Convert markdown fenced block (possibly with syntax highlighting) ```s
+	## into Asciidoc equivalent [source,lang]\n```
+	## TODO: allow for numbered lines (how?)
+	Rscript[inDoc] <- sub('^`{3,}([a-zA-Z0-9]+)[ \t]*$', '[source,\\1]\n```', Rscript[inDoc])
+#	Rscript[inDoc] <- sub('^`{3,}[ \t]*$', '----', Rscript[inDoc])
+	
+	## Convert markdown HTML blocks into Asciidoc HTML block by enclosing it inside
+	## a passtrough block using ++++
+	## TODO: look if it is not already a passthrough and avoid this in listing bocks!
+#	Rscript[inDoc] <- sub('^(</[^>]+)>)', '\\1\n++++', Rscript[inDoc])
+#	Rscript[inDoc] <- sub('^(<[^>]+)>)', '++++\n\\1', Rscript[inDoc])
+	
+	## Convert markdown image markups into Asciidoc equivalents
+	## ![Alt text](path/to/img.jpg "opt title") on one line => image::/path/to/img.jpg[Alt text]
+	## Same one inside text => image:/path/to/img.jpg[Alt text]
+	## TODO: how to deal with optional title? And with white space? And non relative path?
+	## TODO: I have a space too much if optional title is provided!
+	Rscript[inDoc] <- sub('^!(\\[[^]]+\\])\\(([^)"\']+)[^)]*\\)$', 'image::\\2\\1', Rscript[inDoc])
+	Rscript[inDoc] <- sub('!(\\[[^]]+\\])\\(([^)"\']+)[^)]*\\)', 'image:\\2\\1', Rscript[inDoc])
+	
+	## Convert markdown links into Asciidoc equivalents
+	## [A link](http://example.com "opt title") => http://example.com/[A link]
+	## TODO: deal with spaces inside links
+	## TODO: I have a space too much if optional title is provided!
+	Rscript[inDoc] <- sub('(\\[[^]]+\\])\\(([^)"\']+)[^)]*\\)', '\\2\\1', Rscript[inDoc])
+	
+	
+	## Asciidoc does not handle markdown quoted text well, currently
+	## Just prepend {empty} for transforming it as text
+	## TODO... and what about indented stuff?
+	
+
+#	isTxt <- grepl("^(#' .*|[ /t]*)$", ttt)
+#	tt2 <- sub("^#' ", "", ttt)
+#	## Transition text -> R chunk
+#	trans1 <- c(FALSE, !isTxt[-1] & isTxt[-length(isTxt)])
+#	## Add empty R chunk transition in trans1, if not there
+#	tt2t1 <- tt2[trans1]
+#	noTrans <- !grepl("^#[+-] ", tt2t1)
+#	tt2t1[noTrans] <- paste0("<<>>=\n", tt2t1[noTrans])
+#	tt2[trans1] <- tt2t1
+#	## Transition R chunk -> text
+#	trans2 <- c(FALSE, isTxt[-1] & !isTxt[-length(isTxt)])
+#	tt2[trans2] <- paste0("@\n", tt2[trans2])
+	
+	
+	
 	## Convert \" into " inside doc blocks
 	Rscript[inDoc] <- gsub('\\\\"', '"', Rscript[inDoc])
 	
 	## Convert \\ into \ inside doc blocks
 	Rscript[inDoc] <- gsub("\\\\\\\\", "\\\\", Rscript[inDoc])
 	
+	## Convert from R markdown `r 1+1`or ``r 1+1``into Sweave style for
+	## inline R expressions \Sexpr{1+1} (note that we leave external ` if it is doubled!) 
+	Rscript[inDoc] <- gsub('`r[ \t]+([^`]*)`', '\\\\Sexpr{\\1}', Rscript[inDoc])
+	## But WAIT: we need to escape } inside the expression!!!
+	## First, replace Sexpr delimiters by %@%SEXPR%@% on both sides
+#	sexprs <- gsub("`r[ /t]([^`]*)`", "%@%SEXPR%@%\\1%@%SEXPR%@%", Rscript[inDoc])
+#	## Then, split the strings on this tag
+#	sexprs <- strsplit(sexprs, "%@%SEXPR%@%", fixed = TRUE)
+	## Now, all even items in the list contain Sexpr... replace } by \} there,
+	## if } is not already escaped
+	## Note also that if the Sexpr was at the end of the string, we need to
+	## append "" to it, in order to be able to put end delimiter at next step
+	## Also, glue together the pieces by using \Sexpr{ and } as delimiters
+#	Rscript[inDoc] <- sapply(sexprs, function (x) {
+#		l <- length(x)
+#		if (!l) return("")
+#		evenPos <- !(1:l %% 2)
+#		x[evenPos] <-  paste0("\\Sexpr{", gsub("[\\\\]?([{}])", "\\\\\\\\\\1", x[evenPos]),
+#			"}")
+#		paste(x, collapse = "")
+#	})
+
+	## Convert from R markdown latex equations to AsciiDoc version
+	## \[ ... \] => ++++\n<center>$ ... $</center>\n++++ for display equations
+	Rscript[inDoc] <- gsub('^[ \t]*\\\\\\[', '+++<center>$', Rscript[inDoc])
+	Rscript[inDoc] <- gsub('^[ \t]*\\\\\\]', '$</center>+++', Rscript[inDoc])
+	## Note: for reasons I don't know, this does not work:  $$latex ... $$ into ++++\n<center>$ ... $</center>\n++++
+	## $$latex ... $$ into +++<center>$ ... $</center>+++
+	## TODO: eliminate this!
+	#Rscript[inDoc] <- gsub('^[ \t]*\\$\\$latex', '+++<center>$', Rscript[inDoc])
+#	Rscript[inDoc] <- gsub('^[ \t]*\\$\\$', '$</center>+++', Rscript[inDoc])
+	## \( ... \) => +++$ ... $+++ for inline equations
+	Rscript[inDoc] <- gsub('\\\\\\(', '+++$', Rscript[inDoc])
+	Rscript[inDoc] <- gsub('\\\\\\)', '$+++', Rscript[inDoc])
+	## $latex ... $ into +++$ ... $+++
+	## TODO: eliminate this
+	#Rscript[inDoc] <- gsub('\\$latex ([^$]+)\\$', '+++$\\1$+++', Rscript[inDoc])
+	
+	
+	## Eliminate spaces and tabs between `` and <code> and ``
+	## => ``code`` (markdown allows but ignores spaces and tabs... this is
+	## to allow  backquotes inside code!). This is tricky, but here it is!
+	## TODO: not good solution => solved in asciidoc.conf for single space inside `` code ``
+#	Rscript[inDoc] <- gsub("``[ \t]*([^ ]*( (?![ \t]*``)[^ ]*)*)[ \t]*``", "``\\1``",
+#		Rscript[inDoc], perl = TRUE)
+	
 	## Convert comments blocks using four or more #### by ////
-	Rscript[inDoc] <- gsub("^####+$", "////", Rscript[inDoc])
+	## No, since # is for title now
+#	Rscript[inDoc] <- gsub("^####+$", "////", Rscript[inDoc])
 	
 	## Convert line comments using ## by __
-	Rscript[inDoc] <- gsub("^##", "__", Rscript[inDoc])
+	## NO! Now, it is //, since # is for titles
+#	Rscript[inDoc] <- gsub("^##", "__", Rscript[inDoc])
 	
 	## Replace all doc chunk starters (!") by @
 	Rscript[start] <- "@"
@@ -139,7 +274,6 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 		html4 = "html",
 		slidy = "html",
 		slidy2 = "html",
-		wordpress = "html",
 		docbook = "xml",
 		docbook45 = "xml",
 		latex = "tex",
@@ -237,10 +371,18 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 		stop("Problems while creating the Asciidoc file (", TxtFile, ")")
 	
 	## Do we use a particular theme with Asciidoc
+	## I have got problem with `var` insode code blocks that are interpreted as
+	## equations by MathML => do not use it!!!
+	#if (theme == "classic") {
+	#	opts <- paste('" -b ', format, ' -a asciimath -a caption "', sep = "")
+	#} else {
+	#	opts <- paste('" -b ', format, ' -a asciimath -a caption --theme=',
+	#		theme, '@ "', sep = "")
+	#}
 	if (theme == "classic") {
-		opts <- paste('" -b ', format, ' -a asciimath -a caption "', sep = "")
+		opts <- paste('" --unsafe -b ', format, ' -a latexmath -a caption "', sep = "")
 	} else {
-		opts <- paste('" -b ', format, ' -a asciimath -a caption --theme=',
+		opts <- paste('" --unsafe -b ', format, ' -a latexmath -a caption --theme=',
 			theme, '@ "', sep = "")
 	}
 

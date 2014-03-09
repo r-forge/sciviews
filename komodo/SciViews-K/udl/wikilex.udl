@@ -66,23 +66,61 @@ sublanguage Rwiki
 #SCE_UDL_M_COMMENT
 #    SGML comments.
 
+# Set the basic patterns we'll be using for styling transitions.
+pattern WCHAR = 'a-zA-Z\d\x80-\xff'     # characters in words
+pattern WS = '\s\t\r\n'                 # whitespace
+pattern OP = '!%&\(\)\*\+,-\/:;<=>\?@\[\]\^\{\}~|\$'    # operator
+
+
 state IN_M_WIKI_START
 /^/ : => in_wiki_default_start_of_line
 /./: redo, => in_wiki_default_on_line
 
 state in_wiki_default_start_of_line:
 #'{{{' : paint(upto, M_DEFAULT), paint(include, M_TAGNAME), => in_wiki_triple_brace_start
-'##': paint(upto, M_CDATA), paint(include, M_COMMENT), => in_wiki_have_comment
+'//': paint(upto, M_CDATA), paint(include, M_COMMENT), => in_wiki_have_comment
 
-# This is for the item list
-# NO'- ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+# Ruler
+/^[ \t]*-{3}[ \t]*$/: paint(upto, M_CDATA), paint(include, M_PI), => in_wiki_default_on_line
+/^[ \t]*(- ){2,}-[ \t]*$/: paint(upto, M_CDATA), paint(include, M_PI), => in_wiki_default_on_line
+/^[ \t]*\*{3}[ \t]*$/: paint(upto, M_CDATA), paint(include, M_PI), => in_wiki_default_on_line
+/^[ \t]*_{3}[ \t]*$/: paint(upto, M_CDATA), paint(include, M_PI), => in_wiki_default_on_line
+/^[ \t]*(\* ){2,}\*[ \t]*$/: paint(upto, M_CDATA), paint(include, M_PI), => in_wiki_default_on_line
+# Page break
+/^[ \t]*<{3,}[ \t]*$/: paint(upto, M_CDATA), paint(include, M_PI), => in_wiki_default_on_line
+
+# Special characters (c), (r), (tm), ..., --, ---, 1/2, 1/4, 3/4
+/(?<!\\)\(c\)/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/(?<!\\)\(r\)/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/(?<!\\)\(tm\)/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/(?<!\\)\.\.\./: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/(?<!\\)---/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/(?<!\\)--/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/(?<!\\)1\/2/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/(?<!\\)1\/4/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/(?<!\\)3\/4/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+"\\\\.": paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+# This is for unordered list
 '* ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '*** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '**** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '***** ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
-# This is for the numbered list
+'+ ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'++ ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'+++ ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'++++ ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'+++++ ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+'- ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'-- ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'--- ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'---- ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+'----- ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+# This is for the ordered list
 '. ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '.. ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 '... ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
@@ -94,11 +132,12 @@ state in_wiki_default_start_of_line:
 /[ivx]+\) /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 /[IVX]+\) /: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
-'===== ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
-'==== ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
-'=== ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
-'== ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
-'= ': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
+'######': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
+'#####': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
+'####': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
+'###': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
+'##': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
+'#': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
 '.': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_finish_header
 
 # This is for special paragraphs
@@ -108,6 +147,10 @@ state in_wiki_default_start_of_line:
 'CAUTION:': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 'TIP:': paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
+# Markdown quote style (> quoted text) is not handled correctly in Asciidoc
+# Just highlight quotes as tags however, here
+/>[> \t]+/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
 # Everything between [] on the beginning of a line, or with name;; name:: name::: name:::: is tag
 /\[.*\]$/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_start_of_line
 /[a-zA-Z][a-zA-Z _0-9]+;;$/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_start_of_line
@@ -116,30 +159,35 @@ state in_wiki_default_start_of_line:
 /./: redo, => in_wiki_default_on_line
 
 state in_wiki_finish_header:
-/$/ : paint(upto, M_PI), paint(include, M_PI), => in_wiki_default_start_of_line
-#/\s+/ : #stay
-#'##': paint(upto, M_PI), paint(include, M_COMMENT), => in_wiki_have_comment
-#/./: redo, => in_wiki_default_on_line
+/#*$/ : paint(upto, M_PI), paint(include, M_TAGNAME), => in_wiki_default_start_of_line
 
 state in_wiki_default_on_line:
 #'##': paint(upto, M_CDATA), paint(include, M_COMMENT), => in_wiki_have_comment
-# Line break with +
-/ \+$/: paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_default_start_of_line
+# Line break with + (asciidoc style)
+/ +\+[$WS]*$/: paint(upto, M_CDATA), paint(include, SSL_STRING), => in_wiki_default_on_line
+/(  |\t)[$WS]*$/: paint(upto, M_CDATA), paint(include, SSL_STRING), => in_wiki_default_on_line
+# Line break with 2 sp, 1 tab or more (markdown style)
 /$/: => in_wiki_default_start_of_line
-",," : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_italic
-"**" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_bold
+"__" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_bold1
+/(?<![$WCHAR])_/ : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_italic1
+"**" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_bold2
+/(?<![$WCHAR])\*/ : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_italic2
+"~~" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_del
 ## TODO: use a different language here... may be latex or latexequation?
 "+++$$" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_equation
-"$$" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_code
+/^```+[a-zA-Z0-9]*$/ : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_literal
+/``[\s\t]+/ : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_code1
+/``(?![`\s\t])/ : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_code2
+"`" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_code3
 "+++" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_passthrough
-"~~" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_monospaced
+"++" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_monospaced
 
 #"'''''" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_q5
 #"'''" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_q3
 #"''" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_q2
 
-"__" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_subscript
-"^^" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_superscript
+"~" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_subscript
+"^" : paint(upto, M_CDATA), paint(include, M_TAGNAME), => in_wiki_superscript
 
 '{{{' : paint(upto, M_CDATA), => in_wiki_brace_3
 /!'+/: #stay
@@ -189,31 +237,65 @@ state in_wiki_have_comment:
 
 
 #{{{ in-line things
-state in_wiki_italic:
-# We don't want to transit from italic stage for URLs like http://xxx
-/!,,/: #stay
-## TODO: allow for other in-line things inside this!
-",," : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
+state in_wiki_bold1:
+/!\__/: #stay
+"__" : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
-state in_wiki_bold:
+state in_wiki_bold2:
 /!\**/: #stay
-"**" : paint(upto, M_TAGNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
+"**" : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+state in_wiki_italic1:
+/!_/: #stay
+"_" : redo, => in_wiki_italic1_transition
+
+state in_wiki_italic1_transition:
+/_(?=[$WCHAR])/: => in_wiki_italic1
+/_(?![$WCHAR])/: paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+state in_wiki_italic2:
+/!\*/: #stay
+"*" : redo, => in_wiki_italic2_transition
+
+state in_wiki_italic2_transition:
+/\*(?=[$WCHAR])/: => in_wiki_italic2
+/\*(?![$WCHAR])/: paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+state in_wiki_del:
+/!\~~/: #stay
+"~~" : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
 state in_wiki_equation:
 /!\$$+++/: #stay
-"$$+++" : paint(upto, M_TAGNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
+"$$+++" : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
-state in_wiki_code:
-/!\$$/: #stay
-"$$" : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+state in_wiki_literal:
+/!\^/: #stay
+/^/ : paint(upto, M_TAGNAME), paint(include, M_TAGNAME), => in_wiki_literal_code
+
+state in_wiki_literal_code:
+/!\^```+$/: #stay
+/^```+$/ : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+state in_wiki_code1:
+/!\[\s\t]+``/: #stay
+/[\s\t]+``/ : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+state in_wiki_code2:
+/!\``/: #stay
+"``" : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+
+state in_wiki_code3:
+/!\`/: #stay
+"`" : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
 state in_wiki_passthrough:
 /!\+++/: #stay
 "+++" : paint(upto, SSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
 state in_wiki_monospaced:
-/!\~~/: #stay
-"~~" : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/!\++/: #stay
+"++" : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
 #state in_wiki_q5:
 #/!'+/: #stay
@@ -226,11 +308,11 @@ state in_wiki_monospaced:
 #"''" : paint(upto, CSL_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
 
 state in_wiki_subscript:
-/!__/: #stay
-"__" : paint(upto, M_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/!~/: #stay
+"~" : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
 state in_wiki_superscript:
-/!^^/: #stay
-"^^" : paint(upto, M_STRING), paint(include, M_TAGNAME), => in_wiki_default_on_line
+/!^/: #stay
+"^" : paint(upto, M_ATTRNAME), paint(include, M_TAGNAME), => in_wiki_default_on_line
 #}}}
 
 ################ End of State Handling ################

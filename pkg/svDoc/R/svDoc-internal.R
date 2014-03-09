@@ -5,8 +5,7 @@
 	if (!is.null(py)) options(python = py)
 		
 	## Add an svDoc function to the R http daemon server to process svDoc pages
-	e <- get(".httpd.handlers.env", envir = asNamespace("tools"),
-		inherits = FALSE)
+	e <- getNamespace("tools")$.httpd.handlers.env
 	e[["svDoc"]] <- function (path, query, body, ...) {
 		## Avoid partial argument match (cf warnings with ascii functions)!
 		partmatch <- getOption("warnPartialMatchArgs")
@@ -51,7 +50,7 @@
 	if (is.null(svDocFile)) svDocFile <- commandArgs(TRUE)[1] # If #! script
 	if (!length(svDocFile) || !file.exists(svDocFile))
 		stop("svDocFile not found (", svDocFile, ")")
-	return(normalizePath(svDocFile, winslash = "/"))
+	normalizePath(svDocFile, winslash = "/")
 	
 }
 
@@ -148,5 +147,5 @@
 	if (!file.exists(py)) return(NULL)
 
 	## Recheck now...
-	if (.pyCheck(py)) return(py) else return(NULL)
+	if (.pyCheck(py)) py else NULL
 }

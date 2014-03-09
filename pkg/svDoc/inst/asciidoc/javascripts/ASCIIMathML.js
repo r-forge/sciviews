@@ -34,10 +34,8 @@ var mathfontfamily = "serif"; // change to "" to inherit (works in IE)
 var displaystyle = true;      // puts limits above and below large operators
 var showasciiformulaonhover = true; // helps students learn ASCIIMath
 var decimalsign = ".";        // change to "," if you like, beware of `(1,2)`!
-var AMdelimiter1 = "``", AMescape1 = "\\\\``"; // can use other characters
-// PhG: was "`"
-var AMdelimiter2 = "$$", AMescape2 = "\\\\\\$\\$", AMdelimiter2regexp = "\\$\\$";
-// PhG: was "$"
+var AMdelimiter1 = "`", AMescape1 = "\\\\`"; // can use other characters
+var AMdelimiter2 = "$", AMescape2 = "\\\\\\$", AMdelimiter2regexp = "\\$";
 var doubleblankmathdelimiter = false; // if true,  x+1  is equal to `x+1`
                                       // for IE this works only in <!--   -->
 //var separatetokens;// has been removed (email me if this is a problem)
