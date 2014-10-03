@@ -1,10 +1,17 @@
 = svDialogs News
 
-== Changes in scDialogs 0.9-55
+== Changes in svDialogs 0.9-56
+
+* The native Mac dialogs did not work any more, solved for 10.5 Leopard and
+  above by querying the name of the application by its id (Rgui).
+
+
+== Changes in svDialogs 0.9-55
 
 * Rework of Author and Authors@R fileds in the DESCRIPTION file.
 
-== Changes in scDialogs 0.9-54
+
+== Changes in svDialogs 0.9-54
 
 * Dependencies to tcltk and svMisc are eliminated. Consequently, all functions
   that depend on Tcl/Tk are eliminated too. It concerns guiDlg(),

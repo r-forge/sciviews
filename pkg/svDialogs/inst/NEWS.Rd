@@ -1,6 +1,20 @@
 \name{NEWS}
 \title{NEWS file for the svDialogs package}
 
+\section{Changes in version 0.9-56}{
+	\itemize{
+		\item{ The native Mac dialogs did not work any more, solved for 10.5
+		  Leopard and above by querying the name of the application by its id
+		  (Rgui). }
+	}
+}
+
+\section{Changes in version 0.9-55}{
+	\itemize{
+		\item{ Rework of Author and Authors@R fileds in the DESCRIPTION file. }
+	}
+}
+
 \section{Changes in version 0.9-54}{
 	\itemize{
 		\item{ Dependencies to tcltk and svMisc are eliminated.

@@ -73,7 +73,9 @@ default = "", ..., gui = .GUI)
 .macDlgInput <- function (message, default)
 {
     ## Display a modal message with native Mac dialog box
-	if (.Platform$GUI == "AQUA") app <- "(name of application \"R\")" else
+	#if (.Platform$GUI == "AQUA") app <- "(name of application \"R\")" else
+	## This works from Mac OS X 10.5 Leopard:
+	if (.Platform$GUI == "AQUA") app <- "(name of application id \"Rgui\")" else
 		if (.isJGR()) app <- "\"JGR\"" else app <- "\"Terminal\""
 	## Avoid displaying warning message when the user clicks on 'Cancel'
 	owarn <- getOption("warn")
