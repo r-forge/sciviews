@@ -1,2 +1,3 @@
 isMac <- function ()
-	(grepl("^mac", .Platform$pkgType))
+    grepl("darwin", R.version$os) # According to what's done in R sources
+	#(grepl("^mac", .Platform$pkgType))
