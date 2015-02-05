@@ -1217,11 +1217,13 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 	
 	// Initialize the scintilla window in the R Output
 	function _init () {
-		var rcons2 = document.getElementById("rconsole-scintilla2");
+		//var rcons2 = document.getElementById("rconsole-scintilla2");
 		// In ko7, we need a different code!
-        if (rcons2 == null) rcons2 = document
-            .getElementById("sciviews_rconsole_tab")
-            .contentDocument.getElementById("rconsole-scintilla2");
+        //if (rcons2 == null) rcons2 = document
+        //    .getElementById("sciviews_rconsole_tab")
+        //    .contentDocument.getElementById("rconsole-scintilla2");
+		var rcons2 = ko.widgets.getWidget("sciviews_rconsole_tab")
+			.contentDocument.getElementById("rconsole-scintilla2");
 		// Format the scintilla window with same style as for the Komodo console
 		try {
 			var scintilla = rcons2.scintilla;
@@ -1408,11 +1410,14 @@ if (typeof(sv.cmdout) == 'undefined') sv.cmdout = {};
 			ko.views.manager.currentView.setFocus();
 		} catch(e) { } // We don't care if it fails, e.g., no buffer opened
 		
-		var rconsoleDesc = document.getElementById('rconsole-desc');
+		//var rconsoleDesc = document.getElementById('rconsole-desc');
 		// In ko7, we need a different code!
-        if (rconsoleDesc == null) rconsoleDesc = document
-            .getElementById("sciviews_rconsole_tab")
-            .contentDocument.getElementById("rconsole-desc");
+        //if (rconsoleDesc == null) rconsoleDesc = document
+        //    .getElementById("sciviews_rconsole_tab")
+        //    .contentDocument.getElementById("rconsole-desc");
+		var rconsoleDesc = ko.widgets.getWidget("sciviews_rconsole_tab")
+			.contentDocument.getElementById("rconsole-desc");
+		
 		rconsoleDesc.parentNode.style.backgroundColor =
 			(highlight && msg) ? "highlight" : "";
 		rconsoleDesc.style.color = "rgb(0, 0, 0)";

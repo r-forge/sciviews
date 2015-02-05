@@ -6,7 +6,7 @@
   "value": [
     "ko.help.open('komodo_extensions');"
   ], 
-  "trigger": "", 
+  "trigger": "trigger_postopen", 
   "rank": 100, 
   "version": "1.0.12", 
   "async": 1, 

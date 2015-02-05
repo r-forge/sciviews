@@ -389,6 +389,13 @@
 					class="menuitem-iconic" insertbefore="helpLanguagesMenu"/>
 				<menuseparator  insertbefore="helpLanguagesMenu"/>
 	</menupopup>
+	
+	<!--<menupopup id="popup_tools">
+		<menuitem id="menu_sciviewsk"
+              label="sciviewsk"
+              observes="... The command here..."
+              class="menu-iconic-wide"/>
+	</menupopup>-->
 
 	<toolboxrow id="main-toolboxrow">
 		<toolbar
@@ -544,7 +551,7 @@
 			insertbefore="placesViewbox"/>
 	</ko-pane>
 	
-		<ko-pane id="workspace_bottom_area">
+	<ko-pane id="workspace_bottom_area">
 		<browser type="ko-widget"
 			id="sciviews_rconsole_tab"
 			label="&sciviews.console.tab;"

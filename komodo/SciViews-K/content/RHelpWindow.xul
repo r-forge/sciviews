@@ -311,7 +311,8 @@ TODO:
 				// Make sure that help is started, but do not open a browser
 				cmd = 'invisible(capture.output(suppressMessages(help.start(browser = function(...) return())))); ';
 				// Return the home page of R >= 2.10 help system
-				cmd += 'cat(paste("\n", "http://127.0.0.1:", tools:::httpdPort, "/doc/html/index.html", sep = ""))';
+				// TODO: Starting from R 3.2.0 only use tools::startDynamicHelp(NA) here!
+				cmd += 'cat(paste("\n", "http://127.0.0.1:", if (is.function(tools:::httpdPort)) tools::startDynamicHelp(NA) else tools::httpdPort, "/doc/html/index.html", sep = ""))';
 		
 				res = sv.r.evalCallback(cmd, function (path) {
 					path = sv.tools.strings.removeLastCRLF(path);

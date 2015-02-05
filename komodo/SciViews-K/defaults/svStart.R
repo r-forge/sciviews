@@ -593,10 +593,11 @@ skip = NULL)
 		## In R 2.10, help system is completely changed
 		options(help_type = "html")
 		## Make sure the help server is started
-		if (tools:::httpdPort == 0L)
-				tools::startDynamicHelp()
+		port <- try(tools::startDynamicHelp(), silent = TRUE)
+		if (inherits(res, "try-error"))
+			port <- try(tools::startDynamicHelp(NA), silent = TRUE)
 		## Record the home page for the help server in an option
-		options(helphome = paste("http://127.0.0.1:", tools:::httpdPort,
+		options(helphome = paste("http://127.0.0.1:", port,
 			"/doc/html/index.html", sep = ""))
 
 		## I need to get the help file URL, but help() does not provide it any
@@ -606,14 +607,19 @@ skip = NULL)
 			if (length(file) == 0) return("")
 			## Extension ".html" may be missing
 			htmlfile <- basename(file)
+			if (R.Version()$`svn rev` >= 67550) {
+				port <- tools::startDynamicHelp(NA)
+			} else {
+				port <- getNamespace("tools")$httpdPort
+			}
 			if (length(file) > 1) {
 				## If more then one topic is found
-				return(paste("http://127.0.0.1:", tools:::httpdPort,
+				return(paste("http://127.0.0.1:", port,
 					"/library/NULL/help/", attr(x,"topic"), sep = ""))
 			} else {
 				if(substring(htmlfile, nchar(htmlfile) -4) != ".html")
 					htmlfile <- paste(htmlfile, ".html", sep="")
-				return(paste("http://127.0.0.1:", tools:::httpdPort,
+				return(paste("http://127.0.0.1:", port,
 				"/library/", basename(dirname(dirname(file))),
 				"/html/", htmlfile, sep = ""))
 			}
@@ -627,12 +633,18 @@ skip = NULL)
 ## rewriting of the print function in base environment!!!
 ## (problem emailed to Simon Urbanek on 03/11/2009... I hope he will propose
 ## a work-around for this in R 2.12!!!)
-if (compareVersion(rVersion, "2.11.0") < 0) {
-	source("print.help_files_with_topic210.R")
-} else if (compareVersion(rVersion, "2.14.0") < 0) {
-	source("print.help_files_with_topic211.R")
-} else {
-	source("print.help_files_with_topic214.R")
+#if (compareVersion(rVersion, "2.11.0") < 0) {
+#	source("print.help_files_with_topic210.R")
+#} else if (compareVersion(rVersion, "2.14.0") < 0) {
+#	source("print.help_files_with_topic211.R")
+#} else {
+#	source("print.help_files_with_topic214.R")
+#}
+## In case we are in R.app, install our own browser
+if (.Platform$GUI == "AQUA") {
+	guiTools <- as.environment("tools:RGUI")
+	guiTools$aqua.browser2 <- guiTools$aqua.browser
+	guiTools$aqua.browser <- getOption("browser")
 }
 
 		## Change the working directory to the provided directory
