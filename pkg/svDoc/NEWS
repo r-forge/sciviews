@@ -1,5 +1,12 @@
 = svDoc News
 
+== Changes in svDoc 0.9-11
+
+* Added Asciidoc backend for producing a flat ODT documents, readable by
+  OpenOffice 3 or higher (but with a .odt extension).
+
+
+
 == Changes in svDoc 0.9-10
 
 * AsciiDoc updates to version 8.6.9 (november 2013)

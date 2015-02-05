@@ -13,8 +13,8 @@
   \tabular{ll}{
     Package: \tab svKomodo\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-62\cr
-    Date: \tab 2014-03-01\cr
+    Version: \tab 0.9-63\cr
+    Date: \tab 2015-02-05\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples

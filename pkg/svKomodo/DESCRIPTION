@@ -1,7 +1,7 @@
 Package: svKomodo
 Type: Package
-Version: 0.9-62
-Date: 2014-03-01
+Version: 0.9-63
+Date: 2015-02-05
 Title: SciViews GUI API - Functions to interface with Komodo Edit/IDE
 Author: Philippe Grosjean [aut, cre]
 Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),

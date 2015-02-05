@@ -1,5 +1,7 @@
 = svDoc - To do list
 
+* Other styles than sciviews for ODT export
+
 * Add and support a syntax for line break (and page break?)
 
 * Check styles for paragraphs

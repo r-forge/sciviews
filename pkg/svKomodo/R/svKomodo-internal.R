@@ -141,10 +141,10 @@
 	req <- require
 	if (type == "http") {
 		req("svHttp", character.only = TRUE, lib.loc = lib)
-		if (interactive()) try(startHttpServer())
+		if (interactive()) try(svHttp::startHttpServer())
 	} else {
 		req("svSocket", character.only = TRUE, lib.loc = lib)
-		if (interactive()) try(startSocketServer())
+		if (interactive()) try(svSocket::startSocketServer())
 	}
 		
 	## This comes from svStart... and should really be placed here indeed!
@@ -276,7 +276,11 @@
 	port <- try(tools::startDynamicHelp(), silent = TRUE)
 	if (inherits(port, "try-error")) {
 		## Dynamic help is already started
-		port <- getNamespace("tools")$httpdPort
+		if (R.Version()$`svn rev` >= 67550) {
+			port <- tools::startDynamicHelp(NA)
+		} else {
+			port <- getNamespace("tools")$httpdPort
+		}
 	}
 	## Record the home page for the help server in an option
 	options(helphome = paste("http://127.0.0.1:", port,
@@ -289,14 +293,20 @@
 		if (length(file) == 0) return("")
 		## Extension ".html" may be missing
 		htmlfile <- basename(file)
+		## Get the HTML help server port
+		if (R.Version()$`svn rev` >= 67550) {
+			port <- tools::startDynamicHelp(NA)
+		} else {
+			port <- getNamespace("tools")$httpdPort
+		}
 		if (length(file) > 1) {
 			## If more then one topic is found
-			paste("http://127.0.0.1:", getNamespace("tools")$httpdPort,
+			paste("http://127.0.0.1:", port,
 				"/library/NULL/help/", attr(x,"topic"), sep = "")
 		} else {
 			if(substring(htmlfile, nchar(htmlfile) -4) != ".html")
 				htmlfile <- paste(htmlfile, ".html", sep="")
-			paste("http://127.0.0.1:", getNamespace("tools")$httpdPort,
+			paste("http://127.0.0.1:", port,
 			"/library/", basename(dirname(dirname(file))),
 			"/html/", htmlfile, sep = "")
 		}
