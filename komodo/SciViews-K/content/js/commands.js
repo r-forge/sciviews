@@ -195,11 +195,13 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 			isWin? "r-gui" : "r-terminal");
 
 		// Width of R output defined to fit R output panel (min = 66, max = 200)
-		var rcons = document.getElementById("rconsole-scintilla2");
+		//var rcons = document.getElementById("rconsole-scintilla2");
 		// In ko7, we need a different code!
-		if (rcons == null) rcons = document
-			.getElementById("sciviews_rconsole_tab")
-			.contentDocument.getElementById("rconsole-scintilla2");	
+		//if (rcons == null) rcons = document
+		//	.getElementById("sciviews_rconsole_tab")
+		//	.contentDocument.getElementById("rconsole-scintilla2");	
+		var rcons = ko.widgets.getWidget("sciviews_rconsole_tab")
+				.contentDocument.getElementById("rconsole-scintilla2");
 		var scimoz = rcons.scimoz;
 		var width = (Math.floor(window.innerWidth /
 			scimoz.textWidth(0, "0")) - 7)
@@ -398,7 +400,7 @@ if (typeof(sv.command) == 'undefined') sv.command = {};
 				// try/catch here somehow prevented from storing window
 				// reference in RHelpWin. No idea why...
 				RHelpWin = window.openDialog(rHelpXulUri, "RHelp",
-					"chrome=yes,dependent,resizable=yes," +
+					"chrome=yes,resizable=yes," +
 					"scrollbars=yes,status=no,close,dialog=no", sv, uri);
 			} else {
 				// It seems we could enter in a deadlock situation here

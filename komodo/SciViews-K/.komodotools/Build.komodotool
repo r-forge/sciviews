@@ -11,7 +11,7 @@
     "var project = ko.macros.current.project;", 
     "var projectDir = ko.interpolate.interpolateString('%p');", 
     "var callback = function() {", 
-    "  ko.statusBar.AddMessage('Build complete', 'projects', 5000, true);", 
+    "  require(\"notify/notify\").send(\"Build complete\", \"projects\");", 
     "  ko.projects.manager.saveProject(project);", 
     "};", 
     "var osPath = Components.classes[\"@activestate.com/koOsPath;1\"].", 
@@ -27,7 +27,7 @@
     "                                   callback);", 
     "}"
   ], 
-  "trigger": "", 
+  "trigger": "trigger_postopen", 
   "rank": 100, 
   "version": "1.0.12", 
   "async": 1, 

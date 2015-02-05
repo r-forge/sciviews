@@ -322,10 +322,13 @@ sv.robjects = {};
 	
 		isInitialized = true;
 		if (init) {
-			var tree = document.getElementById("sciviews_robjects_objects_tree");
+			//var tree = document.getElementById("sciviews_robjects_objects_tree");
 			// In ko7, we need a different code!
-			if (tree == null) tree = document	
-				.getElementById("sciviews_robjects_tab").contentDocument
+			//if (tree == null) tree = document	
+			//	.getElementById("sciviews_robjects_tab").contentDocument
+			//	.getElementById("sciviews_robjects_objects_tree");
+			var tree = ko.widgets.getWidget("sciviews_robjects_tab")
+				.contentDocument
 				.getElementById("sciviews_robjects_objects_tree");
 			tree.view = this;
 		}
@@ -358,11 +361,13 @@ sv.robjects = {};
 
 	// Allow for filtering by exclusion: prepend with "!"
 	function _getFilter () {
-		var tb = document.getElementById("sciviews_robjects_filterbox");
+		//var tb = document.getElementById("sciviews_robjects_filterbox");
 		// In ko7, we need a different code!
-		if (tb == null) tb = document	
-			.getElementById("sciviews_robjects_tab").contentDocument
-			.getElementById("sciviews_robjects_filterbox");
+		//if (tb == null) tb = document	
+		//	.getElementById("sciviews_robjects_tab").contentDocument
+		//	.getElementById("sciviews_robjects_filterbox");
+		var tb = ko.widgets.getWidget("sciviews_robjects_tab")
+			.contentDocument.getElementById("sciviews_robjects_filterbox");
 		var obRx, text, not;
 		text = tb.value;
 		not = (text.substring(0, 1) == "!")
@@ -512,11 +517,13 @@ sv.robjects = {};
 	this.sort =  function (column, root) {
 		var columnName, currentElement, tree, sortDirection, realOrder, order,
 			sortDirs;
-		tree = document.getElementById("sciviews_robjects_objects_tree");
+		//tree = document.getElementById("sciviews_robjects_objects_tree");
 		// In ko7, we need a different code!
-		if (tree == null) tree = document	
-			.getElementById("sciviews_robjects_tab").contentDocument
-			.getElementById("sciviews_robjects_objects_tree");
+		//if (tree == null) tree = document	
+		//	.getElementById("sciviews_robjects_tab").contentDocument
+		//	.getElementById("sciviews_robjects_objects_tree");
+		tree = ko.widgets.getWidget("sciviews_robjects_tab")
+			.contentDocument.getElementById("sciviews_robjects_objects_tree");
 		sortDirection = tree.getAttribute("sortDirection");
 		sortDirs = ["descending", "natural", "ascending", "descending"];
 		realOrder = sortDirs.indexOf(sortDirection) - 1;
@@ -592,11 +599,13 @@ sv.robjects = {};
 		var cols = tree.getElementsByTagName("treecol");
 		for (var i = 0; i < cols.length; i++)
 			cols[i].removeAttribute("sortDirection");
-		var columnWidget = document.getElementById(columnName);
+		//var columnWidget = document.getElementById(columnName);
 		// In ko7, we need a different code!
-		if (columnWidget == null) columnWidget = document	
-			.getElementById("sciviews_robjects_tab").contentDocument
-			.getElementById(columnName);
+		//if (columnWidget == null) columnWidget = document	
+		//	.getElementById("sciviews_robjects_tab").contentDocument
+		//	.getElementById(columnName);
+		var columnWidget = ko.widgets.getWidget("sciviews_robjects_tab")
+				.contentDocument.getElementById(columnName);
 		columnWidget.setAttribute("sortDirection", sortDirection);
 
 		if (!root || root == _this.treeData) {
@@ -856,11 +865,14 @@ sv.robjects = {};
 			pos = _this.searchPath.indexOf(path);
 			if (pos == -1) return(false);
 
-			var listWidget = document
-				.getElementById("sciviews_robjects_searchpath_listbox");
+			//var listWidget = document
+			//	.getElementById("sciviews_robjects_searchpath_listbox");
 			// In ko7, we need a different code!
-			if (listWidget == null) listWidget = document	
-				.getElementById("sciviews_robjects_tab").contentDocument
+			//if (listWidget == null) listWidget = document	
+			//	.getElementById("sciviews_robjects_tab").contentDocument
+			//	.getElementById("sciviews_robjects_searchpath_listbox");
+			var listWidget = ko.widgets.getWidget("sciviews_robjects_tab")
+				.contentDocument
 				.getElementById("sciviews_robjects_searchpath_listbox");
 			listWidget.getItemAtIndex(pos).checked = true;
 			_addObject(path, "", _parseObjectList, path);
@@ -893,11 +905,13 @@ sv.robjects = {};
 	//
 	//	isInitialized = true;
 	//
-	// var objTree = document.getElementById("sciviews_robjects_objects_tree");
-	// In ko7, we need a different code!
-	//if (objTree == null) objTree = document	
-	//	.getElementById("sciviews_robjects_tab").contentDocument
-	//	.getElementById("sciviews_robjects_objects_tree");
+	//// var objTree = document.getElementById("sciviews_robjects_objects_tree");
+	//// In ko7, we need a different code!
+	////if (objTree == null) objTree = document	
+	////	.getElementById("sciviews_robjects_tab").contentDocument
+	////	.getElementById("sciviews_robjects_objects_tree");
+	//var objTree = ko.widgets.getWidget("sciviews_robjects_tab")
+	//		.contentDocument.getElementById("sciviews_robjects_objects_tree");
 	//objTree.view = this;
 	//	this.treeBox.scrollToRow(0);
 	//};
@@ -918,11 +932,14 @@ sv.robjects = {};
 	// Display the list of packages in the search path
 	this.displayPackageList = function () {
 		var pack;
-		var node = document
-			.getElementById("sciviews_robjects_searchpath_listbox");
+		//var node = document
+		//	.getElementById("sciviews_robjects_searchpath_listbox");
 		// In ko7, we need a different code!
-		if (node == null) node = document	
-			.getElementById("sciviews_robjects_tab").contentDocument
+		//if (node == null) node = document	
+		//	.getElementById("sciviews_robjects_tab").contentDocument
+		//	.getElementById("sciviews_robjects_searchpath_listbox");
+		var node = ko.widgets.getWidget("sciviews_robjects_tab")
+			.contentDocument
 			.getElementById("sciviews_robjects_searchpath_listbox");
 				
 		var selectedLabel = node.selectedItem ?
@@ -966,18 +983,22 @@ sv.robjects = {};
 		var what = event.target.tagName;
 		var broadcaster = document
 			.getElementById("cmd_robjects_viewSearchPath");
-		var box = document.getElementById(broadcaster.getAttribute("box"));
+		//var box = document.getElementById(broadcaster.getAttribute("box"));
 		// In ko7, we need a different code!
-		if (box == null) box = document	
-			.getElementById("sciviews_robjects_tab").contentDocument
-			.getElementById(broadcaster.getAttribute("box"));
+		//if (box == null) box = document	
+		//	.getElementById("sciviews_robjects_tab").contentDocument
+		//	.getElementById(broadcaster.getAttribute("box"));
+		var box = ko.widgets.getWidget("sciviews_robjects_tab")
+			.contentDocument.getElementById(broadcaster.getAttribute("box"));
 
 		if (what == "splitter" || what == "grippy") {
-			var splitter = document.getElementById("sciviews_robjects_splitter");
+			//var splitter = document.getElementById("sciviews_robjects_splitter");
 			// In ko7, we need a different code!
-			if (splitter == null) splitter = document	
-				.getElementById("sciviews_robjects_tab").contentDocument
-				.getElementById("sciviews_robjects_splitter");
+			//if (splitter == null) splitter = document	
+			//	.getElementById("sciviews_robjects_tab").contentDocument
+			//	.getElementById("sciviews_robjects_splitter");
+			var splitter = ko.widgets.getWidget("sciviews_robjects_tab")
+				.contentDocument.getElementById("sciviews_robjects_splitter");
 			var state = splitter.getAttribute("state");
 			broadcaster.setAttribute("checked", state != "collapsed");
 		} else {
@@ -1201,11 +1222,13 @@ sv.robjects = {};
 			menuItem.setAttribute("checked", true);
 		}
 
-		var filterBox = document.getElementById("sciviews_robjects_filterbox");
+		//var filterBox = document.getElementById("sciviews_robjects_filterbox");
 		// In ko7, we need a different code!
-		if (filterBox == null) filterBox = document
-			.getElementById("sciviews_robjects_tab").contentDocument
-			.getElementById("sciviews_robjects_filterbox");
+		//if (filterBox == null) filterBox = document
+		//	.getElementById("sciviews_robjects_tab").contentDocument
+		//	.getElementById("sciviews_robjects_filterbox");
+		var filterBox = ko.widgets.getWidget("sciviews_robjects_tab")
+			.contentDocument.getElementById("sciviews_robjects_filterbox");
 		filterBox.emptyText = menuItem.getAttribute("label") + "...";
 		filterBox.focus();
 
@@ -1243,11 +1266,13 @@ sv.robjects = {};
 		// Help can be shown only for one object:
 		var noHelp = !isPackage || !isInPackage;
 
-		//var menuNode = document.getElementById("rObjectsContext");
+		////var menuNode = document.getElementById("rObjectsContext");
 		//// In ko7, we need a different code!
-		//if (menuNode == null) menuNode = document
-		//	.getElementById("sciviews_robjects_tab").contentDocument
-		//	.getElementById("rObjectsContext");
+		////if (menuNode == null) menuNode = document
+		////	.getElementById("sciviews_robjects_tab").contentDocument
+		////	.getElementById("rObjectsContext");
+		//var menuNode = ko.widgets.getWidget("sciviews_robjects_tab")
+		//	.contentDocument.getElementById("rObjectsContext");
 		var menuItems = event.target.childNodes;
 		var testDisableIf, disable = false;
 
@@ -1463,11 +1488,13 @@ sv.robjects = {};
 			 
 			 case 93:
 				// Windows context menu key
-				var contextMenu = document.getElementById("rObjectsContext");
+				//var contextMenu = document.getElementById("rObjectsContext");
 				// In ko7, we need a different code!
-				if (contextMenu == null) contextMenu = document
-					.getElementById("sciviews_robjects_tab").contentDocument
-					.getElementById("rObjectsContext");
+				//if (contextMenu == null) contextMenu = document
+				//	.getElementById("sciviews_robjects_tab").contentDocument
+				//	.getElementById("rObjectsContext");
+				var contextMenu = ko.widgets.getWidget("sciviews_robjects_tab")
+					.contentDocument.getElementById("rObjectsContext");
 				_this.treeBox.ensureRowIsVisible(_this.selection.currentIndex);
 				var y = ((2 + _this.selection.currentIndex -
 					_this.treeBox.getFirstVisibleRow())
@@ -1499,12 +1526,15 @@ sv.robjects = {};
 		_this.insertName(event.ctrlKey, event.shiftKey);
 
 		// This does not have any effect
-		//var listWidget = document
-		//	.getElementById("sciviews_robjects_searchpath_listbox");
+		////var listWidget = document
+		////	.getElementById("sciviews_robjects_searchpath_listbox");
 		//// In ko7, we need a different code!
-        //if (listWidget == null) listWidget = document
-        //    .getElementById("sciviews_robjects_tab").contentDocument
-		//	.getElementById("sciviews_robjects_searchpath_listbox");
+        ////if (listWidget == null) listWidget = document
+        ////    .getElementById("sciviews_robjects_tab").contentDocument
+		////	.getElementById("sciviews_robjects_searchpath_listbox");
+		//var listWidget = ko.widgets.getWidget("sciviews_robjects_tab")
+		//		.contentDocument
+		//		.getElementById("sciviews_robjects_searchpath_listbox");
 		//listWidget.focus();
 		event.originalTarget.focus();
 		return(false);
@@ -1564,11 +1594,14 @@ sv.robjects = {};
 			if (event.target.tagName != 'listitem')
 				return(false);
 
-			var listWidget = document
-				.getElementById("sciviews_robjects_searchpath_listbox");
+			//var listWidget = document
+			//	.getElementById("sciviews_robjects_searchpath_listbox");
 			// In ko7, we need a different code!
-            if (listWidget == null) listWidget = document
-            	.getElementById("sciviews_robjects_tab").contentDocument
+            //if (listWidget == null) listWidget = document
+            //	.getElementById("sciviews_robjects_tab").contentDocument
+			//	.getElementById("sciviews_robjects_searchpath_listbox");
+			var listWidget = ko.widgets.getWidget("sciviews_robjects_tab")
+				.contentDocument
 				.getElementById("sciviews_robjects_searchpath_listbox");
 			var text = _this.searchPath[listWidget.selectedIndex];
 			transferData.data = new TransferData();
