@@ -277,8 +277,9 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 		docbook = "xml",
 		docbook45 = "xml",
 		latex = "tex",
+		odt = "odt",
 		stop("Unknown format,",
-			" use html/html4/html5/slidy/slidy2/wordpress/docbook/latex")
+			" use html/html4/html5/slidy/slidy2/wordpress/docbook/latex/odt")
 		)
 	EndFile <- .fileExt(TxtFile, EndExt)
 		
@@ -389,6 +390,13 @@ keep.RnwFile, keep.TxtFile, encoding, asciidoc)
 	## Use AsciiDoc to convert the .txt file into an .html file
 	cat("Running asciidoc to create ", basename(EndFile), "\n", sep = "")
 	system(paste('"', python, '" "', asciidoc, opts, TxtFile, '"', sep = ""))
+	
+	## Special case for 'odt': the file created has .fodt extension
+	## and we want to rename it with an .odt extension
+	if (format == "odt") {
+		TempFile <- sub("\\.fodt$", ".odt", EndFile)
+		if (file.exists(TempFile)) file.rename(TempFile, EndFile)
+	}
 		
 	## If there is a finalize code for this theme, run it now
 	## TODO...

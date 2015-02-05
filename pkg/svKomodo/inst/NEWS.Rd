@@ -3,13 +3,19 @@
 
 \section{Changes in version 0.9-62}{
   \itemize{
+    \item{ Starting from R revision >= 67550, the HTML help port is now retrieved using
+      tools::startDynamicHelp(NA). }
+  }
+}
+
+\section{Changes in version 0.9-62}{
+  \itemize{
     \item{ Author field rebuild in DESCRIPTION file }
     \item{ \code{.onAttach()} reworked to eliminate \code{:::} (not allowed by CRAN) }
 	\item{ \code{utils::rc.settings} are adjusted in \code{.onAttach()} and
 	  restored in \code{.onUnload()} }
   }
 }
-
 
 \section{Changes in version 0.9-61}{
   \itemize{

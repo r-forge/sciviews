@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{NEWS file for the svDialogs package}
 
+\section{Changes in version 0.9-57}{
+	\itemize{
+		\item{ Added requirements (zenity) in the DESCRIPTION file. }
+	}
+}
+
 \section{Changes in version 0.9-56}{
 	\itemize{
 		\item{ The native Mac dialogs did not work any more, solved for 10.5

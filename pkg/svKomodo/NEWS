@@ -1,5 +1,11 @@
 = svKomodo News
 
+== Changes in svKomodo 0.9-63
+
+* Starting from R revision >= 67550, the HTML help port is now retrieved using
+  tools::startDynamicHelp(NA).
+
+
 == Changes in svKomodo 0.9-62
 
 * Author field rebuild in DESCRIPTION file

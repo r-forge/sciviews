@@ -6,7 +6,7 @@ mixed = TRUE, filter = getOption("svGUI.methods"))
 
 	## Check argument
 	if (!inherits(f, "character"))
-		stop("'f' must ba a character string!")
+		stop("'f' must be a character string!")
 
 	## List methods for a given class
 	if (!is.null(class)) {

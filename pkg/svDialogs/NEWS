@@ -1,5 +1,10 @@
 = svDialogs News
 
+== Changes in svDialogs 0.9-57
+
+* Added requirements (zenity) in the DESCRIPTION file.
+  
+
 == Changes in svDialogs 0.9-56
 
 * The native Mac dialogs did not work any more, solved for 10.5 Leopard and
