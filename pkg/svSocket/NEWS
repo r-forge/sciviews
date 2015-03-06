@@ -3,6 +3,9 @@
 == Changes in svSocket 0.9-57
 
 * /testCLI directory moved to /inst/testCLI.
+
+* An example is added that tests/demonstrates how to start, query and stop
+  a SciViews HTTP server from within R.
  
 
 == Changes in svSocket 0.9-56

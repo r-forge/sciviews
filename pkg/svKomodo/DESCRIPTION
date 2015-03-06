@@ -11,8 +11,7 @@ Depends: R (>= 2.6.0), svMisc (>= 0.9-68)
 Imports: utils
 Suggests: svHttp, svSocket
 SystemRequirements: Komodo Edit (http://www.openkomodo.com), SciViews-K (http://www.sciviews.org/SciViews-K)
-Description: Functions to manage the GUI client, like Komodo with the
-  SciViews-K extension
+Description: Functions to manage the GUI client, like Komodo with the SciViews-K extension.
 License: GPL-2
 URL: http://www.sciviews.org/SciViews-R
 BugReports: https://r-forge.r-project.org/tracker/?group_id=194
