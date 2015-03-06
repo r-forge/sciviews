@@ -16,7 +16,7 @@ Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 Imports: utils, methods, tools
 Depends: R (>= 2.13.0)
 Suggests: svUnit, rJava
-Description: Supporting functions for the GUI API (various utility functions)
+Description: Supporting functions for the GUI API (various utility functions).
 License: GPL-2
 URL: http://www.sciviews.org/SciViews-R
 BugReports: https://r-forge.r-project.org/tracker/?group_id=194

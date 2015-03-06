@@ -9,7 +9,7 @@ Authors@R: c(person("Philippe", "Grosjean", role = c("aut", "cre"),
 Maintainer: Philippe Grosjean <phgrosjean@sciviews.org>
 Depends: R (>= 1.9.0)
 Suggests: svGUI, datasets, utils, XML
-Description: A complete unit test system and functions to implement its GUI part
+Description: A complete unit test system and functions to implement its GUI part.
 License: GPL-2
 URL: http://www.sciviews.org/SciViews-R
 BugReports: https://r-forge.r-project.org/tracker/?group_id=194
