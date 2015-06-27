@@ -45,51 +45,59 @@ function svWindowPatcher () {
 		// Add other icon families
 		var family = <menuitem label="Books and Notes"
 			src="chrome://sciviewsk/skin/icons/BooksAndNotes.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Bullets and Signs"
-			src="chrome://sciviewsk/skin/icons/BulletsAndSigns.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Communication"
-			src="chrome://sciviewsk/skin/icons/Communication.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Computing"
-			src="chrome://sciviewsk/skin/icons/Computing.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Database and Network"
-			src="chrome://sciviewsk/skin/icons/DatabaseAndNetwork.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Drawing"
-			src="chrome://sciviewsk/skin/icons/Drawing.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Files and Folders"
-			src="chrome://sciviewsk/skin/icons/FilesAndFolders.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Hardware"
-			src="chrome://sciviewsk/skin/icons/Hardware.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Miscellaneous"
-			src="chrome://sciviewsk/skin/icons/Miscellaneous.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Multimedia"
-			src="chrome://sciviewsk/skin/icons/Multimedia.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="SciViews"
-			src="chrome://sciviewsk/skin/icons/SciViews.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Text and Tables"
-			src="chrome://sciviewsk/skin/icons/TextAndTables.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Time and Money"
-			src="chrome://sciviewsk/skin/icons/TimeAndMoney.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-		family = <menuitem label="Tools"
-			src="chrome://sciviewsk/skin/icons/Tools.html"/>;
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
 		
-		// Keep Open Office family, but place it at the end of the list
-		family = <menuitem label="[Open Office Icons]"
-			src="chrome://openoffice/content/industrial.html"/>;
+//		var parser = new DOMParser
+//		var family = parser.parseFromString('<menuitem label="Books and Notes"\n' +
+//			'src="chrome://sciviewsk/skin/icons/BooksAndNotes.html"/>', "text/xml");
 		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+
+
+
+
+//		family = <menuitem label="Bullets and Signs"
+//			src="chrome://sciviewsk/skin/icons/BulletsAndSigns.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Communication"
+//			src="chrome://sciviewsk/skin/icons/Communication.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Computing"
+//			src="chrome://sciviewsk/skin/icons/Computing.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Database and Network"
+//			src="chrome://sciviewsk/skin/icons/DatabaseAndNetwork.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Drawing"
+//			src="chrome://sciviewsk/skin/icons/Drawing.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Files and Folders"
+//			src="chrome://sciviewsk/skin/icons/FilesAndFolders.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Hardware"
+//			src="chrome://sciviewsk/skin/icons/Hardware.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Miscellaneous"
+//			src="chrome://sciviewsk/skin/icons/Miscellaneous.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Multimedia"
+//			src="chrome://sciviewsk/skin/icons/Multimedia.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="SciViews"
+//			src="chrome://sciviewsk/skin/icons/SciViews.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Text and Tables"
+//			src="chrome://sciviewsk/skin/icons/TextAndTables.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Time and Money"
+//			src="chrome://sciviewsk/skin/icons/TimeAndMoney.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		family = <menuitem label="Tools"
+//			src="chrome://sciviewsk/skin/icons/Tools.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		
+//		// Keep Open Office family, but place it at the end of the list
+//		family = <menuitem label="[Open Office Icons]"
+//			src="chrome://openoffice/content/industrial.html"/>;
+//		sv.tools.e4x2dom.appendTo(family, families.firstChild);
 		
 		// Add a pointer to the icon makers web sites (required by fugue and
 		// diagona icons)

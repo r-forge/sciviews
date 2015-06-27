@@ -19,7 +19,9 @@ var XUL  = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 var SVG  = "http://www.w3.org/2000/svg";
 var RDF  = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
-default xml namespace = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+// PhG: the following line generates an error => commented out
+// I think that E4X is now disabled in Komodo!!!
+//default xml namespace = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
 // Translate e4x (JavaScript) node into a DOM node
 sv.tools.e4x2dom.importNode = function (e4x, doc) {
@@ -27,11 +29,11 @@ sv.tools.e4x2dom.importNode = function (e4x, doc) {
 	me.Const = me.Const || { mimeType: 'text/xml' };
 	me.Static = me.Static || {};
 	me.Static.parser = me.Static.parser || new DOMParser;
-	xhtml = <testing
-		xmlns:html="http://www.w3.org/1999/xhtml"
-		xmlns:svg="http://www.w3.org/2000/svg"
-		xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"/>;
+	xhtml = new XML('<testing\n' +
+		'xmlns:html="http://www.w3.org/1999/xhtml"\n' +
+		'xmlns:svg="http://www.w3.org/2000/svg"\n' +
+		'xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"\n' +
+		'xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"/>\n');
 	xhtml.test = e4x;
 	domTree = me.Static.parser.parseFromString( xhtml.toXMLString().
 		replace( />\n *</g, "><" ), me.Const.mimeType);
@@ -64,7 +66,7 @@ sv.tools.e4x2dom.append = function (e4x, node, i) {
 
 // Clear a DOM node
 sv.tools.e4x2dom.clear = function (node) {
-	while(node.firstChild)
+	while (node.firstChild)
 		node.removeChild(node.firstChild);
 }
 

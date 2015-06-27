@@ -21,3 +21,7 @@ overlay chrome://komodo/content/komodo.xul chrome://sciviewsk/content/RObjectsOv
 overlay chrome://places/content/places_panel.xul chrome://sciviewsk/content/placesOverlay.xul appversion>6.99
 
 manifest components/component.manifest
+
+category udl-lexers  sciviewsk@sciviews.org  1
+#category toolbox  sciviewsk@sciviews.org  1
+#category apicatalogs  sciviewsk@sciviews.org  1
