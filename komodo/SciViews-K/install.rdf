@@ -4,7 +4,7 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>sciviewsk@sciviews.org</em:id>
         <em:name>SciViews-K</em:name>
-        <em:version>0.9.35</em:version>
+        <em:version>0.9.37</em:version>
         <em:description>Edit R code with Komodo</em:description>
         <em:creator>Philippe Grosjean (phgrosjean@sciviews.org)</em:creator>
         <em:contributor>Romain Francois</em:contributor>

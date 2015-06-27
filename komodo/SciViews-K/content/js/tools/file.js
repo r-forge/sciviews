@@ -311,8 +311,12 @@ if (typeof(sv.tools.file) == 'undefined') sv.tools.file = {};
 					key = "software\\R-core\\R";
 					reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ)
 				} catch(e) {
-					key = "software\\wow6432Node\\r-core\\r";
-					reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ);
+					try {
+						key = "software\\wow6432Node\\r-core\\r";
+						reg.open(reg.ROOT_KEY_LOCAL_MACHINE, key, reg.ACCESS_READ);
+					} catch(e) {
+						return(null);
+					}
 				}
 				if (!reg.hasValue("InstallPath") &&
 					reg.hasValue("Current Version")) {
