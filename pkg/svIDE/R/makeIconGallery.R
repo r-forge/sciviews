@@ -17,17 +17,16 @@ makeIconGallery <- function (flist)
 		iframe <- paste(flist, "html", sep =".")
 	head <- '<html>
 <body>
-<style>img:hover { border-color: black; }</style>
-<style>img { border-color: white; }</style>
+<style>img { padding: 4px; }
+img.hide { display: none; }
+</style>
 
 '
 	tail <- '</body>\n</html>'
-	item <- '<img border="1"
-	ondblclick="parent.ValidatedPickIcon(<<<uri>>>);"
+	item <- '<img ondblclick="parent.ValidatedPickIcon(\'<<<uri>>>\');"
 	onclick="parent.Pick_Icon(\'<<<uri>>>\');"
     src="<<<uri>>>"
-    alt="<<<icn>>>"
-    style="padding: 4px;"/>
+    alt="<<<icn>>>" />
 	 
 '
 	cat(head, file = iframe)

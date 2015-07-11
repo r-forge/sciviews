@@ -11,8 +11,8 @@
   \tabular{ll}{
     Package: \tab svIDE\cr
     Type: \tab Package\cr
-    Version: \tab 0.9-52\cr
-    Date: \tab 2014-03-02\cr
+    Version: \tab 0.9-53\cr
+    Date: \tab 2015-06-27\cr
     License: \tab GPL 2 or above, at your convenience\cr
   }
   % TODO: add description of main functions here. Also add examples

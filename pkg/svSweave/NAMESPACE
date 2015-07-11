@@ -4,4 +4,8 @@ export(cleanLyxRnw,
        knitLyxRnw,
        purlLyxRnw,
        tangleLyxRnw,
-       weaveLyxRnw)
+       weaveLyxRnw,
+       newLabelling,
+       fig,
+       tab,
+       eq)

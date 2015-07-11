@@ -4,10 +4,10 @@
 \title{ Create galleries of icons for SciViews-K and Komodo }
 
 \description{
-  The "pick icon" dialog box of Komodo uses icon galleries. SciViews-K redefines
-  such galleries for easier access to the icons, and it supplements about 1800
+  The "pick icon" dialog box of Komodo uses icon galleries. SciViews-K adds
+  several galleries for easier access to the icons, and it supplements about 1800
   additional icons. The present function builds those galleries, based on a list
-  of icons manually compiled.
+  of icons manually compiled (compatible with Komodo Edit/IDE version 9).
 }
 
 \usage{
