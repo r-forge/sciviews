@@ -1,5 +1,11 @@
 = svIDE News
 
+== Changes in svIDE 0.9-53
+
+* makeIconGallery() is updated to generate an HTML file compatible with Komodo
+  version 9.
+  
+
 == Changes in svIDE 0.9-52
 
 * createCallTipFile(), guiiCallTip() & guiComplete() adapted to new functions

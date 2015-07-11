@@ -1,5 +1,5 @@
 // SciViews-K interpolation function, and other rewritten Komodo functions
-// Copyright (c) 2009-2010, Ph. Grosjean (phgrosjean@sciviews.org)
+// Copyright (c) 2009-2015, Ph. Grosjean (phgrosjean@sciviews.org)
 // License: MPL 1.1/GPL 2.0/LGPL 2.1
 ////////////////////////////////////////////////////////////////////////////////
 // svWindowPatcher() and svWindowObserver() allow for patching Komodo windows
@@ -34,23 +34,33 @@ function svWindowPatcher () {
 			"chrome://sciviewsk/skin/icons/Applications.html");
 		var families = win.document.getElementById("icon-families");
 		// We change the two existing families
-		var firstfam = families.firstChild.firstChild;
-		firstfam.setAttribute("label", "Applications");
-		firstfam.setAttribute("src",
-			"chrome://sciviewsk/skin/icons/Applications.html");
+//		var firstfam = families.firstChild.firstChild;
+//		firstfam.setAttribute("label", "Applications");
+//		firstfam.setAttribute("src",
+//			"chrome://sciviewsk/skin/icons/Applications.html");
 		var nextfam = families.firstChild.lastChild;
-		nextfam.setAttribute("label", "Arrows");
-		nextfam.setAttribute("src",
-			"chrome://sciviewsk/skin/icons/Arrows.html");
+//		nextfam.setAttribute("label", "Arrows");
+//		nextfam.setAttribute("src",
+//			"chrome://sciviewsk/skin/icons/Arrows.html");
 		// Add other icon families
-		var family = <menuitem label="Books and Notes"
-			src="chrome://sciviewsk/skin/icons/BooksAndNotes.html"/>;
+//		var family = <menuitem label="Books and Notes"
+//			src="chrome://sciviewsk/skin/icons/BooksAndNotes.html"/>;
 		
 //		var parser = new DOMParser
 //		var family = parser.parseFromString('<menuitem label="Books and Notes"\n' +
 //			'src="chrome://sciviewsk/skin/icons/BooksAndNotes.html"/>', "text/xml");
-		sv.tools.e4x2dom.appendTo(family, families.firstChild);
-
+		//var menuitem = document.createElement("menuitem");
+		families.appendItem("Applications (SciViews-K)");
+		//sv.tools.e4x2dom.appendTo(family, families.firstChild);
+		nextfam = families.firstChild.lastChild;
+		//nextfam.setAttribute("label", "Books and Notes (SciViews-K)");
+		nextfam.setAttribute("src", "chrome://sciviewsk/skin/icons/Applications.html");
+		
+//		families.appendItem("Books and Notes (SciViews-K)");
+//		//sv.tools.e4x2dom.appendTo(family, families.firstChild);
+//		nextfam = families.firstChild.lastChild;
+//		//nextfam.setAttribute("label", "Books and Notes (SciViews-K)");
+//		nextfam.setAttribute("src", "chrome://sciviewsk/skin/icons/BooksAndNotes.html");
 
 
 
@@ -160,7 +170,7 @@ ww.registerNotification(new svWindowObserver());
   *      NS_ERROR_INVALID_ARG    A normal interpolation failure because of
   *                              invalid interp code usage.
   */
-ko.interpolate.interpolate = function Interpolate_interpolate(editor, strings,
+ko.interpolate.interpolate2 = function Interpolate_interpolate(editor, strings,
 	bracketedStrings,
     queryTitle /* =null */,
 	viewData /* =<determined from current view> */)
